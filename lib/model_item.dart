@@ -6,7 +6,7 @@ import 'database_helper.dart';
 import 'model_group.dart';
 
 class ModelItem {
-  String id;
+  String? id;
   String groupId;
   ModelGroup? group;
   String text;
@@ -15,7 +15,7 @@ class ModelItem {
   String type;
   String data;
   ModelItem({
-    required this.id,
+    this.id,
     required this.groupId,
     required this.group,
     required this.text,
@@ -26,7 +26,7 @@ class ModelItem {
   });
   factory ModelItem.init(){
     return ModelItem(
-      id:"",
+      id:null,
       groupId:"",
       group:null,
       text:"",
@@ -117,12 +117,12 @@ class ModelItem {
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
-    String id = this.id;
+    String? id = this.id;
     return await dbHelper.update("item",toMap(),id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String id = this.id;
+    String? id = this.id;
     return await dbHelper.delete("item", id);
   }
 }

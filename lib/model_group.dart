@@ -3,13 +3,13 @@ import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
 
 class ModelGroup {
-  String id;
+  String? id;
   String title;
   Uint8List image;
   int pinned;
   String color;
   ModelGroup({
-    required this.id,
+    this.id,
     required this.title,
     required this.image,
     required this.pinned,
@@ -17,7 +17,7 @@ class ModelGroup {
   });
   factory ModelGroup.init(){
     return ModelGroup(
-      id:"",
+      id:null,
       title:"",
       image: Uint8List(0),
       pinned: 0,
@@ -66,12 +66,12 @@ class ModelGroup {
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
-    String id = this.id;
+    String? id = this.id;
     return await dbHelper.update("group",toMap(),id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String id = this.id;
+    String? id = this.id;
     return await dbHelper.delete("group", id);
   }
 }

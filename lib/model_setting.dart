@@ -17,5 +17,4 @@ class ModelSetting {
   static dynamic getForKey(String key, dynamic defaultValue) {
     return appJson.containsKey(key) ? appJson[key] : defaultValue;
   }
-
 }

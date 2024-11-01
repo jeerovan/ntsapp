@@ -6,10 +6,10 @@ import 'database_helper.dart';
 import 'model_item.dart';
 import 'model_tag.dart';
 class ModelItemTag {
-  int? id;
-  int itemId;
+  String? id;
+  String itemId;
   ModelItem? item;
-  int tagId;
+  String tagId;
   ModelTag? tag;
   ModelItemTag({
     this.id,
@@ -21,9 +21,9 @@ class ModelItemTag {
   factory ModelItemTag.init(){
     return ModelItemTag(
       id:null,
-      itemId:0,
+      itemId:"",
       item:null,
-      tagId:0,
+      tagId:"",
       tag:null,
     );
   }
@@ -40,9 +40,9 @@ class ModelItemTag {
     Uuid uuid = const Uuid();
     return ModelItemTag(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
-      itemId:map.containsKey('item_id') ? map['item_id'] : 0,
+      itemId:map.containsKey('item_id') ? map['item_id'] : "",
       item:item,
-      tagId:map.containsKey('tag_id') ? map['tag_id'] : 0,
+      tagId:map.containsKey('tag_id') ? map['tag_id'] : "",
       tag:tag
     );
   }
@@ -64,7 +64,7 @@ class ModelItemTag {
     );
     return await Future.wait(rows.map((map) => tagFromMap(map)));
   }
-  static Future<void> checkAddItemTag(int itemId,int tagId) async {
+  static Future<void> checkAddItemTag(String itemId,String tagId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
@@ -100,12 +100,12 @@ class ModelItemTag {
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
-    int? id = this.id;
+    String? id = this.id;
     return await dbHelper.update("itemtag",toMap(),id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    int? id = this.id;
+    String? id = this.id;
     return await dbHelper.delete("itemtag", id);
   }
 }

@@ -2,15 +2,15 @@ import 'database_helper.dart';
 import 'package:uuid/uuid.dart';
 
 class ModelTag {
-  String id;
+  String? id;
   String title;
   ModelTag({
-    required this.id,
+    this.id,
     required this.title,
   });
   factory ModelTag.init(){
     return ModelTag(
-      id:"",
+      id:null,
       title:"",
     );
   }
@@ -64,12 +64,12 @@ class ModelTag {
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
-    String id = this.id;
+    String? id = this.id;
     return await dbHelper.update("tag",toMap(),id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String id = this.id;
+    String? id = this.id;
     return await dbHelper.delete("tag", id);
   }
 }
