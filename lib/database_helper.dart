@@ -35,11 +35,10 @@ class DatabaseHelper {
       CREATE TABLE group (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        description TEXT,
         image BLOB,
         pinned INTEGER,
         color TEXT,
-        updated_at INTEGER
+        at INTEGER
       )
     ''');
     await db.execute('''
@@ -51,7 +50,7 @@ class DatabaseHelper {
         starred INTEGER,
         type TEXT,
         data TEXT,
-        created_at INTEGER,
+        at INTEGER,
         FOREIGN KEY (group_id) REFERENCES group(id) ON DELETE CASCADE
       )
     ''');
@@ -66,10 +65,9 @@ class DatabaseHelper {
     ''');
     await db.execute('''
       CREATE TABLE itemtag (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        item_id INTEGER NOT NULL,
-        tag_id INTEGER NOT NULL,
-        at INTEGER,
+        id TEXT PRIMARY KEY,
+        item_id TEXT NOT NULL,
+        tag_id TEXT NOT NULL,
         FOREIGN KEY (item_id) REFERENCES item(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
       )
