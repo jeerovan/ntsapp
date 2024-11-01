@@ -32,7 +32,7 @@ class DatabaseHelper {
     await db.execute('PRAGMA foreign_keys = ON');
     // Add table creation queries here
     await db.execute('''
-      CREATE TABLE group (
+      CREATE TABLE itemgroup (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         image BLOB,
@@ -51,7 +51,7 @@ class DatabaseHelper {
         type TEXT,
         data TEXT,
         at INTEGER,
-        FOREIGN KEY (group_id) REFERENCES group(id) ON DELETE CASCADE
+        FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE
       )
     ''');
     await db.execute('''
@@ -89,18 +89,10 @@ class DatabaseHelper {
   }
 
   Future<void> _seedDatabase(Database db) async {
-    int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    Uint8List home = await loadImageAsUint8List('assets/Home.png');
-    await db.insert("profile", {"id": 1, "title": "Home", "image": home,"at":at});
+    //int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    //Uint8List home = await loadImageAsUint8List('assets/Home.png');
+    //await db.insert("profile", {"id": 1, "title": "Home", "image": home,"at":at});
 
-    Uint8List office = await loadImageAsUint8List('assets/Office.png');
-    await db.insert("profile", {"id": 2, "title": "Office", "image": office,"at":at});
-    
-    Uint8List kitchen = await loadImageAsUint8List('assets/Kitchen.png');
-    await db.insert("profile", {"id": 3, "title": "Kitchen", "image": kitchen,"at":at});
-    
-    Uint8List bedroom = await loadImageAsUint8List('assets/Bedroom.png');
-    await db.insert("profile", {"id": 4, "title": "Bedroom", "image": bedroom,"at":at});
   }
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {

@@ -43,17 +43,19 @@ class ModelGroup {
       color: map.containsKey('color') ? map['color'] : "",
     );
   }
-  static Future<List<ModelGroup>> all() async {
+  static Future<List<ModelGroup>> all(int offset, int limit) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
-      "group",
+      "itemgroup",
+      limit: limit,
+      offset: offset,
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
   static Future<ModelGroup?> get(int id) async {
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.queryOne("group", id);
+    List<Map<String,dynamic>> list = await dbHelper.queryOne("itemgroup", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return fromMap(map);
@@ -62,16 +64,16 @@ class ModelGroup {
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
-    return await dbHelper.insert("group", toMap());
+    return await dbHelper.insert("itemgroup", toMap());
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.update("group",toMap(),id);
+    return await dbHelper.update("itemgroup",toMap(),id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.delete("group", id);
+    return await dbHelper.delete("itemgroup", id);
   }
 }

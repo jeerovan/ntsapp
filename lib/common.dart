@@ -10,70 +10,10 @@ import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as pimg;
 
-final List<Map<String, String>> months = [
-  {"value": "01", "text": "Jan"},
-  {"value": "02", "text": "Feb"},
-  {"value": "03", "text": "Mar"},
-  {"value": "04", "text": "Apr"},
-  {"value": "05", "text": "May"},
-  {"value": "06", "text": "Jun"},
-  {"value": "07", "text": "Jul"},
-  {"value": "08", "text": "Aug"},
-  {"value": "09", "text": "Sep"},
-  {"value": "10", "text": "Oct"},
-  {"value": "11", "text": "Nov"},
-  {"value": "12", "text": "Dec"}
-];
-List<DropdownMenuItem<String>> monthDropdown = months
-    .map((month) => DropdownMenuItem<String>(
-          value: month['value'],
-          child: Text(month['text']!),
-        ))
-    .toList();
-
-final List<Map<String, String>> doses = [
-  {"value": "", "text": "Unit"},
-  {"value": "Spoon", "text": "Spoon"},
-  {"value": "Tablet", "text": "Tablet"},
-  {"value": "Drops", "text": "Drops"},
-];
-List<DropdownMenuItem<String>> dosesDropdown = doses
-    .map((dose) => DropdownMenuItem<String>(
-          value: dose['value'],
-          child: Text(dose['text']!),
-        ))
-    .toList();
-
-List<int> generateListOfInts(int start, int end) {
-  if (start > end) {
-    throw ArgumentError('Start year must be less than or equal to end year.');
-  }
-  return List.generate(end - start + 1, (index) => start + index);
-}
-
-List<DropdownMenuItem<String>> yearDropdown(int start, int end) {
-  List<int> years = List.generate(end - start + 1, (index) => start + index);
-  return years
-      .map((year) => DropdownMenuItem<String>(
-            value: year.toString(),
-            child: Text(year.toString()),
-          ))
-      .toList();
-}
 
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
     return 'Please enter data';
-  }
-  return null;
-}
-
-String? validateStockLocation(String? value) {
-  if (value == null || value.isEmpty) {
-    return null;
-  }
-  if (value.isNotEmpty && value.length > 3) {
-    return "Max 3 characters";
   }
   return null;
 }
@@ -113,65 +53,6 @@ String? validateDecimal(String? value) {
 String? validateSelection(String? value) {
   if (value == null || value.isEmpty) {
     return 'Please select an option';
-  }
-  return null;
-}
-
-String? validatePIN(String? value) {
-  if (value == null || value.isEmpty) {
-    return null;
-  }
-  if (value.isNotEmpty && int.tryParse(value) == null) {
-    return 'Must be a number';
-  }
-  if (value.length != 6) {
-    return 'Enter valid PIN';
-  }
-  return null;
-}
-
-String? validateMobile(String? value) {
-  if (value == null || value.isEmpty) {
-    return null;
-  }
-  if (value.isNotEmpty && int.tryParse(value) == null) {
-    return 'Must be a number';
-  }
-  if (value.length != 10) {
-    return 'Enter 10 digit mobile';
-  }
-  return null;
-}
-
-String? validatePacking(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'Please enter packing';
-  }
-  RegExp regExp = RegExp(r'^1\*\d+$');
-  if (!regExp.hasMatch(value)) {
-    return 'Format: 1*X(Items in MRP pack)';
-  }
-  return null;
-}
-
-String? validatePrice(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'Please enter data';
-  }
-  RegExp decimalRegExp = RegExp(r'^\d*\.?\d+$');
-  if (!decimalRegExp.hasMatch(value)) {
-    return 'Please enter valid data';
-  }
-  return null;
-}
-
-String? validateQuantity(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'Please enter quantity';
-  }
-  RegExp xyRegExp = RegExp(r'^\d+\+\d+$');
-  if (!xyRegExp.hasMatch(value)) {
-    return 'Format: X(Pack)+Y(Loose)';
   }
   return null;
 }
@@ -251,12 +132,6 @@ class Loading extends StatelessWidget {
   }
 }
 
-class ModelDropdownSuggestion {
-  final int id;
-  final String text;
-  ModelDropdownSuggestion({required this.id, required this.text});
-}
-
 String stringFromIntDate(int date) {
   String input = date.toString();
   DateTime dateTime = dateFromStringDate(input);
@@ -294,22 +169,6 @@ int dateFromDateTime(DateTime datetime) {
   return int.parse(DateFormat('yyyyMMdd').format(datetime));
 }
 
-int getFutureYearMonth(int yearMonth, int monthsToAdd) {
-  // Extract year and month
-  int year = yearMonth ~/ 100;
-  int month = yearMonth % 100;
-
-  // Create a DateTime object
-  DateTime dateTime = DateTime(year, month);
-
-  // Add months
-  DateTime newDateTime = DateTime(dateTime.year, dateTime.month + monthsToAdd);
-
-  // Convert back to YYYYMM format
-  int newYearMonth = newDateTime.year * 100 + newDateTime.month;
-
-  return newYearMonth;
-}
 
 String getTodayDate() {
   DateTime now = DateTime.now();
@@ -382,8 +241,8 @@ Future<String> getFilePath(String prefix, int id) async {
 }
 
 List<Offset> parseCoordinates(String coordinatesString) {
-  // Split the string by '+' to get individual coordinate pairs
-  List<String> pairs = coordinatesString.split('+');
+  // Split the string by ',' to get individual coordinate pairs
+  List<String> pairs = coordinatesString.split(',');
 
   // Create an empty list to store the points
   List<Offset> points = [];
@@ -546,6 +405,40 @@ class KeyValueTable extends StatelessWidget {
     );
   }
 }
+
+void addEditTitlePopup(BuildContext context, String title, Function(String) onSubmit, [String initialText = ""]) {
+    final TextEditingController controller = TextEditingController(text: initialText);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              hintText: 'Enter text here...',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
+              onPressed: () {
+                onSubmit(controller.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 class BlankPage extends StatefulWidget {
   const BlankPage({super.key});

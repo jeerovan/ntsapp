@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
-import 'model_group.dart';
+import 'model_item_group.dart';
 
 class ModelItem {
   String? id;
