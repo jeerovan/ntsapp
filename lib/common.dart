@@ -415,7 +415,7 @@ void addEditTitlePopup(BuildContext context, String title, Function(String) onSu
           title: Text(title),
           content: TextField(
             controller: controller,
-            maxLines: 5,
+            maxLines: 1,
             decoration: const InputDecoration(
               hintText: 'Enter text here...',
             ),

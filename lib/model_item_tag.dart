@@ -73,7 +73,7 @@ class ModelItemTag {
       whereArgs: [itemId,tagId],
     );
     if (rows.isEmpty){
-      int _ = await ModelItemTag(itemId: itemId, tagId: tagId).insert();
+      await ModelItemTag(itemId: itemId, tagId: tagId).insert();
     }
   }
   static Future<void> removeForItemIdTagId(int itemId,int tagId) async {
@@ -87,7 +87,7 @@ class ModelItemTag {
   }
   static Future<ModelItemTag?> get(int id) async{
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.queryOne("itemtag", id);
+    List<Map<String,dynamic>> list = await dbHelper.getWithId("itemtag", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return fromMap(map);

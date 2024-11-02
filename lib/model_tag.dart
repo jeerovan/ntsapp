@@ -36,16 +36,16 @@ class ModelTag {
       whereArgs: ['%$query%']);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<ModelTag?> get(int id) async{
+  static Future<ModelTag?> get(int id) async {
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.queryOne("tag", id);
+    List<Map<String,dynamic>> list = await dbHelper.getWithId("tag", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return fromMap(map);
     }
     return null;
   }
-  Future<int> checkInsert() async {
+  Future<String> checkInsert() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
@@ -53,16 +53,21 @@ class ModelTag {
       where: 'title == ?',
       whereArgs: ['%$title%']);
     if(rows.isEmpty){
-      return await dbHelper.insert("tag", toMap());
+      int added = await dbHelper.insert("tag", toMap());
+      if(added > 0){
+        return id!;
+      } else {
+        return "";
+      }
     } else {
       return rows.first['id'];
     }
   }
-  Future<int> insert() async{
+  Future<int> insert() async {
     final dbHelper = DatabaseHelper.instance;
     return await dbHelper.insert("tag", toMap());
   }
-  Future<int> update() async{
+  Future<int> update() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     return await dbHelper.update("tag",toMap(),id);

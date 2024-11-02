@@ -42,6 +42,9 @@ class DatabaseHelper {
       )
     ''');
     await db.execute('''
+      CREATE INDEX idx_item_group_title ON itemgroup(title)
+    ''');
+    await db.execute('''
       CREATE TABLE item (
         id TEXT PRIMARY KEY,
         group_id TEXT NOT NULL,
@@ -53,6 +56,9 @@ class DatabaseHelper {
         at INTEGER,
         FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE
       )
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_item_text ON item(text)
     ''');
     await db.execute('''
       CREATE TABLE tag (
@@ -117,14 +123,14 @@ class DatabaseHelper {
     return await db.delete(tableName, where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<List<Map<String, dynamic>>> queryOne(
+  Future<List<Map<String, dynamic>>> getWithId(
       String tableName, dynamic id) async {
     final db = await instance.database;
     return await db.query(tableName,
         where: "id = ?", whereArgs: [id], limit: 1);
   }
 
-  Future<List<Map<String, dynamic>>> queryAll(String tableName) async {
+  Future<List<Map<String, dynamic>>> getAll(String tableName) async {
     final db = await instance.database;
     return await db.query(tableName);
   }

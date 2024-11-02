@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/common.dart';
 import 'model_item_group.dart';
 
 class PageGroup extends StatefulWidget {
@@ -34,6 +35,17 @@ class _PageGroupState extends State<PageGroup> {
     });
   }
 
+  void createNoteGroup(String title) async {
+    if(title.length > 1){
+      ModelGroup? group = await ModelGroup.checkInsert(title);
+      if(group != null){
+        setState(() {
+          _items.add(group);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,12 +63,8 @@ class _PageGroupState extends State<PageGroup> {
             if (index == _items.length) {
               return _hasMore
                   ? const Center(child: CircularProgressIndicator())
-                  : const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(child: Text('No more items to load')),
-                    );
+                  : const SizedBox.shrink() ;
             }
-
             final item = _items[index];
             return ListTile(
               title: Text(item.title),
@@ -65,11 +73,13 @@ class _PageGroupState extends State<PageGroup> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            
-          },
-          shape: const CircleBorder(),
-        ),
+        onPressed: () {
+          addEditTitlePopup(context, "Add Note Group", (text){
+            createNoteGroup(text);},);
+        },
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

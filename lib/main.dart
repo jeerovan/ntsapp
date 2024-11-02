@@ -22,7 +22,7 @@ void main() async {
 
   // initialize the db
   DatabaseHelper dbHelper = DatabaseHelper.instance;
-  List<Map<String, dynamic>> keyValuePairs = await dbHelper.queryAll('setting');
+  List<Map<String, dynamic>> keyValuePairs = await dbHelper.getAll('setting');
   ModelSetting.appJson = {
     for (var pair in keyValuePairs) pair['id']: jsonDecode(pair['value'])
   };

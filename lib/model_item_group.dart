@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
 
@@ -55,12 +56,32 @@ class ModelGroup {
   }
   static Future<ModelGroup?> get(int id) async {
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.queryOne("itemgroup", id);
+    List<Map<String,dynamic>> list = await dbHelper.getWithId("itemgroup", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return fromMap(map);
     }
     return null;
+  }
+  static Future<ModelGroup?> checkInsert(String title) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      'itemgroup',
+      where: 'title == ?',
+      whereArgs: ['%$title%']);
+    if(rows.isEmpty){
+      ModelGroup group = await fromMap({"title":title});
+      int added = await group.insert();
+      debugPrint('Added:$added');
+      if (added > 0){
+        return group;
+      } else {
+        return null;
+      }
+    } else {
+      return fromMap(rows.first);
+    }
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;

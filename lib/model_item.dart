@@ -104,7 +104,7 @@ class ModelItem {
   }
   static Future<ModelItem?> get(int id) async{
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.queryOne("item", id);
+    List<Map<String,dynamic>> list = await dbHelper.getWithId("item", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return fromMap(map);
