@@ -10,19 +10,19 @@ class ModelItem {
   String groupId;
   ModelGroup? group;
   String text;
-  Uint8List image;
+  Uint8List? image;
   int starred;
   String type;
-  String data;
+  String? data;
   ModelItem({
     this.id,
     required this.groupId,
-    required this.group,
+    this.group,
     required this.text,
-    required this.image,
+    this.image,
     required this.starred,
     required this.type,
-    required this.data,
+    this.data,
   });
   factory ModelItem.init(){
     return ModelItem(
@@ -30,17 +30,17 @@ class ModelItem {
       groupId:"",
       group:null,
       text:"",
-      image:Uint8List(0),
+      image:null,
       starred: 0,
-      type: "",
-      data: "",
+      type: "100000",
+      data: null,
     );
   }
   Map<String,dynamic> toMap() {
     return  {
       'id':id,
       'group_id':groupId,
-      'title':text,
+      'text':text,
       'image':image,
       'starred':starred,
       'type':type,
@@ -54,21 +54,21 @@ class ModelItem {
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       groupId:map.containsKey('group_id') ? map['group_id'] : 0,
       group:group,
-      text:map.containsKey('title') ? map['title'] : "",
-      image:map.containsKey('image') ? map['image'] : "",
+      text:map.containsKey('text') ? map['text'] : "",
+      image:map.containsKey('image') ? map['image'] : null,
       starred: map.containsKey('starred') ? map['starred'] : 0,
-      type: map.containsKey('type') ? map['type'] : "",
-      data: map.containsKey('data') ? map['data'] : "",
+      type: map.containsKey('type') ? map['type'] : "100000",
+      data: map.containsKey('data') ? map['data'] : null,
     );
   }
-  static Future<List<ModelItem>> getAll(int groupId) async {
+  static Future<List<ModelItem>> all(String groupId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
       where: "group_id == ?",
       whereArgs: [groupId],
-      orderBy:'id DESC',
+      orderBy:'at',
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

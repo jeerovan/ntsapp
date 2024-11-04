@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/page_items.dart';
 import 'model_item_group.dart';
 
 class PageGroup extends StatefulWidget {
@@ -14,12 +15,20 @@ class _PageGroupState extends State<PageGroup> {
   bool _isLoading = false;
   bool _hasMore = true;
   int _offset = 0;
-  final int _limit = 10;
+  final int _limit = 20;
 
   @override
   void initState() {
     super.initState();
-    _fetchItems();
+    initialLoad();
+  }
+
+  Future<void> initialLoad() async {
+    _items.clear();
+    final topItems = await ModelGroup.all(0,_limit);
+    setState(() {
+    _items.addAll(topItems);
+    });
   }
 
   Future<void> _fetchItems() async {
@@ -39,9 +48,12 @@ class _PageGroupState extends State<PageGroup> {
     if(title.length > 1){
       ModelGroup? group = await ModelGroup.checkInsert(title);
       if(group != null){
-        setState(() {
-          _items.add(group);
-        });
+        initialLoad();
+        if(mounted){
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => PageItems(groupId: group.id!,),
+          ));
+        }
       }
     }
   }

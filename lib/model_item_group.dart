@@ -6,13 +6,13 @@ import 'database_helper.dart';
 class ModelGroup {
   String? id;
   String title;
-  Uint8List image;
+  Uint8List? image;
   int pinned;
   String color;
   ModelGroup({
     this.id,
     required this.title,
-    required this.image,
+    this.image,
     required this.pinned,
     required this.color,
   });
@@ -20,7 +20,7 @@ class ModelGroup {
     return ModelGroup(
       id:null,
       title:"",
-      image: Uint8List(0),
+      image: null,
       pinned: 0,
       color: "",
     );
@@ -39,7 +39,7 @@ class ModelGroup {
     return ModelGroup(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       title:map.containsKey('title') ? map['title'] : "",
-      image: map.containsKey('image') ? map['image'] : Uint8List(0),
+      image: map.containsKey('image') ? map['image'] : null,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
     );
