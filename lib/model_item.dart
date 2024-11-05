@@ -14,6 +14,7 @@ class ModelItem {
   int starred;
   String type;
   String? data;
+  int? at;
   ModelItem({
     this.id,
     required this.groupId,
@@ -23,6 +24,7 @@ class ModelItem {
     required this.starred,
     required this.type,
     this.data,
+    this.at,
   });
   factory ModelItem.init(){
     return ModelItem(
@@ -34,6 +36,7 @@ class ModelItem {
       starred: 0,
       type: "100000",
       data: null,
+      at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
   Map<String,dynamic> toMap() {
@@ -45,6 +48,7 @@ class ModelItem {
       'starred':starred,
       'type':type,
       'data':data,
+      'at':at,
     };
   }
   static Future<ModelItem> fromMap(Map<String,dynamic> map) async {
@@ -59,6 +63,7 @@ class ModelItem {
       starred: map.containsKey('starred') ? map['starred'] : 0,
       type: map.containsKey('type') ? map['type'] : "100000",
       data: map.containsKey('data') ? map['data'] : null,
+      at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
   static Future<List<ModelItem>> all(String groupId) async {
@@ -102,7 +107,7 @@ class ModelItem {
     }
     return null;
   }
-  static Future<ModelItem?> get(int id) async{
+  static Future<ModelItem?> get(String id) async{
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> list = await dbHelper.getWithId("item", id);
     if (list.isNotEmpty) {
@@ -118,7 +123,9 @@ class ModelItem {
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.update("item",toMap(),id);
+    Map<String,dynamic> map = toMap();
+    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    return await dbHelper.update("item",map,id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;

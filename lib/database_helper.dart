@@ -103,7 +103,6 @@ class DatabaseHelper {
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {
     final db = await instance.database;
-    row['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     return await db.insert(
       tableName,
       row,
@@ -114,7 +113,6 @@ class DatabaseHelper {
   Future<int> update(
       String tableName, Map<String, dynamic> row, dynamic id) async {
     final db = await instance.database;
-    row['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     return await db.update(tableName, row, where: 'id = ?', whereArgs: [id]);
   }
 

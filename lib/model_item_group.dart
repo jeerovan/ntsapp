@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
 
@@ -9,12 +8,14 @@ class ModelGroup {
   Uint8List? image;
   int pinned;
   String color;
+  int? at;
   ModelGroup({
     this.id,
     required this.title,
     this.image,
     required this.pinned,
     required this.color,
+    this.at,
   });
   factory ModelGroup.init(){
     return ModelGroup(
@@ -23,6 +24,7 @@ class ModelGroup {
       image: null,
       pinned: 0,
       color: "",
+      at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
   Map<String,dynamic> toMap() {
@@ -32,6 +34,7 @@ class ModelGroup {
       'image':image,
       'pinned':pinned,
       'color':color,
+      'at':at,
     };
   }
   static Future<ModelGroup> fromMap(Map<String,dynamic> map) async {
@@ -42,6 +45,7 @@ class ModelGroup {
       image: map.containsKey('image') ? map['image'] : null,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
+      at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
   static Future<List<ModelGroup>> all(int offset, int limit) async {
@@ -54,7 +58,7 @@ class ModelGroup {
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<ModelGroup?> get(int id) async {
+  static Future<ModelGroup?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> list = await dbHelper.getWithId("itemgroup", id);
     if (list.isNotEmpty) {
@@ -73,7 +77,6 @@ class ModelGroup {
     if(rows.isEmpty){
       ModelGroup group = await fromMap({"title":title});
       int added = await group.insert();
-      debugPrint('Added:$added');
       if (added > 0){
         return group;
       } else {
@@ -90,7 +93,9 @@ class ModelGroup {
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.update("itemgroup",toMap(),id);
+    Map<String,dynamic> map = toMap();
+    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    return await dbHelper.update("itemgroup",map,id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;

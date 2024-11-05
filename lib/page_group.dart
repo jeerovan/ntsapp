@@ -26,8 +26,9 @@ class _PageGroupState extends State<PageGroup> {
   Future<void> initialLoad() async {
     _items.clear();
     final topItems = await ModelGroup.all(0,_limit);
+    if (topItems.length < _limit) _hasMore = false;
     setState(() {
-    _items.addAll(topItems);
+      _items.addAll(topItems);
     });
   }
 
@@ -50,18 +51,22 @@ class _PageGroupState extends State<PageGroup> {
       if(group != null){
         initialLoad();
         if(mounted){
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => PageItems(groupId: group.id!,),
-          ));
+          navigateToItems(group.id!);
         }
       }
     }
   }
 
+  void navigateToItems(String groupId){
+    Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => PageItems(groupId: groupId,),
+          ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Infinite Scroll List')),
+      appBar: AppBar(title: const Text('Notes App')),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
@@ -80,6 +85,7 @@ class _PageGroupState extends State<PageGroup> {
             final item = _items[index];
             return ListTile(
               title: Text(item.title),
+              onTap: () => navigateToItems(item.id!),
             );
           },
         ),

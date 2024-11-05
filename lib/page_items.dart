@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
-import 'package:ntsapp/model_item.dart';
+import 'package:intl/intl.dart';
+import 'package:ntsapp/common.dart';
+import 'model_item.dart';
+import 'model_item_group.dart';
 
 class PageItems extends StatefulWidget {
   final String groupId;
@@ -14,6 +17,22 @@ class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
   final TextEditingController _textController = TextEditingController();
+  ModelGroup group = ModelGroup.init();
+
+  @override
+  void initState() {
+    super.initState();
+    initialLoad();
+  }
+
+  Future<void> initialLoad() async {
+    ModelGroup? modelGroup = await ModelGroup.get(widget.groupId);
+    if (modelGroup != null){
+      setState(() {
+        group = modelGroup;
+      });
+    }
+  }
 
   @override
   void dispose(){
@@ -26,7 +45,10 @@ class _PageItemsState extends State<PageItems> {
     final text = _textController.text.trim();
     if (text.isNotEmpty) {
       setState(() {
-        ModelItem item = ModelItem(groupId: widget.groupId, text: text, starred: 0, type: "100000");
+        int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+        ModelItem dateItem = ModelItem(groupId: widget.groupId, text: text, starred: 0, type: "170000",at: utcSeconds-1);
+        ModelItem item = ModelItem(groupId: widget.groupId, text: text, starred: 0, type: "100000",at: utcSeconds);
+        _items.add(dateItem);
         _items.add(item);
       });
       _textController.clear();
@@ -44,7 +66,7 @@ class _PageItemsState extends State<PageItems> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Group Items"),
+        title: Text(group.title),
       ),
       body: Column(
         children: [
@@ -70,7 +92,7 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
       case '100000':
-        return _buildTextItem(item.text);
+        return _buildTextItem(item);
       case '110000':
         return _buildMediaItem(Icons.image, 'Image');
       case '120000':
@@ -83,37 +105,70 @@ class _PageItemsState extends State<PageItems> {
         return _buildMediaItem(Icons.location_on, 'Location');
       case '160000':
         return _buildMediaItem(Icons.contact_phone, 'Contact');
+      case '170000':
+        return _buildDateItem(item);
       default:
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
     }
   }
 
   // Text item bubble
-  Widget _buildTextItem(String text) {
+  Widget _buildTextItem(ModelItem item) {
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.blueAccent,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Text(
-          text,
-          style: TextStyle(color: Colors.white),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              item.text,
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              formattedTime,
+              style: const TextStyle(color: Colors.white70, fontSize: 10),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildDateItem(ModelItem item) {
+    String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true));
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 10),
+    child: Center(
+      child: Text(
+        dateText,
+        style: const TextStyle(
+          color: Colors.grey,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  );
+}
+
 
   // Media item bubble
   Widget _buildMediaItem(IconData icon, String label) {
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.grey[300],
           borderRadius: BorderRadius.circular(10),
@@ -122,7 +177,7 @@ class _PageItemsState extends State<PageItems> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: Colors.blueAccent),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(label),
           ],
         ),
@@ -137,7 +192,7 @@ class _PageItemsState extends State<PageItems> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.attach_file),
+            icon: const Icon(Icons.attach_file),
             onPressed: () {
               _showAttachmentOptions();
             },
@@ -150,12 +205,12 @@ class _PageItemsState extends State<PageItems> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               ),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.send, color: Colors.blueAccent),
+            icon: const Icon(Icons.send, color: Colors.blueAccent),
             onPressed: _sendText,
           ),
         ],
@@ -172,48 +227,48 @@ class _PageItemsState extends State<PageItems> {
           child: Wrap(
             children: [
               ListTile(
-                leading: Icon(Icons.image),
-                title: Text("Image"),
+                leading: const Icon(Icons.image),
+                title: const Text("Image"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('image');
                 },
               ),
               ListTile(
-                leading: Icon(Icons.audiotrack),
-                title: Text("Audio"),
+                leading: const Icon(Icons.audiotrack),
+                title: const Text("Audio"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('audio');
                 },
               ),
               ListTile(
-                leading: Icon(Icons.videocam),
-                title: Text("Video"),
+                leading: const Icon(Icons.videocam),
+                title: const Text("Video"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('video');
                 },
               ),
               ListTile(
-                leading: Icon(Icons.location_on),
-                title: Text("Location"),
+                leading: const Icon(Icons.location_on),
+                title: const Text("Location"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('location');
                 },
               ),
               ListTile(
-                leading: Icon(Icons.contact_phone),
-                title: Text("Contact"),
+                leading: const Icon(Icons.contact_phone),
+                title: const Text("Contact"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('contact');
                 },
               ),
               ListTile(
-                leading: Icon(Icons.insert_drive_file),
-                title: Text("Document"),
+                leading: const Icon(Icons.insert_drive_file),
+                title: const Text("Document"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('document');

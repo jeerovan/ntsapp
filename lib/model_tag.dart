@@ -36,7 +36,7 @@ class ModelTag {
       whereArgs: ['%$query%']);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<ModelTag?> get(int id) async {
+  static Future<ModelTag?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> list = await dbHelper.getWithId("tag", id);
     if (list.isNotEmpty) {
@@ -70,7 +70,9 @@ class ModelTag {
   Future<int> update() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.update("tag",toMap(),id);
+    Map<String,dynamic> map = toMap();
+    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    return await dbHelper.update("tag",map,id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;

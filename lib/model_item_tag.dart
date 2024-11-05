@@ -31,7 +31,7 @@ class ModelItemTag {
     return  {
       'id':id,
       'item_id':itemId,
-      'tag_id':tagId
+      'tag_id':tagId,
     };
   }
   static Future<ModelItemTag> fromMap(Map<String,dynamic> map) async {
@@ -43,7 +43,7 @@ class ModelItemTag {
       itemId:map.containsKey('item_id') ? map['item_id'] : "",
       item:item,
       tagId:map.containsKey('tag_id') ? map['tag_id'] : "",
-      tag:tag
+      tag:tag,
     );
   }
   static Future<ModelTag> tagFromMap(Map<String,dynamic> map) async {
@@ -85,7 +85,7 @@ class ModelItemTag {
       whereArgs: [itemId,tagId],
     );
   }
-  static Future<ModelItemTag?> get(int id) async{
+  static Future<ModelItemTag?> get(String id) async{
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> list = await dbHelper.getWithId("itemtag", id);
     if (list.isNotEmpty) {

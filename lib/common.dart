@@ -180,6 +180,22 @@ String getTodayDate() {
   return '$year$monthFormatted$dayFormatted';
 }
 
+String getReadableDate(DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = today.subtract(const Duration(days: 1));
+
+  if (date.isAfter(today)) {
+    return "Today";
+  } else if (date.isAfter(yesterday)) {
+    return "Yesterday";
+  } else if (now.difference(date).inDays < 7) {
+    return DateFormat('EEEE').format(date); // Day of the week for the last 7 days
+  } else {
+    return DateFormat('MMMM d, yyyy').format(date); // Full date for older messages
+  }
+}
+
 Widget rotatedWidget(Widget widget) {
   return Transform.rotate(
     angle: 180 * math.pi / 180,
