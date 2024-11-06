@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/page_items.dart';
 import 'model_item_group.dart';
+import 'page_db.dart';
+
+bool debug = true;
 
 class PageGroup extends StatefulWidget {
   const PageGroup({super.key});
@@ -26,7 +29,8 @@ class _PageGroupState extends State<PageGroup> {
   Future<void> initialLoad() async {
     _items.clear();
     final topItems = await ModelGroup.all(0,_limit);
-    if (topItems.length < _limit) _hasMore = false;
+    _hasMore = topItems.length == _limit;
+    if (_hasMore) _offset += _limit;
     setState(() {
       _items.addAll(topItems);
     });
@@ -41,7 +45,7 @@ class _PageGroupState extends State<PageGroup> {
       _items.addAll(newItems);
       _isLoading = false;
       _offset += _limit;
-      if (newItems.length < _limit) _hasMore = false;
+      _hasMore = newItems.length == _limit;
     });
   }
 
@@ -66,7 +70,21 @@ class _PageGroupState extends State<PageGroup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notes App')),
+      appBar: AppBar(
+        title: const Text('Notes App'),
+        actions: [
+          
+          if (debug)
+            IconButton(
+              icon: const Icon(Icons.reorder),
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const DatabasePage(),
+                ));
+              }
+            ),
+        ],
+      ),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {

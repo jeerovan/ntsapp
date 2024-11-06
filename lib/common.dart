@@ -169,7 +169,6 @@ int dateFromDateTime(DateTime datetime) {
   return int.parse(DateFormat('yyyyMMdd').format(datetime));
 }
 
-
 String getTodayDate() {
   DateTime now = DateTime.now();
   int year = now.year;

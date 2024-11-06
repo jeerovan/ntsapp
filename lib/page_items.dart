@@ -19,19 +19,34 @@ class _PageItemsState extends State<PageItems> {
   final TextEditingController _textController = TextEditingController();
   ModelGroup group = ModelGroup.init();
 
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _offset = 0;
+  final int _limit = 10;
+
   @override
   void initState() {
     super.initState();
-    initialLoad();
+    loadGroup();
+    loadItems();
   }
 
-  Future<void> initialLoad() async {
+  Future<void> loadGroup() async {
     ModelGroup? modelGroup = await ModelGroup.get(widget.groupId);
     if (modelGroup != null){
       setState(() {
-        group = modelGroup;
-      });
+          group = modelGroup;
+        });
     }
+  }
+  Future<void> loadItems() async {
+    final newItems = await ModelItem.getForGroupId(widget.groupId, _offset, _limit);
+    _hasMore = newItems.length == _limit;
+    if (_hasMore) _offset += _limit;
+    setState(() {
+      _items.clear();
+      _items.addAll(newItems);
+    });
   }
 
   @override
@@ -40,18 +55,42 @@ class _PageItemsState extends State<PageItems> {
     super.dispose();
   }
 
+  Future<void> _fetchItems() async {
+    if (_isLoading || !_hasMore) return;
+    setState(() => _isLoading = true);
+
+    final newItems = await ModelItem.getForGroupId(widget.groupId, _offset, _limit);
+    setState(() {
+      _items.addAll(newItems);
+      _isLoading = false;
+      _offset += _limit;
+      _hasMore = newItems.length == _limit;
+    });
+  }
+
   // Handle sending text item
-  void _sendText() {
+  void _addTextMessage() async {
     final text = _textController.text.trim();
     if (text.isNotEmpty) {
+      await checkAddDateItem();
+      int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+      ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId, "text": text, "type": "100000","at": utcSeconds});
+      await item.insert();
       setState(() {
-        int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-        ModelItem dateItem = ModelItem(groupId: widget.groupId, text: text, starred: 0, type: "170000",at: utcSeconds-1);
-        ModelItem item = ModelItem(groupId: widget.groupId, text: text, starred: 0, type: "100000",at: utcSeconds);
-        _items.add(dateItem);
-        _items.add(item);
+        _items.insert(0, item);
+        _textController.clear();
       });
-      _textController.clear();
+    }
+  }
+
+  Future<void> checkAddDateItem() async{
+    String today = getTodayDate();
+    List<ModelItem> rows = await ModelItem.getDateItemForGroupId(widget.groupId, today);
+    if(rows.isEmpty){
+      int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+      ModelItem dateItem = await ModelItem.fromMap({"group_id":widget.groupId,"text":today,"type":"170000","at":utcSeconds-1});
+      await dateItem.insert();
+      _items.insert(0, dateItem);
     }
   }
 
@@ -72,14 +111,27 @@ class _PageItemsState extends State<PageItems> {
         children: [
           // Items view (displaying the messages)
           Expanded(
-            child: ListView.builder(
-              reverse: true,
-              itemCount: _items.length,
-              itemBuilder: (context, index) {
-                final item = _items[_items.length - 1 - index];
-                return _buildItem(item);
-              },
-            ),
+            child: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollInfo) {
+          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
+            _fetchItems();
+          }
+          return false;
+        },
+        child: ListView.builder(
+          reverse: true,
+          itemCount: _items.length + 1, // Additional item for the loading indicator
+          itemBuilder: (context, index) {
+            if (index == _items.length) {
+              return _hasMore
+                  ? const Center(child: CircularProgressIndicator())
+                  : const SizedBox.shrink() ;
+            }
+            final item = _items[index];
+            return _buildItem(item);
+          },
+        ),
+      ),
           ),
           // Input box with attachments and send button
           _buildInputBox(),
@@ -123,7 +175,7 @@ class _PageItemsState extends State<PageItems> {
         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.blueAccent,
+          color: const Color.fromARGB(255, 255, 255, 255),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
@@ -131,12 +183,12 @@ class _PageItemsState extends State<PageItems> {
           children: [
             Text(
               item.text,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 5),
             Text(
               formattedTime,
-              style: const TextStyle(color: Colors.white70, fontSize: 10),
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
             ),
           ],
         ),
@@ -146,20 +198,20 @@ class _PageItemsState extends State<PageItems> {
 
   Widget _buildDateItem(ModelItem item) {
     String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true));
-  return Container(
-    margin: const EdgeInsets.symmetric(vertical: 10),
-    child: Center(
-      child: Text(
-        dateText,
-        style: const TextStyle(
-          color: Colors.grey,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Center(
+        child: Text(
+          dateText,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
 
   // Media item bubble
@@ -211,7 +263,7 @@ class _PageItemsState extends State<PageItems> {
           ),
           IconButton(
             icon: const Icon(Icons.send, color: Colors.blueAccent),
-            onPressed: _sendText,
+            onPressed: _addTextMessage,
           ),
         ],
       ),

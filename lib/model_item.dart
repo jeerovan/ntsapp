@@ -11,7 +11,7 @@ class ModelItem {
   ModelGroup? group;
   String text;
   Uint8List? image;
-  int starred;
+  int? starred;
   String type;
   String? data;
   int? at;
@@ -21,7 +21,7 @@ class ModelItem {
     this.group,
     required this.text,
     this.image,
-    required this.starred,
+    this.starred,
     required this.type,
     this.data,
     this.at,
@@ -91,23 +91,20 @@ class ModelItem {
     List<Map<String,dynamic>> rows = await db.rawQuery(sql,[groupId,'%$tag%']);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<ModelItem?> getLastAdded(int groupId) async{
+  static Future<List<ModelItem>> getForGroupId(String groupId,int offset, int limit) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
       where: "group_id == ?",
       whereArgs: [groupId],
-      orderBy:'id DESC',
-      limit: 1,
+      orderBy:'at DESC',
+      offset: offset,
+      limit: limit,
     );
-    if (rows.isNotEmpty) {
-      Map<String,dynamic> map = rows.first;
-      return fromMap(map);
-    }
-    return null;
+    return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<ModelItem?> get(String id) async{
+  static Future<ModelItem?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> list = await dbHelper.getWithId("item", id);
     if (list.isNotEmpty) {
@@ -115,6 +112,16 @@ class ModelItem {
       return fromMap(map);
     }
     return null;
+  }
+  static Future<List<ModelItem>> getDateItemForGroupId(String groupId,String date) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      "item",
+      where: "group_id == ? AND text == ?",
+      whereArgs: [groupId,date],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
