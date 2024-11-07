@@ -99,7 +99,22 @@ class _PageItemsState extends State<PageItems> {
                               "thumbnail":bytes,
                               "data":data,
                               "at": utcSeconds});
-    //await item.insert();
+    await item.insert();
+    setState(() {
+      _items.insert(0, item);
+    });
+  }
+
+  void addVideoMessage(Uint8List bytes,String type,Map<String,dynamic> data) async {
+    await checkAddDateItem();
+    int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
+                              "text": "",
+                              "type": type,
+                              "thumbnail":bytes,
+                              "data":data,
+                              "at": utcSeconds});
+    await item.insert();
     setState(() {
       _items.insert(0, item);
     });
@@ -136,6 +151,7 @@ class _PageItemsState extends State<PageItems> {
       final String fileName = pickedFile.name;
       final int fileSize = await pickedFile.length();
       File? existing = await getFile(fileType,fileName);
+      String messageType = getMessageType(mime);
       if(existing == null){
         String oldPath = pickedFile.path;
         String newPath = await getFilePath(fileType, fileName);
@@ -146,11 +162,18 @@ class _PageItemsState extends State<PageItems> {
           Uint8List fileBytes = await File(copiedPath).readAsBytes();
           Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
           if(thumbnail != null){
-            String messageType = getMessageType(mime);
             Map<String,dynamic> data = {"path":copiedPath,
                                         "name":fileName,
                                         "size":fileSize};
             addImageMessage(thumbnail, messageType, data);
+          }
+        } else if (fileType == "video"){
+          Uint8List? thumbnail = await compute(getVideoThumbnail,copiedPath);
+          if(thumbnail != null){
+            Map<String,dynamic> data = {"path":copiedPath,
+                                        "name":fileName,
+                                        "size":fileSize};
+            addVideoMessage(thumbnail, messageType, data);
           }
         }
         debugPrint('Processed:$copiedPath');
@@ -210,7 +233,7 @@ class _PageItemsState extends State<PageItems> {
       case '120000':
         return _buildMediaItem(Icons.audiotrack, 'Audio');
       case '130000':
-        return _buildMediaItem(Icons.videocam, 'Video');
+        return _buildVideoItem(item);
       case '140000':
         return _buildMediaItem(Icons.insert_drive_file, 'Document');
       case '150000':

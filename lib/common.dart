@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as img;
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 
 String? validateString(String? value) {
@@ -225,14 +226,24 @@ Widget rotatedWidget(Widget widget) {
   );
 }
 
-Uint8List getImageThumbnail(Uint8List bytes) {
+Uint8List? getImageThumbnail(Uint8List bytes) {
   int maxSize = 200;
   img.Image? src = img.decodeImage(bytes);
   if (src != null) {
     img.Image resized = img.copyResize(src, width: maxSize);
     return Uint8List.fromList(img.encodePng(resized));
   }
-  return Uint8List(0);
+  return null;
+}
+
+Future<Uint8List?> getVideoThumbnail(String videoPath) async{
+  final uint8list = await VideoThumbnail.thumbnailData(
+    video: videoPath,
+    imageFormat: ImageFormat.PNG,
+    maxWidth: 200, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
+    quality: 50,
+  );
+  return uint8list;
 }
 
 String getImageDimension(Uint8List bytes) {
@@ -307,14 +318,10 @@ String copyFile(Map<String,String> mediaData) {
 Future<void> checkAndCreateDirectory(String filePath) async {
   String dirPath = path.dirname(filePath);
   final directory = Directory(dirPath);
-
-  // Check if directory exists
-  if (await directory.exists()) {
-    debugPrint('Directory already exists: $dirPath');
-  } else {
+  bool exists = await directory.exists();
+  if (!exists) {
     // Create the directory if it does not exist
     await directory.create(recursive: true);
-    debugPrint('Directory created: $dirPath');
   }
 }
 
