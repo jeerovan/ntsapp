@@ -105,16 +105,15 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void addVideoMessage(Uint8List bytes,String type,Map<String,dynamic> data) async {
+  void addVideoMessage(String type,Map<String,dynamic> data) async {
     await checkAddDateItem();
     int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
                               "text": "",
                               "type": type,
-                              "thumbnail":bytes,
                               "data":data,
                               "at": utcSeconds});
-    await item.insert();
+    //await item.insert();
     setState(() {
       _items.insert(0, item);
     });
@@ -168,13 +167,10 @@ class _PageItemsState extends State<PageItems> {
             addImageMessage(thumbnail, messageType, data);
           }
         } else if (fileType == "video"){
-          Uint8List? thumbnail = await compute(getVideoThumbnail,copiedPath);
-          if(thumbnail != null){
-            Map<String,dynamic> data = {"path":copiedPath,
-                                        "name":fileName,
-                                        "size":fileSize};
-            addVideoMessage(thumbnail, messageType, data);
-          }
+          Map<String,dynamic> data = {"path":copiedPath,
+                                      "name":fileName,
+                                      "size":fileSize};
+            addVideoMessage( messageType, data);
         }
         debugPrint('Processed:$copiedPath');
       }
@@ -385,27 +381,29 @@ class _PageItemsState extends State<PageItems> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
-                  width: 200, // Makes the image take full width of the container
-                  child: Image.memory(
-                    item.thumbnail!,
-                    fit: BoxFit.cover, // Ensures the image covers the available space
-                  ),
+                  width: 200,
+                  child: VideoThumbnail(videoPath: item.data!["path"]),
                 ),
               ),
             ),
             const SizedBox(height: 5),
-            Row(
-              children: [
-                // File size text at the left
-                const Text(
-                  "0:27",
-                  style: TextStyle(color: Colors.grey, fontSize: 10),
-                ),
-                Text(
-                  formattedTime,
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
-                ),
-              ],
+            SizedBox(
+              width: 200,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // File size text at the left
+                  const Text(
+                    "0:27",
+                    style: TextStyle(color: Colors.grey, fontSize: 10),
+                  ),
+                  Text(
+                    formattedTime,
+                    style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -9,7 +9,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as img;
-import 'package:video_thumbnail/video_thumbnail.dart';
+
+import 'package:video_player/video_player.dart';
 
 
 String? validateString(String? value) {
@@ -234,16 +235,6 @@ Uint8List? getImageThumbnail(Uint8List bytes) {
     return Uint8List.fromList(img.encodePng(resized));
   }
   return null;
-}
-
-Future<Uint8List?> getVideoThumbnail(String videoPath) async{
-  final uint8list = await VideoThumbnail.thumbnailData(
-    video: videoPath,
-    imageFormat: ImageFormat.PNG,
-    maxWidth: 200, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
-    quality: 50,
-  );
-  return uint8list;
 }
 
 String getImageDimension(Uint8List bytes) {
@@ -532,3 +523,72 @@ class BlankPageState extends State<BlankPage> {
     );
   }
 }
+
+
+class VideoThumbnail extends StatefulWidget {
+  final String videoPath;
+
+  const VideoThumbnail({super.key, required this.videoPath});
+
+  @override
+  State<VideoThumbnail> createState() => _VideoThumbnailState();
+}
+
+class _VideoThumbnailState extends State<VideoThumbnail> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    _controller = VideoPlayerController.file(File(widget.videoPath));
+
+    // Initialize the controller and display the first frame as a thumbnail
+    await _controller.initialize();
+    await _controller.setLooping(false); // No looping
+    await _controller.pause(); // Pause to display the first frame
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isInitialized
+        ? Stack(
+            alignment: Alignment.center, // Center the play button overlay
+            children: [
+              AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+              // Play button overlay
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.7), // Semi-transparent grey background
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+            ],
+          )
+        : const Center(child: CircularProgressIndicator());
+  }
+}
+
