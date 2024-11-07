@@ -205,6 +205,8 @@ class _PageItemsState extends State<PageItems> {
         return _buildTextItem(item);
       case '110000':
         return _buildImageItem(item);
+      case '110100':
+        return _buildGifItem(item);
       case '120000':
         return _buildMediaItem(Icons.audiotrack, 'Audio');
       case '130000':
@@ -270,13 +272,18 @@ class _PageItemsState extends State<PageItems> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(
-                width: 150, // Makes the image take full width of the container
-                child: Image.memory(
-                  item.thumbnail!,
-                  fit: BoxFit.cover, // Ensures the image covers the available space
+            GestureDetector(
+              onTap: () {
+                openURL(item.data!["path"]);
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 200, // Makes the image take full width of the container
+                  child: Image.memory(
+                    item.thumbnail!,
+                    fit: BoxFit.cover, // Ensures the image covers the available space
+                  ),
                 ),
               ),
             ),
@@ -284,6 +291,98 @@ class _PageItemsState extends State<PageItems> {
             Text(
               formattedTime,
               style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGifItem(ModelItem item) {
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 255, 255, 255),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            GestureDetector(
+              onTap: () {
+                openURL(item.data!["path"]);
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 200, // Makes the image take full width of the container
+                  child: Image.file(
+                    File(item.data!["path"]),
+                    fit: BoxFit.cover, // Ensures the image covers the available space
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              formattedTime,
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoItem(ModelItem item) {
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 255, 255, 255),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: () {
+                openURL(item.data!["path"]);
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 200, // Makes the image take full width of the container
+                  child: Image.memory(
+                    item.thumbnail!,
+                    fit: BoxFit.cover, // Ensures the image covers the available space
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                // File size text at the left
+                const Text(
+                  "0:27",
+                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+                Text(
+                  formattedTime,
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+              ],
             ),
           ],
         ),
