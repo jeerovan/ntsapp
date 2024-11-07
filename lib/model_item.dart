@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,17 +12,17 @@ class ModelItem {
   String groupId;
   ModelGroup? group;
   String text;
-  Uint8List? image;
+  Uint8List? thumbnail;
   int? starred;
   String type;
-  String? data;
+  Map<String,dynamic>? data;
   int? at;
   ModelItem({
     this.id,
     required this.groupId,
     this.group,
     required this.text,
-    this.image,
+    this.thumbnail,
     this.starred,
     required this.type,
     this.data,
@@ -32,7 +34,7 @@ class ModelItem {
       groupId:"",
       group:null,
       text:"",
-      image:null,
+      thumbnail:null,
       starred: 0,
       type: "100000",
       data: null,
@@ -44,7 +46,7 @@ class ModelItem {
       'id':id,
       'group_id':groupId,
       'text':text,
-      'image':image,
+      'thumbnail':thumbnail,
       'starred':starred,
       'type':type,
       'data':data,
@@ -54,15 +56,23 @@ class ModelItem {
   static Future<ModelItem> fromMap(Map<String,dynamic> map) async {
     ModelGroup? group = await ModelGroup.get(map['group_id']);
     Uuid uuid = const Uuid();
+    Map<String, dynamic>? dataMap;
+    if (map.containsKey('data') && map['data'] != null) {
+      if (map['data'] is String) {
+        dataMap = jsonDecode(map['data']) as Map<String, dynamic>;
+      } else if (map['data'] is Map<String, dynamic>) {
+        dataMap = map['data'] as Map<String, dynamic>;
+      }
+    }
     return ModelItem(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       groupId:map.containsKey('group_id') ? map['group_id'] : 0,
       group:group,
       text:map.containsKey('text') ? map['text'] : "",
-      image:map.containsKey('image') ? map['image'] : null,
+      thumbnail:map.containsKey('thumbnail') ? map['thumbnail'] : null,
       starred: map.containsKey('starred') ? map['starred'] : 0,
       type: map.containsKey('type') ? map['type'] : "100000",
-      data: map.containsKey('data') ? map['data'] : null,
+      data: dataMap,
       at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -125,7 +135,13 @@ class ModelItem {
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
-    return await dbHelper.insert("item", toMap());
+    Map<String,dynamic> map = toMap();
+    if (map.containsKey('data') && map['data'] != null) {
+      if (map['data'] is Map<String, dynamic>) {
+        map['data'] = jsonEncode(map['data']);
+      }
+    }
+    return await dbHelper.insert("item", map);
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;

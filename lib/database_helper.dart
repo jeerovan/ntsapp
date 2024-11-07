@@ -35,7 +35,7 @@ class DatabaseHelper {
       CREATE TABLE itemgroup (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        image BLOB,
+        thumbnail BLOB,
         pinned INTEGER,
         color TEXT,
         at INTEGER
@@ -49,7 +49,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         group_id TEXT NOT NULL,
         text TEXT,
-        image BLOB,
+        thumbnail BLOB,
         starred INTEGER,
         type TEXT,
         data TEXT,

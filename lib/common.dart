@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:math' as math;
 import 'package:path/path.dart' as path;
-import 'package:image/image.dart' as pimg;
+import 'package:image/image.dart' as img;
 
 
 String? validateString(String? value) {
@@ -86,6 +86,29 @@ void showAlertMessage(BuildContext context, String title, String message) {
             },
           ),
         ],
+      );
+    },
+  );
+}
+
+void showProcessingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: const Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("Processing...", style: TextStyle(fontSize: 18)),
+            ],
+          ),
+        ),
       );
     },
   );
@@ -202,46 +225,65 @@ Widget rotatedWidget(Widget widget) {
   );
 }
 
-Uint8List getResizedCroppedImage(Uint8List bytes) {
-  int maxSize = 512;
-  pimg.Image? src = pimg.decodeImage(bytes);
+Uint8List getImageThumbnail(Uint8List bytes) {
+  int maxSize = 150;
+  img.Image? src = img.decodeImage(bytes);
+  if (src != null) {
+    img.Image resized = img.copyResize(src, width: maxSize);
+    return Uint8List.fromList(img.encodePng(resized));
+  }
+  return Uint8List(0);
+}
+
+String getImageDimension(Uint8List bytes) {
+  img.Image? src = img.decodeImage(bytes);
   if (src != null) {
     int srcWidth = src.width;
     int srcHeight = src.height;
-    if (srcWidth < srcHeight) {
-      pimg.Image resized = pimg.copyResize(src, width: maxSize);
-      int offsetY = (resized.height - maxSize) ~/ 2;
-      pimg.Image destImage = pimg.copyCrop(resized,
-          x: 0, y: offsetY, width: maxSize, height: maxSize);
-      return Uint8List.fromList(pimg.encodePng(destImage));
-    } else {
-      pimg.Image resized = pimg.copyResize(src, height: maxSize);
-      int offsetX = (resized.width - maxSize) ~/ 2;
-      pimg.Image destImage = pimg.copyCrop(resized,
-          x: offsetX, y: 0, width: maxSize, height: maxSize);
-      return Uint8List.fromList(pimg.encodePng(destImage));
-    }
+    return '${srcWidth}x$srcHeight';
   }
-  return Uint8List(0);
+  return '0x0';
 }
 
 Uint8List getBlankImage(int size){
   int width = size;
   int height = size;
-  final pimg.Image blankImage = pimg.Image(width: width, height: height);
+  final img.Image blankImage = img.Image(width: width, height: height);
   int r = getRandomInt(256);
   int g = getRandomInt(256);
   int b = getRandomInt(256);
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
-      blankImage.setPixel(x, y, pimg.ColorUint8.rgb(r, g, b));
+      blankImage.setPixel(x, y, img.ColorUint8.rgb(r, g, b));
     }
   }
-  return Uint8List.fromList(pimg.encodePng(blankImage));
+  return Uint8List.fromList(img.encodePng(blankImage));
 }
 
-Future<File?> getImageFile(String prefix, int id) async {
-  String filePath = await getFilePath(prefix, id);
+String getMessageType(String? mime){
+  if(mime != null){
+    String type = mime.split("/").first;
+    switch(type){
+      case "image":
+        switch(mime){
+          case "image/gif":
+            return "110100";
+          default:
+              return "110000";
+        }
+      case "audio":
+        return "120000";
+      case "video":
+        return "130000";
+      default:
+        return "140000";
+    }
+  }
+  return "140000";
+}
+
+Future<File?> getFile(String fileType,String fileName) async {
+  String filePath = await getFilePath(fileType,fileName);
   File file = File(filePath);
   if (file.existsSync()) {
     return file;
@@ -249,28 +291,31 @@ Future<File?> getImageFile(String prefix, int id) async {
   return null;
 }
 
-Future<String> getFilePath(String prefix, int id) async {
+Future<String> getFilePath(String fileType,String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
-  final String fileName = path.join(prefix, id.toString());
-  return path.join(directory.path, fileName);
+  String filePath = path.join(fileType,fileName);
+  return path.join(directory.path, filePath);
 }
 
-List<Offset> parseCoordinates(String coordinatesString) {
-  // Split the string by ',' to get individual coordinate pairs
-  List<String> pairs = coordinatesString.split(',');
+String copyFile(Map<String,String> mediaData) {
+  File systemFile = File(mediaData["oldPath"]!);
+  String newPath = mediaData["newPath"]!;
+  systemFile.copySync(newPath);
+  return newPath;
+}
 
-  // Create an empty list to store the points
-  List<Offset> points = [];
+Future<void> checkAndCreateDirectory(String filePath) async {
+  String dirPath = path.dirname(filePath);
+  final directory = Directory(dirPath);
 
-  // Iterate through each pair and split by ',' to get x and y values
-  for (String pair in pairs) {
-    List<String> coords = pair.split(',');
-    double x = double.parse(coords[0]);
-    double y = double.parse(coords[1]);
-    points.add(Offset(x, y));
+  // Check if directory exists
+  if (await directory.exists()) {
+    debugPrint('Directory already exists: $dirPath');
+  } else {
+    // Create the directory if it does not exist
+    await directory.create(recursive: true);
+    debugPrint('Directory created: $dirPath');
   }
-
-  return points;
 }
 
 class FloatingActionButtonWithBadge extends StatelessWidget {

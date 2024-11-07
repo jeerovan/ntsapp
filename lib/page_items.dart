@@ -1,9 +1,16 @@
 
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:ntsapp/common.dart';
+import 'package:mime/mime.dart';
+import 'common.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
+
+bool isMobile = Platform.isAndroid || Platform.isIOS;
 
 class PageItems extends StatefulWidget {
   final String groupId;
@@ -69,7 +76,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   // Handle sending text item
-  void _addTextMessage() async {
+  void addTextMessage() async {
     final text = _textController.text.trim();
     if (text.isNotEmpty) {
       await checkAddDateItem();
@@ -83,6 +90,21 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  void addImageMessage(Uint8List bytes,String type,Map<String,dynamic> data) async {
+    await checkAddDateItem();
+    int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
+                              "text": "",
+                              "type": type,
+                              "thumbnail":bytes,
+                              "data":data,
+                              "at": utcSeconds});
+    //await item.insert();
+    setState(() {
+      _items.insert(0, item);
+    });
+  }
+
   Future<void> checkAddDateItem() async{
     String today = getTodayDate();
     List<ModelItem> rows = await ModelItem.getDateItemForGroupId(widget.groupId, today);
@@ -94,11 +116,47 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  // Handle adding a media item (dummy function for now)
-  void _addMedia(String type) {
-    setState(() {
-      
-    });
+  void showProcessing(){
+    showProcessingDialog(context);
+  }
+  void hideProcessing(){
+    Navigator.pop(context);
+  }
+
+  // Handle adding a media item
+  void _addMedia(String type) async {
+    List<XFile> pickedFiles = await ImagePicker().pickMultipleMedia();
+    showProcessing();
+    for (var pickedFile in pickedFiles) {
+      final String? mime = lookupMimeType(pickedFile.path);
+      String fileType = "document";
+      if (mime != null){
+        fileType = mime.split("/").first;
+      }
+      final String fileName = pickedFile.name;
+      final int fileSize = await pickedFile.length();
+      File? existing = await getFile(fileType,fileName);
+      if(existing == null){
+        String oldPath = pickedFile.path;
+        String newPath = await getFilePath(fileType, fileName);
+        await checkAndCreateDirectory(newPath);
+        Map<String,String> mediaData = {"oldPath":oldPath,"newPath":newPath};
+        String copiedPath = await compute(copyFile,mediaData);
+        if (fileType == "image"){
+          Uint8List fileBytes = await File(copiedPath).readAsBytes();
+          Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+          if(thumbnail != null){
+            String messageType = getMessageType(mime);
+            Map<String,dynamic> data = {"path":copiedPath,
+                                        "name":fileName,
+                                        "size":fileSize};
+            addImageMessage(thumbnail, messageType, data);
+          }
+        }
+        debugPrint('Processed:$copiedPath');
+      }
+    }
+    hideProcessing();
   }
 
   @override
@@ -146,7 +204,7 @@ class _PageItemsState extends State<PageItems> {
       case '100000':
         return _buildTextItem(item);
       case '110000':
-        return _buildMediaItem(Icons.image, 'Image');
+        return _buildImageItem(item);
       case '120000':
         return _buildMediaItem(Icons.audiotrack, 'Audio');
       case '130000':
@@ -184,6 +242,43 @@ class _PageItemsState extends State<PageItems> {
             Text(
               item.text,
               style: const TextStyle(color: Colors.black),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              formattedTime,
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageItem(ModelItem item) {
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 255, 255, 255),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 150, // Makes the image take full width of the container
+                child: Image.memory(
+                  item.thumbnail!,
+                  fit: BoxFit.cover, // Ensures the image covers the available space
+                ),
+              ),
             ),
             const SizedBox(height: 5),
             Text(
@@ -263,7 +358,7 @@ class _PageItemsState extends State<PageItems> {
           ),
           IconButton(
             icon: const Icon(Icons.send, color: Colors.blueAccent),
-            onPressed: _addTextMessage,
+            onPressed: addTextMessage,
           ),
         ],
       ),
@@ -280,10 +375,18 @@ class _PageItemsState extends State<PageItems> {
             children: [
               ListTile(
                 leading: const Icon(Icons.image),
-                title: const Text("Image"),
+                title: const Text("Gallery"),
                 onTap: () {
                   Navigator.pop(context);
-                  _addMedia('image');
+                  _addMedia('gallery');
+                },
+              ),
+              if(isMobile)ListTile(
+                leading: const Icon(Icons.camera),
+                title: const Text("Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMedia('camera');
                 },
               ),
               ListTile(
@@ -292,14 +395,6 @@ class _PageItemsState extends State<PageItems> {
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('audio');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.videocam),
-                title: const Text("Video"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('video');
                 },
               ),
               ListTile(

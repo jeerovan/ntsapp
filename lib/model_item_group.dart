@@ -5,14 +5,14 @@ import 'database_helper.dart';
 class ModelGroup {
   String? id;
   String title;
-  Uint8List? image;
+  Uint8List? thumbnail;
   int pinned;
   String color;
   int? at;
   ModelGroup({
     this.id,
     required this.title,
-    this.image,
+    this.thumbnail,
     required this.pinned,
     required this.color,
     this.at,
@@ -21,7 +21,7 @@ class ModelGroup {
     return ModelGroup(
       id:null,
       title:"",
-      image: null,
+      thumbnail: null,
       pinned: 0,
       color: "",
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
@@ -31,7 +31,7 @@ class ModelGroup {
     return  {
       'id':id,
       'title':title,
-      'image':image,
+      'thumbnail':thumbnail,
       'pinned':pinned,
       'color':color,
       'at':at,
@@ -42,7 +42,7 @@ class ModelGroup {
     return ModelGroup(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       title:map.containsKey('title') ? map['title'] : "",
-      image: map.containsKey('image') ? map['image'] : null,
+      thumbnail: map.containsKey('thumbnail') ? map['thumbnail'] : null,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
