@@ -220,6 +220,20 @@ String getReadableDate(DateTime date) {
   }
 }
 
+String videoDuration(int seconds) {
+  final int hours = seconds ~/ 3600;
+  final int minutes = (seconds % 3600) ~/ 60;
+  final int secs = seconds % 60;
+
+  final String hoursStr = hours.toString().padLeft(2, '0');
+  final String minutesStr = minutes.toString().padLeft(2, '0');
+  final String secondsStr = secs.toString().padLeft(2, '0');
+
+  return hours > 0
+      ? "$hoursStr:$minutesStr:$secondsStr"
+      : "$minutesStr:$secondsStr";
+}
+
 Widget rotatedWidget(Widget widget) {
   return Transform.rotate(
     angle: 180 * math.pi / 180,

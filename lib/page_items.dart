@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:ntsapp/page_media.dart';
+import 'package:video_player/video_player.dart';
 import 'common.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -168,12 +169,17 @@ class _PageItemsState extends State<PageItems> {
             addImageMessage(thumbnail, messageType, data);
           }
         } else if (fileType == "video"){
+          VideoPlayerController controller = VideoPlayerController.file(File(copiedPath));
+          await controller.initialize();
+          String duration = videoDuration(controller.value.duration.inSeconds);
+          double aspect = controller.value.aspectRatio; // width/height
           Map<String,dynamic> data = {"path":copiedPath,
                                       "name":fileName,
-                                      "size":fileSize};
+                                      "size":fileSize,
+                                      "aspect":aspect,
+                                      "duration":duration};
             addVideoMessage( messageType, data);
         }
-        debugPrint('Processed:$copiedPath');
       }
     }
     hideProcessing();
@@ -408,6 +414,7 @@ class _PageItemsState extends State<PageItems> {
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
                   width: 200,
+                  height: 200/item.data!["aspect"],
                   child: VideoThumbnail(videoPath: item.data!["path"]),
                 ),
               ),
@@ -433,13 +440,13 @@ class _PageItemsState extends State<PageItems> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // File size text at the left
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.videocam,color: Colors.white,size: 20),
-                          SizedBox(width: 2,),
+                          const Icon(Icons.videocam,color: Colors.white,size: 20),
+                          const SizedBox(width: 2,),
                           Text(
-                            "0:27",
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            item.data!["duration"],
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
                           ),
                         ],
                       ),
