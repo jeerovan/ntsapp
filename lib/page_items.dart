@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
+import 'package:ntsapp/page_media.dart';
 import 'common.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -289,7 +290,11 @@ class _PageItemsState extends State<PageItems> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: GestureDetector(
-          onTap: () {openURL(item.data!["path"]);},
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
+                ));
+            },
           child: Stack(
             children: [
               ClipRRect(
@@ -314,8 +319,8 @@ class _PageItemsState extends State<PageItems> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.3), // Transparent black at the top
-                        Colors.black.withOpacity(0.6), // Darker black at the bottom
+                        Colors.black.withOpacity(0.1), // Transparent black at the top
+                        Colors.black.withOpacity(0.3), // Darker black at the bottom
                       ],
                     ),
                   ),
@@ -323,7 +328,7 @@ class _PageItemsState extends State<PageItems> {
                     formattedTime,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: 10,
                     ),
                   ),
                 ),
