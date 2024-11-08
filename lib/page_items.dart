@@ -358,7 +358,9 @@ class _PageItemsState extends State<PageItems> {
           children: [
             GestureDetector(
               onTap: () {
-                openURL(item.data!["path"]);
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
+                ));
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
@@ -399,7 +401,9 @@ class _PageItemsState extends State<PageItems> {
           children: [
             GestureDetector(
               onTap: () {
-                openURL(item.data!["path"]);
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
+                ));
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
