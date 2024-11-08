@@ -141,7 +141,7 @@ class _PageMediaState extends State<PageMedia> {
                     );
       case 130000: // video
         widget = fileAvailable
-                  ? VideoThumbnail(videoPath: item.data!["path"])
+                  ? WidgetVideo(videoPath: item.data!["path"])
                   : Image.file(
                       file,
                       fit: BoxFit.cover, // Ensures the image covers the available space

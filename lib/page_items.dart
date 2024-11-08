@@ -244,6 +244,34 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  Widget imageItemTimestamp(String formattedTime){
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withOpacity(0.1), // Transparent black at the top
+              Colors.black.withOpacity(0.3), // Darker black at the bottom
+            ],
+          ),
+        ),
+        child: Text(
+          formattedTime,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+          ),
+        ),
+      ),
+    );
+  }
+
   // Text item bubble
   Widget _buildTextItem(ModelItem item) {
     final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
@@ -308,31 +336,7 @@ class _PageItemsState extends State<PageItems> {
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.1), // Transparent black at the top
-                        Colors.black.withOpacity(0.3), // Darker black at the bottom
-                      ],
-                    ),
-                  ),
-                  child: Text(
-                    formattedTime,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ),
+              imageItemTimestamp(formattedTime),
             ],
           ),
         ),
@@ -353,16 +357,15 @@ class _PageItemsState extends State<PageItems> {
           color: const Color.fromARGB(255, 255, 255, 255),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
-                ));
-              },
-              child: ClipRRect(
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
+            ));
+          },
+          child: Stack(
+            children: [
+              ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
                   width: 200, // Makes the image take full width of the container
@@ -372,13 +375,9 @@ class _PageItemsState extends State<PageItems> {
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              formattedTime,
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
-            ),
-          ],
+              imageItemTimestamp(formattedTime),
+            ],
+          ),
         ),
       ),
     );
@@ -397,42 +396,63 @@ class _PageItemsState extends State<PageItems> {
           color: const Color.fromARGB(255, 255, 255, 255),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
-                ));
-              },
-              child: ClipRRect(
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
+            ));
+          },
+          child: Stack(
+            children: [
+              ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
                   width: 200,
                   child: VideoThumbnail(videoPath: item.data!["path"]),
                 ),
               ),
-            ),
-            const SizedBox(height: 5),
-            SizedBox(
-              width: 200,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // File size text at the left
-                  const Text(
-                    "0:27",
-                    style: TextStyle(color: Colors.grey, fontSize: 10),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                width: 200,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.1), // Transparent black at the top
+                        Colors.black.withOpacity(0.3), // Darker black at the bottom
+                      ],
+                    ),
                   ),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // File size text at the left
+                      const Row(
+                        children: [
+                          Icon(Icons.videocam,color: Colors.white,size: 20),
+                          SizedBox(width: 2,),
+                          Text(
+                            "0:27",
+                            style: TextStyle(color: Colors.white, fontSize: 10),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        formattedTime,
+                        style: const TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
