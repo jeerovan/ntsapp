@@ -262,26 +262,26 @@ Uint8List getBlankImage(int size){
   return Uint8List.fromList(img.encodePng(blankImage));
 }
 
-String getMessageType(String? mime){
+int getMessageType(String? mime){
   if(mime != null){
     String type = mime.split("/").first;
     switch(type){
       case "image":
         switch(mime){
           case "image/gif":
-            return "110100";
+            return 110100;
           default:
-              return "110000";
+              return 110000;
         }
       case "audio":
-        return "120000";
+        return 120000;
       case "video":
-        return "130000";
+        return 130000;
       default:
-        return "140000";
+        return 140000;
     }
   }
-  return "140000";
+  return 140000;
 }
 
 Future<File?> getFile(String fileType,String fileName) async {

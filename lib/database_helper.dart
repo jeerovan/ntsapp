@@ -51,7 +51,7 @@ class DatabaseHelper {
         text TEXT,
         thumbnail BLOB,
         starred INTEGER,
-        type TEXT,
+        type INTEGER,
         data TEXT,
         at INTEGER,
         FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE

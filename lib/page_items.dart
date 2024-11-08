@@ -81,7 +81,7 @@ class _PageItemsState extends State<PageItems> {
     if (text.isNotEmpty) {
       await checkAddDateItem();
       int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-      ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId, "text": text, "type": "100000","at": utcSeconds});
+      ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId, "text": text, "type": 100000,"at": utcSeconds});
       await item.insert();
       setState(() {
         _items.insert(0, item);
@@ -90,7 +90,7 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  void addImageMessage(Uint8List bytes,String type,Map<String,dynamic> data) async {
+  void addImageMessage(Uint8List bytes,int type,Map<String,dynamic> data) async {
     await checkAddDateItem();
     int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
@@ -105,7 +105,7 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void addVideoMessage(String type,Map<String,dynamic> data) async {
+  void addVideoMessage(int type,Map<String,dynamic> data) async {
     await checkAddDateItem();
     int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
@@ -113,7 +113,7 @@ class _PageItemsState extends State<PageItems> {
                               "type": type,
                               "data":data,
                               "at": utcSeconds});
-    //await item.insert();
+    await item.insert();
     setState(() {
       _items.insert(0, item);
     });
@@ -124,7 +124,7 @@ class _PageItemsState extends State<PageItems> {
     List<ModelItem> rows = await ModelItem.getDateItemForGroupId(widget.groupId, today);
     if(rows.isEmpty){
       int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-      ModelItem dateItem = await ModelItem.fromMap({"group_id":widget.groupId,"text":today,"type":"170000","at":utcSeconds-1});
+      ModelItem dateItem = await ModelItem.fromMap({"group_id":widget.groupId,"text":today,"type":170000,"at":utcSeconds-1});
       await dateItem.insert();
       _items.insert(0, dateItem);
     }
@@ -150,7 +150,7 @@ class _PageItemsState extends State<PageItems> {
       final String fileName = pickedFile.name;
       final int fileSize = await pickedFile.length();
       File? existing = await getFile(fileType,fileName);
-      String messageType = getMessageType(mime);
+      int messageType = getMessageType(mime);
       if(existing == null){
         String oldPath = pickedFile.path;
         String newPath = await getFilePath(fileType, fileName);
@@ -220,23 +220,23 @@ class _PageItemsState extends State<PageItems> {
   // Widget for displaying different item types
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
-      case '100000':
+      case 100000:
         return _buildTextItem(item);
-      case '110000':
+      case 110000:
         return _buildImageItem(item);
-      case '110100':
+      case 110100:
         return _buildGifItem(item);
-      case '120000':
+      case 120000:
         return _buildMediaItem(Icons.audiotrack, 'Audio');
-      case '130000':
+      case 130000:
         return _buildVideoItem(item);
-      case '140000':
+      case 140000:
         return _buildMediaItem(Icons.insert_drive_file, 'Document');
-      case '150000':
+      case 150000:
         return _buildMediaItem(Icons.location_on, 'Location');
-      case '160000':
+      case 160000:
         return _buildMediaItem(Icons.contact_phone, 'Contact');
-      case '170000':
+      case 170000:
         return _buildDateItem(item);
       default:
         return const SizedBox.shrink();
@@ -285,33 +285,51 @@ class _PageItemsState extends State<PageItems> {
         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            GestureDetector(
-              onTap: () {
-                openURL(item.data!["path"]);
-              },
-              child: ClipRRect(
+        child: GestureDetector(
+          onTap: () {openURL(item.data!["path"]);},
+          child: Stack(
+            children: [
+              ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
-                  width: 200, // Makes the image take full width of the container
+                  width: 200,
                   child: Image.memory(
                     item.thumbnail!,
-                    fit: BoxFit.cover, // Ensures the image covers the available space
+                    width: double.infinity, // Full width of container
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              formattedTime,
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
-            ),
-          ],
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.3), // Transparent black at the top
+                        Colors.black.withOpacity(0.6), // Darker black at the bottom
+                      ],
+                    ),
+                  ),
+                  child: Text(
+                    formattedTime,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

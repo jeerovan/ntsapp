@@ -14,7 +14,7 @@ class ModelItem {
   String text;
   Uint8List? thumbnail;
   int? starred;
-  String type;
+  int type;
   Map<String,dynamic>? data;
   int? at;
   ModelItem({
@@ -36,7 +36,7 @@ class ModelItem {
       text:"",
       thumbnail:null,
       starred: 0,
-      type: "100000",
+      type: 100000,
       data: null,
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
@@ -71,7 +71,7 @@ class ModelItem {
       text:map.containsKey('text') ? map['text'] : "",
       thumbnail:map.containsKey('thumbnail') ? map['thumbnail'] : null,
       starred: map.containsKey('starred') ? map['starred'] : 0,
-      type: map.containsKey('type') ? map['type'] : "100000",
+      type: map.containsKey('type') ? map['type'] : 100000,
       data: dataMap,
       at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
