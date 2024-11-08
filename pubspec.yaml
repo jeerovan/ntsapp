@@ -15,6 +15,7 @@ dependencies:
   image_picker: ^1.1.2
   intl: ^0.19.0
   mime: ^2.0.0
+  open_filex: ^4.5.0
   package_info_plus: ^8.1.0
   path: ^1.9.0
   path_provider: ^2.1.5

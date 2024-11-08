@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
-import 'package:ntsapp/page_media.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
 import 'model_item.dart';
@@ -325,9 +324,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
-                ));
+            openMedia(item.data!["path"]);
             },
           child: Stack(
             children: [
@@ -365,9 +362,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
-            ));
+            openMedia(item.data!["path"]);
           },
           child: Stack(
             children: [
@@ -399,14 +394,12 @@ class _PageItemsState extends State<PageItems> {
         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
         ),
         child: GestureDetector(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PageMedia(id: item.id!,groupId: widget.groupId,),
-            ));
+            openMedia(item.data!["path"]);
           },
           child: Stack(
             children: [
@@ -467,17 +460,27 @@ class _PageItemsState extends State<PageItems> {
 
   Widget _buildDateItem(ModelItem item) {
     String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true));
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: Center(
-        child: Text(
-          dateText,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min, // Shrinks to fit the text width
+        children: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            child: Text(
+              dateText,
+              style: const TextStyle(
+                color: Color.fromARGB(255, 87, 87, 87),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

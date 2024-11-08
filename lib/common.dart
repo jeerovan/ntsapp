@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:math' as math;
@@ -70,6 +71,13 @@ Future<void> openURL(String link) async {
   } catch (e) {
     // Handle error if the PDF viewer app is not installed or cannot be launched
     debugPrint('Error opening: $e');
+  }
+}
+void openMedia(String filePath) async {
+  try{
+    OpenFilex.open(filePath);
+  } catch(e) {
+    debugPrint(e.toString());
   }
 }
 
