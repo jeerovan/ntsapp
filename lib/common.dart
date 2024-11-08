@@ -537,6 +537,7 @@ class VideoThumbnail extends StatefulWidget {
 class _VideoThumbnailState extends State<VideoThumbnail> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _fileAvailable = false;
 
   @override
   void initState() {
@@ -545,12 +546,16 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
   }
 
   Future<void> _initializeVideo() async {
-    _controller = VideoPlayerController.file(File(widget.videoPath));
-
-    // Initialize the controller and display the first frame as a thumbnail
-    await _controller.initialize();
-    await _controller.setLooping(false); // No looping
-    await _controller.pause(); // Pause to display the first frame
+    File videoFile = File(widget.videoPath);
+    if (videoFile.existsSync()) {
+      _fileAvailable = true;
+      _controller = VideoPlayerController.file(File(widget.videoPath));
+      // Initialize the controller and display the first frame as a thumbnail
+      await _controller.initialize();
+      await _controller.setLooping(false); // No looping
+      await _controller.pause(); // Pause to display the first frame
+    }
+    
     setState(() {
       _isInitialized = true;
     });
@@ -565,29 +570,34 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
   @override
   Widget build(BuildContext context) {
     return _isInitialized
-        ? Stack(
-            alignment: Alignment.center, // Center the play button overlay
-            children: [
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              ),
-              // Play button overlay
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.7), // Semi-transparent grey background
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.play_arrow,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-            ],
-          )
+        ? _fileAvailable
+            ? Stack(
+                alignment: Alignment.center, // Center the play button overlay
+                children: [
+                  AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  ),
+                  // Play button overlay
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.7), // Semi-transparent grey background
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                ],
+              )
+            : Image.file(
+                File("assets/image.webp"),
+                fit: BoxFit.cover, // Ensures the image covers the available space
+              )
         : const Center(child: CircularProgressIndicator());
   }
 }

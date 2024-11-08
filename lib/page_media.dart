@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:path/path.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:ntsapp/common.dart';
 import 'model_item.dart';
 
 class PageMedia extends StatefulWidget {
@@ -27,6 +28,7 @@ class _PageMediaState extends State<PageMedia> {
     super.initState();
     currentId = widget.id;
     loadItems();
+    loadFirstAndLast();
   }
 
   @override
@@ -39,16 +41,18 @@ class _PageMediaState extends State<PageMedia> {
     ModelItem? currentModelItem = await ModelItem.get(currentId);
     previousItem = await ModelItem.getPreviousMediaItemInGroup(widget.groupId, currentId);
     nextItem = await ModelItem.getNextMediaItemInGroup(widget.groupId, currentId);
-    firstItem = await ModelItem.getFirstMediaItemInGroup(widget.groupId);
-    lastItem = await ModelItem.getLastMediaItemInGroup(widget.groupId);
     setState(() {
       currentItem = currentModelItem;
     });
   }
 
+  void loadFirstAndLast() async {
+    firstItem = await ModelItem.getFirstMediaItemInGroup(widget.groupId);
+    lastItem = await ModelItem.getLastMediaItemInGroup(widget.groupId);
+  }
+
   void indexChanged(int index){
     loadItems();
-    debugPrint("IndexChanged:$index");
   }
 
   ModelItem getItem(int index){
@@ -85,7 +89,7 @@ class _PageMediaState extends State<PageMedia> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Vertical PageView"),
+        title: const Text("Media"),
       ),
       body: PageView.builder(
         controller: _pageController,
@@ -102,15 +106,49 @@ class _PageMediaState extends State<PageMedia> {
   // Builds each page with content based on the index
   Widget _buildPage(ModelItem item,int index) {
     return Center(
-      child: Container(
-        color: Colors.primaries[index % Colors.primaries.length],
-        child: Center(
-          child: Text(
-            '$index|$currentIndex\n${item.data!["path"]}',
-            style: const TextStyle(fontSize: 32, color: Colors.white),
-          ),
-        ),
-      ),
+      child: renderMedia(item),
     );
+  }
+
+  Widget renderMedia(ModelItem item){
+    bool fileAvailable = false;
+    File file = File("assets/image.webp");
+    if (item.data != null){
+      file = File(item.data!["path"]);
+      fileAvailable = file.existsSync();
+    }
+    Widget widget = const SizedBox.shrink();
+    switch (item.type){
+      case 110100: // gif
+        widget = fileAvailable
+                  ? Image.file(
+                      file,
+                      fit: BoxFit.cover, // Ensures the image covers the available space
+                    )
+                  : Image.memory(
+                      item.thumbnail!,
+                      fit: BoxFit.cover,
+                    );
+      case 110000: // image
+        widget = fileAvailable
+                  ? Image.file(
+                      file,
+                      fit: BoxFit.cover, // Ensures the image covers the available space
+                    )
+                  : Image.memory(
+                      item.thumbnail!,
+                      fit: BoxFit.cover,
+                    );
+      case 130000: // video
+        widget = fileAvailable
+                  ? VideoThumbnail(videoPath: item.data!["path"])
+                  : Image.file(
+                      file,
+                      fit: BoxFit.cover, // Ensures the image covers the available space
+                    );
+      default:
+        widget = const SizedBox.shrink();
+    }
+    return widget;
   }
 }
