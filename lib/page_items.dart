@@ -1,6 +1,7 @@
 
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -106,7 +107,7 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void addVideoMessage(int type,Map<String,dynamic> data) async {
+  void addAudioVideoMessage(int type,Map<String,dynamic> data) async {
     await checkAddDateItem();
     int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
@@ -140,48 +141,86 @@ class _PageItemsState extends State<PageItems> {
 
   // Handle adding a media item
   void _addMedia(String type) async {
-    List<XFile> pickedFiles = await ImagePicker().pickMultipleMedia();
-    showProcessing();
-    for (var pickedFile in pickedFiles) {
-      final String? mime = lookupMimeType(pickedFile.path);
-      String fileType = "document";
-      if (mime != null){
-        fileType = mime.split("/").first;
-      }
-      final String fileName = pickedFile.name;
-      final int fileSize = await pickedFile.length();
-      File? existing = await getFile(fileType,fileName);
-      int messageType = getMessageType(mime);
-      if(existing == null){
-        String oldPath = pickedFile.path;
-        String newPath = await getFilePath(fileType, fileName);
-        await checkAndCreateDirectory(newPath);
-        Map<String,String> mediaData = {"oldPath":oldPath,"newPath":newPath};
-        String copiedPath = await compute(copyFile,mediaData);
-        if (fileType == "image"){
-          Uint8List fileBytes = await File(copiedPath).readAsBytes();
-          Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
-          if(thumbnail != null){
+    if (type == "gallery") {
+      List<XFile> pickedFiles = await ImagePicker().pickMultipleMedia();
+      showProcessing();
+      for (var pickedFile in pickedFiles) {
+        final String? mime = lookupMimeType(pickedFile.path);
+        String fileType = "document";
+        if (mime != null){
+          fileType = mime.split("/").first;
+        }
+        final String fileName = pickedFile.name;
+        final int fileSize = await pickedFile.length();
+        File? existing = await getFile(fileType,fileName);
+        int messageType = getMessageType(mime);
+        if(existing == null){
+          String oldPath = pickedFile.path;
+          String newPath = await getFilePath(fileType, fileName);
+          await checkAndCreateDirectory(newPath);
+          Map<String,String> mediaData = {"oldPath":oldPath,"newPath":newPath};
+          String copiedPath = await compute(copyFile,mediaData);
+          if (fileType == "image"){
+            Uint8List fileBytes = await File(copiedPath).readAsBytes();
+            Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+            if(thumbnail != null){
+              Map<String,dynamic> data = {"path":copiedPath,
+                                          "name":fileName,
+                                          "size":fileSize};
+              addImageMessage(thumbnail, messageType, data);
+            }
+          } else if (fileType == "video"){
+            VideoPlayerController controller = VideoPlayerController.file(File(copiedPath));
+            await controller.initialize();
+            String duration = mediaFileDuration(controller.value.duration.inSeconds);
+            double aspect = controller.value.aspectRatio; // width/height
             Map<String,dynamic> data = {"path":copiedPath,
                                         "name":fileName,
-                                        "size":fileSize};
-            addImageMessage(thumbnail, messageType, data);
+                                        "size":fileSize,
+                                        "aspect":aspect,
+                                        "duration":duration};
+              addAudioVideoMessage( messageType, data);
           }
-        } else if (fileType == "video"){
-          VideoPlayerController controller = VideoPlayerController.file(File(copiedPath));
-          await controller.initialize();
-          String duration = videoDuration(controller.value.duration.inSeconds);
-          double aspect = controller.value.aspectRatio; // width/height
-          Map<String,dynamic> data = {"path":copiedPath,
-                                      "name":fileName,
-                                      "size":fileSize,
-                                      "aspect":aspect,
-                                      "duration":duration};
-            addVideoMessage( messageType, data);
         }
       }
+      hideProcessing();
+    } else if (type == "audio") {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.audio, // Restrict to audio files
+      );
+      if (result != null){
+        showProcessing();
+        List<PlatformFile> pickedFiles = result.files;
+        for (var pickedFile in pickedFiles) {
+          final String filePath = pickedFile.path!;
+          final String? mime = lookupMimeType(filePath);
+          String fileType = "document";
+          if (mime != null){
+            fileType = mime.split("/").first;
+          }
+          final String fileName = pickedFile.name;
+          final int fileSize = pickedFile.size;
+          File? existing = await getFile(fileType,fileName);
+          int messageType = getMessageType(mime);
+          if(existing == null){
+            String newPath = await getFilePath(fileType, fileName);
+            await checkAndCreateDirectory(newPath);
+            Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
+            String copiedPath = await compute(copyFile,mediaData);
+            String? duration = await getAudioDuration(filePath);
+            if (duration != null){
+              Map<String,dynamic> data = {"path":copiedPath,
+                                        "name":fileName,
+                                        "size":fileSize,
+                                        "duration":duration};
+              addAudioVideoMessage( messageType, data);
+            }
+          }
+        }
+        hideProcessing();
+      }
     }
-    hideProcessing();
   }
 
   @override
@@ -233,7 +272,7 @@ class _PageItemsState extends State<PageItems> {
       case 110100:
         return _buildGifItem(item);
       case 120000:
-        return _buildMediaItem(Icons.audiotrack, 'Audio');
+        return _buildAudioItem(item);
       case 130000:
         return _buildVideoItem(item);
       case 140000:
@@ -387,7 +426,6 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildVideoItem(ModelItem item) {
     final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
     final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
-
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -450,6 +488,69 @@ class _PageItemsState extends State<PageItems> {
                     ],
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAudioItem(ModelItem item){
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: GestureDetector(
+          onTap: () {
+            openMedia(item.data!["path"]);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                      Icons.play_circle_outline,
+                      color: Colors.blue,
+                      size: 30,
+                    ),
+                  const SizedBox(width: 5,),
+                  Text(
+                    item.data!["name"],
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // File size text at the left
+                  Row(
+                    children: [
+                      const Icon(Icons.audiotrack,color: Colors.grey,size: 20),
+                      const SizedBox(width: 2,),
+                      Text(
+                        item.data!["duration"],
+                        style: const TextStyle(color: Colors.grey, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    formattedTime,
+                    style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  ),
+                ],
               ),
             ],
           ),

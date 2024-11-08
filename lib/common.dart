@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
@@ -228,7 +229,7 @@ String getReadableDate(DateTime date) {
   }
 }
 
-String videoDuration(int seconds) {
+String mediaFileDuration(int seconds) {
   final int hours = seconds ~/ 3600;
   final int minutes = (seconds % 3600) ~/ 60;
   final int secs = seconds % 60;
@@ -791,4 +792,28 @@ class _ControlsOverlay extends StatelessWidget {
       ],
     );
   }
+}
+
+Future<String?> getAudioDuration(String filePath) async {
+  final player = AudioPlayer();
+  String? audioDuration;
+  try {
+    // Set the audio source to the local file
+    await player.setSourceDeviceFile(filePath);
+
+    // Retrieve duration after the audio is loaded
+    player.onDurationChanged.listen((duration) {
+      audioDuration = mediaFileDuration(duration.inSeconds);
+    });
+
+    // Play briefly to trigger duration loading, then immediately stop
+    await player.resume();
+    await player.pause();
+
+  } catch (e) {
+    debugPrint(e.toString());
+  } finally {
+    player.dispose();
+  }
+  return audioDuration;
 }
