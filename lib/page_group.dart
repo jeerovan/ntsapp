@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/page_items.dart';
+import 'package:ntsapp/page_settings.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
 
 bool debug = true;
 
 class PageGroup extends StatefulWidget {
-  const PageGroup({super.key});
+  final bool isDarkMode;
+  final VoidCallback onThemeToggle;
+  const PageGroup({super.key,required this.isDarkMode,required this.onThemeToggle});
 
   @override
   State<PageGroup> createState() => _PageGroupState();
@@ -73,7 +76,14 @@ class _PageGroupState extends State<PageGroup> {
       appBar: AppBar(
         title: const Text('NoteBox'),
         actions: [
-          
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => SettingsPage(isDarkMode: widget.isDarkMode,onThemeToggle: widget.onThemeToggle,),
+              ));
+            }
+          ),
           if (debug)
             IconButton(
               icon: const Icon(Icons.reorder),

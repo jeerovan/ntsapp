@@ -8,8 +8,10 @@ import 'model_setting.dart';
 import 'dart:convert';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import 'themes.dart';
+
 // Set to false if running on Desktop
-bool mobile = Platform.isAndroid;
+bool mobile = Platform.isAndroid || Platform.isIOS;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,16 +32,47 @@ void main() async {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+  bool isDark = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isDark = ModelSetting.getForKey("theme", "light") == "dark";
+    if (isDark){
+      _themeMode = ThemeMode.dark;
+    } else {
+      _themeMode = ThemeMode.light;
+    }
+  }
+
+  // Toggle between light and dark modes
+  void _toggleTheme() {
+    setState(() {
+      isDark = _themeMode == ThemeMode.dark;
+      _themeMode = isDark ? ThemeMode.light : ThemeMode.dark;
+      isDark = !isDark;
+      ModelSetting.update("theme", isDark ? "dark" : "light");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: const PageGroup(),
+      theme: AppThemes.lightTheme,
+      darkTheme: AppThemes.darkTheme,
+      themeMode: _themeMode, // Uses system theme by default
+      home: PageGroup(
+        isDarkMode: _themeMode == ThemeMode.dark,
+        onThemeToggle: _toggleTheme,),
       debugShowCheckedModeBanner: false,
     );
   }

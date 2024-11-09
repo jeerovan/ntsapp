@@ -747,8 +747,8 @@ class _WidgetVideoState extends State<WidgetVideo> {
     _controller = VideoPlayerController.file(File(widget.videoPath));
 
     _controller.addListener(() {
-      setState(() {});
-    });
+      if (mounted)setState(() {});}
+    );
     _controller.setLooping(true);
     _controller.initialize().then((_) => setState(() {}));
     _controller.play();
