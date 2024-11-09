@@ -14,6 +14,8 @@ import 'package:image/image.dart' as img;
 
 import 'package:video_player/video_player.dart';
 
+import 'model_item.dart';
+
 
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
@@ -628,6 +630,106 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
         );
   }
 }
+
+class WidgetAudio extends StatefulWidget {
+  final ModelItem item;
+  const WidgetAudio({super.key,required this.item});
+  @override
+  State<WidgetAudio> createState() => _WidgetAudioState();
+}
+class _WidgetAudioState extends State<WidgetAudio> {
+  late AudioPlayer _audioPlayer;
+  Duration _totalDuration = Duration.zero;
+  Duration _currentPosition = Duration.zero;
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer();
+
+    // Load audio file duration
+    _audioPlayer.onDurationChanged.listen((duration) {
+      setState(() {
+        _totalDuration = duration;
+      });
+    });
+
+    // Track current position of the audio
+    _audioPlayer.onPositionChanged.listen((position) {
+      if(mounted) {
+        setState(() {
+        _currentPosition = position;
+      });
+      }
+    });
+
+    /* _audioPlayer.onPlayerComplete.listen((event){
+      setState(() {
+        _isPlaying = !_isPlaying;
+      });
+    }); */
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _togglePlayPause() async {
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+    } else {
+      await _audioPlayer.setSourceDeviceFile(widget.item.data!["path"]);
+      await _audioPlayer.resume();
+    }
+    setState(() {
+      _isPlaying = !_isPlaying;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                _isPlaying ? Icons.pause_circle : Icons.play_circle,
+                color: Colors.blue,
+                size: 40,
+              ),
+              onPressed: _togglePlayPause,
+            ),
+            Expanded(
+              child: Slider(
+                activeColor: Colors.blue,
+                inactiveColor: Colors.grey[300],
+                min: 0,
+                max: _totalDuration.inSeconds.toDouble(),
+                value: _currentPosition.inSeconds.toDouble(),
+                onChanged: (value) async {
+                  // Seek to the new position in the audio
+                  final newPosition = Duration(seconds: value.toInt()-1);
+                  await _audioPlayer.seek(newPosition);
+                },
+              ),
+            ),
+            Text(
+              mediaFileDuration(_currentPosition.inSeconds),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+}
+
 
 class WidgetVideo extends StatefulWidget {
   final String videoPath;

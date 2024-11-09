@@ -527,25 +527,10 @@ class _PageItemsState extends State<PageItems> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              WidgetAudio(item: item),
               Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                      Icons.play_circle_outline,
-                      color: Colors.blue,
-                      size: 30,
-                    ),
-                  const SizedBox(width: 5,),
-                  Text(
-                    item.data!["name"],
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //mainAxisSize: MainAxisSize.max,
+                //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // File size text at the left
                   Row(
@@ -557,6 +542,19 @@ class _PageItemsState extends State<PageItems> {
                         style: const TextStyle(color: Colors.grey, fontSize: 10),
                       ),
                     ],
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Text(
+                          item.data!["name"],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Color.fromARGB(255, 94, 94, 94), fontSize: 15),
+                        ),
+                      ),
+                    ),
                   ),
                   Text(
                     formattedTime,
