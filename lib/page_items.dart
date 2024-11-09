@@ -140,11 +140,8 @@ class _PageItemsState extends State<PageItems> {
     Navigator.pop(context);
   }
 
-  // Handle adding a media item
-  void _addMedia(String type) async {
-    if (type == "gallery") {
-      List<XFile> pickedFiles = await ImagePicker().pickMultipleMedia();
-      showProcessing();
+  void processMedia(List<XFile> pickedFiles) async {
+    showProcessing();
       for (var pickedFile in pickedFiles) {
         final String? mime = lookupMimeType(pickedFile.path);
         String fileType = "document";
@@ -185,6 +182,45 @@ class _PageItemsState extends State<PageItems> {
         }
       }
       hideProcessing();
+  }
+
+  void _showMediaPickerDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Choose Media Type"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Take a Photo"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMedia("camera_image");
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.videocam),
+                title: const Text("Record a Video"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMedia("camera_video");
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Handle adding a media item
+  void _addMedia(String type) async {
+    if (type == "gallery") {
+      List<XFile> pickedFiles = await ImagePicker().pickMultipleMedia();
+      processMedia(pickedFiles);
     } else if (type == "audio") {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
@@ -220,6 +256,16 @@ class _PageItemsState extends State<PageItems> {
           }
         }
         hideProcessing();
+      }
+    } else if (type == "camera_image"){
+      XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (pickedFile != null){
+        processMedia([pickedFile]);
+      }
+    } else if (type == "camera_video"){
+      XFile? pickedFile = await ImagePicker().pickVideo(source: ImageSource.camera);
+      if (pickedFile != null){
+        processMedia([pickedFile]);
       }
     }
   }
@@ -669,12 +715,13 @@ class _PageItemsState extends State<PageItems> {
                   _addMedia('gallery');
                 },
               ),
-              if(isMobile)ListTile(
+              if(ImagePicker().supportsImageSource(ImageSource.camera))
+              ListTile(
                 leading: const Icon(Icons.camera),
                 title: const Text("Camera"),
                 onTap: () {
                   Navigator.pop(context);
-                  _addMedia('camera');
+                  _showMediaPickerDialog();
                 },
               ),
               ListTile(
