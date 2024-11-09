@@ -322,11 +322,10 @@ Future<String> getFilePath(String fileType,String fileName) async {
   return path.join(directory.path, filePath);
 }
 
-String copyFile(Map<String,String> mediaData) {
+void copyFile(Map<String,String> mediaData) {
   File systemFile = File(mediaData["oldPath"]!);
   String newPath = mediaData["newPath"]!;
   systemFile.copySync(newPath);
-  return newPath;
 }
 
 Future<void> checkAndCreateDirectory(String filePath) async {

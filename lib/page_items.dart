@@ -155,33 +155,33 @@ class _PageItemsState extends State<PageItems> {
         final int fileSize = await pickedFile.length();
         File? existing = await getFile(fileType,fileName);
         int messageType = getMessageType(mime);
+        String oldPath = pickedFile.path;
+        String newPath = await getFilePath(fileType, fileName);
+        await checkAndCreateDirectory(newPath);
         if(existing == null){
-          String oldPath = pickedFile.path;
-          String newPath = await getFilePath(fileType, fileName);
-          await checkAndCreateDirectory(newPath);
           Map<String,String> mediaData = {"oldPath":oldPath,"newPath":newPath};
-          String copiedPath = await compute(copyFile,mediaData);
-          if (fileType == "image"){
-            Uint8List fileBytes = await File(copiedPath).readAsBytes();
-            Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
-            if(thumbnail != null){
-              Map<String,dynamic> data = {"path":copiedPath,
-                                          "name":fileName,
-                                          "size":fileSize};
-              addImageMessage(thumbnail, messageType, data);
-            }
-          } else if (fileType == "video"){
-            VideoPlayerController controller = VideoPlayerController.file(File(copiedPath));
-            await controller.initialize();
-            String duration = mediaFileDuration(controller.value.duration.inSeconds);
-            double aspect = controller.value.aspectRatio; // width/height
-            Map<String,dynamic> data = {"path":copiedPath,
+          await compute(copyFile,mediaData);
+        }
+        if (fileType == "image"){
+          Uint8List fileBytes = await File(newPath).readAsBytes();
+          Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+          if(thumbnail != null){
+            Map<String,dynamic> data = {"path":newPath,
                                         "name":fileName,
-                                        "size":fileSize,
-                                        "aspect":aspect,
-                                        "duration":duration};
-              addAudioVideoMessage( messageType, data);
+                                        "size":fileSize};
+            addImageMessage(thumbnail, messageType, data);
           }
+        } else if (fileType == "video"){
+          VideoPlayerController controller = VideoPlayerController.file(File(newPath));
+          await controller.initialize();
+          String duration = mediaFileDuration(controller.value.duration.inSeconds);
+          double aspect = controller.value.aspectRatio; // width/height
+          Map<String,dynamic> data = {"path":newPath,
+                                      "name":fileName,
+                                      "size":fileSize,
+                                      "aspect":aspect,
+                                      "duration":duration};
+            addAudioVideoMessage( messageType, data);
         }
       }
       hideProcessing();
@@ -204,19 +204,19 @@ class _PageItemsState extends State<PageItems> {
           final int fileSize = pickedFile.size;
           File? existing = await getFile(fileType,fileName);
           int messageType = getMessageType(mime);
+          String newPath = await getFilePath(fileType, fileName);
+          await checkAndCreateDirectory(newPath);
           if(existing == null){
-            String newPath = await getFilePath(fileType, fileName);
-            await checkAndCreateDirectory(newPath);
             Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
-            String copiedPath = await compute(copyFile,mediaData);
-            String? duration = await getAudioDuration(filePath);
-            if (duration != null){
-              Map<String,dynamic> data = {"path":copiedPath,
-                                        "name":fileName,
-                                        "size":fileSize,
-                                        "duration":duration};
-              addAudioVideoMessage( messageType, data);
-            }
+            await compute(copyFile,mediaData);
+          }
+          String? duration = await getAudioDuration(filePath);
+          if (duration != null){
+            Map<String,dynamic> data = {"path":newPath,
+                                      "name":fileName,
+                                      "size":fileSize,
+                                      "duration":duration};
+            addAudioVideoMessage( messageType, data);
           }
         }
         hideProcessing();
