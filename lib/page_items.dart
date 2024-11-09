@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
+import 'package:ntsapp/page_media.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
 import 'model_item.dart';
@@ -288,6 +289,18 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  void navigateOrOpenMedia(String id, String filePath) async {
+    //openMedia(filePath);
+    String groupId = widget.groupId;
+    int index = await ModelItem.mediaIndexInGroupId(groupId, id);
+    int count = await ModelItem.mediaCountInGroupId(groupId);
+    if (mounted){
+      Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => PageMedia(id: id, groupId: groupId,index: index,count: count,),
+                  ));
+    }
+  }
+
   Widget imageItemTimestamp(String formattedTime){
     return Positioned(
       bottom: 0,
@@ -363,7 +376,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            openMedia(item.data!["path"]);
+            navigateOrOpenMedia(item.id!,item.data!["path"]);
             },
           child: Stack(
             children: [
@@ -401,7 +414,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            openMedia(item.data!["path"]);
+            navigateOrOpenMedia(item.id!,item.data!["path"]);
           },
           child: Stack(
             children: [
@@ -437,7 +450,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            openMedia(item.data!["path"]);
+            navigateOrOpenMedia(item.id!,item.data!["path"]);
           },
           child: Stack(
             children: [
@@ -510,7 +523,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            openMedia(item.data!["path"]);
+            navigateOrOpenMedia(item.id!,item.data!["path"]);
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

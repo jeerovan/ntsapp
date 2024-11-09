@@ -101,7 +101,7 @@ class ModelItem {
     List<Map<String,dynamic>> rows = await db.rawQuery(sql,[groupId,'%$tag%']);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<int> mediaCountForGroupId(String groupId) async {
+  static Future<int> mediaCountInGroupId(String groupId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
@@ -111,6 +111,20 @@ class ModelItem {
         AND group_id = ?
     ''';
     final rows = await db.rawQuery(sql, [groupId]);
+    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
+  }
+  static Future<int> mediaIndexInGroupId(String groupId,String currentId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String sql = '''
+      SELECT count(*) as count
+      FROM item
+      WHERE type > 100000 AND type < 140000
+        AND group_id = ?
+        AND at < (SELECT at FROM item WHERE id == ?)
+      ORDER BY at ASC
+    ''';
+    final rows = await db.rawQuery(sql, [groupId,currentId]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
   static Future<ModelItem?> getPreviousMediaItemInGroup(String groupId,String currentId) async {
@@ -141,38 +155,6 @@ class ModelItem {
       LIMIT 1
       ''';
     final rows = await db.rawQuery(sql, [groupId,currentId]);
-    if (rows.isNotEmpty) {
-      Map<String,dynamic> map = rows.first;
-      return fromMap(map);
-    }
-    return null;
-  }
-  static Future<ModelItem?> getFirstMediaItemInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    String sql = '''
-      SELECT * FROM item
-      WHERE type > 100000 AND type < 140000 AND group_id == ?
-      ORDER BY at DESC
-      LIMIT 1
-      ''';
-    final rows = await db.rawQuery(sql, [groupId]);
-    if (rows.isNotEmpty) {
-      Map<String,dynamic> map = rows.first;
-      return fromMap(map);
-    }
-    return null;
-  }
-  static Future<ModelItem?> getLastMediaItemInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    String sql = '''
-      SELECT * FROM item
-      WHERE type > 100000 AND type < 140000 AND group_id == ?
-      ORDER BY at ASC
-      LIMIT 1
-      ''';
-    final rows = await db.rawQuery(sql, [groupId]);
     if (rows.isNotEmpty) {
       Map<String,dynamic> map = rows.first;
       return fromMap(map);
