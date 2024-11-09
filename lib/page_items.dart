@@ -273,9 +273,9 @@ class _PageItemsState extends State<PageItems> {
       case 110100:
         return _buildGifItem(item);
       case 120000:
-        return _buildAudioItem(item);
-      case 130000:
         return _buildVideoItem(item);
+      case 130000:
+        return _buildAudioItem(item);
       case 140000:
         return _buildMediaItem(Icons.insert_drive_file, 'Document');
       case 150000:
@@ -289,11 +289,10 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  void navigateOrOpenMedia(String id, String filePath) async {
-    //openMedia(filePath);
+  void viewMedia(String id, String filePath) async {
     String groupId = widget.groupId;
-    int index = await ModelItem.mediaIndexInGroupId(groupId, id);
-    int count = await ModelItem.mediaCountInGroupId(groupId);
+    int index = await ModelItem.mediaIndexInGroup(groupId, id);
+    int count = await ModelItem.mediaCountInGroup(groupId);
     if (mounted){
       Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => PageMedia(id: id, groupId: groupId,index: index,count: count,),
@@ -376,7 +375,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            navigateOrOpenMedia(item.id!,item.data!["path"]);
+            viewMedia(item.id!,item.data!["path"]);
             },
           child: Stack(
             children: [
@@ -414,7 +413,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            navigateOrOpenMedia(item.id!,item.data!["path"]);
+            viewMedia(item.id!,item.data!["path"]);
           },
           child: Stack(
             children: [
@@ -450,7 +449,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            navigateOrOpenMedia(item.id!,item.data!["path"]);
+            viewMedia(item.id!,item.data!["path"]);
           },
           child: Stack(
             children: [
@@ -523,7 +522,7 @@ class _PageItemsState extends State<PageItems> {
         ),
         child: GestureDetector(
           onTap: () {
-            navigateOrOpenMedia(item.id!,item.data!["path"]);
+            viewMedia(item.id!,item.data!["path"]);
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -296,9 +296,9 @@ int getMessageType(String? mime){
           default:
               return 110000;
         }
-      case "audio":
-        return 120000;
       case "video":
+        return 120000;
+      case "audio":
         return 130000;
       default:
         return 140000;

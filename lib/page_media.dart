@@ -137,9 +137,7 @@ class _PageMediaState extends State<PageMedia> {
                       item.thumbnail!,
                       fit: BoxFit.cover,
                     );
-      case 120000:
-        widget = const Text("Audio File");
-      case 130000: // video
+      case 120000: // video
         widget = fileAvailable
                   ? WidgetVideo(videoPath: item.data!["path"])
                   : Image.file(

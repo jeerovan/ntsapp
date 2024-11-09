@@ -101,25 +101,25 @@ class ModelItem {
     List<Map<String,dynamic>> rows = await db.rawQuery(sql,[groupId,'%$tag%']);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<int> mediaCountInGroupId(String groupId) async {
+  static Future<int> mediaCountInGroup(String groupId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
       FROM item
-      WHERE type > 100000 AND type < 140000
+      WHERE type > 100000 AND type < 130000
         AND group_id = ?
     ''';
     final rows = await db.rawQuery(sql, [groupId]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
-  static Future<int> mediaIndexInGroupId(String groupId,String currentId) async {
+  static Future<int> mediaIndexInGroup(String groupId,String currentId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
       FROM item
-      WHERE type > 100000 AND type < 140000
+      WHERE type > 100000 AND type < 130000
         AND group_id = ?
         AND at < (SELECT at FROM item WHERE id == ?)
       ORDER BY at ASC
@@ -132,7 +132,7 @@ class ModelItem {
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
-      WHERE type > 100000 AND type < 140000 AND group_id == ?
+      WHERE type > 100000 AND type < 130000 AND group_id == ?
         AND at < (SELECT at FROM item WHERE id == ?)
       ORDER BY at DESC
       LIMIT 1
@@ -149,7 +149,7 @@ class ModelItem {
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
-      WHERE type > 100000 AND type < 140000 AND group_id == ?
+      WHERE type > 100000 AND type < 130000 AND group_id == ?
         AND at > (SELECT at FROM item WHERE id == ?)
       ORDER BY at ASC
       LIMIT 1

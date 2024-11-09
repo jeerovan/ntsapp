@@ -71,7 +71,7 @@ class _PageGroupState extends State<PageGroup> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notes App'),
+        title: const Text('NoteBox'),
         actions: [
           
           if (debug)
