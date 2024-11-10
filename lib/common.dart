@@ -899,13 +899,14 @@ Future<String?> getAudioDuration(String filePath) async {
   final player = AudioPlayer();
   String? audioDuration;
   try {
-    // Set the audio source to the local file
-    await player.setSourceDeviceFile(filePath);
-
+    
     // Retrieve duration after the audio is loaded
     player.onDurationChanged.listen((duration) {
       audioDuration = mediaFileDuration(duration.inSeconds);
     });
+
+    // Set the audio source to the local file
+    await player.setSourceDeviceFile(filePath);
 
     // Play briefly to trigger duration loading, then immediately stop
     await player.resume();

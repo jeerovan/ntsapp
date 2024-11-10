@@ -170,15 +170,21 @@ class _PageItemsState extends State<PageItems> {
           }
         } else if (fileType == "video"){
           VideoPlayerController controller = VideoPlayerController.file(File(newPath));
-          await controller.initialize();
-          String duration = mediaFileDuration(controller.value.duration.inSeconds);
-          double aspect = controller.value.aspectRatio; // width/height
-          Map<String,dynamic> data = {"path":newPath,
-                                      "name":fileName,
-                                      "size":fileSize,
-                                      "aspect":aspect,
-                                      "duration":duration};
-            addAudioVideoMessage( messageType, data);
+          try {
+            await controller.initialize();
+            String duration = mediaFileDuration(controller.value.duration.inSeconds);
+            double aspect = controller.value.aspectRatio; // width/height
+            Map<String,dynamic> data = {"path":newPath,
+                                        "name":fileName,
+                                        "size":fileSize,
+                                        "aspect":aspect,
+                                        "duration":duration};
+              addAudioVideoMessage( messageType, data);
+          } catch (e) {
+            debugPrint(e.toString());
+          } finally {
+            controller.dispose();
+          }
         }
       }
       hideProcessing();
@@ -253,6 +259,8 @@ class _PageItemsState extends State<PageItems> {
                                       "size":fileSize,
                                       "duration":duration};
             addAudioVideoMessage( messageType, data);
+          } else {
+            debugPrint("Could not get duration");
           }
         }
         hideProcessing();
