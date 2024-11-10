@@ -77,42 +77,19 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  // Handle sending text item
-  void addTextMessage() async {
-    final text = _textController.text.trim();
-    if (text.isNotEmpty) {
-      await checkAddDateItem();
-      int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-      ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId, "text": text, "type": 100000,"at": utcSeconds});
-      await item.insert();
-      setState(() {
-        _items.insert(0, item);
-        _textController.clear();
-      });
-    }
-  }
-
-  void addImageMessage(Uint8List bytes,int type,Map<String,dynamic> data) async {
+  // Handle adding text item
+  void _addItem(String text,
+                int type,
+                Uint8List? thumbnail,
+                Map<String,dynamic>? data,
+                ) async {
     await checkAddDateItem();
     int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
-                              "text": "",
+    ModelItem item = await ModelItem.fromMap({
+                              "group_id": widget.groupId,
+                              "text": text,
                               "type": type,
-                              "thumbnail":bytes,
-                              "data":data,
-                              "at": utcSeconds});
-    await item.insert();
-    setState(() {
-      _items.insert(0, item);
-    });
-  }
-
-  void addAudioVideoMessage(int type,Map<String,dynamic> data) async {
-    await checkAddDateItem();
-    int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    ModelItem item = await ModelItem.fromMap({"group_id": widget.groupId,
-                              "text": "",
-                              "type": type,
+                              "thumbnail":thumbnail,
                               "data":data,
                               "at": utcSeconds});
     await item.insert();
@@ -139,42 +116,80 @@ class _PageItemsState extends State<PageItems> {
     Navigator.pop(context);
   }
 
-  void processMedia(List<XFile> pickedFiles) async {
+  void processFiles(List<String> filePaths) async {
     showProcessing();
-      for (var pickedFile in pickedFiles) {
-        String filePath = pickedFile.path;
-        Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
-        String fileType = attrs["mime"];
-        String newPath = attrs["path"];
-        if (fileType == "image"){
-          Uint8List fileBytes = await File(newPath).readAsBytes();
-          Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
-          if(thumbnail != null){
-            Map<String,dynamic> data = {"path":newPath,
-                                        "name":attrs["name"],
-                                        "size":attrs["size"]};
-            addImageMessage(thumbnail, attrs["type"], data);
+    for (String filePath in filePaths){
+      Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
+      String mime = attrs["mime"];
+      String newPath = attrs["path"];
+      String type = mime.split("/").first;
+      switch(type){
+        case "image":
+          switch(mime){
+            case "image/gif":
+              Uint8List fileBytes = await File(newPath).readAsBytes();
+              Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+              if(thumbnail != null){
+                Map<String,dynamic> data = {"path":newPath,
+                                            "mime":attrs["mime"],
+                                            "name":attrs["name"],
+                                            "size":attrs["size"]};
+                _addItem("", 110100, thumbnail, data);
+              }
+            default:
+              Uint8List fileBytes = await File(newPath).readAsBytes();
+              Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+              if(thumbnail != null){
+                Map<String,dynamic> data = {"path":newPath,
+                                            "mime":attrs["mime"],
+                                            "name":attrs["name"],
+                                            "size":attrs["size"]};
+                _addItem("", 110000, thumbnail, data);
+              }
           }
-        } else if (fileType == "video"){
+        case "video":
           VideoPlayerController controller = VideoPlayerController.file(File(newPath));
           try {
             await controller.initialize();
             String duration = mediaFileDuration(controller.value.duration.inSeconds);
             double aspect = controller.value.aspectRatio; // width/height
             Map<String,dynamic> data = {"path":newPath,
+                                        "mime":attrs["mime"],
                                         "name":attrs["name"],
                                         "size":attrs["size"],
                                         "aspect":aspect,
                                         "duration":duration};
-              addAudioVideoMessage( attrs["type"], data);
+            _addItem("", 120000, null, data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
             controller.dispose();
           }
-        }
+        case "audio":
+          String? duration = await getAudioDuration(newPath);
+          if (duration != null){
+            Map<String,dynamic> data = {"path":newPath,
+                                        "mime":attrs["mime"],
+                                        "name":attrs["name"],
+                                        "size":attrs["size"],
+                                        "duration":duration};
+            _addItem("", 130000, null, data);
+          } else {
+            debugPrint("Could not get duration");
+          }
+        case "location":
+          debugPrint("location");
+        case "contact":
+          debugPrint("contact");
+        default:
+          Map<String,dynamic> data = {"path":newPath,
+                                      "mime":attrs["mime"],
+                                      "name":attrs["name"],
+                                      "size":attrs["size"]};
+          _addItem("", 140000, null, data);
       }
-      hideProcessing();
+    }
+    hideProcessing();
   }
 
   void _showMediaPickerDialog() {
@@ -211,45 +226,30 @@ class _PageItemsState extends State<PageItems> {
 
   // Handle adding a media item
   void _addMedia(String type) async {
-    if (type == "gallery") {
-      List<XFile> pickedFiles = await ImagePicker().pickMultipleMedia();
-      processMedia(pickedFiles);
-    } else if (type == "audio") {
+    if (type == "files") {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
-        type: FileType.audio, // Restrict to audio files
+        type: FileType.any, // Restrict to audio files
       );
       if (result != null){
-        showProcessing();
         List<PlatformFile> pickedFiles = result.files;
+        List<String> filePaths = [];
         for (var pickedFile in pickedFiles) {
           final String filePath = pickedFile.path!;
-          Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
-          String? duration = await getAudioDuration(attrs["path"]);
-          if (duration != null){
-            Map<String,dynamic> data = {"path":attrs["path"],
-                                      "name":attrs["name"],
-                                      "size":attrs["size"],
-                                      "duration":duration};
-            addAudioVideoMessage( attrs["type"], data);
-          } else {
-            debugPrint("Could not get duration");
-          }
+          filePaths.add(filePath);
         }
-        hideProcessing();
+        processFiles(filePaths);
       }
     } else if (type == "camera_image"){
       XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
       if (pickedFile != null){
-        processMedia([pickedFile]);
+        processFiles([pickedFile.path]);
       }
     } else if (type == "camera_video"){
       XFile? pickedFile = await ImagePicker().pickVideo(source: ImageSource.camera);
       if (pickedFile != null){
-        processMedia([pickedFile]);
+        processFiles([pickedFile.path]);
       }
-    } else if (type == "document"){
-
     }
   }
 
@@ -667,7 +667,12 @@ class _PageItemsState extends State<PageItems> {
           ),
           IconButton(
             icon: const Icon(Icons.send, color: Colors.blueAccent),
-            onPressed: addTextMessage,
+            onPressed: (){
+              final String text = _textController.text.trim();
+              if (text.isNotEmpty) {
+                _addItem(text, 100000, null, null);
+              }
+            }
           ),
         ],
       ),
@@ -682,14 +687,6 @@ class _PageItemsState extends State<PageItems> {
         return SafeArea(
           child: Wrap(
             children: [
-              ListTile(
-                leading: const Icon(Icons.audiotrack),
-                title: const Text("Audio"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('audio');
-                },
-              ),
               ListTile(
                 leading: const Icon(Icons.contact_phone),
                 title: const Text("Contact"),
@@ -706,14 +703,6 @@ class _PageItemsState extends State<PageItems> {
                   _addMedia('location');
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.insert_drive_file),
-                title: const Text("Document"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('document');
-                },
-              ),
               if(ImagePicker().supportsImageSource(ImageSource.camera))
               ListTile(
                 leading: const Icon(Icons.camera),
@@ -724,11 +713,11 @@ class _PageItemsState extends State<PageItems> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.image),
-                title: const Text("Gallery"),
+                leading: const Icon(Icons.insert_drive_file),
+                title: const Text("Files"),
                 onTap: () {
                   Navigator.pop(context);
-                  _addMedia('gallery');
+                  _addMedia('files');
                 },
               ),
             ],

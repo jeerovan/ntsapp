@@ -352,20 +352,20 @@ Future<Map<String,dynamic>> processAndGetFileAttributes(String filePath) async {
   File file = File(filePath);
   String fileName = basename(file.path);
   int fileSize = file.lengthSync();
-  final String? mime = lookupMimeType(filePath);
-  String fileType = "document";
-  if (mime != null){
-    fileType = mime.split("/").first;
+  String mime = "application/unknown";
+  String? fileMime = lookupMimeType(filePath);
+  if (fileMime != null){
+    mime = fileMime;
   }
-  File? existing = await getFile(fileType,fileName);
-  int messageType = getMessageType(mime);
-  String newPath = await getFilePath(fileType, fileName);
+  String directory = mime.split("/").first;
+  File? existing = await getFile(directory,fileName);
+  String newPath = await getFilePath(directory, fileName);
   await checkAndCreateDirectory(newPath);
   if(existing == null){
     Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
     await compute(copyFile,mediaData);
   }
-  return {"path":newPath,"name":fileName,"size":fileSize,"type":messageType,"mime":fileType};
+  return {"path":newPath,"name":fileName,"size":fileSize,"mime":mime};
 }
 
 class FloatingActionButtonWithBadge extends StatelessWidget {
