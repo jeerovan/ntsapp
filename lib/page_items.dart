@@ -6,7 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:ntsapp/page_map.dart';
 import 'package:ntsapp/page_media.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
 import 'model_item.dart';
@@ -246,6 +249,19 @@ class _PageItemsState extends State<PageItems> {
       if (pickedFile != null){
         processFiles([pickedFile.path]);
       }
+    } else if (type == "location"){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+                    builder: (context) => const LocationPicker(),
+        )
+      ).then((value) {
+        if (value != null){
+          LatLng position = value as LatLng;
+          Map<String,dynamic> data = {"lat":position.latitude,
+                                      "lng":position.longitude};
+          _addItem("", 150000, null, data);
+        }
+      });
     }
   }
 
@@ -304,13 +320,30 @@ class _PageItemsState extends State<PageItems> {
       case 140000:
         return _buildDocumentItem(item);
       case 150000:
-        return _buildMediaItem(Icons.location_on, 'Location');
+        return _buildLocationItem(item);
       case 160000:
         return _buildMediaItem(Icons.contact_phone, 'Contact');
       case 170000:
         return _buildDateItem(item);
       default:
         return const SizedBox.shrink();
+    }
+  }
+
+  Future<void> openLocationInMap(double latitude,double longitude) async {
+    final googleMapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+    final appleMapsUri = Uri.parse('https://maps.apple.com/?q=$latitude,$longitude');
+
+    if (await canLaunchUrl(googleMapsUri)) {
+      await launchUrl(googleMapsUri);
+    } else if (await canLaunchUrl(appleMapsUri)) {
+      await launchUrl(appleMapsUri);
+    } else {
+      // Open Google Maps URL in the browser as a fallback
+      await launchUrl(
+        googleMapsUri,
+        mode: LaunchMode.externalApplication, // Ensures it opens in the external browser
+      );
     }
   }
 
@@ -601,9 +634,11 @@ class _PageItemsState extends State<PageItems> {
           openMedia(item.data!["path"]);
         },
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          //crossAxisAlignment: CrossAxisAlignment.stretch,
+          //mainAxisSize: MainAxisSize.min,
           children: [
             Row(
+              //mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
                   Icons.file_open,
@@ -624,7 +659,6 @@ class _PageItemsState extends State<PageItems> {
               ],
             ),
             Row(
-              //mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // File size text at the left
@@ -639,6 +673,52 @@ class _PageItemsState extends State<PageItems> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationItem(ModelItem item){
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        width: 220.0,
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: GestureDetector(
+          onTap: (){
+            openLocationInMap(item.data!["lat"], item.data!["lng"]);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    color: Colors.blue,
+                    size: 40,
+                  ),
+                  Text(
+                    "Location",
+                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                  ),
+                ],
+              ),
+              Text(
+                formattedTime,
+                style: const TextStyle(color: Colors.grey, fontSize: 10),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -725,6 +805,7 @@ class _PageItemsState extends State<PageItems> {
               final String text = _textController.text.trim();
               if (text.isNotEmpty) {
                 _addItem(text, 100000, null, null);
+                _textController.clear();
               }
             }
           ),
