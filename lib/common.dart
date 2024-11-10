@@ -289,6 +289,14 @@ Uint8List getBlankImage(int size){
   return Uint8List.fromList(img.encodePng(blankImage));
 }
 
+String readableBytes(int bytes, [int decimals = 2]) {
+  if (bytes <= 0) return "0 B";
+  const suffixes = ["B", "KB", "MB", "GB", "TB"];
+  final i = (log(bytes) / log(1024)).floor();
+  final size = bytes / pow(1024, i);
+  return "${size.toStringAsFixed(decimals)} ${suffixes[i]}";
+}
+
 int getMessageType(String? mime){
   if(mime != null){
     String type = mime.split("/").first;

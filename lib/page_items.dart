@@ -177,10 +177,6 @@ class _PageItemsState extends State<PageItems> {
           } else {
             debugPrint("Could not get duration");
           }
-        case "location":
-          debugPrint("location");
-        case "contact":
-          debugPrint("contact");
         default:
           Map<String,dynamic> data = {"path":newPath,
                                       "mime":attrs["mime"],
@@ -306,7 +302,7 @@ class _PageItemsState extends State<PageItems> {
       case 130000:
         return _buildAudioItem(item);
       case 140000:
-        return _buildMediaItem(Icons.insert_drive_file, 'Document');
+        return _buildDocumentItem(item);
       case 150000:
         return _buildMediaItem(Icons.location_on, 'Location');
       case 160000:
@@ -586,6 +582,64 @@ class _PageItemsState extends State<PageItems> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentItem(ModelItem item){
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: GestureDetector(
+        onTap: (){
+          openMedia(item.data!["path"]);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.file_open,
+                  color: Colors.blue,
+                  size: 40,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text(
+                      item.data!["name"],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Color.fromARGB(255, 94, 94, 94), fontSize: 15),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              //mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // File size text at the left
+                Text(
+                  readableBytes(item.data!["size"]),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+                Text(
+                  formattedTime,
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
