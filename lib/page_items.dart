@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:mime/mime.dart';
 import 'package:ntsapp/page_media.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
@@ -143,30 +142,18 @@ class _PageItemsState extends State<PageItems> {
   void processMedia(List<XFile> pickedFiles) async {
     showProcessing();
       for (var pickedFile in pickedFiles) {
-        final String? mime = lookupMimeType(pickedFile.path);
-        String fileType = "document";
-        if (mime != null){
-          fileType = mime.split("/").first;
-        }
-        final String fileName = pickedFile.name;
-        final int fileSize = await pickedFile.length();
-        File? existing = await getFile(fileType,fileName);
-        int messageType = getMessageType(mime);
-        String oldPath = pickedFile.path;
-        String newPath = await getFilePath(fileType, fileName);
-        await checkAndCreateDirectory(newPath);
-        if(existing == null){
-          Map<String,String> mediaData = {"oldPath":oldPath,"newPath":newPath};
-          await compute(copyFile,mediaData);
-        }
+        String filePath = pickedFile.path;
+        Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
+        String fileType = attrs["mime"];
+        String newPath = attrs["path"];
         if (fileType == "image"){
           Uint8List fileBytes = await File(newPath).readAsBytes();
           Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
           if(thumbnail != null){
             Map<String,dynamic> data = {"path":newPath,
-                                        "name":fileName,
-                                        "size":fileSize};
-            addImageMessage(thumbnail, messageType, data);
+                                        "name":attrs["name"],
+                                        "size":attrs["size"]};
+            addImageMessage(thumbnail, attrs["type"], data);
           }
         } else if (fileType == "video"){
           VideoPlayerController controller = VideoPlayerController.file(File(newPath));
@@ -175,11 +162,11 @@ class _PageItemsState extends State<PageItems> {
             String duration = mediaFileDuration(controller.value.duration.inSeconds);
             double aspect = controller.value.aspectRatio; // width/height
             Map<String,dynamic> data = {"path":newPath,
-                                        "name":fileName,
-                                        "size":fileSize,
+                                        "name":attrs["name"],
+                                        "size":attrs["size"],
                                         "aspect":aspect,
                                         "duration":duration};
-              addAudioVideoMessage( messageType, data);
+              addAudioVideoMessage( attrs["type"], data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
@@ -237,28 +224,14 @@ class _PageItemsState extends State<PageItems> {
         List<PlatformFile> pickedFiles = result.files;
         for (var pickedFile in pickedFiles) {
           final String filePath = pickedFile.path!;
-          final String? mime = lookupMimeType(filePath);
-          String fileType = "document";
-          if (mime != null){
-            fileType = mime.split("/").first;
-          }
-          final String fileName = pickedFile.name;
-          final int fileSize = pickedFile.size;
-          File? existing = await getFile(fileType,fileName);
-          int messageType = getMessageType(mime);
-          String newPath = await getFilePath(fileType, fileName);
-          await checkAndCreateDirectory(newPath);
-          if(existing == null){
-            Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
-            await compute(copyFile,mediaData);
-          }
-          String? duration = await getAudioDuration(filePath);
+          Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
+          String? duration = await getAudioDuration(attrs["path"]);
           if (duration != null){
-            Map<String,dynamic> data = {"path":newPath,
-                                      "name":fileName,
-                                      "size":fileSize,
+            Map<String,dynamic> data = {"path":attrs["path"],
+                                      "name":attrs["name"],
+                                      "size":attrs["size"],
                                       "duration":duration};
-            addAudioVideoMessage( messageType, data);
+            addAudioVideoMessage( attrs["type"], data);
           } else {
             debugPrint("Could not get duration");
           }
@@ -275,6 +248,8 @@ class _PageItemsState extends State<PageItems> {
       if (pickedFile != null){
         processMedia([pickedFile]);
       }
+    } else if (type == "document"){
+
     }
   }
 
@@ -565,60 +540,52 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildAudioItem(ModelItem item){
     final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
     final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GestureDetector(
-          onTap: () {
-            viewMedia(item.id!,item.data!["path"]);
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          WidgetAudio(item: item),
+          Row(
+            //mainAxisSize: MainAxisSize.max,
+            //mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              WidgetAudio(item: item),
+              // File size text at the left
               Row(
-                //mainAxisSize: MainAxisSize.max,
-                //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // File size text at the left
-                  Row(
-                    children: [
-                      const Icon(Icons.audiotrack,color: Colors.grey,size: 20),
-                      const SizedBox(width: 2,),
-                      Text(
-                        item.data!["duration"],
-                        style: const TextStyle(color: Colors.grey, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Text(
-                          item.data!["name"],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Color.fromARGB(255, 94, 94, 94), fontSize: 15),
-                        ),
-                      ),
-                    ),
-                  ),
+                  const Icon(Icons.audiotrack,color: Colors.grey,size: 20),
+                  const SizedBox(width: 2,),
                   Text(
-                    formattedTime,
+                    item.data!["duration"],
                     style: const TextStyle(color: Colors.grey, fontSize: 10),
                   ),
                 ],
               ),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text(
+                      item.data!["name"],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Color.fromARGB(255, 94, 94, 94), fontSize: 15),
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                formattedTime,
+                style: const TextStyle(color: Colors.grey, fontSize: 10),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -716,11 +683,35 @@ class _PageItemsState extends State<PageItems> {
           child: Wrap(
             children: [
               ListTile(
-                leading: const Icon(Icons.image),
-                title: const Text("Gallery"),
+                leading: const Icon(Icons.audiotrack),
+                title: const Text("Audio"),
                 onTap: () {
                   Navigator.pop(context);
-                  _addMedia('gallery');
+                  _addMedia('audio');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.contact_phone),
+                title: const Text("Contact"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMedia('contact');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.location_on),
+                title: const Text("Location"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMedia('location');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.insert_drive_file),
+                title: const Text("Document"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addMedia('document');
                 },
               ),
               if(ImagePicker().supportsImageSource(ImageSource.camera))
@@ -733,35 +724,11 @@ class _PageItemsState extends State<PageItems> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.audiotrack),
-                title: const Text("Audio"),
+                leading: const Icon(Icons.image),
+                title: const Text("Gallery"),
                 onTap: () {
                   Navigator.pop(context);
-                  _addMedia('audio');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.location_on),
-                title: const Text("Location"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('location');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.contact_phone),
-                title: const Text("Contact"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('contact');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.insert_drive_file),
-                title: const Text("Document"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('document');
+                  _addMedia('gallery');
                 },
               ),
             ],

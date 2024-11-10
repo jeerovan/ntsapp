@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:math' as math;
@@ -302,11 +304,17 @@ int getMessageType(String? mime){
         return 120000;
       case "audio":
         return 130000;
-      default:
+      case "document":
         return 140000;
+      case "location":
+        return 150000;
+      case "contact":
+        return 160000;
+      default:
+        return 100000;
     }
   }
-  return 140000;
+  return 100000;
 }
 
 Future<File?> getFile(String fileType,String fileName) async {
@@ -338,6 +346,26 @@ Future<void> checkAndCreateDirectory(String filePath) async {
     // Create the directory if it does not exist
     await directory.create(recursive: true);
   }
+}
+
+Future<Map<String,dynamic>> processAndGetFileAttributes(String filePath) async {
+  File file = File(filePath);
+  String fileName = basename(file.path);
+  int fileSize = file.lengthSync();
+  final String? mime = lookupMimeType(filePath);
+  String fileType = "document";
+  if (mime != null){
+    fileType = mime.split("/").first;
+  }
+  File? existing = await getFile(fileType,fileName);
+  int messageType = getMessageType(mime);
+  String newPath = await getFilePath(fileType, fileName);
+  await checkAndCreateDirectory(newPath);
+  if(existing == null){
+    Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
+    await compute(copyFile,mediaData);
+  }
+  return {"path":newPath,"name":fileName,"size":fileSize,"type":messageType,"mime":fileType};
 }
 
 class FloatingActionButtonWithBadge extends StatelessWidget {
@@ -691,38 +719,33 @@ class _WidgetAudioState extends State<WidgetAudio> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
-          children: [
-            IconButton(
-              icon: Icon(
-                _isPlaying ? Icons.pause_circle : Icons.play_circle,
-                color: Colors.blue,
-                size: 40,
-              ),
-              onPressed: _togglePlayPause,
-            ),
-            Expanded(
-              child: Slider(
-                activeColor: Colors.blue,
-                inactiveColor: Colors.grey[300],
-                min: 0,
-                max: _totalDuration.inSeconds.toDouble(),
-                value: _currentPosition.inSeconds.toDouble(),
-                onChanged: (value) async {
-                  // Seek to the new position in the audio
-                  final newPosition = Duration(seconds: value.toInt()-1);
-                  await _audioPlayer.seek(newPosition);
-                },
-              ),
-            ),
-            Text(
-              mediaFileDuration(_currentPosition.inSeconds),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
+        IconButton(
+          icon: Icon(
+            _isPlaying ? Icons.pause_circle : Icons.play_circle,
+            color: Colors.blue,
+            size: 40,
+          ),
+          onPressed: _togglePlayPause,
+        ),
+        Expanded(
+          child: Slider(
+            activeColor: Colors.blue,
+            inactiveColor: Colors.grey[300],
+            min: 0,
+            max: _totalDuration.inSeconds.toDouble(),
+            value: _currentPosition.inSeconds.toDouble(),
+            onChanged: (value) async {
+              // Seek to the new position in the audio
+              final newPosition = Duration(seconds: value.toInt()-1);
+              await _audioPlayer.seek(newPosition);
+            },
+          ),
+        ),
+        Text(
+          mediaFileDuration(_currentPosition.inSeconds),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
     );

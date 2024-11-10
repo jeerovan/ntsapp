@@ -35,10 +35,10 @@ class DatabaseHelper {
       CREATE TABLE itemgroup (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        thumbnail BLOB,
         pinned INTEGER,
         color TEXT,
-        at INTEGER
+        at INTEGER,
+        thumbnail BLOB
       )
     ''');
     await db.execute('''
@@ -49,11 +49,11 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         group_id TEXT NOT NULL,
         text TEXT,
-        thumbnail BLOB,
         starred INTEGER,
         type INTEGER,
         data TEXT,
         at INTEGER,
+        thumbnail BLOB,
         FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE
       )
     ''');
