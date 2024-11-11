@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'common.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;

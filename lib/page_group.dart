@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/page_items.dart';
 import 'package:ntsapp/page_settings.dart';
+import 'model_item.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
 
@@ -67,11 +69,16 @@ class _PageGroupState extends State<PageGroup> {
   void navigateToItems(String groupId){
     Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => PageItems(groupId: groupId,),
-          ));
+          )).then((_) {
+            setState(() {
+              initialLoad();
+            });
+          });
   }
 
   @override
   Widget build(BuildContext context) {
+    double size = 45;
     return Scaffold(
       appBar: AppBar(
         title: const Text('NoteBox'),
@@ -112,7 +119,25 @@ class _PageGroupState extends State<PageGroup> {
             }
             final item = _items[index];
             return ListTile(
+              leading: Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: colorFromHex(item.color),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center, // Center the text inside the circle
+                child: Text(
+                  item.title[0].toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: size / 2, // Adjust font size relative to the circle size
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               title: Text(item.title),
+              subtitle: MessageSummary(item: item.lastItem),
               onTap: () => navigateToItems(item.id!),
             );
           },
@@ -126,6 +151,98 @@ class _PageGroupState extends State<PageGroup> {
         shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class MessageSummary extends StatelessWidget {
+  final ModelItem? item;
+
+  const MessageSummary({
+    super.key,
+    this.item
+  });
+
+  IconData _getIcon() {
+    if (item == null){
+      return Icons.text_snippet;
+    } else {
+      switch (item!.type) {
+        case 100000:
+          return Icons.text_snippet;
+        case 110000:
+        case 110100:
+          return Icons.image;
+        case 120000:
+          return Icons.videocam;
+        case 130000:
+          return Icons.audiotrack;
+        case 160000:
+          return Icons.contact_phone;
+        case 150000:
+          return Icons.location_on;
+        default: // Document
+          return Icons.insert_drive_file;
+      }
+    }
+  }
+
+  String _getMessageText() {
+    if (item == null) {
+      return "So empty...";
+    } else {
+      switch (item!.type) {
+        case 100000:
+          return item!.text; // Text content
+        case 110000:
+        case 110100:
+        case 120000:
+        case 130000:
+        case 140000:
+          return item!.data!["name"]; // File name for media types
+        case 160000:
+          return item!.data!["name"]; // Contact name
+        case 150000:
+          return "Location";
+        default:
+          return "Unknown";
+      }
+    }
+  }
+
+  String _formatTimestamp() {
+    if (item == null){
+      return "";
+    } else {
+      final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item!.at! * 1000, isUtc: true);
+      final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); 
+      return formattedTime;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          _getIcon(),
+          color: Colors.grey,
+          size: 15,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            _getMessageText(),
+            overflow: TextOverflow.ellipsis, // Ellipsis for long text
+            style: const TextStyle(fontSize: 12, color: Colors.black),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          _formatTimestamp(),
+          style: const TextStyle(fontSize: 10, color: Colors.grey),
+        ),
+      ],
     );
   }
 }

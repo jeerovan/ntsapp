@@ -666,7 +666,7 @@ class _PageItemsState extends State<PageItems> {
               //mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
-                  Icons.file_open,
+                  Icons.insert_drive_file,
                   color: Colors.blue,
                   size: 40,
                 ),

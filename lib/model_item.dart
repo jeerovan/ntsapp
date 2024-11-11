@@ -5,12 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
-import 'model_item_group.dart';
 
 class ModelItem {
   String? id;
   String groupId;
-  ModelGroup? group;
   String text;
   Uint8List? thumbnail;
   int? starred;
@@ -20,7 +18,6 @@ class ModelItem {
   ModelItem({
     this.id,
     required this.groupId,
-    this.group,
     required this.text,
     this.thumbnail,
     this.starred,
@@ -32,7 +29,6 @@ class ModelItem {
     return ModelItem(
       id:null,
       groupId:"",
-      group:null,
       text:"",
       thumbnail:null,
       starred: 0,
@@ -54,7 +50,6 @@ class ModelItem {
     };
   }
   static Future<ModelItem> fromMap(Map<String,dynamic> map) async {
-    ModelGroup? group = await ModelGroup.get(map['group_id']);
     Uuid uuid = const Uuid();
     Map<String, dynamic>? dataMap;
     if (map.containsKey('data') && map['data'] != null) {
@@ -67,7 +62,6 @@ class ModelItem {
     return ModelItem(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       groupId:map.containsKey('group_id') ? map['group_id'] : 0,
-      group:group,
       text:map.containsKey('text') ? map['text'] : "",
       thumbnail:map.containsKey('thumbnail') ? map['thumbnail'] : null,
       starred: map.containsKey('starred') ? map['starred'] : 0,
@@ -158,6 +152,21 @@ class ModelItem {
     if (rows.isNotEmpty) {
       Map<String,dynamic> map = rows.first;
       return fromMap(map);
+    }
+    return null;
+  }
+  static Future<ModelItem?> getLatestInGroup(String groupId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      "item",
+      where: "type != 170000 AND group_id == ?",
+      whereArgs: [groupId],
+      orderBy:'at DESC',
+      limit: 1,
+    );
+    if (rows.isNotEmpty){
+      return fromMap(rows.first);
     }
     return null;
   }

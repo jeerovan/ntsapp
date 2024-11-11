@@ -1,6 +1,9 @@
 import 'dart:typed_data';
+import 'dart:ui';
+import 'package:ntsapp/common.dart';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
+import 'model_item.dart';
 
 class ModelGroup {
   String? id;
@@ -9,6 +12,7 @@ class ModelGroup {
   int pinned;
   String color;
   int? at;
+  ModelItem? lastItem;
   ModelGroup({
     this.id,
     required this.title,
@@ -16,6 +20,7 @@ class ModelGroup {
     required this.pinned,
     required this.color,
     this.at,
+    this.lastItem,
   });
   factory ModelGroup.init(){
     return ModelGroup(
@@ -25,6 +30,7 @@ class ModelGroup {
       pinned: 0,
       color: "",
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      lastItem: null,
     );
   }
   Map<String,dynamic> toMap() {
@@ -39,13 +45,16 @@ class ModelGroup {
   }
   static Future<ModelGroup> fromMap(Map<String,dynamic> map) async {
     Uuid uuid = const Uuid();
+    String groupId = map.containsKey("id") ? map['id'] : uuid.v4();
+    ModelItem? item = await ModelItem.getLatestInGroup(groupId);
     return ModelGroup(
-      id:map.containsKey('id') ? map['id'] : uuid.v4(),
+      id: groupId,
       title:map.containsKey('title') ? map['title'] : "",
       thumbnail: map.containsKey('thumbnail') ? map['thumbnail'] : null,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      lastItem: item,
     );
   }
   static Future<List<ModelGroup>> all(int offset, int limit) async {
@@ -57,6 +66,16 @@ class ModelGroup {
       offset: offset,
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+  static Future<int> getCount() async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String sql = '''
+      SELECT count(*) as count
+      FROM itemgroup
+    ''';
+    final rows = await db.rawQuery(sql,);
+    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
   static Future<ModelGroup?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
@@ -75,7 +94,10 @@ class ModelGroup {
       where: 'title == ?',
       whereArgs: ['%$title%']);
     if(rows.isEmpty){
-      ModelGroup group = await fromMap({"title":title});
+      int count = await getCount();
+      Color color = getMaterialColor(count+1);
+      String hexCode = colorToHex(color);
+      ModelGroup group = await fromMap({"title":title,"color":hexCode});
       int added = await group.insert();
       if (added > 0){
         return group;

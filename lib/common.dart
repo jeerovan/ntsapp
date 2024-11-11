@@ -297,6 +297,18 @@ String readableBytes(int bytes, [int decimals = 2]) {
   return "${size.toStringAsFixed(decimals)} ${suffixes[i]}";
 }
 
+Color getMaterialColor(int index){
+  return Colors.primaries[index % Colors.primaries.length];
+}
+Color colorFromHex(String hexString) {
+  hexString = hexString.replaceFirst('#', ''); // Remove # if present
+  int colorInt = int.parse(hexString, radix: 16);
+  return Color(colorInt);
+}
+String colorToHex(Color color) {
+  return '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+}
+
 int getMessageType(String? mime){
   if(mime != null){
     String type = mime.split("/").first;

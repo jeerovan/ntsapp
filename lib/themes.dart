@@ -44,7 +44,7 @@ class AppThemes {
     primaryColor: Colors.teal,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: Colors.black,
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal).copyWith(
+    colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.dark).copyWith(
       primaryContainer: Colors.teal,
       onPrimaryContainer: Colors.black,
       secondaryContainer: const Color(0xff03dac6),
