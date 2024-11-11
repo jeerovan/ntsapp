@@ -758,19 +758,18 @@ class _PageItemsState extends State<PageItems> {
         margin: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(10),
         ),
         child: GestureDetector(
           onTap: () {
-            // Handle tap action, e.g., view details or make a call
+            // Add to contacts
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Container(
               width: 200,
               padding: const EdgeInsets.all(10),
-              //color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -791,14 +790,12 @@ class _PageItemsState extends State<PageItems> {
                     children: [
                       Text(
                         '${item.data!["name"]}'.trim(),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 5),
-
                   // Phones Row
                   Row(
                     children: [
@@ -811,7 +808,7 @@ class _PageItemsState extends State<PageItems> {
                             ...item.data!["phones"].map((phone) => 
                             Text(
                               phone,
-                              style: const TextStyle(fontSize: 14, color: Colors.black),
+                              style: const TextStyle(fontSize: 14,),
                               overflow: TextOverflow.ellipsis,
                             ))
                           ],
@@ -819,9 +816,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 5),
-
                   // Emails Row (if available)
                   if (item.data!["emails"].isNotEmpty)
                     Row(
@@ -835,7 +830,7 @@ class _PageItemsState extends State<PageItems> {
                               ...item.data!["emails"].map((email) => (
                                 Text(
                                   email,
-                                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                                  style: const TextStyle(fontSize: 14,),
                                   overflow: TextOverflow.ellipsis,
                                 )
                               ))
@@ -844,9 +839,7 @@ class _PageItemsState extends State<PageItems> {
                         ),
                       ],
                     ),
-
                   const SizedBox(height: 5),
-
                   // Addresses Row (if available)
                   if (item.data!["addresses"].isNotEmpty)
                     Row(
@@ -860,7 +853,7 @@ class _PageItemsState extends State<PageItems> {
                               ...item.data!["addresses"].map((address) => (
                               Text(
                                 address,
-                                style: const TextStyle(fontSize: 14, color: Colors.black),
+                                style: const TextStyle(fontSize: 14,),
                                 overflow: TextOverflow.ellipsis,
                               )
                               )),
