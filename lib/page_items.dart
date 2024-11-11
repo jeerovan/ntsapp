@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ntsapp/page_contacts.dart';
 import 'package:ntsapp/page_map.dart';
 import 'package:ntsapp/page_media.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -262,6 +264,29 @@ class _PageItemsState extends State<PageItems> {
           _addItem("", 150000, null, data);
         }
       });
+    } else if (type == "contact"){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+                    builder: (context) =>  const PageContacts(),
+        )
+      ).then((value) {
+        if (value != null){
+          Contact contact = value as Contact;
+          List<String> phones = contact.phones.map((phone) => phone.number).toList();
+          List<String> emails = contact.emails.map((email) => email.address).toList();
+          List<String> addresses = contact.addresses.map((address) => address.address).toList();
+          String phoneNumbers = phones.join("|");
+          String details = '${contact.displayName}|${contact.name.first}|${contact.name.last}|$phoneNumbers';
+          Map<String,dynamic> data = {"name":contact.displayName,
+                                      "first":contact.name.first,
+                                      "last":contact.name.last,
+                                      "phones":phones,
+                                      "emails":emails,
+                                      "addresses":addresses
+                                      };
+          _addItem(details, 160000, contact.thumbnail, data);
+        }
+      });
     }
   }
 
@@ -322,7 +347,7 @@ class _PageItemsState extends State<PageItems> {
       case 150000:
         return _buildLocationItem(item);
       case 160000:
-        return _buildMediaItem(Icons.contact_phone, 'Contact');
+        return _buildContactItem(item);
       case 170000:
         return _buildDateItem(item);
       default:
@@ -724,6 +749,144 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
+  Widget _buildContactItem(ModelItem item){
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
+    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); 
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: GestureDetector(
+          onTap: () {
+            // Handle tap action, e.g., view details or make a call
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 200,
+              padding: const EdgeInsets.all(10),
+              //color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child:item.thumbnail != null
+                    ? CircleAvatar(
+                        radius: 50,
+                        backgroundImage: MemoryImage(item.thumbnail!),
+                      )
+                    : const CircleAvatar(
+                        radius: 50,
+                        child: Icon(Icons.person,size:50),
+                      ),
+                  ),
+                  // Name Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${item.data!["name"]}'.trim(),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  // Phones Row
+                  Row(
+                    children: [
+                      const Icon(Icons.phone, size: 16, color: Colors.blue),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ...item.data!["phones"].map((phone) => 
+                            Text(
+                              phone,
+                              style: const TextStyle(fontSize: 14, color: Colors.black),
+                              overflow: TextOverflow.ellipsis,
+                            ))
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  // Emails Row (if available)
+                  if (item.data!["emails"].isNotEmpty)
+                    Row(
+                      children: [
+                        const Icon(Icons.email, size: 16, color: Colors.red),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...item.data!["emails"].map((email) => (
+                                Text(
+                                  email,
+                                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              ))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 5),
+
+                  // Addresses Row (if available)
+                  if (item.data!["addresses"].isNotEmpty)
+                    Row(
+                      children: [
+                        const Icon(Icons.home, size: 16, color: Colors.green),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...item.data!["addresses"].map((address) => (
+                              Text(
+                                address,
+                                style: const TextStyle(fontSize: 14, color: Colors.black),
+                                overflow: TextOverflow.ellipsis,
+                              )
+                              )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        formattedTime,
+                        style: const TextStyle(color: Colors.grey, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDateItem(ModelItem item) {
     String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true));
     return Center(
@@ -822,6 +985,7 @@ class _PageItemsState extends State<PageItems> {
         return SafeArea(
           child: Wrap(
             children: [
+              if(Platform.isAndroid || Platform.isIOS)
               ListTile(
                 leading: const Icon(Icons.contact_phone),
                 title: const Text("Contact"),
