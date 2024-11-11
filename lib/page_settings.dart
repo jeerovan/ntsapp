@@ -53,16 +53,6 @@ class SettingsPageState extends State<SettingsPage> {
               onPressed: widget.onThemeToggle,
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.feedback),
-            title: const Text('Feedback'),
-            onTap: () => _redirectToFeedback(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.storage),
-            title: const Text('Github'),
-            onTap: () => _redirectToGithub(),
-          ),
           FutureBuilder<PackageInfo>(
             future: PackageInfo.fromPlatform(),
             builder: (context, snapshot) {
@@ -85,17 +75,5 @@ class SettingsPageState extends State<SettingsPage> {
         ],
       )
     );
-  }
-
-  void _redirectToFeedback() {
-    const url = 'https://play.google.com/store/apps/details?id=com.forget.it';
-    // Use your package name
-    openURL(url);
-  }
-
-  void _redirectToGithub() {
-    const url = 'https://github.com/jeerovan/forgetit';
-    // Use your package name
-    openURL(url);
   }
 }
