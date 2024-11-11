@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:ntsapp/page_contacts.dart';
+import 'package:ntsapp/page_group_edit.dart';
 import 'package:ntsapp/page_map.dart';
 import 'package:ntsapp/page_media.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -31,7 +32,7 @@ class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
   final TextEditingController _textController = TextEditingController();
-  ModelGroup group = ModelGroup.init();
+  ModelGroup? group;
 
   bool _isLoading = false;
   bool _hasMore = true;
@@ -290,11 +291,66 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  void editGroup(){
+    Navigator.of(context)
+    .push(MaterialPageRoute(
+      builder: (context) => PageGroupEdit(
+        group: group!,
+        onUpdate: (){setState(() {});},
+        ),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
+    double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: Text(group.title),
+        title: group == null
+              ? const SizedBox.shrink()
+              : GestureDetector(
+                onTap: () {
+                  editGroup();
+                },
+                child: Row(
+                  children: [
+                    group!.thumbnail == null
+                    ? Container(
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          color: colorFromHex(group!.color),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center, // Center the text inside the circle
+                        child: Text(
+                          group!.title[0].toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: size / 2, // Adjust font size relative to the circle size
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Center(
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundImage: MemoryImage(group!.thumbnail!),
+                          ),
+                        ),
+                    ),
+                    const SizedBox(width: 5,),
+                    Expanded(
+                      child: Text(
+                        group!.title,
+                        overflow: TextOverflow.ellipsis, 
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ),
       body: Column(
         children: [
@@ -903,30 +959,6 @@ class _PageItemsState extends State<PageItems> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-
-  // Media item bubble
-  Widget _buildMediaItem(IconData icon, String label) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.blueAccent),
-            const SizedBox(width: 8),
-            Text(label),
-          ],
-        ),
       ),
     );
   }

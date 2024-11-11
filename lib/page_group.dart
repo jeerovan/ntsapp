@@ -78,7 +78,7 @@ class _PageGroupState extends State<PageGroup> {
 
   @override
   Widget build(BuildContext context) {
-    double size = 45;
+    double size = 40;
     return Scaffold(
       appBar: AppBar(
         title: const Text('NoteBox'),
@@ -119,21 +119,35 @@ class _PageGroupState extends State<PageGroup> {
             }
             final item = _items[index];
             return ListTile(
-              leading: Container(
+              leading: item.thumbnail == null
+                ? Container(
+                    width: size,
+                    height: size,
+                    decoration: BoxDecoration(
+                      color: colorFromHex(item.color),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center, // Center the text inside the circle
+                    child: Text(
+                      item.title[0].toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: size / 2, // Adjust font size relative to the circle size
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+              : SizedBox(
                 width: size,
                 height: size,
-                decoration: BoxDecoration(
-                  color: colorFromHex(item.color),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center, // Center the text inside the circle
-                child: Text(
-                  item.title[0].toUpperCase(),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: size / 2, // Adjust font size relative to the circle size
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Center(
+                      child: CircleAvatar(
+                        radius: 20,
+                        backgroundImage: MemoryImage(item.thumbnail!),
+                      ),
+                    ),
                 ),
               ),
               title: Text(item.title),
@@ -234,13 +248,13 @@ class MessageSummary extends StatelessWidget {
           child: Text(
             _getMessageText(),
             overflow: TextOverflow.ellipsis, // Ellipsis for long text
-            style: const TextStyle(fontSize: 12, color: Colors.black),
+            style: const TextStyle(fontSize: 12,),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           _formatTimestamp(),
-          style: const TextStyle(fontSize: 10, color: Colors.grey),
+          style: const TextStyle(fontSize: 10,),
         ),
       ],
     );
