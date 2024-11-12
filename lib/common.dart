@@ -744,15 +744,18 @@ class _WidgetAudioState extends State<WidgetAudio> {
         IconButton(
           icon: Icon(
             _isPlaying ? Icons.pause_circle : Icons.play_circle,
-            color: Colors.blue,
             size: 40,
           ),
           onPressed: _togglePlayPause,
         ),
         Expanded(
           child: Slider(
-            activeColor: Colors.blue,
-            inactiveColor: Colors.grey[300],
+            activeColor: Theme.of(context).brightness == Brightness.dark
+                ? Theme.of(context).colorScheme.primary
+                : Colors.blue,
+            inactiveColor: Theme.of(context).brightness == Brightness.dark
+                ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
+                : Colors.grey[300],
             min: 0,
             max: _totalDuration.inSeconds.toDouble(),
             value: _currentPosition.inSeconds.toDouble(),

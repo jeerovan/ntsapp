@@ -7,7 +7,7 @@ import 'model_item.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
 
-bool debug = true;
+bool debug = false;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
@@ -81,7 +81,7 @@ class _PageGroupState extends State<PageGroup> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NoteBox'),
+        title: const Text('NTS'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -240,7 +240,6 @@ class MessageSummary extends StatelessWidget {
       children: [
         Icon(
           _getIcon(),
-          color: Colors.grey,
           size: 15,
         ),
         const SizedBox(width: 8),

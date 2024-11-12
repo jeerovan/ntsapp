@@ -486,12 +486,11 @@ class _PageItemsState extends State<PageItems> {
           children: [
             Text(
               item.text,
-              style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 5),
             Text(
               formattedTime,
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
+              style: const TextStyle(fontSize: 10),
             ),
           ],
         ),
@@ -624,7 +623,7 @@ class _PageItemsState extends State<PageItems> {
                       // File size text at the left
                       Row(
                         children: [
-                          const Icon(Icons.videocam,color: Colors.white,size: 20),
+                          const Icon(Icons.videocam, size: 20),
                           const SizedBox(width: 2,),
                           Text(
                             item.data!["duration"],
@@ -668,11 +667,11 @@ class _PageItemsState extends State<PageItems> {
               // File size text at the left
               Row(
                 children: [
-                  const Icon(Icons.audiotrack,color: Colors.grey,size: 20),
+                  const Icon(Icons.audiotrack,size: 15),
                   const SizedBox(width: 2,),
                   Text(
                     item.data!["duration"],
-                    style: const TextStyle(color: Colors.grey, fontSize: 10),
+                    style: const TextStyle(fontSize: 10),
                   ),
                 ],
               ),
@@ -684,14 +683,14 @@ class _PageItemsState extends State<PageItems> {
                       item.data!["name"],
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Color.fromARGB(255, 94, 94, 94), fontSize: 15),
+                      style: const TextStyle( fontSize: 15),
                     ),
                   ),
                 ),
               ),
               Text(
                 formattedTime,
-                style: const TextStyle(color: Colors.grey, fontSize: 10),
+                style: const TextStyle(fontSize: 10),
               ),
             ],
           ),
@@ -723,7 +722,6 @@ class _PageItemsState extends State<PageItems> {
               children: [
                 const Icon(
                   Icons.insert_drive_file,
-                  color: Colors.blue,
                   size: 40,
                 ),
                 Expanded(
@@ -733,7 +731,7 @@ class _PageItemsState extends State<PageItems> {
                       item.data!["name"],
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Color.fromARGB(255, 94, 94, 94), fontSize: 15),
+                      style: const TextStyle( fontSize: 15),
                     ),
                   ),
                 ),
@@ -745,11 +743,11 @@ class _PageItemsState extends State<PageItems> {
                 // File size text at the left
                 Text(
                   readableBytes(item.data!["size"]),
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  style: const TextStyle(fontSize: 10),
                 ),
                 Text(
                   formattedTime,
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  style: const TextStyle(fontSize: 10),
                 ),
               ],
             ),
@@ -952,7 +950,6 @@ class _PageItemsState extends State<PageItems> {
             child: Text(
               dateText,
               style: const TextStyle(
-                color: Color.fromARGB(255, 87, 87, 87),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
