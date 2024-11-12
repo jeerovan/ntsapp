@@ -136,21 +136,25 @@ class _PageItemsState extends State<PageItems> {
               Uint8List fileBytes = await File(newPath).readAsBytes();
               Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
               if(thumbnail != null){
+                String name = attrs["name"];
                 Map<String,dynamic> data = {"path":newPath,
                                             "mime":attrs["mime"],
-                                            "name":attrs["name"],
+                                            "name":name,
                                             "size":attrs["size"]};
-                _addItem("", 110100, thumbnail, data);
+                String text = 'DND|#image|$name';
+                _addItem(text, 110100, thumbnail, data);
               }
             default:
               Uint8List fileBytes = await File(newPath).readAsBytes();
               Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
               if(thumbnail != null){
+                String name = attrs["name"];
                 Map<String,dynamic> data = {"path":newPath,
                                             "mime":attrs["mime"],
-                                            "name":attrs["name"],
+                                            "name":name,
                                             "size":attrs["size"]};
-                _addItem("", 110000, thumbnail, data);
+                String text = 'DND|#image|$name';
+                _addItem(text, 110000, thumbnail, data);
               }
           }
         case "video":
@@ -159,13 +163,15 @@ class _PageItemsState extends State<PageItems> {
             await controller.initialize();
             String duration = mediaFileDuration(controller.value.duration.inSeconds);
             double aspect = controller.value.aspectRatio; // width/height
+            String name = attrs["name"];
             Map<String,dynamic> data = {"path":newPath,
                                         "mime":attrs["mime"],
-                                        "name":attrs["name"],
+                                        "name":name,
                                         "size":attrs["size"],
                                         "aspect":aspect,
                                         "duration":duration};
-            _addItem("", 120000, null, data);
+            String text = 'DND|#video|$name';
+            _addItem(text, 120000, null, data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
@@ -174,21 +180,25 @@ class _PageItemsState extends State<PageItems> {
         case "audio":
           String? duration = await getAudioDuration(newPath);
           if (duration != null){
+            String name = attrs["name"];
             Map<String,dynamic> data = {"path":newPath,
                                         "mime":attrs["mime"],
-                                        "name":attrs["name"],
+                                        "name":name,
                                         "size":attrs["size"],
                                         "duration":duration};
-            _addItem("", 130000, null, data);
+            String text = 'DND|#audio|$name';
+            _addItem(text, 130000, null, data);
           } else {
             debugPrint("Could not get duration");
           }
         default:
+          String name = attrs["name"];
           Map<String,dynamic> data = {"path":newPath,
                                       "mime":attrs["mime"],
-                                      "name":attrs["name"],
+                                      "name":name,
                                       "size":attrs["size"]};
-          _addItem("", 140000, null, data);
+          String text = 'DND|#document|$name';
+          _addItem(text, 140000, null, data);
       }
     }
     hideProcessing();
@@ -262,7 +272,7 @@ class _PageItemsState extends State<PageItems> {
           LatLng position = value as LatLng;
           Map<String,dynamic> data = {"lat":position.latitude,
                                       "lng":position.longitude};
-          _addItem("", 150000, null, data);
+          _addItem("DND|#location", 150000, null, data);
         }
       });
     } else if (type == "contact"){
@@ -277,7 +287,7 @@ class _PageItemsState extends State<PageItems> {
           List<String> emails = contact.emails.map((email) => email.address).toList();
           List<String> addresses = contact.addresses.map((address) => address.address).toList();
           String phoneNumbers = phones.join("|");
-          String details = '${contact.displayName}|${contact.name.first}|${contact.name.last}|$phoneNumbers';
+          String details = 'DND|#contact|${contact.displayName}|${contact.name.first}|${contact.name.last}|$phoneNumbers';
           Map<String,dynamic> data = {"name":contact.displayName,
                                       "first":contact.name.first,
                                       "last":contact.name.last,

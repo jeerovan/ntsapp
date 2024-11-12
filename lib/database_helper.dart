@@ -125,11 +125,7 @@ class DatabaseHelper {
     String id4 = uuid.v4();
     color = getMaterialColor(4);
     hexCode = colorToHex(color);
-    await db.insert("profile", {"id": id4, "title": "Home", "color":hexCode, "thumbnail":null, "at":at+3});
-    String id5 = uuid.v4();
-    color = getMaterialColor(5);
-    hexCode = colorToHex(color);
-    await db.insert("profile", {"id": id5, "title": "Private", "color":hexCode, "thumbnail":null, "at":at+4});
+    await db.insert("profile", {"id": id4, "title": "Personal", "color":hexCode, "thumbnail":null, "at":at+3});
   }
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {

@@ -49,7 +49,7 @@ class _DatabasePageState extends State<DatabasePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Back'),
+        title: const Text('DB Viewer'),
       ),
       body: _database == null
           ? const Center(child: CircularProgressIndicator())

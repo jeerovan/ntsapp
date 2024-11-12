@@ -54,7 +54,7 @@ class ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   children: [
                    const Text("Tap to select Or long press to edit",
-                      style: TextStyle(fontSize: 20,),
+                      style: TextStyle(fontSize: 15,),
                     ),
                     const SizedBox(height: 16,),
                     Center(
