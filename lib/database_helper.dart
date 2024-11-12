@@ -1,5 +1,7 @@
 
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
+import 'common.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -32,13 +34,24 @@ class DatabaseHelper {
     await db.execute('PRAGMA foreign_keys = ON');
     // Add table creation queries here
     await db.execute('''
+      CREATE TABLE profile (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        color TEXT,
+        at INTEGER,
+        thumbnail BLOB
+      )
+    ''');
+    await db.execute('''
       CREATE TABLE itemgroup (
         id TEXT PRIMARY KEY,
+        profile_id TEXT NOT NULL,
         title TEXT NOT NULL,
         pinned INTEGER,
         color TEXT,
         at INTEGER,
-        thumbnail BLOB
+        thumbnail BLOB,
+        FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE
       )
     ''');
     await db.execute('''
@@ -95,10 +108,28 @@ class DatabaseHelper {
   }
 
   Future<void> _seedDatabase(Database db) async {
-    //int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    //Uint8List home = await loadImageAsUint8List('assets/Home.png');
-    //await db.insert("profile", {"id": 1, "title": "Home", "image": home,"at":at});
-
+    int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    Uuid uuid = const Uuid();
+    String id1 = uuid.v4();
+    Color color = getMaterialColor(1);
+    String hexCode = colorToHex(color);
+    await db.insert("profile", {"id": id1, "title": "Friends", "color":hexCode, "thumbnail":null, "at":at});
+    String id2 = uuid.v4();
+    color = getMaterialColor(2);
+    hexCode = colorToHex(color);
+    await db.insert("profile", {"id": id2, "title": "Family", "color":hexCode, "thumbnail":null, "at":at+1});
+    String id3 = uuid.v4();
+    color = getMaterialColor(3);
+    hexCode = colorToHex(color);
+    await db.insert("profile", {"id": id3, "title": "Office", "color":hexCode, "thumbnail":null, "at":at+2});
+    String id4 = uuid.v4();
+    color = getMaterialColor(4);
+    hexCode = colorToHex(color);
+    await db.insert("profile", {"id": id4, "title": "Home", "color":hexCode, "thumbnail":null, "at":at+3});
+    String id5 = uuid.v4();
+    color = getMaterialColor(5);
+    hexCode = colorToHex(color);
+    await db.insert("profile", {"id": id5, "title": "Private", "color":hexCode, "thumbnail":null, "at":at+4});
   }
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {

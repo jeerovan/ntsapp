@@ -61,7 +61,7 @@ class ModelItem {
     }
     return ModelItem(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
-      groupId:map.containsKey('group_id') ? map['group_id'] : 0,
+      groupId:map.containsKey('group_id') ? map['group_id'] : "",
       text:map.containsKey('text') ? map['text'] : "",
       thumbnail:map.containsKey('thumbnail') ? map['thumbnail'] : null,
       starred: map.containsKey('starred') ? map['starred'] : 0,

@@ -79,7 +79,7 @@ class PageGroupEditState extends State<PageGroupEdit> {
   }
 
   Future<void> _showMediaPickerDialog() async {
-    if (Platform.isAndroid || Platform.isIOS){
+    if(ImagePicker().supportsImageSource(ImageSource.camera)){
       showDialog(
         context: context,
         builder: (BuildContext context) {

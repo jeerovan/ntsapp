@@ -3,112 +3,92 @@ import 'dart:ui';
 import 'common.dart';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
-import 'model_item.dart';
 
-class ModelGroup {
+class ModelProfile {
   String? id;
-  String profileId;
   String title;
   Uint8List? thumbnail;
-  int pinned;
   String color;
   int? at;
-  ModelItem? lastItem;
-  ModelGroup({
+  ModelProfile({
     this.id,
-    required this.profileId,
     required this.title,
     this.thumbnail,
-    required this.pinned,
     required this.color,
     this.at,
-    this.lastItem,
   });
-  factory ModelGroup.init(){
-    return ModelGroup(
+  factory ModelProfile.init(){
+    return ModelProfile(
       id:null,
-      profileId: "",
       title:"",
       thumbnail: null,
-      pinned: 0,
       color: "",
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
-      lastItem: null,
     );
   }
   Map<String,dynamic> toMap() {
     return  {
       'id':id,
-      'profile_id':profileId,
       'title':title,
       'thumbnail':thumbnail,
-      'pinned':pinned,
       'color':color,
       'at':at,
     };
   }
-  static Future<ModelGroup> fromMap(Map<String,dynamic> map) async {
+  static Future<ModelProfile> fromMap(Map<String,dynamic> map) async {
     Uuid uuid = const Uuid();
-    String groupId = map.containsKey("id") ? map['id'] : uuid.v4();
-    ModelItem? item = await ModelItem.getLatestInGroup(groupId);
-    return ModelGroup(
-      id: groupId,
-      profileId: map.containsKey('profile_id') ? map['profile_id'] : "",
+    String profileId = map.containsKey("id") ? map['id'] : uuid.v4();
+    return ModelProfile(
+      id: profileId,
       title:map.containsKey('title') ? map['title'] : "",
       thumbnail: map.containsKey('thumbnail') ? map['thumbnail'] : null,
-      pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
-      lastItem: item,
     );
   }
-  static Future<List<ModelGroup>> all(String profileId, int offset, int limit) async {
+  static Future<List<ModelProfile>> all() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
-      "itemgroup",
-      where: 'profile_id == ?',
-      limit: limit,
-      offset: offset,
-      whereArgs: [profileId]
+      "profile",
+      orderBy: "at DESC"
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<int> getCount(String profileId) async {
+  static Future<int> getCount() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
-      FROM itemgroup
-      WHERE profile_id == ?
+      FROM profile
     ''';
-    final rows = await db.rawQuery(sql,[profileId]);
+    final rows = await db.rawQuery(sql,);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
-  static Future<ModelGroup?> get(String id) async {
+  static Future<ModelProfile?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.getWithId("itemgroup", id);
+    List<Map<String,dynamic>> list = await dbHelper.getWithId("profile", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return fromMap(map);
     }
     return null;
   }
-  static Future<ModelGroup?> checkInsert(String profileId, String title) async {
+  static Future<ModelProfile?> checkInsert(String title,Uint8List? thumbnail) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
-      'itemgroup',
-      where: 'title == ? AND profile_id == ?',
-      whereArgs: ['%$title%',profileId]);
+      'profile',
+      where: 'title == ?',
+      whereArgs: ['%$title%']);
     if(rows.isEmpty){
-      int count = await getCount(profileId);
+      int count = await getCount();
       Color color = getMaterialColor(count+1);
       String hexCode = colorToHex(color);
-      ModelGroup group = await fromMap({"profile_id":profileId, "title":title, "color":hexCode});
-      int added = await group.insert();
+      ModelProfile profile = await fromMap({"title":title,"color":hexCode,"thumbnail":thumbnail});
+      int added = await profile.insert();
       if (added > 0){
-        return group;
+        return profile;
       } else {
         return null;
       }
@@ -118,18 +98,18 @@ class ModelGroup {
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
-    return await dbHelper.insert("itemgroup", toMap());
+    return await dbHelper.insert("profile", toMap());
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
     map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    return await dbHelper.update("itemgroup",map,id);
+    return await dbHelper.update("profile",map,id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.delete("itemgroup", id);
+    return await dbHelper.delete("profile", id);
   }
 }

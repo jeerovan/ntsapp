@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/model_profile.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_items.dart';
 import 'package:ntsapp/page_settings.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
+import 'page_profile.dart';
 
-bool debug = false;
+bool debug = true;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
@@ -19,6 +22,7 @@ class PageGroup extends StatefulWidget {
 }
 
 class _PageGroupState extends State<PageGroup> {
+  ModelProfile? profile;
   final List<ModelGroup> _items = [];
   bool _isLoading = false;
   bool _hasMore = true;
@@ -28,12 +32,31 @@ class _PageGroupState extends State<PageGroup> {
   @override
   void initState() {
     super.initState();
+    _setProfile();
+  }
+
+  Future<void> _setProfile() async {
+    String? lastId = ModelSetting.getForKey("profile", null);
+    if (lastId == null){
+      List<ModelProfile> profiles = await ModelProfile.all();
+      if (profiles.isNotEmpty){
+        lastId = profiles[0].id!;
+      }
+    }
+    setProfile(lastId!);
+  }
+
+  Future<void> setProfile(String id) async {
+    ModelProfile? dbProfile = await ModelProfile.get(id);
+    setState(() {
+      profile = dbProfile!;
+    });
     initialLoad();
   }
 
   Future<void> initialLoad() async {
     _items.clear();
-    final topItems = await ModelGroup.all(0,_limit);
+    final topItems = await ModelGroup.all(profile!.id!, 0,_limit);
     _hasMore = topItems.length == _limit;
     if (_hasMore) _offset += _limit;
     setState(() {
@@ -45,7 +68,7 @@ class _PageGroupState extends State<PageGroup> {
     if (_isLoading || !_hasMore) return;
     setState(() => _isLoading = true);
 
-    final newItems = await ModelGroup.all(_offset, _limit);
+    final newItems = await ModelGroup.all(profile!.id!, _offset, _limit);
     setState(() {
       _items.addAll(newItems);
       _isLoading = false;
@@ -56,7 +79,7 @@ class _PageGroupState extends State<PageGroup> {
 
   void createNoteGroup(String title) async {
     if(title.length > 1){
-      ModelGroup? group = await ModelGroup.checkInsert(title);
+      ModelGroup? group = await ModelGroup.checkInsert(profile!.id!, title);
       if(group != null){
         initialLoad();
         if(mounted){
@@ -76,6 +99,16 @@ class _PageGroupState extends State<PageGroup> {
           });
   }
 
+  void selectProfile(){
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => ProfilePage(
+        onSelect : (id) {
+          setProfile(id);
+        }
+      )
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     double size = 40;
@@ -83,6 +116,44 @@ class _PageGroupState extends State<PageGroup> {
       appBar: AppBar(
         title: const Text('NTS'),
         actions: [
+          GestureDetector(
+            onTap: (){
+              selectProfile();
+            },
+            child: profile == null ? const SizedBox.shrink() :
+              profile!.thumbnail == null
+              ? Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: colorFromHex(profile!.color),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center, // Center the text inside the circle
+                child: Text(
+                  profile!.title[0].toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: size / 2, // Adjust font size relative to the circle size
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            : SizedBox(
+              width: size,
+              height: size,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Center(
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: MemoryImage(profile!.thumbnail!),
+                    ),
+                  ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10,),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
