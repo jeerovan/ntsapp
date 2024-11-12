@@ -10,7 +10,7 @@ import 'model_item_group.dart';
 import 'page_db.dart';
 import 'page_profile.dart';
 
-bool debug = true;
+bool debug = false;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
@@ -173,60 +173,79 @@ class _PageGroupState extends State<PageGroup> {
             ),
         ],
       ),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
-            _fetchItems();
-          }
-          return false;
-        },
-        child: ListView.builder(
-          itemCount: _items.length + 1, // Additional item for the loading indicator
-          itemBuilder: (context, index) {
-            if (index == _items.length) {
-              return _hasMore
-                  ? const Center(child: CircularProgressIndicator())
-                  : const SizedBox.shrink() ;
-            }
-            final item = _items[index];
-            return ListTile(
-              leading: item.thumbnail == null
-                ? Container(
+      body: Stack(
+        children:[
+          NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification scrollInfo) {
+              if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
+                _fetchItems();
+              }
+              return false;
+            },
+            child: ListView.builder(
+              itemCount: _items.length + 1, // Additional item for the loading indicator
+              itemBuilder: (context, index) {
+                if (index == _items.length) {
+                  return _hasMore
+                      ? const Center(child: CircularProgressIndicator())
+                      : const SizedBox.shrink() ;
+                }
+                final item = _items[index];
+                return ListTile(
+                  leading: item.thumbnail == null
+                    ? Container(
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          color: colorFromHex(item.color),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center, // Center the text inside the circle
+                        child: Text(
+                          item.title[0].toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: size / 2, // Adjust font size relative to the circle size
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                  : SizedBox(
                     width: size,
                     height: size,
-                    decoration: BoxDecoration(
-                      color: colorFromHex(item.color),
-                      shape: BoxShape.circle,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Center(
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundImage: MemoryImage(item.thumbnail!),
+                          ),
+                        ),
                     ),
-                    alignment: Alignment.center, // Center the text inside the circle
-                    child: Text(
-                      item.title[0].toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: size / 2, // Adjust font size relative to the circle size
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-              : SizedBox(
-                width: size,
-                height: size,
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Center(
-                      child: CircleAvatar(
-                        radius: 20,
-                        backgroundImage: MemoryImage(item.thumbnail!),
-                      ),
-                    ),
-                ),
-              ),
-              title: Text(item.title),
-              subtitle: MessageSummary(item: item.lastItem),
-              onTap: () => navigateToItems(item.id!),
-            );
-          },
-        ),
+                  ),
+                  title: Text(item.title),
+                  subtitle: MessageSummary(item: item.lastItem),
+                  onTap: () => navigateToItems(item.id!),
+                );
+              },
+            ),
+          ),
+          Positioned(
+            bottom: 90, // Adjust for FAB height and margin
+            right: 26,
+            child: FloatingActionButton(
+              heroTag: "searchButton",
+              mini: true,
+              onPressed: () {
+                // Handle search button press
+                debugPrint("Search button clicked");
+              },
+              shape: const CircleBorder(),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              child: const Icon(Icons.search),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

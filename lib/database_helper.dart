@@ -74,24 +74,6 @@ class DatabaseHelper {
       CREATE INDEX idx_item_text ON item(text)
     ''');
     await db.execute('''
-      CREATE TABLE tag (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE INDEX idx_tag_title ON tag(title)
-    ''');
-    await db.execute('''
-      CREATE TABLE itemtag (
-        id TEXT PRIMARY KEY,
-        item_id TEXT NOT NULL,
-        tag_id TEXT NOT NULL,
-        FOREIGN KEY (item_id) REFERENCES item(id) ON DELETE CASCADE,
-        FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
-      )
-    ''');
-    await db.execute('''
       CREATE TABLE setting(
         id TEXT PRIMARY KEY,
         value TEXT NOT NULL,
