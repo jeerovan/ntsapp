@@ -314,12 +314,7 @@ int getMessageType(String? mime){
     String type = mime.split("/").first;
     switch(type){
       case "image":
-        switch(mime){
-          case "image/gif":
-            return 110100;
-          default:
-              return 110000;
-        }
+        return 110000;
       case "video":
         return 120000;
       case "audio":

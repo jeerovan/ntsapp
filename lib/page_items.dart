@@ -131,31 +131,16 @@ class _PageItemsState extends State<PageItems> {
       String type = mime.split("/").first;
       switch(type){
         case "image":
-          switch(mime){
-            case "image/gif":
-              Uint8List fileBytes = await File(newPath).readAsBytes();
-              Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
-              if(thumbnail != null){
-                String name = attrs["name"];
-                Map<String,dynamic> data = {"path":newPath,
-                                            "mime":attrs["mime"],
-                                            "name":name,
-                                            "size":attrs["size"]};
-                String text = 'DND|#image|$name';
-                _addItem(text, 110100, thumbnail, data);
-              }
-            default:
-              Uint8List fileBytes = await File(newPath).readAsBytes();
-              Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
-              if(thumbnail != null){
-                String name = attrs["name"];
-                Map<String,dynamic> data = {"path":newPath,
-                                            "mime":attrs["mime"],
-                                            "name":name,
-                                            "size":attrs["size"]};
-                String text = 'DND|#image|$name';
-                _addItem(text, 110000, thumbnail, data);
-              }
+          Uint8List fileBytes = await File(newPath).readAsBytes();
+          Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+          if(thumbnail != null){
+            String name = attrs["name"];
+            Map<String,dynamic> data = {"path":newPath,
+                                        "mime":attrs["mime"],
+                                        "name":name,
+                                        "size":attrs["size"]};
+            String text = 'DND|#image|$name';
+            _addItem(text, 110000, thumbnail, data);
           }
         case "video":
           VideoPlayerController controller = VideoPlayerController.file(File(newPath));
@@ -402,8 +387,6 @@ class _PageItemsState extends State<PageItems> {
         return _buildTextItem(item);
       case 110000:
         return _buildImageItem(item);
-      case 110100:
-        return _buildGifItem(item);
       case 120000:
         return _buildVideoItem(item);
       case 130000:
@@ -535,43 +518,6 @@ class _PageItemsState extends State<PageItems> {
                     item.thumbnail!,
                     width: double.infinity, // Full width of container
                     fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              imageItemTimestamp(formattedTime),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGifItem(ModelItem item) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
-
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GestureDetector(
-          onTap: () {
-            viewMedia(item.id!,item.data!["path"]);
-          },
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 200, // Makes the image take full width of the container
-                  child: Image.file(
-                    File(item.data!["path"]),
-                    fit: BoxFit.cover, // Ensures the image covers the available space
                   ),
                 ),
               ),
