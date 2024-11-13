@@ -4,6 +4,7 @@ import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_items.dart';
+import 'package:ntsapp/page_search.dart';
 import 'package:ntsapp/page_settings.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -237,8 +238,9 @@ class _PageGroupState extends State<PageGroup> {
               heroTag: "searchButton",
               mini: true,
               onPressed: () {
-                // Handle search button press
-                debugPrint("Search button clicked");
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const SearchPage(),
+                ));
               },
               shape: const CircleBorder(),
               backgroundColor: Theme.of(context).colorScheme.secondary,

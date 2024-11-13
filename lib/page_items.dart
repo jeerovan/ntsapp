@@ -367,26 +367,26 @@ class _PageItemsState extends State<PageItems> {
           // Items view (displaying the messages)
           Expanded(
             child: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
-            _fetchItems();
-          }
-          return false;
-        },
-        child: ListView.builder(
-          reverse: true,
-          itemCount: _items.length + 1, // Additional item for the loading indicator
-          itemBuilder: (context, index) {
-            if (index == _items.length) {
-              return _hasMore
-                  ? const Center(child: CircularProgressIndicator())
-                  : const SizedBox.shrink() ;
-            }
-            final item = _items[index];
-            return _buildItem(item);
-          },
-        ),
-      ),
+              onNotification: (ScrollNotification scrollInfo) {
+                if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
+                  _fetchItems();
+                }
+                return false;
+              },
+              child: ListView.builder(
+                reverse: true,
+                itemCount: _items.length + 1, // Additional item for the loading indicator
+                itemBuilder: (context, index) {
+                  if (index == _items.length) {
+                    return _hasMore
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink() ;
+                  }
+                  final item = _items[index];
+                  return _buildItem(item);
+                },
+              ),
+            ),
           ),
           // Input box with attachments and send button
           _buildInputBox(),
