@@ -682,13 +682,13 @@ class _PageItemsState extends State<PageItems> {
                   ),
                   Text(
                     "Location",
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                    style: TextStyle( fontSize: 15),
                   ),
                 ],
               ),
               Text(
                 formattedTime,
-                style: const TextStyle(color: Colors.grey, fontSize: 10),
+                style: const TextStyle( fontSize: 10),
               ),
             ],
           ),
@@ -814,7 +814,7 @@ class _PageItemsState extends State<PageItems> {
                     children: [
                       Text(
                         formattedTime,
-                        style: const TextStyle(color: Colors.grey, fontSize: 10),
+                        style: const TextStyle(fontSize: 10),
                       ),
                     ],
                   ),

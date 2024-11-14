@@ -418,8 +418,8 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
                   ),
                   // Play button overlay
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.7), // Semi-transparent grey background
                       shape: BoxShape.circle,
@@ -427,7 +427,7 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
                     child: const Icon(
                       Icons.play_arrow,
                       color: Colors.white,
-                      size: 30,
+                      size: 20,
                     ),
                   ),
                 ],

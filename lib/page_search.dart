@@ -268,6 +268,7 @@ class SearchPageState extends State<SearchPage> {
   }
   Widget _buildAudioItem(ModelSearchItem search){
     ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -280,7 +281,38 @@ class SearchPageState extends State<SearchPage> {
           ),
         ),
         const SizedBox(height: 5),
-        widgetAudioDetails(item),
+        Row(
+          children: [
+            // File size text at the left
+            Row(
+              children: [
+                const Icon(Icons.audiotrack,size: 15),
+                const SizedBox(width: 2,),
+                Text(
+                  item.data!["duration"],
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(
+                    item.data!["name"],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle( fontSize: 15),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Text(
+          formattedTime,
+          style: const TextStyle(fontSize: 10),
+        ),
       ]
     );
   }
@@ -325,11 +357,11 @@ class SearchPageState extends State<SearchPage> {
                 ),
               ),
             ),
-            Text(
-              formattedTime,
-              style: const TextStyle(fontSize: 10),
-            ),
           ],
+        ),
+        Text(
+          formattedTime,
+          style: const TextStyle(fontSize: 10),
         ),
       ]
     );
@@ -337,12 +369,97 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildLocationItem(ModelSearchItem search){
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
-    return const SizedBox.shrink();
+    return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${search.profile!.title} > ${search.group!.title}',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              const Row(
+                //mainAxisSize: MainAxisSize.max,
+                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    color: Colors.blue,
+                    size: 25,
+                  ),
+                  SizedBox(width: 10,),
+                  Text(
+                    "Location",
+                    style: TextStyle( fontSize: 15),
+                  ),
+                ],
+              ),
+              Text(
+                formattedTime,
+                style: const TextStyle( fontSize: 10),
+              ),
+            ],
+          );
   }
   Widget _buildContactItem(ModelSearchItem search){
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
-    return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${search.profile!.title} > ${search.group!.title}',
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        ListTile(
+          leading:
+            item.thumbnail != null
+            ? CircleAvatar(
+                radius: 25,
+                backgroundImage: MemoryImage(item.thumbnail!),
+              )
+            : const CircleAvatar(
+                radius: 25,
+                child: Icon(Icons.person,size:25),
+              ),
+          title:
+            Text(
+              '${item.data!["name"]}'.trim(),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold,),
+              overflow: TextOverflow.ellipsis,
+            ),
+          subtitle:
+            Row(
+              children: [
+                const Icon(Icons.phone, size: 15, color: Colors.blue),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...item.data!["phones"].map((phone) => 
+                      Text(
+                        phone,
+                        style: const TextStyle(fontSize: 10,),
+                        overflow: TextOverflow.ellipsis,
+                      ))
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ),
+        Text(
+          formattedTime,
+          style: const TextStyle( fontSize: 10),
+        ),
+      ],
+    );
   }
 
 }
