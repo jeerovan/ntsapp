@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'common.dart';
+import 'common_widgets.dart';
 import 'model_item.dart';
 import 'model_search_item.dart';
 
@@ -40,6 +42,12 @@ class SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _performSearch(String query) async {
+    if (query.isEmpty){
+      _items.clear();
+      return;
+    } else if (query.length < 2){
+      return;
+    }
     final newItems = await ModelSearchItem.all(query, _offset, _limit);
     _hasMore = newItems.length == _limit;
     if (_hasMore) _offset += _limit;
@@ -83,26 +91,28 @@ class SearchPageState extends State<SearchPage> {
             // Display search query or results here
             Expanded(
               child: NotificationListener<ScrollNotification>(
-              onNotification: (ScrollNotification scrollInfo) {
-                if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
-                  _scrollSearch();
-                }
-                return false;
-              },
-              child: ListView.builder(
-                reverse: true,
-                itemCount: _items.length + 1, // Additional item for the loading indicator
-                itemBuilder: (context, index) {
-                  if (index == _items.length) {
-                    return _hasMore
-                        ? const Center(child: CircularProgressIndicator())
-                        : const SizedBox.shrink() ;
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                    _scrollSearch();
                   }
-                  final item = _items[index];
-                  return _buildItem(item);
+                  return false;
                 },
+                child: ListView.builder(
+                  itemCount: _items.length, // Additional item for the loading indicator
+                  itemBuilder: (context, index) {
+                    final item = _items[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: _buildItem(item),
+                    );
+                  },
+                ),
               ),
-            ),
             ),
             const SizedBox(height: 20),
             _buildInputBox()
@@ -115,9 +125,10 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildInputBox() {
     return TextField(
       controller: _textController,
+      autofocus: true,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search),
-        hintText: "Type here...",
+        hintText: "#image/#audio/#video/#document/#location/#contact",
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),
@@ -130,43 +141,207 @@ class SearchPageState extends State<SearchPage> {
     ModelItem item = search.item;
     switch (item.type) {
       case 100000:
-        return _buildTextItem(item);
+        return _buildTextItem(search);
       case 110000:
-        return _buildImageItem(item);
+        return _buildImageItem(search);
       case 120000:
-        return _buildVideoItem(item);
+        return _buildVideoItem(search);
       case 130000:
-        return _buildAudioItem(item);
+        return _buildAudioItem(search);
       case 140000:
-        return _buildDocumentItem(item);
+        return _buildDocumentItem(search);
       case 150000:
-        return _buildLocationItem(item);
+        return _buildLocationItem(search);
       case 160000:
-        return _buildContactItem(item);
+        return _buildContactItem(search);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildTextItem(ModelItem item){
+  Widget _buildTextItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
+    return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Breadcrumbs
+              Text(
+                  '${search.profile!.title} > ${search.group!.title}',
+                  style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(item.text),
+              const SizedBox(height: 5),
+              Text(
+                formattedTime,
+                style: const TextStyle(fontSize: 10),
+              ),
+            ]
+          );
+  }
+  Widget _buildImageItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Breadcrumbs
+            Text(
+                '${search.profile!.title} > ${search.group!.title}',
+                style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              formattedTime,
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: SizedBox(
+            width: 50,
+            child: Image.memory(
+              item.thumbnail!, // Full width of container
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _buildVideoItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
+     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Breadcrumbs
+            Text(
+                '${search.profile!.title} > ${search.group!.title}',
+                style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                const Icon(Icons.videocam, size: 20),
+                const SizedBox(width: 2,),
+                Text(
+                  item.data!["duration"],
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5,),
+            Text(
+              formattedTime,
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: SizedBox(
+            width: 50,
+            height: 50/item.data!["aspect"],
+            child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _buildAudioItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Breadcrumbs
+        Text(
+            '${search.profile!.title} > ${search.group!.title}',
+            style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 5),
+        widgetAudioDetails(item),
+      ]
+    );
+  }
+  Widget _buildDocumentItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Breadcrumbs
+        Text(
+            '${search.profile!.title} > ${search.group!.title}',
+            style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Row(
+          children: [
+            // File size text at the left
+            Row(
+              children: [
+                const Icon(Icons.insert_drive_file,size: 15),
+                const SizedBox(width: 2,),
+                Text(
+                  readableBytes(item.data!["size"]),
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(
+                    item.data!["name"],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle( fontSize: 15),
+                  ),
+                ),
+              ),
+            ),
+            Text(
+              formattedTime,
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+      ]
+    );
+  }
+  Widget _buildLocationItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
     return const SizedBox.shrink();
   }
-  Widget _buildImageItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildVideoItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildAudioItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildDocumentItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildLocationItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildContactItem(ModelItem item){
+  Widget _buildContactItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
     return const SizedBox.shrink();
   }
 

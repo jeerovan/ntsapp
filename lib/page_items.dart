@@ -6,15 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:ntsapp/page_contacts.dart';
-import 'package:ntsapp/page_group_edit.dart';
-import 'package:ntsapp/page_map.dart';
-import 'package:ntsapp/page_media.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'page_contacts.dart';
+import 'page_group_edit.dart';
+import 'page_map.dart';
+import 'page_media.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
+import 'common_widgets.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 
@@ -404,23 +403,6 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Future<void> openLocationInMap(double latitude,double longitude) async {
-    final googleMapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
-    final appleMapsUri = Uri.parse('https://maps.apple.com/?q=$latitude,$longitude');
-
-    if (await canLaunchUrl(googleMapsUri)) {
-      await launchUrl(googleMapsUri);
-    } else if (await canLaunchUrl(appleMapsUri)) {
-      await launchUrl(appleMapsUri);
-    } else {
-      // Open Google Maps URL in the browser as a fallback
-      await launchUrl(
-        googleMapsUri,
-        mode: LaunchMode.externalApplication, // Ensures it opens in the external browser
-      );
-    }
-  }
-
   void viewMedia(String id, String filePath) async {
     String groupId = widget.groupId;
     int index = await ModelItem.mediaIndexInGroup(groupId, id);
@@ -432,38 +414,9 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Widget imageItemTimestamp(String formattedTime){
-    return Positioned(
-      bottom: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withOpacity(0.1), // Transparent black at the top
-              Colors.black.withOpacity(0.3), // Darker black at the bottom
-            ],
-          ),
-        ),
-        child: Text(
-          formattedTime,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-          ),
-        ),
-      ),
-    );
-  }
-
   // Text item bubble
   Widget _buildTextItem(ModelItem item) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    final String formattedTime = getFormattedTime(item.at!);
 
     return Align(
       alignment: Alignment.centerRight,
@@ -492,8 +445,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildImageItem(ModelItem item) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    final String formattedTime = getFormattedTime(item.at!);
 
     return Align(
       alignment: Alignment.centerRight,
@@ -521,7 +473,31 @@ class _PageItemsState extends State<PageItems> {
                   ),
                 ),
               ),
-              imageItemTimestamp(formattedTime),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.1), // Transparent black at the top
+                        Colors.black.withOpacity(0.3), // Darker black at the bottom
+                      ],
+                    ),
+                  ),
+                  child: Text(
+                    formattedTime,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -530,8 +506,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildVideoItem(ModelItem item) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    final String formattedTime = getFormattedTime(item.at!);
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -552,7 +527,7 @@ class _PageItemsState extends State<PageItems> {
                 child: SizedBox(
                   width: 200,
                   height: 200/item.data!["aspect"],
-                  child: VideoThumbnail(videoPath: item.data!["path"]),
+                  child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
                 ),
               ),
               Positioned(
@@ -603,8 +578,6 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildAudioItem(ModelItem item){
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       padding: const EdgeInsets.all(10),
@@ -616,48 +589,14 @@ class _PageItemsState extends State<PageItems> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           WidgetAudio(item: item),
-          Row(
-            //mainAxisSize: MainAxisSize.max,
-            //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // File size text at the left
-              Row(
-                children: [
-                  const Icon(Icons.audiotrack,size: 15),
-                  const SizedBox(width: 2,),
-                  Text(
-                    item.data!["duration"],
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(
-                      item.data!["name"],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle( fontSize: 15),
-                    ),
-                  ),
-                ),
-              ),
-              Text(
-                formattedTime,
-                style: const TextStyle(fontSize: 10),
-              ),
-            ],
-          ),
+          widgetAudioDetails(item),
         ],
       ),
     );
   }
 
   Widget _buildDocumentItem(ModelItem item){
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    final String formattedTime = getFormattedTime(item.at!);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       padding: const EdgeInsets.all(10),
@@ -714,8 +653,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildLocationItem(ModelItem item){
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+    final String formattedTime = getFormattedTime(item.at!);
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -760,8 +698,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildContactItem(ModelItem item){
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true);
-    final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); 
+    final String formattedTime = getFormattedTime(item.at!);
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
@@ -931,6 +868,8 @@ class _PageItemsState extends State<PageItems> {
           Expanded(
             child: TextField(
               controller: _textController,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
               decoration: InputDecoration(
                 hintText: "Type a message",
                 border: OutlineInputBorder(

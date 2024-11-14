@@ -40,11 +40,11 @@ class ModelSearchItem {
     String whereClause = tokens.map((token) => "text LIKE '%$token%'").join(" AND ");
     List<Map<String,dynamic>> rows = await db.rawQuery(
       '''SELECT * FROM item
-         WHERE type != 170000 AND ?
+         WHERE type != 170000 AND $whereClause
          ORDER BY at DESC
-         OFFSET ?
-         LIMIT ?
-      ''',[whereClause,offset,limit]
+         LIMIT $limit
+         OFFSET $offset
+      ''',
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   } 

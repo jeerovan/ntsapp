@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ntsapp/common.dart';
-import 'package:ntsapp/model_profile.dart';
-import 'package:ntsapp/model_setting.dart';
-import 'package:ntsapp/page_items.dart';
-import 'package:ntsapp/page_search.dart';
-import 'package:ntsapp/page_settings.dart';
+import 'common.dart';
+import 'model_profile.dart';
+import 'model_setting.dart';
+import 'page_items.dart';
+import 'page_search.dart';
+import 'page_settings.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
@@ -233,7 +233,7 @@ class _PageGroupState extends State<PageGroup> {
           ),
           Positioned(
             bottom: 90, // Adjust for FAB height and margin
-            right: 26,
+            right: 20,
             child: FloatingActionButton(
               heroTag: "searchButton",
               mini: true,

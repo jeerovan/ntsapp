@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:ntsapp/common.dart';
+import 'common_widgets.dart';
 import 'model_item.dart';
 
 class PageMedia extends StatefulWidget {
