@@ -21,7 +21,8 @@ bool isMobile = Platform.isAndroid || Platform.isIOS;
 
 class PageItems extends StatefulWidget {
   final String groupId;
-  const PageItems({super.key, required this.groupId});
+  final String? itemId;
+  const PageItems({super.key, required this.groupId, this.itemId});
 
   @override
   State<PageItems> createState() => _PageItemsState();
@@ -32,17 +33,18 @@ class _PageItemsState extends State<PageItems> {
   final List<ModelItem> _items = []; // Store items
   final TextEditingController _textController = TextEditingController();
   ModelGroup? group;
+  String? itemId;
 
   bool _isLoading = false;
-  bool _hasMore = true;
   int _offset = 0;
   final int _limit = 10;
 
   @override
   void initState() {
     super.initState();
+    itemId = widget.itemId;
     loadGroup();
-    loadItems();
+    initialFetchItems();
   }
 
   Future<void> loadGroup() async {
@@ -53,10 +55,13 @@ class _PageItemsState extends State<PageItems> {
         });
     }
   }
-  Future<void> loadItems() async {
-    final newItems = await ModelItem.getForGroupId(widget.groupId, _offset, _limit);
-    _hasMore = newItems.length == _limit;
-    if (_hasMore) _offset += _limit;
+  Future<void> initialFetchItems() async {
+    List<ModelItem> newItems;
+    if (itemId != null){
+      newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId!);
+    } else {
+      newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit);
+    }
     setState(() {
       _items.clear();
       _items.addAll(newItems);
@@ -69,16 +74,18 @@ class _PageItemsState extends State<PageItems> {
     super.dispose();
   }
 
-  Future<void> _fetchItems() async {
-    if (_isLoading || !_hasMore) return;
+  Future<void> scrollFetchItems(bool up) async {
+    if (_isLoading) return;
     setState(() => _isLoading = true);
-
-    final newItems = await ModelItem.getForGroupId(widget.groupId, _offset, _limit);
+    final ModelItem start = up ? _items.last : _items.first;
+    final newItems = await ModelItem.getScrolledInGroup(widget.groupId, start.id!, up, _limit);
     setState(() {
-      _items.addAll(newItems);
+      if ( up ){
+        _items.addAll(newItems);
+      } else {
+        _items.insertAll(0, newItems.reversed);
+      }
       _isLoading = false;
-      _offset += _limit;
-      _hasMore = newItems.length == _limit;
     });
   }
 
@@ -353,19 +360,16 @@ class _PageItemsState extends State<PageItems> {
             child: NotificationListener<ScrollNotification>(
               onNotification: (ScrollNotification scrollInfo) {
                 if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
-                  _fetchItems();
-                }
+                  scrollFetchItems(true);
+                } else if (scrollInfo.metrics.pixels == scrollInfo.metrics.minScrollExtent) {
+                    scrollFetchItems(false);
+                  }
                 return false;
               },
               child: ListView.builder(
                 reverse: true,
-                itemCount: _items.length + 1, // Additional item for the loading indicator
+                itemCount: _items.length, // Additional item for the loading indicator
                 itemBuilder: (context, index) {
-                  if (index == _items.length) {
-                    return _hasMore
-                        ? const Center(child: CircularProgressIndicator())
-                        : const SizedBox.shrink() ;
-                  }
                   final item = _items[index];
                   return _buildItem(item);
                 },

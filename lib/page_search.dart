@@ -4,6 +4,7 @@ import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
 import 'model_search_item.dart';
+import 'page_items.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key,});
@@ -101,14 +102,21 @@ class SearchPageState extends State<SearchPage> {
                   itemCount: _items.length, // Additional item for the loading indicator
                   itemBuilder: (context, index) {
                     final item = _items[index];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(10),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => PageItems(groupId: item.group!.id!,itemId:item.item.id!),
+                        ));
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: _buildItem(item),
                       ),
-                      child: _buildItem(item),
                     );
                   },
                 ),
@@ -128,7 +136,7 @@ class SearchPageState extends State<SearchPage> {
       autofocus: true,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search),
-        hintText: "#image/#audio/#video/#document/#location/#contact",
+        hintText: "query, #document etc..",
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),

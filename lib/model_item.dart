@@ -81,7 +81,7 @@ class ModelItem {
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<List<ModelItem>> getForTag(String tag,int groupId) async {
+  static Future<List<ModelItem>> getForTagInGroup(String tag,int groupId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
@@ -170,7 +170,51 @@ class ModelItem {
     }
     return null;
   }
-  static Future<List<ModelItem>> getForGroupId(String groupId,int offset, int limit) async {
+  static Future<List<ModelItem>> getForItemIdInGroup(String groupId,String itemId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    ModelItem? item = await get(itemId);
+    List<ModelItem> items = [];
+    if (item == null){
+      items.addAll(await getInGroup(groupId, 0, 10));
+    } else {
+      List<Map<String,dynamic>> rows = await db.query(
+        "item",
+        where: "group_id == ? AND at > ?",
+        whereArgs: [groupId,item.at],
+        orderBy:'at ASC',
+        limit: 4,
+      );
+      List<ModelItem> beforeItems = await Future.wait(rows.map((map) => fromMap(map)));
+      items.addAll(beforeItems.reversed);
+      items.add(item);
+      rows = await db.query(
+        "item",
+        where: "group_id == ? AND at < ?",
+        whereArgs: [groupId,item.at],
+        orderBy:'at DESC',
+        limit: 4,
+      );
+      List<ModelItem> afterItems = await Future.wait(rows.map((map) => fromMap(map)));
+      items.addAll(afterItems);
+    }
+    return items;
+  }
+  static Future<List<ModelItem>> getScrolledInGroup(String groupId, String itemId, bool up, int limit) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String orderBy = up ? 'DESC' : 'ASC';
+    String comparison = up ? '<' : '>';
+    List<Map<String,dynamic>> rows = await db.query(
+      "item",
+      where: "group_id == ? AND at $comparison (SELECT at from item WHERE id = ?)",
+      whereArgs: [groupId,itemId],
+      orderBy:'at $orderBy',
+      limit: limit,
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+  static Future<List<ModelItem>> getInGroup(String groupId,int offset, int limit) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(

@@ -369,7 +369,7 @@ void addEditTitlePopup(BuildContext context, String title, Function(String) onSu
             TextButton(
               child: const Text('Save'),
               onPressed: () {
-                onSubmit(controller.text);
+                onSubmit(controller.text.trim());
                 Navigator.of(context).pop();
               },
             ),
