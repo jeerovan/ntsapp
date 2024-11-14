@@ -1,6 +1,10 @@
 
 import 'package:flutter/material.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
+
+import 'common.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
@@ -12,6 +16,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class SettingsPageState extends State<SettingsPage> {
+  bool _isMove = ModelSetting.getForKey("move_file", false);
   
   @override
   void initState() {
@@ -29,7 +34,9 @@ class SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(8.0),
         children: <Widget>[
           ListTile(
+            leading: const Icon(Icons.contrast),
             title: const Text("Theme"),
+            onTap: widget.onThemeToggle,
             trailing: IconButton(
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 500),
@@ -49,8 +56,53 @@ class SettingsPageState extends State<SettingsPage> {
                   color: widget.isDarkMode ? Colors.orange : Colors.black,
                 ),
               ),
-              onPressed: widget.onThemeToggle,
+              onPressed: (){},
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.file_copy),
+            title: const Text('Files to NTS'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  "Copy",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: !_isMove ? Colors.blue : Colors.grey,
+                  ),
+                ),
+                Switch(
+                  value: _isMove,
+                  onChanged: (value) {
+                    setState(() {
+                      _isMove = value;
+                      ModelSetting.update("move_file", value);
+                    });
+                  },
+                ),
+                Text(
+                  "Move",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: _isMove ? Colors.blue : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.star),
+            title: const Text('Rate App'),
+            onTap: () => _redirectToFeedback(),
+          ),
+          ListTile(
+            leading: const Icon(Icons.share),
+            title: const Text('Share'),
+            onTap: () {_share();},
           ),
           FutureBuilder<PackageInfo>(
             future: PackageInfo.fromPlatform(),
@@ -74,5 +126,16 @@ class SettingsPageState extends State<SettingsPage> {
         ],
       )
     );
+  }
+
+  void _redirectToFeedback() {
+    const url = 'https://play.google.com/store/apps/details?id=com.makenotetoself';
+    // Use your package name
+    openURL(url);
+  }
+
+  void _share() {
+    const String appLink = 'https://play.google.com/store/apps/details?id=com.makenotetoself';
+    Share.share("Make a note to yourself: $appLink");
   }
 }
