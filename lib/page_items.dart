@@ -133,6 +133,13 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
+  void clearSelection(){
+    setState(() {
+      _selection.clear();
+      isSelecting = false;
+    });
+  }
+
   void _onInputTextChanged(String text) {
     setState(() {
       _isTyping = _textController.text.trim().isNotEmpty;
@@ -184,6 +191,13 @@ class _PageItemsState extends State<PageItems> {
       File tempFile = File(path);
       tempFile.delete();
     }
+  }
+
+  void addToContacts(ModelItem item){
+    if (isSelecting){
+      onItemTapped(item.id!);
+    }
+    // TO-DO implement
   }
 
   // Handle adding text item
@@ -502,7 +516,7 @@ class _PageItemsState extends State<PageItems> {
             ),
           ),
           // Input box with attachments and send button
-          _buildInputBox(),
+          isSelecting ? _buildSelectionClear() : _buildInputBox(),
         ],
       ),
     );
@@ -531,13 +545,17 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void viewMedia(String id, String filePath) async {
-    String groupId = widget.groupId;
-    int index = await ModelItem.mediaIndexInGroup(groupId, id);
-    int count = await ModelItem.mediaCountInGroup(groupId);
-    if (mounted){
-      Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => PageMedia(id: id, groupId: groupId,index: index,count: count,),
-                  ));
+    if (isSelecting){
+      onItemTapped(id);
+    } else {
+      String groupId = widget.groupId;
+      int index = await ModelItem.mediaIndexInGroup(groupId, id);
+      int count = await ModelItem.mediaCountInGroup(groupId);
+      if (mounted){
+        Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PageMedia(id: id, groupId: groupId,index: index,count: count,),
+                    ));
+      }
     }
   }
 
@@ -684,7 +702,11 @@ class _PageItemsState extends State<PageItems> {
     final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: (){
-        openMedia(item.data!["path"]);
+        if (isSelecting){
+          onItemTapped(item.id!);
+        } else {
+          openMedia(item.data!["path"]);
+        }
       },
       child: Column(
         //crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -733,7 +755,11 @@ class _PageItemsState extends State<PageItems> {
     final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: (){
-        openLocationInMap(item.data!["lat"], item.data!["lng"]);
+        if (isSelecting){
+          onItemTapped(item.id!);
+        } else {
+          openLocationInMap(item.data!["lat"], item.data!["lng"]);
+        }
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -767,7 +793,7 @@ class _PageItemsState extends State<PageItems> {
     final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: () {
-        // Add to contacts
+        addToContacts(item);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
@@ -927,6 +953,26 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
+  Widget _buildSelectionClear() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: IconButton(
+            onPressed: (){clearSelection();}, 
+            icon: const Icon(Icons.clear,color: Colors.black,)
+          ),
+        ),
+      ),
+    );
+  }
   // Input box with attachment and send button
   Widget _buildInputBox() {
     return Padding(

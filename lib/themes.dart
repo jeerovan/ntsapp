@@ -47,7 +47,7 @@ class AppThemes {
     colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.dark).copyWith(
       primaryContainer: Colors.teal,
       onPrimaryContainer: Colors.black,
-      secondaryContainer: const Color(0xff03dac6),
+      secondaryContainer: const Color.fromARGB(255, 0, 105, 95),
       onSecondaryContainer: Colors.black,
       error: const Color.fromARGB(255, 255, 0, 47),
       onError: Colors.black,
