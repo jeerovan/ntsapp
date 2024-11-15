@@ -56,7 +56,7 @@ class SettingsPageState extends State<SettingsPage> {
                   color: widget.isDarkMode ? Colors.orange : Colors.black,
                 ),
               ),
-              onPressed: (){},
+              onPressed: () => widget.onThemeToggle(),
             ),
           ),
           ListTile(

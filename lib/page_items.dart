@@ -995,7 +995,7 @@ class _PageItemsState extends State<PageItems> {
                 alignment: Alignment.center,
                 child: IconButton(
                   icon: Icon(
-                    _isTyping ? Icons.send : Icons.mic,
+                    _isTyping ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
                     color: Colors.black,
                   ),
                   onPressed: _isTyping
@@ -1004,9 +1004,10 @@ class _PageItemsState extends State<PageItems> {
                           if (text.isNotEmpty) {
                             _addItem(text, 100000, null, null);
                             _textController.clear();
+                            _onTextChanged("");
                           }
                         }
-                      : null,
+                      : _isRecording ? _stopRecording : null,
                 ),
               ),
             ),

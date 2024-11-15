@@ -5,8 +5,8 @@ class AppThemes {
     primaryColor: Colors.blue,
     brightness: Brightness.light,
     scaffoldBackgroundColor: Colors.white,
-    colorScheme:  ColorScheme.fromSeed(seedColor: const Color(0xff6200ee)).copyWith(
-      primaryContainer: const Color(0xff6200ee),
+    colorScheme:  ColorScheme.fromSeed(seedColor: Colors.blue).copyWith(
+      primaryContainer: Colors.blue,
       onPrimaryContainer: Colors.white,
       secondaryContainer: const Color(0xff03dac6),
       onSecondaryContainer: Colors.black,
