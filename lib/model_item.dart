@@ -265,7 +265,11 @@ class ModelItem {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
-    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    if (map.containsKey('data') && map['data'] != null) {
+      if (map['data'] is Map<String, dynamic>) {
+        map['data'] = jsonEncode(map['data']);
+      }
+    }
     return await dbHelper.update("item",map,id);
   }
   Future<int> delete() async {

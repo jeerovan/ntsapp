@@ -662,12 +662,19 @@ class _PageItemsState extends State<PageItems> {
                   ],
                 ),
               ),
-              child: Text(
-                formattedTime,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+                  const SizedBox(width:5),
+                  Text(
+                    formattedTime,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -724,9 +731,16 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ],
                   ),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+                      const SizedBox(width:5),
+                      Text(
+                        formattedTime,
+                        style: const TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -789,9 +803,16 @@ class _PageItemsState extends State<PageItems> {
                 readableBytes(item.data!["size"]),
                 style: const TextStyle(fontSize: 10),
               ),
-              Text(
-                formattedTime,
-                style: const TextStyle(fontSize: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+                  const SizedBox(width:5),
+                  Text(
+                    formattedTime,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ],
               ),
             ],
           ),
@@ -829,9 +850,16 @@ class _PageItemsState extends State<PageItems> {
               ),
             ],
           ),
-          Text(
-            formattedTime,
-            style: const TextStyle( fontSize: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+              const SizedBox(width:5),
+              Text(
+                formattedTime,
+                style: const TextStyle( fontSize: 10),
+              ),
+            ],
           ),
         ],
       ),
@@ -944,6 +972,8 @@ class _PageItemsState extends State<PageItems> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+                  const SizedBox(width:5),
                   Text(
                     formattedTime,
                     style: const TextStyle(fontSize: 10),

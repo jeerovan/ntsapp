@@ -567,9 +567,16 @@ Widget widgetAudioDetails(ModelItem item){
           ),
         ),
       ),
-      Text(
-        formattedTime,
-        style: const TextStyle(fontSize: 10),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+          const SizedBox(width:5),
+          Text(
+            formattedTime,
+            style: const TextStyle(fontSize: 10),
+          ),
+        ],
       ),
     ],
   );
