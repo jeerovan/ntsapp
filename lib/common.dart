@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
-import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -342,10 +341,6 @@ Future<Map<String,dynamic>> processAndGetFileAttributes(String filePath) async {
   if(existing == null){
     Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
     await compute(copyFile,mediaData);
-  }
-  bool removeOriginal = ModelSetting.getForKey("move_file", false);
-  if (removeOriginal){
-    file.delete();
   }
   return {"path":newPath,"name":fileName,"size":fileSize,"mime":mime};
 }
