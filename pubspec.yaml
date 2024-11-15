@@ -26,7 +26,9 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
+  record: ^5.2.0
   share_plus: ^10.1.2
+  siri_wave: ^2.1.0
   sqflite: ^2.4.0
   sqflite_common_ffi: ^2.3.4
   url_launcher: ^6.3.1

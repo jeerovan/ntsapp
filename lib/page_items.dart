@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:siri_wave/siri_wave.dart';
 import 'page_contacts.dart';
 import 'page_group_edit.dart';
 import 'page_map.dart';
@@ -16,6 +19,7 @@ import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
+import 'package:record/record.dart';
 
 bool isMobile = Platform.isAndroid || Platform.isIOS;
 
@@ -39,12 +43,28 @@ class _PageItemsState extends State<PageItems> {
   int _offset = 0;
   final int _limit = 10;
 
+  bool _isTyping = false;
+  bool _isRecording = false;
+  late final AudioRecorder _audioRecorder;
+  String? _audioFilePath;
+  Timer? _recordingTimer;
+  int _recordingDuration = 0; // In seconds
+
   @override
   void initState() {
     super.initState();
+    _audioRecorder = AudioRecorder();
     itemId = widget.itemId;
     loadGroup();
     initialFetchItems();
+  }
+
+  @override
+  void dispose(){
+    _recordingTimer?.cancel();
+    _textController.dispose();
+    _audioRecorder.dispose();
+    super.dispose();
   }
 
   Future<void> loadGroup() async {
@@ -68,12 +88,6 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  @override
-  void dispose(){
-    _textController.dispose();
-    super.dispose();
-  }
-
   Future<void> scrollFetchItems(bool up) async {
     if (_isLoading) return;
     setState(() => _isLoading = true);
@@ -87,6 +101,59 @@ class _PageItemsState extends State<PageItems> {
       }
       _isLoading = false;
     });
+  }
+
+  void _onTextChanged(String text) {
+    setState(() {
+      _isTyping = _textController.text.trim().isNotEmpty;
+    });
+  }
+
+  void _startRecordingTimer() {
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _recordingDuration++;
+      });
+    });
+  }
+
+  Future<void> _startRecording() async {
+    if (await _audioRecorder.hasPermission()) {
+      final tempDir = await getTemporaryDirectory();
+      final int utcSeconds = DateTime.now().millisecondsSinceEpoch~/1000;
+      _audioFilePath = '${tempDir.path}/recording_$utcSeconds.m4a';
+
+      await _audioRecorder.start(
+        const RecordConfig(),
+        path: _audioFilePath!
+      );
+
+      setState(() {
+        _isRecording = true;
+        _recordingDuration = 0;
+      });
+
+      _startRecordingTimer();
+    } else {
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Microphone permission is required to record audio.")),
+        );
+      }
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    _recordingTimer?.cancel();
+    final path = await _audioRecorder.stop();
+    setState(() {
+      _isRecording = false;
+    });
+    if (path != null){
+      await processFiles([path]);
+      File tempFile = File(path);
+      tempFile.delete();
+    }
   }
 
   // Handle adding text item
@@ -128,7 +195,7 @@ class _PageItemsState extends State<PageItems> {
     Navigator.pop(context);
   }
 
-  void processFiles(List<String> filePaths) async {
+  Future<void> processFiles(List<String> filePaths) async {
     showProcessing();
     for (String filePath in filePaths){
       Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
@@ -857,6 +924,25 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
+  Widget _buildWaveform() {
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.mic, color: Colors.red),
+          SiriWaveform.ios7(options: const IOS7SiriWaveformOptions(
+                        height: 50,
+                        width: 150
+                      ),),
+          Text(
+            mediaFileDuration(_recordingDuration),
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Input box with attachment and send button
   Widget _buildInputBox() {
     return Padding(
@@ -870,7 +956,9 @@ class _PageItemsState extends State<PageItems> {
             },
           ),
           Expanded(
-            child: TextField(
+            child: _isRecording
+                    ? _buildWaveform()
+                    : TextField(
               controller: _textController,
               maxLines: null,
               keyboardType: TextInputType.multiline,
@@ -881,17 +969,47 @@ class _PageItemsState extends State<PageItems> {
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               ),
+              onChanged: (value) => _onTextChanged(value),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.send, color: Colors.blueAccent),
-            onPressed: (){
-              final String text = _textController.text.trim();
-              if (text.isNotEmpty) {
-                _addItem(text, 100000, null, null);
-                _textController.clear();
+          GestureDetector(
+            onLongPress: () async {
+              if (!_isTyping) {
+                await _startRecording();
               }
-            }
+            },
+            onLongPressUp: () async {
+              if (_isRecording) {
+                await _stopRecording();
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Container(
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: IconButton(
+                  icon: Icon(
+                    _isTyping ? Icons.send : Icons.mic,
+                    color: Colors.black,
+                  ),
+                  onPressed: _isTyping
+                      ? () {
+                          final String text = _textController.text.trim();
+                          if (text.isNotEmpty) {
+                            _addItem(text, 100000, null, null);
+                            _textController.clear();
+                          }
+                        }
+                      : null,
+                ),
+              ),
+            ),
           ),
         ],
       ),
