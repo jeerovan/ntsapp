@@ -10,10 +10,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:siri_wave/siri_wave.dart';
-import 'page_contacts.dart';
+import 'page_contact_pick.dart';
 import 'page_group_edit.dart';
-import 'page_map.dart';
-import 'page_media.dart';
+import 'page_location_pick.dart';
+import 'page_media_viewer.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
 import 'common_widgets.dart';
@@ -35,6 +35,8 @@ class PageItems extends StatefulWidget {
 class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
+  List<String> _selection = [];
+  bool isSelecting = false;
   final TextEditingController _textController = TextEditingController();
   ModelGroup? group;
   String? itemId;
@@ -103,7 +105,35 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void _onTextChanged(String text) {
+  void onItemLongPressed(String id){
+    setState(() {
+      if (_selection.contains(id)) {
+        _selection.remove(id);
+        if (_selection.isEmpty){
+          isSelecting = false;
+        }
+      } else {
+        _selection.add(id);
+        if (!isSelecting) isSelecting = true;
+      }
+    });
+  }
+  void onItemTapped(String id){
+    setState(() {
+      if (isSelecting){
+        if (_selection.contains(id)) {
+          _selection.remove(id);
+          if (_selection.isEmpty){
+            isSelecting = false;
+          }
+        } else {
+          _selection.add(id);
+        }
+      }
+    });
+  }
+
+  void _onInputTextChanged(String text) {
     setState(() {
       _isTyping = _textController.text.trim().isNotEmpty;
     });
@@ -438,7 +468,35 @@ class _PageItemsState extends State<PageItems> {
                 itemCount: _items.length, // Additional item for the loading indicator
                 itemBuilder: (context, index) {
                   final item = _items[index];
-                  return _buildItem(item);
+                  if (item.type == 170000){
+                    return _buildDateItem(item);
+                  } else {
+                    return GestureDetector(
+                      onLongPress: (){
+                        onItemLongPressed(item.id!);
+                      },
+                      onTap: (){
+                        onItemTapped(item.id!);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        color: _selection.contains(item.id) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
+                        margin: const EdgeInsets.symmetric(vertical: 1),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: _buildItem(item)
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                 },
               ),
             ),
@@ -467,8 +525,6 @@ class _PageItemsState extends State<PageItems> {
         return _buildLocationItem(item);
       case 160000:
         return _buildContactItem(item);
-      case 170000:
-        return _buildDateItem(item);
       default:
         return const SizedBox.shrink();
     }
@@ -488,410 +544,338 @@ class _PageItemsState extends State<PageItems> {
   // Text item bubble
   Widget _buildTextItem(ModelItem item) {
     final String formattedTime = getFormattedTime(item.at!);
-
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          item.text,
+          style: const TextStyle(fontSize: 15),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              item.text,
-            ),
-            const SizedBox(height: 5),
-            Text(
-              formattedTime,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ],
+        const SizedBox(height: 5),
+        Text(
+          formattedTime,
+          style: const TextStyle(fontSize: 10),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildImageItem(ModelItem item) {
     final String formattedTime = getFormattedTime(item.at!);
-
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GestureDetector(
-          onTap: () {
-            viewMedia(item.id!,item.data!["path"]);
-            },
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 200,
-                  child: Image.memory(
-                    item.thumbnail!,
-                    width: double.infinity, // Full width of container
-                    fit: BoxFit.cover,
-                  ),
-                ),
+    return GestureDetector(
+      onTap: () {
+        viewMedia(item.id!,item.data!["path"]);
+        },
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 200,
+              child: Image.memory(
+                item.thumbnail!,
+                width: double.infinity, // Full width of container
+                fit: BoxFit.cover,
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.1), // Transparent black at the top
-                        Colors.black.withOpacity(0.3), // Darker black at the bottom
-                      ],
-                    ),
-                  ),
-                  child: Text(
-                    formattedTime,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.1), // Transparent black at the top
+                    Colors.black.withOpacity(0.3), // Darker black at the bottom
+                  ],
+                ),
+              ),
+              child: Text(
+                formattedTime,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildVideoItem(ModelItem item) {
     final String formattedTime = getFormattedTime(item.at!);
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GestureDetector(
-          onTap: () {
-            viewMedia(item.id!,item.data!["path"]);
-          },
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 200,
-                  height: 200/item.data!["aspect"],
-                  child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
+    return GestureDetector(
+      onTap: () {
+        viewMedia(item.id!,item.data!["path"]);
+      },
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 200,
+              height: 200/item.data!["aspect"],
+              child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            width: 200,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.1), // Transparent black at the top
+                    Colors.black.withOpacity(0.3), // Darker black at the bottom
+                  ],
                 ),
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                width: 200,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.1), // Transparent black at the top
-                        Colors.black.withOpacity(0.3), // Darker black at the bottom
-                      ],
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // File size text at the left
+                  Row(
                     children: [
-                      // File size text at the left
-                      Row(
-                        children: [
-                          const Icon(Icons.videocam, size: 20),
-                          const SizedBox(width: 2,),
-                          Text(
-                            item.data!["duration"],
-                            style: const TextStyle(color: Colors.white, fontSize: 10),
-                          ),
-                        ],
-                      ),
+                      const Icon(Icons.videocam, size: 20),
+                      const SizedBox(width: 2,),
                       Text(
-                        formattedTime,
+                        item.data!["duration"],
                         style: const TextStyle(color: Colors.white, fontSize: 10),
                       ),
                     ],
                   ),
-                ),
+                  Text(
+                    formattedTime,
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAudioItem(ModelItem item){
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          WidgetAudio(item: item),
-          widgetAudioDetails(item),
         ],
       ),
     );
   }
 
+  Widget _buildAudioItem(ModelItem item){
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        WidgetAudio(item: item),
+        widgetAudioDetails(item),
+      ],
+    );
+  }
+
   Widget _buildDocumentItem(ModelItem item){
     final String formattedTime = getFormattedTime(item.at!);
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: GestureDetector(
-        onTap: (){
-          openMedia(item.data!["path"]);
-        },
-        child: Column(
-          //crossAxisAlignment: CrossAxisAlignment.stretch,
-          //mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              //mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.insert_drive_file,
-                  size: 40,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(
-                      item.data!["name"],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle( fontSize: 15),
-                    ),
+    return GestureDetector(
+      onTap: (){
+        openMedia(item.data!["path"]);
+      },
+      child: Column(
+        //crossAxisAlignment: CrossAxisAlignment.stretch,
+        //mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            //mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.insert_drive_file,
+                size: 40,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(
+                    item.data!["name"],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle( fontSize: 15),
                   ),
                 ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // File size text at the left
-                Text(
-                  readableBytes(item.data!["size"]),
-                  style: const TextStyle(fontSize: 10),
-                ),
-                Text(
-                  formattedTime,
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // File size text at the left
+              Text(
+                readableBytes(item.data!["size"]),
+                style: const TextStyle(fontSize: 10),
+              ),
+              Text(
+                formattedTime,
+                style: const TextStyle(fontSize: 10),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLocationItem(ModelItem item){
     final String formattedTime = getFormattedTime(item.at!);
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        width: 220.0,
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GestureDetector(
-          onTap: (){
-            openLocationInMap(item.data!["lat"], item.data!["lng"]);
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+    return GestureDetector(
+      onTap: (){
+        openLocationInMap(item.data!["lat"], item.data!["lng"]);
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    color: Colors.blue,
-                    size: 40,
-                  ),
-                  Text(
-                    "Location",
-                    style: TextStyle( fontSize: 15),
-                  ),
-                ],
+              Icon(
+                Icons.location_on,
+                color: Colors.blue,
+                size: 40,
               ),
+              SizedBox(width: 5,),
               Text(
-                formattedTime,
-                style: const TextStyle( fontSize: 10),
+                "Location",
+                style: TextStyle( fontSize: 15),
               ),
             ],
           ),
-        ),
+          Text(
+            formattedTime,
+            style: const TextStyle( fontSize: 10),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildContactItem(ModelItem item){
     final String formattedTime = getFormattedTime(item.at!);
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: GestureDetector(
-          onTap: () {
-            // Add to contacts
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              width: 200,
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () {
+        // Add to contacts
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          width: 200,
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child:item.thumbnail != null
+                ? CircleAvatar(
+                    radius: 50,
+                    backgroundImage: MemoryImage(item.thumbnail!),
+                  )
+                : const CircleAvatar(
+                    radius: 50,
+                    child: Icon(Icons.person,size:50),
+                  ),
+              ),
+              // Name Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Center(
-                    child:item.thumbnail != null
-                    ? CircleAvatar(
-                        radius: 50,
-                        backgroundImage: MemoryImage(item.thumbnail!),
-                      )
-                    : const CircleAvatar(
-                        radius: 50,
-                        child: Icon(Icons.person,size:50),
-                      ),
-                  ),
-                  // Name Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${item.data!["name"]}'.trim(),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  // Phones Row
-                  Row(
-                    children: [
-                      const Icon(Icons.phone, size: 16, color: Colors.blue),
-                      const SizedBox(width: 5),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ...item.data!["phones"].map((phone) => 
-                            Text(
-                              phone,
-                              style: const TextStyle(fontSize: 14,),
-                              overflow: TextOverflow.ellipsis,
-                            ))
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  // Emails Row (if available)
-                  if (item.data!["emails"].isNotEmpty)
-                    Row(
-                      children: [
-                        const Icon(Icons.email, size: 16, color: Colors.red),
-                        const SizedBox(width: 5),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...item.data!["emails"].map((email) => (
-                                Text(
-                                  email,
-                                  style: const TextStyle(fontSize: 14,),
-                                  overflow: TextOverflow.ellipsis,
-                                )
-                              ))
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 5),
-                  // Addresses Row (if available)
-                  if (item.data!["addresses"].isNotEmpty)
-                    Row(
-                      children: [
-                        const Icon(Icons.home, size: 16, color: Colors.green),
-                        const SizedBox(width: 5),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...item.data!["addresses"].map((address) => (
-                              Text(
-                                address,
-                                style: const TextStyle(fontSize: 14,),
-                                overflow: TextOverflow.ellipsis,
-                              )
-                              )),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        formattedTime,
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    ],
+                  Text(
+                    '${item.data!["name"]}'.trim(),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 5),
+              // Phones Row
+              Row(
+                children: [
+                  const Icon(Icons.phone, size: 16, color: Colors.blue),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ...item.data!["phones"].map((phone) => 
+                        Text(
+                          phone,
+                          style: const TextStyle(fontSize: 14,),
+                          overflow: TextOverflow.ellipsis,
+                        ))
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              // Emails Row (if available)
+              if (item.data!["emails"].isNotEmpty)
+                Row(
+                  children: [
+                    const Icon(Icons.email, size: 16, color: Colors.red),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...item.data!["emails"].map((email) => (
+                            Text(
+                              email,
+                              style: const TextStyle(fontSize: 14,),
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          ))
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 5),
+              // Addresses Row (if available)
+              if (item.data!["addresses"].isNotEmpty)
+                Row(
+                  children: [
+                    const Icon(Icons.home, size: 16, color: Colors.green),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...item.data!["addresses"].map((address) => (
+                          Text(
+                            address,
+                            style: const TextStyle(fontSize: 14,),
+                            overflow: TextOverflow.ellipsis,
+                          )
+                          )),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    formattedTime,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -969,7 +953,7 @@ class _PageItemsState extends State<PageItems> {
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               ),
-              onChanged: (value) => _onTextChanged(value),
+              onChanged: (value) => _onInputTextChanged(value),
             ),
           ),
           GestureDetector(
@@ -1004,7 +988,7 @@ class _PageItemsState extends State<PageItems> {
                           if (text.isNotEmpty) {
                             _addItem(text, 100000, null, null);
                             _textController.clear();
-                            _onTextChanged("");
+                            _onInputTextChanged("");
                           }
                         }
                       : _isRecording ? _stopRecording : null,

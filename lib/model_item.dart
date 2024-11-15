@@ -13,6 +13,7 @@ class ModelItem {
   Uint8List? thumbnail;
   int? starred;
   int type;
+  int? state;
   Map<String,dynamic>? data;
   int? at;
   ModelItem({
@@ -22,6 +23,7 @@ class ModelItem {
     this.thumbnail,
     this.starred,
     required this.type,
+    this.state,
     this.data,
     this.at,
   });
@@ -33,6 +35,7 @@ class ModelItem {
       thumbnail:null,
       starred: 0,
       type: 100000,
+      state:0,
       data: {"path":"assets/image.webp"},
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
@@ -45,6 +48,7 @@ class ModelItem {
       'thumbnail':thumbnail,
       'starred':starred,
       'type':type,
+      'state':state,
       'data':data,
       'at':at,
     };
@@ -66,6 +70,7 @@ class ModelItem {
       thumbnail:map.containsKey('thumbnail') ? map['thumbnail'] : null,
       starred: map.containsKey('starred') ? map['starred'] : 0,
       type: map.containsKey('type') ? map['type'] : 100000,
+      state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
       at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );

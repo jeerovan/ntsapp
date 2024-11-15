@@ -51,9 +51,9 @@ class _LocationPickerState extends State<LocationPicker> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Location Permission Denied"),
+          title: const Text("Location Permission Required"),
           content: const Text(
-              "Location permissions are required to select your current location. Please enable location permissions in the app settings."),
+              "Please enable location permissions in the app settings."),
           actions: [
             TextButton(
               child: const Text("Cancel"),
