@@ -35,7 +35,7 @@ class PageItems extends StatefulWidget {
 class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
-  List<String> _selection = [];
+  List<ModelItem> _selection = [];
   bool isSelecting = false;
   final TextEditingController _textController = TextEditingController();
   ModelGroup? group;
@@ -105,32 +105,53 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void onItemLongPressed(String id){
+  void onItemLongPressed(ModelItem item){
     setState(() {
-      if (_selection.contains(id)) {
-        _selection.remove(id);
+      if (_selection.contains(item)) {
+        _selection.remove(item);
         if (_selection.isEmpty){
           isSelecting = false;
         }
       } else {
-        _selection.add(id);
+        _selection.add(item);
         if (!isSelecting) isSelecting = true;
       }
     });
   }
-  void onItemTapped(String id){
+  void onItemTapped(ModelItem item){
     setState(() {
       if (isSelecting){
-        if (_selection.contains(id)) {
-          _selection.remove(id);
+        if (_selection.contains(item)) {
+          _selection.remove(item);
           if (_selection.isEmpty){
             isSelecting = false;
           }
         } else {
-          _selection.add(id);
+          _selection.add(item);
         }
       }
     });
+  }
+
+  Future<void> deleteSelectedItems() async {
+    for (ModelItem item in _selection){
+      await item.delete();
+    }
+    setState(() {
+      for (ModelItem item in _selection){
+        _items.remove(item);
+      }
+    });
+    clearSelection();
+  }
+  Future<void> markSelectedItemsStarred() async {
+    setState(() {
+      for (ModelItem item in _selection){
+        item.starred = 1;
+        item.update();
+      }
+    });
+    clearSelection();
   }
 
   void clearSelection(){
@@ -195,7 +216,7 @@ class _PageItemsState extends State<PageItems> {
 
   void addToContacts(ModelItem item){
     if (isSelecting){
-      onItemTapped(item.id!);
+      onItemTapped(item);
     }
     // TO-DO implement
   }
@@ -413,56 +434,76 @@ class _PageItemsState extends State<PageItems> {
     ));
   }
 
+  Widget _buildSelectionOptions(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+          onPressed: () { markSelectedItemsStarred();},
+          icon: const Icon(Icons.star_border),
+        ),
+        const SizedBox(width: 5,),
+        IconButton(
+          onPressed: (){deleteSelectedItems();},
+          icon: const Icon(Icons.delete_outlined),
+        ),
+        const SizedBox(width: 5,),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: group == null
-              ? const SizedBox.shrink()
-              : GestureDetector(
-                onTap: () {
-                  editGroup();
-                },
-                child: Row(
-                  children: [
-                    group!.thumbnail == null
-                    ? Container(
-                        width: size,
-                        height: size,
-                        decoration: BoxDecoration(
-                          color: colorFromHex(group!.color),
-                          shape: BoxShape.circle,
+        title: isSelecting
+               ? _buildSelectionOptions()
+               : group == null
+                  ? const SizedBox.shrink()
+                  : GestureDetector(
+                    onTap: () {
+                      editGroup();
+                    },
+                    child: Row(
+                      children: [
+                        group!.thumbnail == null
+                        ? Container(
+                            width: size,
+                            height: size,
+                            decoration: BoxDecoration(
+                              color: colorFromHex(group!.color),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center, // Center the text inside the circle
+                            child: Text(
+                              group!.title[0].toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: size / 2, // Adjust font size relative to the circle size
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Center(
+                              child: CircleAvatar(
+                                radius: 20,
+                                backgroundImage: MemoryImage(group!.thumbnail!),
+                              ),
+                            ),
                         ),
-                        alignment: Alignment.center, // Center the text inside the circle
-                        child: Text(
-                          group!.title[0].toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: size / 2, // Adjust font size relative to the circle size
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 5,),
+                        Expanded(
+                          child: Text(
+                            group!.title,
+                            overflow: TextOverflow.ellipsis, 
                           ),
                         ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Center(
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundImage: MemoryImage(group!.thumbnail!),
-                          ),
-                        ),
+                      ],
                     ),
-                    const SizedBox(width: 5,),
-                    Expanded(
-                      child: Text(
-                        group!.title,
-                        overflow: TextOverflow.ellipsis, 
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
       ),
       body: Column(
         children: [
@@ -487,14 +528,14 @@ class _PageItemsState extends State<PageItems> {
                   } else {
                     return GestureDetector(
                       onLongPress: (){
-                        onItemLongPressed(item.id!);
+                        onItemLongPressed(item);
                       },
                       onTap: (){
-                        onItemTapped(item.id!);
+                        onItemTapped(item);
                       },
                       child: Container(
                         width: double.infinity,
-                        color: _selection.contains(item.id) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
+                        color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
                         margin: const EdgeInsets.symmetric(vertical: 1),
                         child: Align(
                           alignment: Alignment.centerRight,
@@ -544,10 +585,11 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  void viewMedia(String id, String filePath) async {
+  void viewMedia(ModelItem item) async {
     if (isSelecting){
-      onItemTapped(id);
+      onItemTapped(item);
     } else {
+      String id = item.id!;
       String groupId = widget.groupId;
       int index = await ModelItem.mediaIndexInGroup(groupId, id);
       int count = await ModelItem.mediaCountInGroup(groupId);
@@ -570,9 +612,16 @@ class _PageItemsState extends State<PageItems> {
           style: const TextStyle(fontSize: 15),
         ),
         const SizedBox(height: 5),
-        Text(
-          formattedTime,
-          style: const TextStyle(fontSize: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+            const SizedBox(width:5),
+            Text(
+              formattedTime,
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
         ),
       ],
     );
@@ -582,7 +631,7 @@ class _PageItemsState extends State<PageItems> {
     final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: () {
-        viewMedia(item.id!,item.data!["path"]);
+        viewMedia(item);
         },
       child: Stack(
         children: [
@@ -631,7 +680,7 @@ class _PageItemsState extends State<PageItems> {
     final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: () {
-        viewMedia(item.id!,item.data!["path"]);
+        viewMedia(item);
       },
       child: Stack(
         children: [
@@ -703,7 +752,7 @@ class _PageItemsState extends State<PageItems> {
     return GestureDetector(
       onTap: (){
         if (isSelecting){
-          onItemTapped(item.id!);
+          onItemTapped(item);
         } else {
           openMedia(item.data!["path"]);
         }
@@ -756,7 +805,7 @@ class _PageItemsState extends State<PageItems> {
     return GestureDetector(
       onTap: (){
         if (isSelecting){
-          onItemTapped(item.id!);
+          onItemTapped(item);
         } else {
           openLocationInMap(item.data!["lat"], item.data!["lng"]);
         }
