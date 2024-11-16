@@ -1,5 +1,6 @@
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
@@ -288,6 +289,15 @@ class ModelItem {
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
+    Map<String,dynamic> map = toMap();
+    if (map['data'] != null){
+      if (map.containsKey("path")) {
+        File file = File(map['path']);
+        if (file.existsSync()){
+          file.deleteSync();
+        }
+      }
+    }
     return await dbHelper.delete("item", id);
   }
 }

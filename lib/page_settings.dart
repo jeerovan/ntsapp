@@ -1,6 +1,11 @@
 
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/backup_restore.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'common.dart';
@@ -20,6 +25,49 @@ class SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     
+  }
+
+  void showProcessing(){
+    showProcessingDialog(context);
+  }
+  void hideProcessing(){
+    Navigator.pop(context);
+  }
+
+  Future<void> createDownloadBackup() async {
+    showProcessing();
+    String status = "";
+    Directory directory = await getApplicationDocumentsDirectory();
+    String dirPath = directory.path;
+    String backupFilePath = path.join(dirPath,"ntsbackup.zip");
+    File backupFile = File(backupFilePath);
+    if(!backupFile.existsSync()){
+      status = await createBackup();
+      if (status.isEmpty){
+        try {
+          await compute(addDirsToZip,dirPath);
+        } catch (e) {
+          status = e.toString();
+        }
+      }
+    }
+    hideProcessing();
+    if(status.isNotEmpty){
+      if(mounted)showAlertMessage(context, "Could not process", status);
+    } else {
+      try {
+        // Use Share package to trigger download or share intent
+        await Share.shareXFiles(
+          [XFile(backupFilePath)],
+          text: 'Here is the backup file for your app.',
+        );
+      } catch (e) {
+        status = e.toString();
+      }
+      if(status.isNotEmpty){
+        if(mounted)showAlertMessage(context, "Error", status);
+      }
+    }
   }
 
   @override
@@ -56,6 +104,13 @@ class SettingsPageState extends State<SettingsPage> {
               ),
               onPressed: () => widget.onThemeToggle(),
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.backup),
+            title: const Text('Backup'),
+            onTap: () async {
+              createDownloadBackup();
+            },
           ),
           ListTile(
             leading: const Icon(Icons.star),

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ntsapp/page_starred.dart';
+import 'package:path_provider/path_provider.dart';
 import 'common.dart';
 import 'model_profile.dart';
 import 'model_setting.dart';
@@ -11,6 +14,7 @@ import 'model_item.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
 import 'page_profile.dart';
+import 'package:path/path.dart' as path;
 
 bool debug = false;
 
@@ -172,7 +176,12 @@ class _PageGroupState extends State<PageGroup> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => SettingsPage(isDarkMode: widget.isDarkMode,onThemeToggle: widget.onThemeToggle,)),
-                  );
+                  ).then((_) async {
+                    // remove backup file if exists
+                    Directory directory = await getApplicationDocumentsDirectory();
+                    File backupFile = File(path.join(directory.path,"ntsbackup.zip"));
+                    if(backupFile.existsSync())backupFile.deleteSync();
+                  });
                   break;
                 case 1:
                   Navigator.push(

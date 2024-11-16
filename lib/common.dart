@@ -295,7 +295,7 @@ int getMessageType(String? mime){
 }
 
 Future<File?> getFile(String fileType,String fileName) async {
-  String filePath = await getFilePath(fileType,fileName);
+  String filePath = await getMediaPath(fileType,fileName);
   File file = File(filePath);
   if (file.existsSync()) {
     return file;
@@ -303,10 +303,9 @@ Future<File?> getFile(String fileType,String fileName) async {
   return null;
 }
 
-Future<String> getFilePath(String fileType,String fileName) async {
+Future<String> getMediaPath(String fileType,String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
-  String filePath = path.join(fileType,fileName);
-  return path.join(directory.path, filePath);
+  return path.join(directory.path,"ntsmedia", fileType,fileName);
 }
 
 void copyFile(Map<String,String> mediaData) {
@@ -336,7 +335,7 @@ Future<Map<String,dynamic>> processAndGetFileAttributes(String filePath) async {
   }
   String directory = mime.split("/").first;
   File? existing = await getFile(directory,fileName);
-  String newPath = await getFilePath(directory, fileName);
+  String newPath = await getMediaPath(directory, fileName);
   await checkAndCreateDirectory(newPath);
   if(existing == null){
     Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
