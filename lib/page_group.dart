@@ -26,7 +26,6 @@ class _PageGroupState extends State<PageGroup> {
   ModelProfile? profile;
   final List<ModelGroup> _items = [];
   bool _isLoading = false;
-  bool _hasMore = true;
   int _offset = 0;
   final int _limit = 20;
 
@@ -58,15 +57,13 @@ class _PageGroupState extends State<PageGroup> {
   Future<void> initialLoad() async {
     _items.clear();
     final topItems = await ModelGroup.all(profile!.id!, 0,_limit);
-    _hasMore = topItems.length == _limit;
-    if (_hasMore) _offset += _limit;
     setState(() {
       _items.addAll(topItems);
     });
   }
 
   Future<void> _fetchItems() async {
-    if (_isLoading || !_hasMore) return;
+    if (_isLoading) return;
     setState(() => _isLoading = true);
 
     final newItems = await ModelGroup.all(profile!.id!, _offset, _limit);
@@ -74,7 +71,6 @@ class _PageGroupState extends State<PageGroup> {
       _items.addAll(newItems);
       _isLoading = false;
       _offset += _limit;
-      _hasMore = newItems.length == _limit;
     });
   }
 
@@ -155,13 +151,27 @@ class _PageGroupState extends State<PageGroup> {
             ),
           ),
           const SizedBox(width: 10,),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => SettingsPage(isDarkMode: widget.isDarkMode,onThemeToggle: widget.onThemeToggle,),
-              ));
-            }
+          PopupMenuButton<int>(
+            onSelected: (value) {
+              switch (value) {
+                case 0:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsPage(isDarkMode: widget.isDarkMode,onThemeToggle: widget.onThemeToggle,)),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem<int>(
+                value: 1,
+                child: Text('Starred Notes'),
+              ),
+              const PopupMenuItem<int>(
+                value: 0,
+                child: Text('Settings'),
+              ),
+            ],
           ),
           if (debug)
             IconButton(
@@ -184,13 +194,8 @@ class _PageGroupState extends State<PageGroup> {
               return false;
             },
             child: ListView.builder(
-              itemCount: _items.length + 1, // Additional item for the loading indicator
+              itemCount: _items.length, // Additional item for the loading indicator
               itemBuilder: (context, index) {
-                if (index == _items.length) {
-                  return _hasMore
-                      ? const Center(child: CircularProgressIndicator())
-                      : const SizedBox.shrink() ;
-                }
                 final item = _items[index];
                 return ListTile(
                   leading: item.thumbnail == null
@@ -233,7 +238,7 @@ class _PageGroupState extends State<PageGroup> {
           ),
           Positioned(
             bottom: 90, // Adjust for FAB height and margin
-            right: 20,
+            right: 22,
             child: FloatingActionButton(
               heroTag: "searchButton",
               mini: true,

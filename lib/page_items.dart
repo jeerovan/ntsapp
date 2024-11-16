@@ -35,15 +35,15 @@ class PageItems extends StatefulWidget {
 class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
-  List<ModelItem> _selection = [];
+  final List<ModelItem> _selection = [];
   bool isSelecting = false;
   final TextEditingController _textController = TextEditingController();
   ModelGroup? group;
   String? itemId;
 
   bool _isLoading = false;
-  int _offset = 0;
-  final int _limit = 10;
+  final int _offset = 0;
+  final int _limit = 20;
 
   bool _isTyping = false;
   bool _isRecording = false;
