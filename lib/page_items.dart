@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:siri_wave/siri_wave.dart';
 import 'page_contact_pick.dart';
@@ -16,7 +17,6 @@ import 'page_location_pick.dart';
 import 'page_media_viewer.dart';
 import 'package:video_player/video_player.dart';
 import 'common.dart';
-import 'common_widgets.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 import 'package:record/record.dart';
@@ -524,7 +524,7 @@ class _PageItemsState extends State<PageItems> {
                 itemBuilder: (context, index) {
                   final item = _items[index];
                   if (item.type == 170000){
-                    return _buildDateItem(item);
+                    return ItemWidgetDate(item:item);
                   } else {
                     return GestureDetector(
                       onLongPress: (){
@@ -567,19 +567,19 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
       case 100000:
-        return _buildTextItem(item);
+        return ItemWidgetText(item:item);
       case 110000:
-        return _buildImageItem(item);
+        return ItemWidgetImage(item:item,onTap: viewMedia);
       case 120000:
-        return _buildVideoItem(item);
+        return ItemWidgetVideo(item:item,onTap: viewMedia);
       case 130000:
-        return _buildAudioItem(item);
+        return ItemWidgetAudio(item:item);
       case 140000:
-        return _buildDocumentItem(item);
+        return ItemWidgetDocument(item: item, onTap: openItemMedia);
       case 150000:
-        return _buildLocationItem(item);
+        return ItemWidgetLocation(item:item,onTap: openLocation);
       case 160000:
-        return _buildContactItem(item);
+        return ItemWidgetContact(item:item,onTap:addToContacts);
       default:
         return const SizedBox.shrink();
     }
@@ -590,7 +590,7 @@ class _PageItemsState extends State<PageItems> {
       onItemTapped(item);
     } else {
       String id = item.id!;
-      String groupId = widget.groupId;
+      String groupId = item.groupId;
       int index = await ModelItem.mediaIndexInGroup(groupId, id);
       int count = await ModelItem.mediaCountInGroup(groupId);
       if (mounted){
@@ -601,416 +601,20 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  // Text item bubble
-  Widget _buildTextItem(ModelItem item) {
-    final String formattedTime = getFormattedTime(item.at!);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          item.text,
-          style: const TextStyle(fontSize: 15),
-        ),
-        const SizedBox(height: 5),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-            const SizedBox(width:5),
-            Text(
-              formattedTime,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ],
-        ),
-      ],
-    );
+  void openItemMedia(ModelItem item){
+    if (isSelecting){
+      onItemTapped(item);
+    } else {
+      openMedia(item.data!["path"]);
+    }
   }
 
-  Widget _buildImageItem(ModelItem item) {
-    final String formattedTime = getFormattedTime(item.at!);
-    return GestureDetector(
-      onTap: () {
-        viewMedia(item);
-        },
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(
-              width: 200,
-              child: Image.memory(
-                item.thumbnail!,
-                width: double.infinity, // Full width of container
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.1), // Transparent black at the top
-                    Colors.black.withOpacity(0.3), // Darker black at the bottom
-                  ],
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                  const SizedBox(width:5),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVideoItem(ModelItem item) {
-    final String formattedTime = getFormattedTime(item.at!);
-    return GestureDetector(
-      onTap: () {
-        viewMedia(item);
-      },
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(
-              width: 200,
-              height: 200/item.data!["aspect"],
-              child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            width: 200,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.1), // Transparent black at the top
-                    Colors.black.withOpacity(0.3), // Darker black at the bottom
-                  ],
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // File size text at the left
-                  Row(
-                    children: [
-                      const Icon(Icons.videocam, size: 20),
-                      const SizedBox(width: 2,),
-                      Text(
-                        item.data!["duration"],
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                      const SizedBox(width:5),
-                      Text(
-                        formattedTime,
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAudioItem(ModelItem item){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        WidgetAudio(item: item),
-        widgetAudioDetails(item),
-      ],
-    );
-  }
-
-  Widget _buildDocumentItem(ModelItem item){
-    final String formattedTime = getFormattedTime(item.at!);
-    return GestureDetector(
-      onTap: (){
-        if (isSelecting){
-          onItemTapped(item);
-        } else {
-          openMedia(item.data!["path"]);
-        }
-      },
-      child: Column(
-        //crossAxisAlignment: CrossAxisAlignment.stretch,
-        //mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            //mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.insert_drive_file,
-                size: 40,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text(
-                    item.data!["name"],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle( fontSize: 15),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // File size text at the left
-              Text(
-                readableBytes(item.data!["size"]),
-                style: const TextStyle(fontSize: 10),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                  const SizedBox(width:5),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationItem(ModelItem item){
-    final String formattedTime = getFormattedTime(item.at!);
-    return GestureDetector(
-      onTap: (){
-        if (isSelecting){
-          onItemTapped(item);
-        } else {
-          openLocationInMap(item.data!["lat"], item.data!["lng"]);
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Icon(
-                Icons.location_on,
-                color: Colors.blue,
-                size: 40,
-              ),
-              SizedBox(width: 5,),
-              Text(
-                "Location",
-                style: TextStyle( fontSize: 15),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-              const SizedBox(width:5),
-              Text(
-                formattedTime,
-                style: const TextStyle( fontSize: 10),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactItem(ModelItem item){
-    final String formattedTime = getFormattedTime(item.at!);
-    return GestureDetector(
-      onTap: () {
-        addToContacts(item);
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          width: 200,
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child:item.thumbnail != null
-                ? CircleAvatar(
-                    radius: 50,
-                    backgroundImage: MemoryImage(item.thumbnail!),
-                  )
-                : const CircleAvatar(
-                    radius: 50,
-                    child: Icon(Icons.person,size:50),
-                  ),
-              ),
-              // Name Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${item.data!["name"]}'.trim(),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              // Phones Row
-              Row(
-                children: [
-                  const Icon(Icons.phone, size: 16, color: Colors.blue),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ...item.data!["phones"].map((phone) => 
-                        Text(
-                          phone,
-                          style: const TextStyle(fontSize: 14,),
-                          overflow: TextOverflow.ellipsis,
-                        ))
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              // Emails Row (if available)
-              if (item.data!["emails"].isNotEmpty)
-                Row(
-                  children: [
-                    const Icon(Icons.email, size: 16, color: Colors.red),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ...item.data!["emails"].map((email) => (
-                            Text(
-                              email,
-                              style: const TextStyle(fontSize: 14,),
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          ))
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              const SizedBox(height: 5),
-              // Addresses Row (if available)
-              if (item.data!["addresses"].isNotEmpty)
-                Row(
-                  children: [
-                    const Icon(Icons.home, size: 16, color: Colors.green),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ...item.data!["addresses"].map((address) => (
-                          Text(
-                            address,
-                            style: const TextStyle(fontSize: 14,),
-                            overflow: TextOverflow.ellipsis,
-                          )
-                          )),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                  const SizedBox(width:5),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDateItem(ModelItem item) {
-    String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(item.at! * 1000, isUtc: true));
-    return Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min, // Shrinks to fit the text width
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            child: Text(
-              dateText,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void openLocation(ModelItem item){
+    if (isSelecting){
+      onItemTapped(item);
+    } else {
+      openLocationInMap(item.data!["lat"], item.data!["lng"]);
+    }
   }
 
   Widget _buildWaveform() {
