@@ -17,7 +17,9 @@ bool debug = false;
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
-  const PageGroup({super.key,required this.isDarkMode,required this.onThemeToggle});
+  const PageGroup({super.key,
+                  required this.isDarkMode,
+                  required this.onThemeToggle});
 
   @override
   State<PageGroup> createState() => _PageGroupState();
@@ -27,6 +29,7 @@ class _PageGroupState extends State<PageGroup> {
   ModelProfile? profile;
   final List<ModelGroup> _items = [];
   bool _isLoading = false;
+  bool _hasMore = true;
   int _offset = 0;
   final int _limit = 20;
 
@@ -60,6 +63,8 @@ class _PageGroupState extends State<PageGroup> {
     final topItems = await ModelGroup.all(profile!.id!, 0,_limit);
     if (topItems.length == _limit){
       _offset += _limit;
+    } else {
+      _hasMore = false;
     }
     setState(() {
       _items.addAll(topItems);
@@ -67,7 +72,7 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   Future<void> _fetchItems() async {
-    if (_isLoading) return;
+    if (_isLoading || !_hasMore) return;
     if (_offset == 0) _items.clear();
     setState(() => _isLoading = true);
 
@@ -75,7 +80,11 @@ class _PageGroupState extends State<PageGroup> {
     setState(() {
       _items.addAll(newItems);
       _isLoading = false;
-      if (newItems.length == _limit) _offset += _limit;
+      if (newItems.length == _limit) {
+        _offset += _limit;
+      } else {
+        _hasMore = false;
+      }
     });
   }
 

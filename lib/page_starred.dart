@@ -18,6 +18,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   final List<ModelItem> _selection = [];
   bool _isSelecting = false;
   bool _isLoading = false;
+  bool _hasMore = true;
   int _offset = 0;
   final int _limit = 20;
 
@@ -40,6 +41,8 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     final topItems = await ModelItem.getStarred(0,_limit);
     if (topItems.length == _limit){
       _offset += _limit;
+    } else {
+      _hasMore = false;
     }
     setState(() {
       _items.addAll(topItems);
@@ -48,14 +51,18 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   }
 
   Future<void> fetchStarredOnScroll() async {
-    if (_isLoading) return;
+    if (_isLoading || !_hasMore) return;
     if (_offset == 0) _items.clear();
     setState(() => _isLoading = true);
 
     final newItems = await ModelItem.getStarred( _offset, _limit);
     setState(() {
       _items.addAll(newItems);
-      if (newItems.length == _limit) _offset += _limit;
+      if (newItems.length == _limit) {
+        _offset += _limit;
+      } else {
+        _hasMore = false;
+      }
       _isLoading = false;
     });
   }
@@ -144,7 +151,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       ),
       body: NotificationListener<ScrollNotification>(
               onNotification: (ScrollNotification scrollInfo) {
-                if (scrollInfo.metrics.pixels == scrollInfo.metrics.minScrollExtent) {
+                if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
                   fetchStarredOnScroll();
                 }
                 return false;
