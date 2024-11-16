@@ -65,6 +65,7 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
         ),
         const SizedBox(height: 5),
         Row(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
@@ -285,11 +286,11 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
         widget.onTap(item);
       },
       child: Column(
-        //crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         //mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            //mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
                 Icons.insert_drive_file,
@@ -309,6 +310,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
             ],
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // File size text at the left
@@ -376,6 +378,7 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
             ],
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
