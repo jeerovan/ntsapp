@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ntsapp/page_starred.dart';
 import 'common.dart';
 import 'model_profile.dart';
 import 'model_setting.dart';
@@ -57,6 +58,9 @@ class _PageGroupState extends State<PageGroup> {
   Future<void> initialLoad() async {
     _items.clear();
     final topItems = await ModelGroup.all(profile!.id!, 0,_limit);
+    if (topItems.length == _limit){
+      _offset += _limit;
+    }
     setState(() {
       _items.addAll(topItems);
     });
@@ -64,13 +68,14 @@ class _PageGroupState extends State<PageGroup> {
 
   Future<void> _fetchItems() async {
     if (_isLoading) return;
+    if (_offset == 0) _items.clear();
     setState(() => _isLoading = true);
 
     final newItems = await ModelGroup.all(profile!.id!, _offset, _limit);
     setState(() {
       _items.addAll(newItems);
       _isLoading = false;
-      _offset += _limit;
+      if (newItems.length == _limit) _offset += _limit;
     });
   }
 
@@ -158,6 +163,12 @@ class _PageGroupState extends State<PageGroup> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => SettingsPage(isDarkMode: widget.isDarkMode,onThemeToggle: widget.onThemeToggle,)),
+                  );
+                  break;
+                case 1:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PageStarredItems()),
                   );
                   break;
               }

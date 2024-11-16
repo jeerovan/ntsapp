@@ -440,7 +440,7 @@ class _PageItemsState extends State<PageItems> {
       children: [
         IconButton(
           onPressed: () { markSelectedItemsStarred();},
-          icon: const Icon(Icons.star_border),
+          icon: const Icon(Icons.star),
         ),
         const SizedBox(width: 5,),
         IconButton(
