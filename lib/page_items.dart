@@ -618,15 +618,24 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildWaveform() {
+    final controller = IOS7SiriWaveformController(
+    amplitude: 0.5,
+    color: Colors.red,
+    frequency: 4,
+    speed: 0.15,
+  );
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.mic, color: Colors.red),
-          SiriWaveform.ios7(options: const IOS7SiriWaveformOptions(
-                        height: 50,
-                        width: 150
-                      ),),
+          SiriWaveform.ios7(
+              controller: controller,
+              options: const IOS7SiriWaveformOptions(
+                height: 50,
+                width: 150
+              ),
+          ),
           Text(
             mediaFileDuration(_recordingDuration),
             style: const TextStyle(color: Colors.red, fontSize: 16),
