@@ -46,11 +46,11 @@ class ModelItem {
       'id':id,
       'group_id':groupId,
       'text':text,
-      'thumbnail':thumbnail,
+      'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'starred':starred,
       'type':type,
       'state':state,
-      'data':data,
+      'data':data == null ? null : data is String ? data : jsonEncode(data),
       'at':at,
     };
   }
@@ -59,16 +59,24 @@ class ModelItem {
     Map<String, dynamic>? dataMap;
     if (map.containsKey('data') && map['data'] != null) {
       if (map['data'] is String) {
-        dataMap = jsonDecode(map['data']) as Map<String, dynamic>;
-      } else if (map['data'] is Map<String, dynamic>) {
-        dataMap = map['data'] as Map<String, dynamic>;
+        dataMap = jsonDecode(map['data']);
+      } else {
+        dataMap = map['data'];
+      }
+    }
+    Uint8List? thumbnail;
+    if (map.containsKey("thumbnail")){
+      if (map["thumbnail"] is String){
+        thumbnail = base64Decode(map["thumbnail"]);
+      } else {
+        thumbnail = map["thumbnail"];
       }
     }
     return ModelItem(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       groupId:map.containsKey('group_id') ? map['group_id'] : "",
       text:map.containsKey('text') ? map['text'] : "",
-      thumbnail:map.containsKey('thumbnail') ? map['thumbnail'] : null,
+      thumbnail:thumbnail,
       starred: map.containsKey('starred') ? map['starred'] : 0,
       type: map.containsKey('type') ? map['type'] : 100000,
       state: map.containsKey('state') ? map['state'] : 0,
@@ -268,35 +276,20 @@ class ModelItem {
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
     Map<String,dynamic> map = toMap();
-    if (map.containsKey('data') && map['data'] != null) {
-      if (map['data'] is Map<String, dynamic>) {
-        map['data'] = jsonEncode(map['data']);
-      }
-    }
     return await dbHelper.insert("item", map);
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
-    if (map.containsKey('data') && map['data'] != null) {
-      if (map['data'] is Map<String, dynamic>) {
-        map['data'] = jsonEncode(map['data']);
-      }
-    }
     return await dbHelper.update("item",map,id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
-    if (map["data"] != null){
-      Map<String,dynamic> dataMap;
-      if (map['data'] is String) {
-        dataMap = jsonDecode(map['data']) as Map<String, dynamic>;
-      } else {
-        dataMap = map["data"];
-      }
+    if (map['data'] != null){
+      Map<String,dynamic> dataMap = jsonDecode(map['data']);
       if (dataMap.containsKey("path")) {
         final String path = dataMap["path"];
         File file = File(path);

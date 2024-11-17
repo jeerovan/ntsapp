@@ -39,7 +39,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         color TEXT,
         at INTEGER,
-        thumbnail BLOB
+        thumbnail TEXT
       )
     ''');
     await db.execute('''
@@ -50,7 +50,7 @@ class DatabaseHelper {
         pinned INTEGER,
         color TEXT,
         at INTEGER,
-        thumbnail BLOB,
+        thumbnail TEXT,
         FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE
       )
     ''');
@@ -66,7 +66,7 @@ class DatabaseHelper {
         type INTEGER,
         data TEXT,
         at INTEGER,
-        thumbnail BLOB,
+        thumbnail TEXT,
         state INTEGER,
         FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE
       )

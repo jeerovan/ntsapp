@@ -16,7 +16,7 @@ import 'page_db.dart';
 import 'page_profile.dart';
 import 'package:path/path.dart' as path;
 
-bool debug = false;
+bool debug = true;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
@@ -94,12 +94,15 @@ class _PageGroupState extends State<PageGroup> {
 
   void createNoteGroup(String title) async {
     if(title.length > 1){
-      ModelGroup? group = await ModelGroup.checkInsert(profile!.id!, title);
-      if(group != null){
-        initialLoad();
-        if(mounted){
-          navigateToItems(group.id!);
-        }
+      String profileId = profile!.id!;
+      int count = await ModelGroup.getCount(profileId);
+      Color color = getMaterialColor(count+1);
+      String hexCode = colorToHex(color);
+      ModelGroup group = await ModelGroup.fromMap({"profile_id":profileId, "title":title, "color":hexCode});
+      await group.insert();
+      initialLoad();
+      if(mounted){
+        navigateToItems(group.id!);
       }
     }
   }
@@ -118,6 +121,7 @@ class _PageGroupState extends State<PageGroup> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => ProfilePage(
         onSelect : (id) {
+          ModelSetting.update("profile",id);
           setProfile(id);
         }
       )
@@ -181,6 +185,7 @@ class _PageGroupState extends State<PageGroup> {
                     Directory directory = await getApplicationDocumentsDirectory();
                     File backupFile = File(path.join(directory.path,"ntsbackup.zip"));
                     if(backupFile.existsSync())backupFile.deleteSync();
+                    initialLoad();
                   });
                   break;
                 case 1:

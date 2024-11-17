@@ -44,7 +44,7 @@ class SettingsPageState extends State<SettingsPage> {
     File backupFile = File(backupFilePath);
     if(!backupFile.existsSync()){
       try {
-        status = await compute(createBackup,dirPath);
+        status = await createBackup(dirPath);
       } catch (e) {
         status = e.toString();
       }
@@ -84,7 +84,7 @@ class SettingsPageState extends State<SettingsPage> {
           String error = "";
           showProcessing();
           try {
-            error = await compute(restoreBackup,({"dir":dirPath,"zip": zipFilePath}));
+            error = await restoreBackup({"dir":dirPath,"zip": zipFilePath});
           } catch(e) {
             error = e.toString();
           }

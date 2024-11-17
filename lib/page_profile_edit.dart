@@ -99,7 +99,11 @@ class _AddEditProfileState extends State<AddEditProfile> {
   void saveProfile() async {
     if (itemChanged && title.isNotEmpty){
       if (profile == null){
-        await ModelProfile.checkInsert(title,image);
+        int count = await ModelProfile.getCount();
+        Color color = getMaterialColor(count+1);
+        String hexCode = colorToHex(color);
+        ModelProfile newProfile = await ModelProfile.fromMap({"title":title,"color":hexCode,"thumbnail":image});
+        await newProfile.insert();
       } else {
         profile!.thumbnail = image;
         profile!.title = title;

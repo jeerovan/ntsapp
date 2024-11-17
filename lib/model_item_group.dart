@@ -1,6 +1,5 @@
+import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui';
-import 'common.dart';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
 import 'model_item.dart';
@@ -41,7 +40,7 @@ class ModelGroup {
       'id':id,
       'profile_id':profileId,
       'title':title,
-      'thumbnail':thumbnail,
+      'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'pinned':pinned,
       'color':color,
       'at':at,
@@ -50,12 +49,20 @@ class ModelGroup {
   static Future<ModelGroup> fromMap(Map<String,dynamic> map) async {
     Uuid uuid = const Uuid();
     String groupId = map.containsKey("id") ? map['id'] : uuid.v4();
+    Uint8List? thumbnail;
+    if (map.containsKey("thumbnail")){
+      if (map["thumbnail"] is String){
+        thumbnail = base64Decode(map["thumbnail"]);
+      } else {
+        thumbnail = map["thumbnail"];
+      }
+    }
     ModelItem? item = await ModelItem.getLatestInGroup(groupId);
     return ModelGroup(
       id: groupId,
       profileId: map.containsKey('profile_id') ? map['profile_id'] : "",
       title:map.containsKey('title') ? map['title'] : "",
-      thumbnail: map.containsKey('thumbnail') ? map['thumbnail'] : null,
+      thumbnail: thumbnail,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
@@ -93,28 +100,6 @@ class ModelGroup {
       return fromMap(map);
     }
     return null;
-  }
-  static Future<ModelGroup?> checkInsert(String profileId, String title) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    List<Map<String,dynamic>> rows = await db.query(
-      'itemgroup',
-      where: 'title == ? AND profile_id == ?',
-      whereArgs: ['%$title%',profileId]);
-    if(rows.isEmpty){
-      int count = await getCount(profileId);
-      Color color = getMaterialColor(count+1);
-      String hexCode = colorToHex(color);
-      ModelGroup group = await fromMap({"profile_id":profileId, "title":title, "color":hexCode});
-      int added = await group.insert();
-      if (added > 0){
-        return group;
-      } else {
-        return null;
-      }
-    } else {
-      return fromMap(rows.first);
-    }
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;

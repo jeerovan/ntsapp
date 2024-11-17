@@ -2,8 +2,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'database_helper.dart';
 import 'model_profile.dart';
 import 'model_item_group.dart';
@@ -18,12 +18,6 @@ Future<String> createBackup(String baseDirPath) async {
   await emptyDbFilesDir(dbFilesDirPath);
 
   // create db backup files
-  bool mobile = Platform.isAndroid || Platform.isIOS;
-  if (!mobile) {
-    // Initialize sqflite for FFI (non-mobile platforms)
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
   final dbHelper = DatabaseHelper.instance;
   final db = await dbHelper.database;
   List<String> tables = ["profile","itemgroup","item","setting"];
@@ -48,30 +42,29 @@ Future<String> createBackup(String baseDirPath) async {
 
   // create zip file
   if (error.isEmpty){
-    try {
-      final String zipFilePath = path.join(baseDirPath,'ntsbackup.zip');
-      final ZipFileEncoder encoder = ZipFileEncoder();
-      encoder.create(zipFilePath);
-      await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsmedia")));
-      await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsbackup")));
-      await encoder.close();
-    } catch (e) {
-      error = e.toString();
-    }
+    error = await compute(zipDbFiles,baseDirPath);
   }
   return error;
 }
 
-Future<String> restoreBackup(Map<String,String> data) async {
+Future<String> zipDbFiles(String baseDirPath) async {
+  String error = "";
+  try {
+    final String zipFilePath = path.join(baseDirPath,'ntsbackup.zip');
+    final ZipFileEncoder encoder = ZipFileEncoder();
+    encoder.create(zipFilePath);
+    await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsmedia")));
+    await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsbackup")));
+    await encoder.close();
+  } catch (e) {
+    error = e.toString();
+  }
+  return error;
+}
+
+Future<String> unZipDbFiles(Map<String,String> data) async {
   String baseDirPath = data["dir"]!;
   String zipPath = data["zip"]!;
-  //empty db files dir 
-  final String dbFilesDirPath = path.join(baseDirPath,"ntsbackup");
-  await emptyDbFilesDir(dbFilesDirPath);
-
-  // media files can be overwritten if present
-
-  // extract zip file
   String error = "";
   try {
     File zipFile = File(zipPath);
@@ -91,6 +84,19 @@ Future<String> restoreBackup(Map<String,String> data) async {
   } catch (e) {
     error = e.toString();
   }
+  return error;
+}
+
+Future<String> restoreBackup(Map<String,String> data) async {
+  String baseDirPath = data["dir"]!;
+  //empty db files dir 
+  final String dbFilesDirPath = path.join(baseDirPath,"ntsbackup");
+  await emptyDbFilesDir(dbFilesDirPath);
+
+  // media files can be overwritten if present
+
+  // extract zip file
+  String error = await compute(unZipDbFiles,data);
   if (error.isEmpty){
     error = await restoreDbFiles(baseDirPath);
   }
@@ -100,12 +106,6 @@ Future<String> restoreBackup(Map<String,String> data) async {
 Future<String> restoreDbFiles(String baseDirPath) async {
   String error = "";
   // create db backup files
-  bool mobile = Platform.isAndroid || Platform.isIOS;
-  if (!mobile) {
-    // Initialize sqflite for FFI (non-mobile platforms)
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
   List<String> tables = ["profile","itemgroup","item","setting"];
   for (String table in tables){
     try {

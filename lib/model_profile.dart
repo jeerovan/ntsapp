@@ -1,6 +1,5 @@
+import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui';
-import 'common.dart';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
 
@@ -30,7 +29,7 @@ class ModelProfile {
     return  {
       'id':id,
       'title':title,
-      'thumbnail':thumbnail,
+      'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'color':color,
       'at':at,
     };
@@ -38,10 +37,18 @@ class ModelProfile {
   static Future<ModelProfile> fromMap(Map<String,dynamic> map) async {
     Uuid uuid = const Uuid();
     String profileId = map.containsKey("id") ? map['id'] : uuid.v4();
+    Uint8List? thumbnail;
+    if (map.containsKey("thumbnail")){
+      if (map["thumbnail"] is String){
+        thumbnail = base64Decode(map["thumbnail"]);
+      } else {
+        thumbnail = map["thumbnail"];
+      }
+    }
     return ModelProfile(
       id: profileId,
       title:map.containsKey('title') ? map['title'] : "",
-      thumbnail: map.containsKey('thumbnail') ? map['thumbnail'] : null,
+      thumbnail: thumbnail,
       color: map.containsKey('color') ? map['color'] : "",
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
@@ -73,28 +80,6 @@ class ModelProfile {
       return fromMap(map);
     }
     return null;
-  }
-  static Future<ModelProfile?> checkInsert(String title,Uint8List? thumbnail) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    List<Map<String,dynamic>> rows = await db.query(
-      'profile',
-      where: 'title == ?',
-      whereArgs: ['%$title%']);
-    if(rows.isEmpty){
-      int count = await getCount();
-      Color color = getMaterialColor(count+1);
-      String hexCode = colorToHex(color);
-      ModelProfile profile = await fromMap({"title":title,"color":hexCode,"thumbnail":thumbnail});
-      int added = await profile.insert();
-      if (added > 0){
-        return profile;
-      } else {
-        return null;
-      }
-    } else {
-      return fromMap(rows.first);
-    }
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
