@@ -1,5 +1,6 @@
 
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -42,13 +43,10 @@ class SettingsPageState extends State<SettingsPage> {
     String backupFilePath = path.join(dirPath,"ntsbackup.zip");
     File backupFile = File(backupFilePath);
     if(!backupFile.existsSync()){
-      status = await createBackup();
-      if (status.isEmpty){
-        try {
-          await compute(addDirsToZip,dirPath);
-        } catch (e) {
-          status = e.toString();
-        }
+      try {
+        status = await compute(createBackup,dirPath);
+      } catch (e) {
+        status = e.toString();
       }
     }
     hideProcessing();
@@ -67,6 +65,36 @@ class SettingsPageState extends State<SettingsPage> {
       if(status.isNotEmpty){
         if(mounted)showAlertMessage(context, "Error", status);
       }
+    }
+  }
+
+  Future<void> restoreZipBackup() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ["zip"],
+    );
+    if (result != null){
+      if (result.files.isNotEmpty){
+        PlatformFile selectedFile = result.files[0];
+        if(selectedFile.name == "ntsbackup.zip"){
+          String zipFilePath = selectedFile.path!;
+          Directory directory = await getApplicationDocumentsDirectory();
+          String dirPath = directory.path;
+          String error = "";
+          showProcessing();
+          try {
+            error = await compute(restoreBackup,({"dir":dirPath,"zip": zipFilePath}));
+          } catch(e) {
+            error = e.toString();
+          }
+          hideProcessing();
+          if (error.isNotEmpty){
+            if(mounted)showAlertMessage(context, "Error", error);
+          }
+        }
+      }
+      
     }
   }
 
@@ -110,6 +138,13 @@ class SettingsPageState extends State<SettingsPage> {
             title: const Text('Backup'),
             onTap: () async {
               createDownloadBackup();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.replay),
+            title: const Text('Restore'),
+            onTap: () async {
+              restoreZipBackup();
             },
           ),
           ListTile(

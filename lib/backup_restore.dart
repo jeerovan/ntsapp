@@ -2,37 +2,34 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'database_helper.dart';
 import 'model_profile.dart';
 import 'model_item_group.dart';
 import 'model_item.dart';
 import 'model_setting.dart';
 
-Future<String> createBackup() async {
+Future<String> createBackup(String baseDirPath) async {
   String error = "";
-  String dbBackupFailed = await backupDbFiles();
-  if (dbBackupFailed.isNotEmpty){
-    error = dbBackupFailed;
-  }
-  return error;
-}
 
-Future<String> backupDbFiles() async {
-  //await Future.delayed(const Duration(seconds: 2));
-  String error = "";
-  error = await emptyBackup();
-  if (error.isNotEmpty){
-    return error;
+  // empty db backup directory
+  final String dbFilesDirPath = path.join(baseDirPath,"ntsbackup");
+  await emptyDbFilesDir(dbFilesDirPath);
+
+  // create db backup files
+  bool mobile = Platform.isAndroid || Platform.isIOS;
+  if (!mobile) {
+    // Initialize sqflite for FFI (non-mobile platforms)
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
   }
-  final directory = await getApplicationDocumentsDirectory();
   final dbHelper = DatabaseHelper.instance;
   final db = await dbHelper.database;
   List<String> tables = ["profile","itemgroup","item","setting"];
   for (String table in tables){
     try {
-      final file = File(path.join(directory.path,"ntsbackup",'$table.txt'));
+      final file = File(path.join(dbFilesDirPath,'$table.txt'));
       final sink = file.openWrite();
       // Query all rows from the table
       final rows = await db.query(table);
@@ -48,23 +45,75 @@ Future<String> backupDbFiles() async {
       break;
     }
   }
-  //await Future.delayed(const Duration(seconds: 2));
+
+  // create zip file
+  if (error.isEmpty){
+    try {
+      final String zipFilePath = path.join(baseDirPath,'ntsbackup.zip');
+      final ZipFileEncoder encoder = ZipFileEncoder();
+      encoder.create(zipFilePath);
+      await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsmedia")));
+      await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsbackup")));
+      await encoder.close();
+    } catch (e) {
+      error = e.toString();
+    }
+  }
   return error;
 }
 
-Future<String> restoreDbFiles() async {
+Future<String> restoreBackup(Map<String,String> data) async {
+  String baseDirPath = data["dir"]!;
+  String zipPath = data["zip"]!;
+  //empty db files dir 
+  final String dbFilesDirPath = path.join(baseDirPath,"ntsbackup");
+  await emptyDbFilesDir(dbFilesDirPath);
+
+  // media files can be overwritten if present
+
+  // extract zip file
   String error = "";
-  final directory = await getApplicationDocumentsDirectory();
-  final dbHelper = DatabaseHelper.instance;
-  final db = await dbHelper.database;
+  try {
+    File zipFile = File(zipPath);
+    final bytes = zipFile.readAsBytesSync();
+    final archive = ZipDecoder().decodeBytes(bytes);
+    for (final file in archive){
+      final fileName = file.name;
+      if (file.isFile) {
+        final data = file.content as List<int>;
+        File(path.join(baseDirPath,fileName))
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(data);
+      } else {
+        Directory(path.join(baseDirPath,fileName)).createSync(recursive: true);
+      }
+    }
+  } catch (e) {
+    error = e.toString();
+  }
+  if (error.isEmpty){
+    error = await restoreDbFiles(baseDirPath);
+  }
+  return error;
+}
+
+Future<String> restoreDbFiles(String baseDirPath) async {
+  String error = "";
+  // create db backup files
+  bool mobile = Platform.isAndroid || Platform.isIOS;
+  if (!mobile) {
+    // Initialize sqflite for FFI (non-mobile platforms)
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
   List<String> tables = ["profile","itemgroup","item","setting"];
   for (String table in tables){
     try {
-      final file = File(path.join(directory.path,"ntsbackup",'$table.txt'));
+      final file = File(path.join(baseDirPath,"ntsbackup",'$table.txt'));
       if (file.existsSync()){
         final lines = await file.readAsLines();
         for (final line in lines) {
-          final row = jsonDecode(line) as Map<String, dynamic>;
+          final row = jsonDecode(line);
           switch (table){
             case "profile":
               ModelProfile profile = await ModelProfile.fromMap(row);
@@ -82,42 +131,23 @@ Future<String> restoreDbFiles() async {
               await ModelSetting.update(row["id"], row["value"]);
               break;
           }
-          await db.insert(table, row);
         }
       }
     } catch (e) {
       error = e.toString();
+      break;
     }
   }
   return error;
 }
 
-Future<String> emptyBackup() async {
-  String error = "";
-  try {
-    // Get the application's documents directory
-    final appDir = await getApplicationDocumentsDirectory();
-    final directory = Directory(path.join(appDir.path,"ntsbackup"));
-
-    // Check if the directory exists
-    if (await directory.exists()) {
-      // If it exists, delete its contents
-      await directory.delete(recursive: true);
-    }
-    // Recreate the empty directory
-    await directory.create();
-  } catch (e) {
-    error = e.toString();
+Future<void> emptyDbFilesDir(String dbFileDirPath) async {
+  final dbBackupDir = Directory(dbFileDirPath);
+  // Check if the directory exists
+  if (await dbBackupDir.exists()) {
+    // If it exists, delete its contents
+    await dbBackupDir.delete(recursive: true);
   }
-  return error;
-}
-
-Future<void> addDirsToZip(String dirPath) async {
-  final String zipFilePath = path.join(dirPath,'ntsbackup.zip');
-  final ZipFileEncoder encoder = ZipFileEncoder();
-  encoder.create(zipFilePath);
-
-  await encoder.addDirectory(Directory(path.join(dirPath,"ntsmedia")));
-  await encoder.addDirectory(Directory(path.join(dirPath,"ntsbackup")));
-  await encoder.close();
+  // Recreate the empty directory
+  await dbBackupDir.create();
 }

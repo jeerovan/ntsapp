@@ -290,9 +290,16 @@ class ModelItem {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
-    if (map['data'] != null){
-      if (map.containsKey("path")) {
-        File file = File(map['path']);
+    if (map["data"] != null){
+      Map<String,dynamic> dataMap;
+      if (map['data'] is String) {
+        dataMap = jsonDecode(map['data']) as Map<String, dynamic>;
+      } else {
+        dataMap = map["data"];
+      }
+      if (dataMap.containsKey("path")) {
+        final String path = dataMap["path"];
+        File file = File(path);
         if (file.existsSync()){
           file.deleteSync();
         }
