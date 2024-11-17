@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ntsapp/common.dart';
 import 'package:path/path.dart' as path;
 import 'database_helper.dart';
 import 'model_profile.dart';
@@ -50,7 +51,8 @@ Future<String> createBackup(String baseDirPath) async {
 Future<String> zipDbFiles(String baseDirPath) async {
   String error = "";
   try {
-    final String zipFilePath = path.join(baseDirPath,'ntsbackup.zip');
+    String todayDate = getTodayDate();
+    final String zipFilePath = path.join(baseDirPath,'ntsbackup_$todayDate.zip');
     final ZipFileEncoder encoder = ZipFileEncoder();
     encoder.create(zipFilePath);
     await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsmedia")));

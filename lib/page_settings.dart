@@ -77,7 +77,7 @@ class SettingsPageState extends State<SettingsPage> {
     if (result != null){
       if (result.files.isNotEmpty){
         PlatformFile selectedFile = result.files[0];
-        if(selectedFile.name == "ntsbackup.zip"){
+        if(selectedFile.name.startsWith("ntsbackup_")){
           String zipFilePath = selectedFile.path!;
           Directory directory = await getApplicationDocumentsDirectory();
           String dirPath = directory.path;
