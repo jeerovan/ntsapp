@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/backup_restore.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -14,7 +13,9 @@ import 'common.dart';
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
-  const SettingsPage({super.key,required this.isDarkMode,required this.onThemeToggle});
+  const SettingsPage({super.key,
+                      required this.isDarkMode,
+                      required this.onThemeToggle});
 
   @override
   SettingsPageState createState() => SettingsPageState();

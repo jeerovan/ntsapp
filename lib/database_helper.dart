@@ -1,4 +1,5 @@
 
+
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'common.dart';
@@ -135,12 +136,17 @@ class DatabaseHelper {
       String tableName, dynamic id) async {
     final db = await instance.database;
     return await db.query(tableName,
-        where: "id = ?", whereArgs: [id], limit: 1);
+        where: "id = ?", whereArgs: [id]);
   }
 
   Future<List<Map<String, dynamic>>> getAll(String tableName) async {
     final db = await instance.database;
     return await db.query(tableName);
+  }
+
+  Future<void> clear(String tableName) async {
+    final db = await instance.database;
+    await db.execute('DELETE FROM $tableName');
   }
 
   Future close() async {

@@ -16,7 +16,7 @@ import 'page_db.dart';
 import 'page_profile.dart';
 import 'package:path/path.dart' as path;
 
-bool debug = true;
+bool debug = false;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
@@ -93,7 +93,7 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   void createNoteGroup(String title) async {
-    if(title.length > 1){
+    if(title.isNotEmpty){
       String profileId = profile!.id!;
       int count = await ModelGroup.getCount(profileId);
       Color color = getMaterialColor(count+1);
@@ -179,13 +179,15 @@ class _PageGroupState extends State<PageGroup> {
                 case 0:
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SettingsPage(isDarkMode: widget.isDarkMode,onThemeToggle: widget.onThemeToggle,)),
+                    MaterialPageRoute(builder: (context) => SettingsPage(
+                            isDarkMode: widget.isDarkMode,
+                            onThemeToggle: widget.onThemeToggle,)),
                   ).then((_) async {
                     // remove backup file if exists
                     Directory directory = await getApplicationDocumentsDirectory();
                     File backupFile = File(path.join(directory.path,"ntsbackup.zip"));
                     if(backupFile.existsSync())backupFile.deleteSync();
-                    initialLoad();
+                    _setProfile();
                   });
                   break;
                 case 1:

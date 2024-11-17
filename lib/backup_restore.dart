@@ -107,7 +107,14 @@ Future<String> restoreBackup(Map<String,String> data) async {
 
 Future<String> restoreDbFiles(String baseDirPath) async {
   String error = "";
-  // create db backup files
+  // clean up db
+  int groupsCount = await ModelGroup.getAllCount();
+  if (groupsCount == 0) {
+    final dbHelper = DatabaseHelper.instance;
+    await dbHelper.clear("profile");
+  }
+
+  // load db backup files
   List<String> tables = ["profile","itemgroup","item","setting"];
   for (String table in tables){
     try {

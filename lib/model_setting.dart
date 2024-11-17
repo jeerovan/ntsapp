@@ -1,5 +1,4 @@
 
-import 'dart:convert';
 import 'database_helper.dart';
 
 class ModelSetting {
@@ -10,8 +9,7 @@ class ModelSetting {
 
     // Optional: Update the value in the database if needed
     final dbHelper = DatabaseHelper.instance;
-    String encodedValue = jsonEncode(value);
-    await dbHelper.insert('setting', {'id': key, 'value': encodedValue});
+    await dbHelper.insert('setting', {'id': key, 'value': value});
   }
 
   static dynamic getForKey(String key, dynamic defaultValue) {

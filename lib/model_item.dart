@@ -148,7 +148,7 @@ class ModelItem {
     final rows = await db.rawQuery(sql, [groupId,currentId]);
     if (rows.isNotEmpty) {
       Map<String,dynamic> map = rows.first;
-      return fromMap(map);
+      return await fromMap(map);
     }
     return null;
   }
@@ -165,7 +165,7 @@ class ModelItem {
     final rows = await db.rawQuery(sql, [groupId,currentId]);
     if (rows.isNotEmpty) {
       Map<String,dynamic> map = rows.first;
-      return fromMap(map);
+      return await fromMap(map);
     }
     return null;
   }
@@ -180,7 +180,7 @@ class ModelItem {
       limit: 1,
     );
     if (rows.isNotEmpty){
-      return fromMap(rows.first);
+      return await fromMap(rows.first);
     }
     return null;
   }
@@ -259,7 +259,7 @@ class ModelItem {
     List<Map<String,dynamic>> rows = await dbHelper.getWithId("item", id);
     if (rows.isNotEmpty) {
       Map<String,dynamic> map = rows.first;
-      return fromMap(map);
+      return await fromMap(map);
     }
     return null;
   }

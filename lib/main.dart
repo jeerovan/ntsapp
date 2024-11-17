@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
-import 'dart:convert';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'themes.dart';
@@ -24,9 +23,10 @@ void main() async {
 
   // initialize the db
   DatabaseHelper dbHelper = DatabaseHelper.instance;
+
   List<Map<String, dynamic>> keyValuePairs = await dbHelper.getAll('setting');
   ModelSetting.appJson = {
-    for (var pair in keyValuePairs) pair['id']: jsonDecode(pair['value'])
+    for (var pair in keyValuePairs) pair['id']: pair['value']
   };
 
   runApp(const MainApp());

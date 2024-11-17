@@ -77,7 +77,7 @@ class ModelProfile {
     List<Map<String,dynamic>> list = await dbHelper.getWithId("profile", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
-      return fromMap(map);
+      return await fromMap(map);
     }
     return null;
   }

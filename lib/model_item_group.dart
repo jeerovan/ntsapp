@@ -92,12 +92,22 @@ class ModelGroup {
     final rows = await db.rawQuery(sql,[profileId]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
+  static Future<int> getAllCount() async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String sql = '''
+      SELECT count(*) as count
+      FROM itemgroup
+    ''';
+    final rows = await db.rawQuery(sql);
+    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
+  }
   static Future<ModelGroup?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> list = await dbHelper.getWithId("itemgroup", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
-      return fromMap(map);
+      return await fromMap(map);
     }
     return null;
   }
