@@ -173,6 +173,16 @@ String getTodayDate() {
   return '$year$monthFormatted$dayFormatted';
 }
 
+String getDateFromUtcSeconds(int utcSeconds){
+  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcSeconds * 1000, isUtc: true);
+  int year = dateTime.year;
+  int month = dateTime.month;
+  int date = dateTime.day;
+  String monthFormatted = month < 10 ? '0$month' : month.toString();
+  String dayFormatted = date < 10 ? '0$date' : date.toString();
+  return '$year$monthFormatted$dayFormatted';
+}
+
 String getReadableDate(DateTime date) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);

@@ -16,7 +16,7 @@ import 'page_db.dart';
 import 'page_profile.dart';
 import 'package:path/path.dart' as path;
 
-bool debug = false;
+bool debug = true;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;

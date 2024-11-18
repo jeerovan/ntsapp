@@ -1,5 +1,9 @@
 
 
+
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -24,9 +28,12 @@ class DatabaseHelper {
   Future<Database> _initDB(String dbFileName) async {
     final dbDir = await getDatabasesPath();
     final dbPath = join(dbDir, dbFileName);
-    debugPrint("DbPath:$dbPath");
+    //debugPrint("DbPath:$dbPath");
     return await openDatabase(dbPath,
-        version: 1, onCreate: _onCreate, onOpen: _onOpen);
+        version: 8, 
+        onCreate: _onCreate, 
+        onUpgrade: _onUpgrade,
+        onOpen: _onOpen);
   }
 
   Future _onOpen(Database db) async {
@@ -35,7 +42,19 @@ class DatabaseHelper {
 
   Future _onCreate(Database db, int version) async {
     await db.execute('PRAGMA foreign_keys = ON');
-    // Add table creation queries here
+    await initTables(db);
+    await createProfilesOnFreshInstall(db);
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    await db.execute('PRAGMA foreign_keys = ON');
+    if (oldVersion < 8) {
+      await initTables(db);
+      await dbMigration(db);
+    }
+  }
+
+  Future<void> initTables(Database db) async {
     await db.execute('''
       CREATE TABLE profile (
         id TEXT PRIMARY KEY,
@@ -81,8 +100,6 @@ class DatabaseHelper {
         at INTEGER
       )
     ''');
-    // Add more tables as needed
-    await _seedDatabase(db);
   }
 
   Future<Uint8List> loadImageAsUint8List(String assetPath) async {
@@ -90,7 +107,7 @@ class DatabaseHelper {
     return data.buffer.asUint8List();
   }
 
-  Future<void> _seedDatabase(Database db) async {
+  Future<void> createProfilesOnFreshInstall(Database db) async {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     Uuid uuid = const Uuid();
     String id1 = uuid.v4();
@@ -151,5 +168,170 @@ class DatabaseHelper {
   Future close() async {
     final db = await instance.database;
     db.close();
+  }
+
+  // db migration from 7 to 8
+  Future<void> dbMigration(Database db) async {
+    // Create a profile first
+    int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    Uuid uuid = const Uuid();
+    String profileId = uuid.v4();
+    Color color = getMaterialColor(1);
+    await db.insert("profile", {"id": profileId, "title": "Private", "color":colorToHex(color), "thumbnail":null, "at":at});
+
+    // create note groups
+    int groupCount = 1;
+    List<Map<String,dynamic>> groupRows = await db.query("notegroups",);
+    for (Map<String,dynamic> groupRow in groupRows){
+      if (groupRow.containsKey("uuid") && groupRow.containsKey("title") && groupRow.containsKey("image")){
+        final String? groupUuid = groupRow["uuid"];
+        final String title = groupRow["title"];
+        final String image = groupRow["image"];
+        if (groupUuid == null ) continue;
+        final int at = groupRow["updatedAt"] ~/ 1000;
+        String? thumbnail;
+        if (image.contains("makenotetoself")){
+          File file = File(image);
+          if (file.existsSync()){
+            Uint8List bytes = await file.readAsBytes();
+            Uint8List? thumbnailBytes = await compute(getImageThumbnail, bytes);
+            thumbnail = base64Encode(thumbnailBytes!);
+          }
+        }
+        Color color = getMaterialColor(groupCount);
+        if( groupUuid.isNotEmpty && title.isNotEmpty){
+          await db.insert("itemgroup",
+                    { "id":groupUuid,
+                      "profile_id":profileId,
+                      "title":title,
+                      "pinned":0,
+                      "color":colorToHex(color),
+                      "thumbnail":thumbnail,
+                      "at":at,
+                    });
+        }
+        groupCount = groupCount + 1;
+      }
+    }
+
+    // process notes
+    List<Map<String,dynamic>> noteRows = await db.query("notes",);
+    for (Map<String,dynamic> noteRow in noteRows){
+      if (noteRow.containsKey("uuid") && noteRow.containsKey("group_uuid")){
+        String? groupId = noteRow["group_uuid"];
+        if (groupId == null) continue;
+        List<Map<String,dynamic>> groupRows = await db.query("itemgroup",where: "id = ?",whereArgs: [groupId]);
+        if (groupRows.isNotEmpty){
+          String? noteId = noteRow["uuid"];
+          if (noteId == null) continue;
+          int noteType = noteRow["note_type"];
+          String noteText = noteRow["text"];
+          String? mediaPath = noteRow["media"];
+          double? lat = noteRow["latitude"];
+          double? lng = noteRow["longitude"];
+          int at = noteRow["updatedAt"] ~/ 1000;
+          String date = getDateFromUtcSeconds(at);
+          List<Map<String,dynamic>> dateRows = await db.query("item",
+                                                        where: "type = 170000 AND text = ? AND group_id = ?",
+                                                        whereArgs: [date,groupId]);
+          if (dateRows.isEmpty){
+            await db.insert("item", 
+                              {
+                                "id": uuid.v4(),
+                                "group_id": groupId,
+                                "text":date,
+                                "starred":0,
+                                "type":170000,
+                                "data":null,
+                                "thumbnail":null,
+                                "state":0,
+                                "at":at-1
+                              }
+            );
+          }
+          switch(noteType){
+            case 1:
+              await db.insert("item",
+                        {
+                          "id":noteId,
+                          "group_id":groupId,
+                          "text":noteText,
+                          "starred":0,
+                          "type":100000,
+                          "data":null,
+                          "thumbnail":null,
+                          "state":0,
+                          "at":at
+                        }
+              );
+              break;
+            case 2:
+              if (mediaPath != null){
+                File imageFile = File(mediaPath);
+                if (imageFile.existsSync()){
+                  Map<String,dynamic> imageDataMap = {"path":mediaPath,"mime":"image/jpg","name":"","size":0};
+                  String imageData = jsonEncode(imageDataMap);
+                  await db.insert("item",
+                            {
+                              "id":noteId,
+                              "group_id":groupId,
+                              "text":"DND|#image",
+                              "starred":0,
+                              "type":110000,
+                              "data":imageData,
+                              "thumbnail":null,
+                              "state":0,
+                              "at":at
+                            }
+                  );
+                }
+              }
+              break;
+            case 3:
+              if (mediaPath != null){
+                File audioFile = File(mediaPath);
+                if (audioFile.existsSync()) {
+                  Map<String,dynamic> audioDataMap = {"path":mediaPath,"mime":"audio/mp4","name":"","size":0,"duration":"00:00"};
+                  String audioData = jsonEncode(audioDataMap);
+                  await db.insert("item",
+                            {
+                              "id":noteId,
+                              "group_id":groupId,
+                              "text":"DND|#audio",
+                              "starred":0,
+                              "type":130000,
+                              "data":audioData,
+                              "thumbnail":null,
+                              "state":0,
+                              "at":at
+                            }
+                  );
+                }
+              }
+              break;
+            case 6:
+              if(lat != null && lng != null){
+                Map<String,dynamic> locationDataMap = {"lat":lat,"lng":lng};
+                String locationData = jsonEncode(locationDataMap);
+                await db.insert("item",
+                          {
+                            "id":noteId,
+                            "group_id":groupId,
+                            "text":"DND|#location",
+                            "starred":0,
+                            "type":150000,
+                            "data":locationData,
+                            "thumbnail":null,
+                            "state":0,
+                            "at":at
+                          }
+                );
+              }
+              break;
+          }
+        }
+      }
+    }
+    await db.insert("setting", {"id":"process_media","value":"yes"});
   }
 }
