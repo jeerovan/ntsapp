@@ -1,4 +1,4 @@
-package com.example.ntsapp
+package com.makenotetoself
 
 import io.flutter.embedding.android.FlutterActivity
 
