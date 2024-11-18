@@ -89,7 +89,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id == ?",
+      where: "group_id = ?",
       whereArgs: [groupId],
       orderBy:'at',
     );
@@ -101,9 +101,9 @@ class ModelItem {
     String sql = '''
       SELECT DISTINCT item.*
       FROM item
-      INNER JOIN itemtag ON itemtag.item_id == item.id
-      INNER JOIN tag ON tag.id == itemtag.tag_id
-      WHERE item.group_id == ?
+      INNER JOIN itemtag ON itemtag.item_id = item.id
+      INNER JOIN tag ON tag.id = itemtag.tag_id
+      WHERE item.group_id = ?
         AND tag.title LIKE ?
     ''';
     List<Map<String,dynamic>> rows = await db.rawQuery(sql,[groupId,'%$tag%']);
@@ -129,7 +129,7 @@ class ModelItem {
       FROM item
       WHERE type > 100000 AND type < 130000
         AND group_id = ?
-        AND at < (SELECT at FROM item WHERE id == ?)
+        AND at < (SELECT at FROM item WHERE id = ?)
       ORDER BY at ASC
     ''';
     final rows = await db.rawQuery(sql, [groupId,currentId]);
@@ -140,8 +140,8 @@ class ModelItem {
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
-      WHERE type > 100000 AND type < 130000 AND group_id == ?
-        AND at < (SELECT at FROM item WHERE id == ?)
+      WHERE type > 100000 AND type < 130000 AND group_id = ?
+        AND at < (SELECT at FROM item WHERE id = ?)
       ORDER BY at DESC
       LIMIT 1
       ''';
@@ -157,8 +157,8 @@ class ModelItem {
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
-      WHERE type > 100000 AND type < 130000 AND group_id == ?
-        AND at > (SELECT at FROM item WHERE id == ?)
+      WHERE type > 100000 AND type < 130000 AND group_id = ?
+        AND at > (SELECT at FROM item WHERE id = ?)
       ORDER BY at ASC
       LIMIT 1
       ''';
@@ -174,7 +174,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "type != 170000 AND group_id == ?",
+      where: "type != 170000 AND group_id = ?",
       whereArgs: [groupId],
       orderBy:'at DESC',
       limit: 1,
@@ -194,7 +194,7 @@ class ModelItem {
     } else {
       List<Map<String,dynamic>> rows = await db.query(
         "item",
-        where: "group_id == ? AND at > ?",
+        where: "group_id = ? AND at > ?",
         whereArgs: [groupId,item.at],
         orderBy:'at ASC',
         limit: 4,
@@ -204,7 +204,7 @@ class ModelItem {
       items.add(item);
       rows = await db.query(
         "item",
-        where: "group_id == ? AND at < ?",
+        where: "group_id = ? AND at < ?",
         whereArgs: [groupId,item.at],
         orderBy:'at DESC',
         limit: 4,
@@ -221,7 +221,7 @@ class ModelItem {
     String comparison = up ? '<' : '>';
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id == ? AND at $comparison (SELECT at from item WHERE id = ?)",
+      where: "group_id = ? AND at $comparison (SELECT at from item WHERE id = ?)",
       whereArgs: [groupId,itemId],
       orderBy:'at $orderBy',
       limit: limit,
@@ -233,7 +233,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id == ?",
+      where: "group_id = ?",
       whereArgs: [groupId],
       orderBy:'at DESC',
       offset: offset,
@@ -246,7 +246,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "starred == ?",
+      where: "starred = ?",
       whereArgs: [1],
       orderBy:'at DESC',
       offset: offset,
@@ -268,7 +268,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id == ? AND text == ?",
+      where: "group_id = ? AND text = ?",
       whereArgs: [groupId,date],
     );
     return await Future.wait(rows.map((map) => fromMap(map)));

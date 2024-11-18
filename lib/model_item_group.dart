@@ -74,7 +74,7 @@ class ModelGroup {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "itemgroup",
-      where: 'profile_id == ?',
+      where: 'profile_id = ?',
       limit: limit,
       offset: offset,
       whereArgs: [profileId]
@@ -87,7 +87,7 @@ class ModelGroup {
     String sql = '''
       SELECT count(*) as count
       FROM itemgroup
-      WHERE profile_id == ?
+      WHERE profile_id = ?
     ''';
     final rows = await db.rawQuery(sql,[profileId]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;

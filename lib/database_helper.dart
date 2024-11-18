@@ -1,5 +1,6 @@
 
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'common.dart';
@@ -16,14 +17,15 @@ class DatabaseHelper {
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    _database = await _initDB('ntsapp.db');
+    _database = await _initDB('notetoself.db');
     return _database!;
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-    return await openDatabase(path,
+  Future<Database> _initDB(String dbFileName) async {
+    final dbDir = await getDatabasesPath();
+    final dbPath = join(dbDir, dbFileName);
+    debugPrint("DbPath:$dbPath");
+    return await openDatabase(dbPath,
         version: 1, onCreate: _onCreate, onOpen: _onOpen);
   }
 
@@ -54,9 +56,6 @@ class DatabaseHelper {
         thumbnail TEXT,
         FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE
       )
-    ''');
-    await db.execute('''
-      CREATE INDEX idx_item_group_title ON itemgroup(title)
     ''');
     await db.execute('''
       CREATE TABLE item (
