@@ -190,7 +190,7 @@ class DatabaseHelper {
         if (groupUuid == null ) continue;
         final int at = groupRow["updatedAt"] ~/ 1000;
         String? thumbnail;
-        if (image.contains("makenotetoself")){
+        if (image.length > 10){
           File file = File(image);
           if (file.existsSync()){
             Uint8List bytes = await file.readAsBytes();

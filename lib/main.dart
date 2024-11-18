@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/page_media_migration.dart';
 import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
@@ -66,13 +67,21 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    String processMedia = ModelSetting.getForKey("process_media","no");
+
+    Widget page = PageGroup(
+        isDarkMode: isDark,
+        onThemeToggle: _toggleTheme,);
+    if (processMedia == "yes"){
+        page = PageMediaMigration(
+          isDarkMode: isDark,
+          onThemeToggle: _toggleTheme,);
+    }
     return MaterialApp(
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
       themeMode: _themeMode, // Uses system theme by default
-      home: PageGroup(
-        isDarkMode: _themeMode == ThemeMode.dark,
-        onThemeToggle: _toggleTheme,),
+      home: page,
       debugShowCheckedModeBanner: false,
     );
   }
