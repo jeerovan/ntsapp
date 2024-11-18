@@ -379,6 +379,7 @@ class MessageSummary extends StatelessWidget {
         Expanded(
           child: Text(
             _getMessageText(),
+            maxLines: 1,
             overflow: TextOverflow.ellipsis, // Ellipsis for long text
             style: const TextStyle(fontSize: 12,),
           ),

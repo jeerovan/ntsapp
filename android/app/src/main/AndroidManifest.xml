@@ -10,7 +10,7 @@
     <application
         android:label="NTS"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/splash">
         <activity
             android:name=".MainActivity"
             android:exported="true"

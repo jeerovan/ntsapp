@@ -45,3 +45,15 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+
+flutter_launcher_icons:
+  android: "splash"
+  ios: false
+  image_path: "assets/logo.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
