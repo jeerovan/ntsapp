@@ -16,6 +16,7 @@ dependencies:
   flutter_contacts: ^1.1.9+2
   flutter_launcher_icons: ^0.14.1
   flutter_map: ^7.0.2
+  flutter_native_splash: ^2.4.3
   geolocator: ^13.0.1
   image: ^4.3.0
   image_picker: ^1.1.2
@@ -47,7 +48,7 @@ flutter:
     - assets/
 
 flutter_launcher_icons:
-  android: "splash"
+  android: "ic_launcher"
   ios: false
   image_path: "assets/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
@@ -57,3 +58,13 @@ flutter_launcher_icons:
     generate: false
   macos:
     generate: false
+
+flutter_native_splash:
+  android: true
+  ios: false
+  web: false
+  image: assets/splash.png
+  color: "#000000"
+  android_12:
+    image: assets/splash.png
+    color: "#000000"
