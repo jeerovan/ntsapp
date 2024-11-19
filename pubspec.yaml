@@ -1,7 +1,7 @@
 name: ntsapp
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.6.5
+version: 2.0.0
 
 environment:
   sdk: ^3.5.1
