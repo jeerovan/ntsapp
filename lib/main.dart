@@ -42,16 +42,23 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   ThemeMode _themeMode = ThemeMode.system;
-  bool isDark = false;
+  bool isDark = true;
 
   @override
   void initState() {
     super.initState();
-    isDark = ModelSetting.getForKey("theme", "light") == "dark";
-    if (isDark){
-      _themeMode = ThemeMode.dark;
-    } else {
-      _themeMode = ThemeMode.light;
+    String? savedTheme = ModelSetting.getForKey("theme", null);
+    switch(savedTheme) {
+      case null:
+        break;
+      case "light":
+        isDark = false;
+        _themeMode = ThemeMode.light;
+        break;
+      case "dark":
+        isDark = true;
+        _themeMode = ThemeMode.dark;
+        break;
     }
   }
 
