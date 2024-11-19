@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:siri_wave/siri_wave.dart';
@@ -119,18 +120,22 @@ class _PageItemsState extends State<PageItems> {
     });
   }
   void onItemTapped(ModelItem item){
-    setState(() {
-      if (isSelecting){
-        if (_selection.contains(item)) {
-          _selection.remove(item);
-          if (_selection.isEmpty){
-            isSelecting = false;
+    if (item.type == 100000){
+      onItemLongPressed(item);
+    } else {
+      setState(() {
+        if (isSelecting){
+          if (_selection.contains(item)) {
+            _selection.remove(item);
+            if (_selection.isEmpty){
+              isSelecting = false;
+            }
+          } else {
+            _selection.add(item);
           }
-        } else {
-          _selection.add(item);
         }
-      }
-    });
+      });
+    }
   }
 
   Future<void> deleteSelectedItems() async {
@@ -455,6 +460,7 @@ class _PageItemsState extends State<PageItems> {
   @override
   Widget build(BuildContext context) {
     double size = 40;
+    bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
     return Scaffold(
       appBar: AppBar(
         title: isSelecting
@@ -538,7 +544,7 @@ class _PageItemsState extends State<PageItems> {
                         color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
                         margin: const EdgeInsets.symmetric(vertical: 1),
                         child: Align(
-                          alignment: Alignment.centerRight,
+                          alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                             padding: const EdgeInsets.all(10),

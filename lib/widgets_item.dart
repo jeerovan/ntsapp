@@ -2,6 +2,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'common.dart';
@@ -54,12 +55,13 @@ class ItemWidgetText extends StatefulWidget {
 }
 
 class _ItemWidgetTextState extends State<ItemWidgetText> {
+  bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
     final String formattedTime = getFormattedTime(item.at!);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
