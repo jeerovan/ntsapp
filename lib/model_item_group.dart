@@ -6,7 +6,7 @@ import 'model_item.dart';
 
 class ModelGroup {
   String? id;
-  String profileId;
+  String categoryId;
   String title;
   Uint8List? thumbnail;
   int pinned;
@@ -15,7 +15,7 @@ class ModelGroup {
   ModelItem? lastItem;
   ModelGroup({
     this.id,
-    required this.profileId,
+    required this.categoryId,
     required this.title,
     this.thumbnail,
     required this.pinned,
@@ -26,7 +26,7 @@ class ModelGroup {
   factory ModelGroup.init(){
     return ModelGroup(
       id:null,
-      profileId: "",
+      categoryId: "",
       title:"",
       thumbnail: null,
       pinned: 0,
@@ -38,7 +38,7 @@ class ModelGroup {
   Map<String,dynamic> toMap() {
     return  {
       'id':id,
-      'profile_id':profileId,
+      'category_id':categoryId,
       'title':title,
       'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'pinned':pinned,
@@ -60,7 +60,7 @@ class ModelGroup {
     ModelItem? item = await ModelItem.getLatestInGroup(groupId);
     return ModelGroup(
       id: groupId,
-      profileId: map.containsKey('profile_id') ? map['profile_id'] : "",
+      categoryId: map.containsKey('category_id') ? map['category_id'] : "",
       title:map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
@@ -69,27 +69,27 @@ class ModelGroup {
       lastItem: item,
     );
   }
-  static Future<List<ModelGroup>> all(String profileId, int offset, int limit) async {
+  static Future<List<ModelGroup>> all(String categoryId, int offset, int limit) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "itemgroup",
-      where: 'profile_id = ?',
+      where: 'category_id = ?',
       limit: limit,
       offset: offset,
-      whereArgs: [profileId]
+      whereArgs: [categoryId]
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<int> getCount(String profileId) async {
+  static Future<int> getCount(String category) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
       FROM itemgroup
-      WHERE profile_id = ?
+      WHERE category_id = ?
     ''';
-    final rows = await db.rawQuery(sql,[profileId]);
+    final rows = await db.rawQuery(sql,[category]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
   static Future<int> getAllCount() async {

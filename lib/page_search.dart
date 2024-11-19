@@ -175,7 +175,7 @@ class SearchPageState extends State<SearchPage> {
             children: [
               // Breadcrumbs
               Text(
-                  '${search.profile!.title} > ${search.group!.title}',
+                  '${search.category!.title} > ${search.group!.title}',
                   style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -202,7 +202,7 @@ class SearchPageState extends State<SearchPage> {
           children: [
             // Breadcrumbs
             Text(
-                '${search.profile!.title} > ${search.group!.title}',
+                '${search.category!.title} > ${search.group!.title}',
                 style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -239,7 +239,7 @@ class SearchPageState extends State<SearchPage> {
           children: [
             // Breadcrumbs
             Text(
-                '${search.profile!.title} > ${search.group!.title}',
+                '${search.category!.title} > ${search.group!.title}',
                 style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -282,7 +282,7 @@ class SearchPageState extends State<SearchPage> {
       children: [
         // Breadcrumbs
         Text(
-            '${search.profile!.title} > ${search.group!.title}',
+            '${search.category!.title} > ${search.group!.title}',
             style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -332,7 +332,7 @@ class SearchPageState extends State<SearchPage> {
       children: [
         // Breadcrumbs
         Text(
-            '${search.profile!.title} > ${search.group!.title}',
+            '${search.category!.title} > ${search.group!.title}',
             style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -381,7 +381,7 @@ class SearchPageState extends State<SearchPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${search.profile!.title} > ${search.group!.title}',
+                '${search.category!.title} > ${search.group!.title}',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -418,7 +418,7 @@ class SearchPageState extends State<SearchPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${search.profile!.title} > ${search.group!.title}',
+          '${search.category!.title} > ${search.group!.title}',
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,

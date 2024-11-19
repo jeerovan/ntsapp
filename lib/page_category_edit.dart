@@ -1,24 +1,24 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'model_profile.dart';
+import 'model_category.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'common.dart';
 
-class AddEditProfile extends StatefulWidget {
-  final String? profileId;
+class AddEditCategory extends StatefulWidget {
+  final String? categoryId;
   final Function() onUpdate;
-  const AddEditProfile({super.key,this.profileId,required this.onUpdate});
+  const AddEditCategory({super.key,this.categoryId,required this.onUpdate});
 
   @override
-  State<AddEditProfile> createState() => _AddEditProfileState();
+  State<AddEditCategory> createState() => _AddEditCategoryState();
 }
 
-class _AddEditProfileState extends State<AddEditProfile> {
-  final TextEditingController profileController = TextEditingController();
+class _AddEditCategoryState extends State<AddEditCategory> {
+  final TextEditingController categoryController = TextEditingController();
 
-  ModelProfile? profile;
+  ModelCategory? category;
   Uint8List? image;
   String title = "";
 
@@ -28,18 +28,18 @@ class _AddEditProfileState extends State<AddEditProfile> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _loadCategory();
   }
 
-  Future<void> _loadProfile() async {
-    if (widget.profileId != null){
-      ModelProfile? existingProfile = await ModelProfile.get(widget.profileId!);
-      if (existingProfile != null){
+  Future<void> _loadCategory() async {
+    if (widget.categoryId != null){
+      ModelCategory? existingCategory = await ModelCategory.get(widget.categoryId!);
+      if (existingCategory != null){
         setState(() {
-          profile = existingProfile;
-          image = profile!.thumbnail;
-          title = profile!.title;
-          profileController.text = profile!.title;
+          category = existingCategory;
+          image = category!.thumbnail;
+          title = category!.title;
+          categoryController.text = category!.title;
         });
       }
     }
@@ -96,18 +96,18 @@ class _AddEditProfileState extends State<AddEditProfile> {
     }
   }
 
-  void saveProfile() async {
+  void saveCategory() async {
     if (itemChanged && title.isNotEmpty){
-      if (profile == null){
-        int count = await ModelProfile.getCount();
+      if (category == null){
+        int count = await ModelCategory.getCount();
         Color color = getMaterialColor(count+1);
         String hexCode = colorToHex(color);
-        ModelProfile newProfile = await ModelProfile.fromMap({"title":title,"color":hexCode,"thumbnail":image});
-        await newProfile.insert();
+        ModelCategory newCategory = await ModelCategory.fromMap({"title":title,"color":hexCode,"thumbnail":image});
+        await newCategory.insert();
       } else {
-        profile!.thumbnail = image;
-        profile!.title = title;
-        await profile!.update();
+        category!.thumbnail = image;
+        category!.title = title;
+        await category!.update();
       }
       widget.onUpdate();
     }
@@ -152,12 +152,12 @@ class _AddEditProfileState extends State<AddEditProfile> {
 
   @override
   Widget build(BuildContext context) {
-    String task = profile == null ? "Add" : "Edit";
+    String task = category == null ? "Add" : "Edit";
     double size = 100;
-    Color circleColor = profile == null ? const Color.fromARGB(255, 207, 207, 207) : colorFromHex(profile!.color);
+    Color circleColor = category == null ? const Color.fromARGB(255, 207, 207, 207) : colorFromHex(category!.color);
     return Scaffold(
       appBar: AppBar(
-        title: Text("$task Profile",style: const TextStyle(fontSize: 20,)),
+        title: Text("$task Category",style: const TextStyle(fontSize: 20,)),
       ),
       body: Column(
         children: [
@@ -185,10 +185,10 @@ class _AddEditProfileState extends State<AddEditProfile> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    controller: profileController,
+                    controller: categoryController,
                     autofocus: true,
                     decoration: const InputDecoration(
-                      hintText: 'Profile Title', // Placeholder
+                      hintText: 'Category Title', // Placeholder
                     ),
                     onChanged: (value) {
                       title = value.trim();
@@ -205,7 +205,7 @@ class _AddEditProfileState extends State<AddEditProfile> {
               color: Theme.of(context).colorScheme.primary,
               icon: const Icon(Icons.check),
               onPressed: () {
-                saveProfile();
+                saveCategory();
               },
             ),
           ),

@@ -43,7 +43,7 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('PRAGMA foreign_keys = ON');
     await initTables(db);
-    await createProfilesOnFreshInstall(db);
+    await createCategoryOnFreshInstall(db);
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -56,7 +56,7 @@ class DatabaseHelper {
 
   Future<void> initTables(Database db) async {
     await db.execute('''
-      CREATE TABLE profile (
+      CREATE TABLE category (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         color TEXT,
@@ -67,13 +67,13 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE itemgroup (
         id TEXT PRIMARY KEY,
-        profile_id TEXT NOT NULL,
+        category_id TEXT NOT NULL,
         title TEXT NOT NULL,
         pinned INTEGER,
         color TEXT,
         at INTEGER,
         thumbnail TEXT,
-        FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE
+        FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
       )
     ''');
     await db.execute('''
@@ -107,13 +107,13 @@ class DatabaseHelper {
     return data.buffer.asUint8List();
   }
 
-  Future<void> createProfilesOnFreshInstall(Database db) async {
+  Future<void> createCategoryOnFreshInstall(Database db) async {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     Uuid uuid = const Uuid();
     String id1 = uuid.v4();
     Color color = getMaterialColor(1);
     String hexCode = colorToHex(color);
-    await db.insert("profile", {"id": id1, "title": "Private", "color":hexCode, "thumbnail":null, "at":at});
+    await db.insert("category", {"id": id1, "title": "Private", "color":hexCode, "thumbnail":null, "at":at});
   }
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {
@@ -160,12 +160,12 @@ class DatabaseHelper {
 
   // db migration from 7 to 8
   Future<void> dbMigration(Database db) async {
-    // Create a profile first
+    // Create a category first
     int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     Uuid uuid = const Uuid();
-    String profileId = uuid.v4();
+    String categoryId = uuid.v4();
     Color color = getMaterialColor(1);
-    await db.insert("profile", {"id": profileId, "title": "Private", "color":colorToHex(color), "thumbnail":null, "at":at});
+    await db.insert("category", {"id": categoryId, "title": "Private", "color":colorToHex(color), "thumbnail":null, "at":at});
 
     // create note groups
     int groupCount = 1;
@@ -190,7 +190,7 @@ class DatabaseHelper {
         if( groupUuid.isNotEmpty && title.isNotEmpty){
           await db.insert("itemgroup",
                     { "id":groupUuid,
-                      "profile_id":profileId,
+                      "category_id":categoryId,
                       "title":title,
                       "pinned":0,
                       "color":colorToHex(color),

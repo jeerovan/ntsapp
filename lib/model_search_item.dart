@@ -2,28 +2,28 @@
 import 'database_helper.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
-import 'model_profile.dart';
+import 'model_category.dart';
 
 class ModelSearchItem {
   ModelItem item;
   ModelGroup? group;
-  ModelProfile? profile;
+  ModelCategory? category;
   ModelSearchItem({
     required this.item,
     this.group,
-    this.profile
+    this.category
   });
   static Future<ModelSearchItem> fromMap(Map<String,dynamic> map) async {
     ModelItem item = await ModelItem.fromMap(map);
     ModelGroup? group = await ModelGroup.get(item.groupId);
-    ModelProfile? profile;
+    ModelCategory? category;
     if (group != null){
-      profile = await ModelProfile.get(group.profileId);
+      category = await ModelCategory.get(group.categoryId);
     } 
     return ModelSearchItem(
       item: item,
       group: group,
-      profile: profile  
+      category: category  
     );
   }
   static Future<List<ModelSearchItem>> all(String query, int offset, int limit) async {

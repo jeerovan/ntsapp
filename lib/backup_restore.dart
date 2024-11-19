@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:path/path.dart' as path;
 import 'database_helper.dart';
-import 'model_profile.dart';
+import 'model_category.dart';
 import 'model_item_group.dart';
 import 'model_item.dart';
 import 'model_setting.dart';
@@ -21,7 +21,7 @@ Future<String> createBackup(String baseDirPath) async {
   // create db backup files
   final dbHelper = DatabaseHelper.instance;
   final db = await dbHelper.database;
-  List<String> tables = ["profile","itemgroup","item","setting"];
+  List<String> tables = ["category","itemgroup","item","setting"];
   for (String table in tables){
     try {
       final file = File(path.join(dbFilesDirPath,'$table.txt'));
@@ -111,11 +111,11 @@ Future<String> restoreDbFiles(String baseDirPath) async {
   int groupsCount = await ModelGroup.getAllCount();
   if (groupsCount == 0) {
     final dbHelper = DatabaseHelper.instance;
-    await dbHelper.clear("profile");
+    await dbHelper.clear("category");
   }
 
   // load db backup files
-  List<String> tables = ["profile","itemgroup","item","setting"];
+  List<String> tables = ["category","itemgroup","item","setting"];
   for (String table in tables){
     try {
       final file = File(path.join(baseDirPath,"ntsbackup",'$table.txt'));
@@ -124,9 +124,9 @@ Future<String> restoreDbFiles(String baseDirPath) async {
         for (final line in lines) {
           final row = jsonDecode(line);
           switch (table){
-            case "profile":
-              ModelProfile profile = await ModelProfile.fromMap(row);
-              await profile.insert();
+            case "category":
+              ModelCategory category = await ModelCategory.fromMap(row);
+              await category.insert();
               break;
             case "itemgroup":
               ModelGroup group = await ModelGroup.fromMap(row);

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
 import 'common.dart';
-import 'model_profile.dart';
+import 'model_category.dart';
 import 'model_setting.dart';
 import 'page_items.dart';
 import 'page_search.dart';
@@ -13,7 +13,7 @@ import 'page_settings.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 import 'page_db.dart';
-import 'page_profile.dart';
+import 'page_category.dart';
 import 'package:path/path.dart' as path;
 
 bool debug = true;
@@ -30,7 +30,7 @@ class PageGroup extends StatefulWidget {
 }
 
 class _PageGroupState extends State<PageGroup> {
-  ModelProfile? profile;
+  ModelCategory? category;
   final List<ModelGroup> _items = [];
   bool _isLoading = false;
   bool _hasMore = true;
@@ -40,31 +40,31 @@ class _PageGroupState extends State<PageGroup> {
   @override
   void initState() {
     super.initState();
-    _setProfile();
+    _setCategory();
   }
 
-  Future<void> _setProfile() async {
-    String? lastId = ModelSetting.getForKey("profile", null);
+  Future<void> _setCategory() async {
+    String? lastId = ModelSetting.getForKey("category", null);
     if (lastId == null){
-      List<ModelProfile> profiles = await ModelProfile.all();
-      if (profiles.isNotEmpty){
-        lastId = profiles[0].id!;
+      List<ModelCategory> categories = await ModelCategory.all();
+      if (categories.isNotEmpty){
+        lastId = categories[0].id!;
       }
     }
-    setProfile(lastId!);
+    setCategory(lastId!);
   }
 
-  Future<void> setProfile(String id) async {
-    ModelProfile? dbProfile = await ModelProfile.get(id);
+  Future<void> setCategory(String id) async {
+    ModelCategory? dbCategory = await ModelCategory.get(id);
     setState(() {
-      profile = dbProfile!;
+      category = dbCategory!;
     });
     initialLoad();
   }
 
   Future<void> initialLoad() async {
     _items.clear();
-    final topItems = await ModelGroup.all(profile!.id!, 0,_limit);
+    final topItems = await ModelGroup.all(category!.id!, 0,_limit);
     if (topItems.length == _limit){
       _offset += _limit;
     } else {
@@ -80,7 +80,7 @@ class _PageGroupState extends State<PageGroup> {
     if (_offset == 0) _items.clear();
     setState(() => _isLoading = true);
 
-    final newItems = await ModelGroup.all(profile!.id!, _offset, _limit);
+    final newItems = await ModelGroup.all(category!.id!, _offset, _limit);
     setState(() {
       _items.addAll(newItems);
       _isLoading = false;
@@ -94,11 +94,11 @@ class _PageGroupState extends State<PageGroup> {
 
   void createNoteGroup(String title) async {
     if(title.isNotEmpty){
-      String profileId = profile!.id!;
-      int count = await ModelGroup.getCount(profileId);
+      String categoryId = category!.id!;
+      int count = await ModelGroup.getCount(categoryId);
       Color color = getMaterialColor(count+1);
       String hexCode = colorToHex(color);
-      ModelGroup group = await ModelGroup.fromMap({"profile_id":profileId, "title":title, "color":hexCode});
+      ModelGroup group = await ModelGroup.fromMap({"category_id":categoryId, "title":title, "color":hexCode});
       await group.insert();
       initialLoad();
       if(mounted){
@@ -117,12 +117,12 @@ class _PageGroupState extends State<PageGroup> {
           });
   }
 
-  void selectProfile(){
+  void selectCategory(){
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => ProfilePage(
+      builder: (context) => PageCategory(
         onSelect : (id) {
-          ModelSetting.update("profile",id);
-          setProfile(id);
+          ModelSetting.update("category",id);
+          setCategory(id);
         }
       )
     ));
@@ -137,20 +137,20 @@ class _PageGroupState extends State<PageGroup> {
         actions: [
           GestureDetector(
             onTap: (){
-              selectProfile();
+              selectCategory();
             },
-            child: profile == null ? const SizedBox.shrink() :
-              profile!.thumbnail == null
+            child: category == null ? const SizedBox.shrink() :
+              category!.thumbnail == null
               ? Container(
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
-                  color: colorFromHex(profile!.color),
+                  color: colorFromHex(category!.color),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center, // Center the text inside the circle
                 child: Text(
-                  profile!.title[0].toUpperCase(),
+                  category!.title[0].toUpperCase(),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: size / 2, // Adjust font size relative to the circle size
@@ -166,7 +166,7 @@ class _PageGroupState extends State<PageGroup> {
                   child: Center(
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundImage: MemoryImage(profile!.thumbnail!),
+                      backgroundImage: MemoryImage(category!.thumbnail!),
                     ),
                   ),
               ),
@@ -187,7 +187,7 @@ class _PageGroupState extends State<PageGroup> {
                     Directory directory = await getApplicationDocumentsDirectory();
                     File backupFile = File(path.join(directory.path,"ntsbackup.zip"));
                     if(backupFile.existsSync())backupFile.deleteSync();
-                    _setProfile();
+                    _setCategory();
                   });
                   break;
                 case 1:

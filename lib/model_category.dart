@@ -3,21 +3,21 @@ import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'database_helper.dart';
 
-class ModelProfile {
+class ModelCategory {
   String? id;
   String title;
   Uint8List? thumbnail;
   String color;
   int? at;
-  ModelProfile({
+  ModelCategory({
     this.id,
     required this.title,
     this.thumbnail,
     required this.color,
     this.at,
   });
-  factory ModelProfile.init(){
-    return ModelProfile(
+  factory ModelCategory.init(){
+    return ModelCategory(
       id:null,
       title:"",
       thumbnail: null,
@@ -34,9 +34,9 @@ class ModelProfile {
       'at':at,
     };
   }
-  static Future<ModelProfile> fromMap(Map<String,dynamic> map) async {
+  static Future<ModelCategory> fromMap(Map<String,dynamic> map) async {
     Uuid uuid = const Uuid();
-    String profileId = map.containsKey("id") ? map['id'] : uuid.v4();
+    String categoryId = map.containsKey("id") ? map['id'] : uuid.v4();
     Uint8List? thumbnail;
     if (map.containsKey("thumbnail")){
       if (map["thumbnail"] is String){
@@ -45,19 +45,19 @@ class ModelProfile {
         thumbnail = map["thumbnail"];
       }
     }
-    return ModelProfile(
-      id: profileId,
+    return ModelCategory(
+      id: categoryId,
       title:map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
       color: map.containsKey('color') ? map['color'] : "",
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
-  static Future<List<ModelProfile>> all() async {
+  static Future<List<ModelCategory>> all() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
-      "profile",
+      "category",
       orderBy: "at DESC"
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
@@ -67,14 +67,14 @@ class ModelProfile {
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
-      FROM profile
+      FROM category
     ''';
     final rows = await db.rawQuery(sql,);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
-  static Future<ModelProfile?> get(String id) async {
+  static Future<ModelCategory?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
-    List<Map<String,dynamic>> list = await dbHelper.getWithId("profile", id);
+    List<Map<String,dynamic>> list = await dbHelper.getWithId("category", id);
     if (list.isNotEmpty) {
       Map<String,dynamic> map = list.first;
       return await fromMap(map);
@@ -83,18 +83,18 @@ class ModelProfile {
   }
   Future<int> insert() async{
     final dbHelper = DatabaseHelper.instance;
-    return await dbHelper.insert("profile", toMap());
+    return await dbHelper.insert("category", toMap());
   }
   Future<int> update() async{
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
     map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    return await dbHelper.update("profile",map,id);
+    return await dbHelper.update("category",map,id);
   }
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
-    return await dbHelper.delete("profile", id);
+    return await dbHelper.delete("category", id);
   }
 }

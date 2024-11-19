@@ -41,7 +41,7 @@ class PageGroupEditState extends State<PageGroupEdit> {
     });
   }
 
-  void saveProfile() async {
+  void saveCategory() async {
     if (itemChanged){
       await widget.group.update();
       widget.onUpdate();
@@ -169,7 +169,7 @@ class PageGroupEditState extends State<PageGroupEdit> {
               color: Theme.of(context).colorScheme.primary,
               icon: const Icon(Icons.check),
               onPressed: () {
-                saveProfile();
+                saveCategory();
               },
             ),
           ],

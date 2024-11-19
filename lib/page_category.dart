@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'page_profile_edit.dart';
+import 'page_category_edit.dart';
 import 'common.dart';
 
-import 'model_profile.dart';
+import 'model_category.dart';
 
-class ProfilePage extends StatefulWidget {
+class PageCategory extends StatefulWidget {
   final Function(String) onSelect;
-  const ProfilePage({super.key,required this.onSelect});
+  const PageCategory({super.key,required this.onSelect});
 
   @override
-  ProfilePageState createState() => ProfilePageState();
+  PageCategoryState createState() => PageCategoryState();
 }
 
-class ProfilePageState extends State<ProfilePage> {
+class PageCategoryState extends State<PageCategory> {
 
   @override
   void initState() {
@@ -24,11 +24,11 @@ class ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  void addEditProfile(String? profileId){
+  void addEditCategory(String? categoryId){
     Navigator.of(context)
     .push(MaterialPageRoute(
-      builder: (context) => AddEditProfile(
-        profileId: profileId,
+      builder: (context) => AddEditCategory(
+        categoryId: categoryId,
         onUpdate: (){setState(() {
           
         });},
@@ -41,13 +41,13 @@ class ProfilePageState extends State<ProfilePage> {
     double size = 100;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profiles"),
+        title: const Text("Categories"),
       ),
       body: FutureBuilder(
-        future: ModelProfile.all(), 
+        future: ModelCategory.all(), 
         builder: (context,snapshot){
           if (snapshot.connectionState == ConnectionState.done) {
-            List<ModelProfile> profiles = snapshot.data!;
+            List<ModelCategory> categories = snapshot.data!;
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -61,29 +61,29 @@ class ProfilePageState extends State<ProfilePage> {
                       child: Wrap(
                         spacing: 16.0,
                         runSpacing: 16.0,
-                        children: profiles.map((profile) {
+                        children: categories.map((category) {
                           return Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               GestureDetector(
                                 onTap: () {
-                                    widget.onSelect(profile.id!);
+                                    widget.onSelect(category.id!);
                                     Navigator.of(context).pop();
                                   },
                                   onLongPress: () {
-                                    addEditProfile(profile.id!);
+                                    addEditCategory(category.id!);
                                   },
-                                child: profile.thumbnail == null
+                                child: category.thumbnail == null
                                   ? Container(
                                     width: size,
                                     height: size,
                                     decoration: BoxDecoration(
-                                      color: colorFromHex(profile.color),
+                                      color: colorFromHex(category.color),
                                       shape: BoxShape.circle,
                                     ),
                                     alignment: Alignment.center, // Center the text inside the circle
                                     child: Text(
-                                      profile.title[0].toUpperCase(),
+                                      category.title[0].toUpperCase(),
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: size / 2, // Adjust font size relative to the circle size
@@ -99,14 +99,14 @@ class ProfilePageState extends State<ProfilePage> {
                                       child: Center(
                                         child: CircleAvatar(
                                           radius: size/2,
-                                          backgroundImage: MemoryImage(profile.thumbnail!),
+                                          backgroundImage: MemoryImage(category.thumbnail!),
                                         ),
                                       ),
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 8.0),
-                              Text(profile.title),
+                              Text(category.title),
                             ],
                           );
                         }).toList(),
@@ -119,7 +119,7 @@ class ProfilePageState extends State<ProfilePage> {
                         height: 50,
                         child: ElevatedButton(
                           onPressed: () {
-                            addEditProfile(null);
+                            addEditCategory(null);
                           },
                           style: ElevatedButton.styleFrom(
                             shape: const CircleBorder(),
