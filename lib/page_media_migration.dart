@@ -2,6 +2,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/model_profile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'common.dart';
 import 'model_item.dart';
 import 'model_setting.dart';
@@ -34,6 +36,30 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
   }
 
   Future<void> migrateMedia() async {
+    // get set profile from shared prefs
+    final prefs = await SharedPreferences.getInstance();
+    String? userName = prefs.getString("APP_USER_NAME");
+    String? userPic = prefs.getString("APP_USER_PIC");
+    if (userName != null || userPic != null){
+      List<ModelProfile> profiles = await ModelProfile.all();
+      if (profiles.isNotEmpty){
+        ModelProfile profile = profiles.first;
+        if (userName != null){
+          profile.title = userName;
+        }
+        if (userPic != null){
+          File userPicFile = File(userPic);
+          if (userPicFile.existsSync()){
+            Uint8List fileBytes = await userPicFile.readAsBytes();
+            Uint8List? userPicThumbnail = await compute(getImageThumbnail,fileBytes);
+            profile.thumbnail = userPicThumbnail;
+          }
+        }
+        profile.update();
+      }
+    }
+    
+    // process media for image/audio
     List<ModelItem> items = await ModelItem.getImageAudio();
     for(ModelItem item in items){
       Map<String,dynamic> dataMap = item.data!;

@@ -30,6 +30,7 @@ dependencies:
   permission_handler: ^11.3.1
   record: ^5.2.0
   share_plus: ^10.1.2
+  shared_preferences: ^2.3.3
   siri_wave: ^2.1.0
   sqflite: ^2.4.0
   sqflite_common_ffi: ^2.3.4
