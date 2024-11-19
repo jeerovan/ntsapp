@@ -1,6 +1,7 @@
 // main.dart
 
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'page_group.dart';
@@ -42,22 +43,26 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   ThemeMode _themeMode = ThemeMode.system;
-  bool isDark = true;
+  late bool isDark;
 
   @override
   void initState() {
     super.initState();
+    // Load the theme from saved preferences
     String? savedTheme = ModelSetting.getForKey("theme", null);
-    switch(savedTheme) {
-      case null:
-        break;
+    switch (savedTheme) {
       case "light":
-        isDark = false;
         _themeMode = ThemeMode.light;
+        isDark = false;
         break;
       case "dark":
-        isDark = true;
         _themeMode = ThemeMode.dark;
+        isDark = true;
+        break;
+      default:
+        // Default to system theme
+        _themeMode = ThemeMode.system;
+        isDark = PlatformDispatcher.instance.platformBrightness == Brightness.dark;
         break;
     }
   }
@@ -65,7 +70,6 @@ class _MainAppState extends State<MainApp> {
   // Toggle between light and dark modes
   void _toggleTheme() {
     setState(() {
-      isDark = _themeMode == ThemeMode.dark;
       _themeMode = isDark ? ThemeMode.light : ThemeMode.dark;
       isDark = !isDark;
       ModelSetting.update("theme", isDark ? "dark" : "light");
@@ -75,7 +79,6 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     String processMedia = ModelSetting.getForKey("process_media","no");
-
     Widget page = PageGroup(
         isDarkMode: isDark,
         onThemeToggle: _toggleTheme,);
