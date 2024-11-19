@@ -332,7 +332,7 @@ class _PageItemsState extends State<PageItems> {
     hideProcessing();
   }
 
-  void _showMediaPickerDialog() {
+  void _showCameraImageVideoDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -639,7 +639,7 @@ class _PageItemsState extends State<PageItems> {
               controller: controller,
               options: const IOS7SiriWaveformOptions(
                 height: 50,
-                width: 150
+                width: 170
               ),
           ),
           Text(
@@ -671,18 +671,39 @@ class _PageItemsState extends State<PageItems> {
       ),
     );
   }
+  Widget _buildInputSuffix() {
+    return _isTyping ? const SizedBox.shrink()
+     : Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.attach_file),
+          onPressed: () {
+            _showAttachmentOptions();
+          },
+        ),
+        if(ImagePicker().supportsImageSource(ImageSource.camera))
+        IconButton(
+          icon: const Icon(Icons.camera_alt_outlined),
+          onPressed: () {
+            _showCameraImageVideoDialog();
+          },
+        ),
+      ],
+    );
+  }
   // Input box with attachment and send button
   Widget _buildInputBox() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.attach_file),
+          /* IconButton(
+            icon: const Icon(Icons.check_circle),
             onPressed: () {
-              _showAttachmentOptions();
+              // TODO Implement tasks
             },
-          ),
+          ), */
           Expanded(
             child: _isRecording
                     ? _buildWaveform()
@@ -691,11 +712,12 @@ class _PageItemsState extends State<PageItems> {
               maxLines: null,
               keyboardType: TextInputType.multiline,
               decoration: InputDecoration(
-                hintText: "Type a message",
+                hintText: "What's on your mind?",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                suffixIcon: _buildInputSuffix(),
               ),
               onChanged: (value) => _onInputTextChanged(value),
             ),
@@ -768,15 +790,6 @@ class _PageItemsState extends State<PageItems> {
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('location');
-                },
-              ),
-              if(ImagePicker().supportsImageSource(ImageSource.camera))
-              ListTile(
-                leading: const Icon(Icons.camera),
-                title: const Text("Camera"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showMediaPickerDialog();
                 },
               ),
               ListTile(
