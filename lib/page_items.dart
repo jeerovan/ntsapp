@@ -26,8 +26,8 @@ bool isMobile = Platform.isAndroid || Platform.isIOS;
 
 class PageItems extends StatefulWidget {
   final String groupId;
-  final String? itemId;
-  const PageItems({super.key, required this.groupId, this.itemId});
+  final String? loadItemId;
+  const PageItems({super.key, required this.groupId, this.loadItemId});
 
   @override
   State<PageItems> createState() => _PageItemsState();
@@ -39,8 +39,8 @@ class _PageItemsState extends State<PageItems> {
   final List<ModelItem> _selection = [];
   bool isSelecting = false;
   final TextEditingController _textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   ModelGroup? group;
-  String? itemId;
 
   bool _isLoading = false;
   final int _offset = 0;
@@ -55,19 +55,21 @@ class _PageItemsState extends State<PageItems> {
 
   ModelItem? replyOnItem;
 
+  bool canScrollToBottom = false;
+
   @override
   void initState() {
     super.initState();
     _audioRecorder = AudioRecorder();
-    itemId = widget.itemId;
     loadGroup();
-    initialFetchItems();
+    initialFetchItems(widget.loadItemId);
   }
 
   @override
   void dispose(){
     _recordingTimer?.cancel();
     _textController.dispose();
+    _scrollController.dispose();
     _audioRecorder.dispose();
     super.dispose();
   }
@@ -80,16 +82,17 @@ class _PageItemsState extends State<PageItems> {
         });
     }
   }
-  Future<void> initialFetchItems() async {
+  Future<void> initialFetchItems(String? itemId) async {
     List<ModelItem> newItems;
     if (itemId != null){
-      newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId!);
+      newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
     } else {
       newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit);
     }
     setState(() {
       _items.clear();
       _items.addAll(newItems);
+      _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
   }
 
@@ -478,6 +481,16 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
+  Future<void> showHideScrollToBottomButton(double scrolledHeight) async {
+    setState(() {
+      if (scrolledHeight > 100){
+        canScrollToBottom = true;
+      } else {
+        canScrollToBottom = false;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double size = 40;
@@ -532,85 +545,110 @@ class _PageItemsState extends State<PageItems> {
                     ),
                   ),
       ),
-      body: Column(
+      body: Stack(
         children: [
           // Items view (displaying the messages)
-          Expanded(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (ScrollNotification scrollInfo) {
-                if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoading) {
-                  scrollFetchItems(true);
-                } else if (scrollInfo.metrics.pixels == scrollInfo.metrics.minScrollExtent) {
-                    scrollFetchItems(false);
-                  }
-                return false;
-              },
-              child: ListView.builder(
-                reverse: true,
-                itemCount: _items.length, // Additional item for the loading indicator
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  if (item.type == 170000){
-                    return ItemWidgetDate(item:item);
-                  } else {
-                    return Dismissible(
-                      key: ValueKey(item.id),
-                      direction: DismissDirection.startToEnd,
-                      confirmDismiss: (direction) async {
-                        replyOnSwipe(item);
-                        return false;
-                      },
-                      background: Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 20),
-                        child: const Icon(Icons.reply,),
-                      ),
-                      child: GestureDetector(
-                        onLongPress: (){
-                          onItemLongPressed(item);
-                        },
-                        onTap: (){
-                          onItemTapped(item);
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
-                          margin: const EdgeInsets.symmetric(vertical: 1),
-                          child: Align(
-                            alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
+          Column(
+            children: [
+              Expanded(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                      scrollFetchItems(true);
+                    } else if (scrollInfo.metrics.pixels == scrollInfo.metrics.minScrollExtent) {
+                        scrollFetchItems(false);
+                    }
+                    showHideScrollToBottomButton(scrollInfo.metrics.pixels);
+                    return false;
+                  },
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    reverse: true,
+                    itemCount: _items.length, // Additional item for the loading indicator
+                    itemBuilder: (context, index) {
+                      final item = _items[index];
+                      if (item.type == 170000){
+                        return ItemWidgetDate(item:item);
+                      } else {
+                        return Dismissible(
+                          key: ValueKey(item.id),
+                          direction: DismissDirection.startToEnd,
+                          confirmDismiss: (direction) async {
+                            replyOnSwipe(item);
+                            return false;
+                          },
+                          background: Container(
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.only(left: 20),
+                            child: const Icon(Icons.reply,),
+                          ),
+                          child: GestureDetector(
+                            onLongPress: (){
+                              onItemLongPressed(item);
+                            },
+                            onTap: (){
+                              onItemTapped(item);
+                            },
                             child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(10),
+                              width: double.infinity,
+                              color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
+                              margin: const EdgeInsets.symmetric(vertical: 1),
+                              child: Align(
+                                alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if(item.replyOn != null)
+                                      GestureDetector(
+                                        onTap: (){
+                                          initialFetchItems(item.replyOn!.id);
+                                        },
+                                        child: NotePreviewSummary(
+                                            item:item.replyOn!,
+                                            showImagePreview: true,
+                                            showTimestamp: false,
+                                            expanded: false,),
+                                      ),
+                                      _buildItem(item),
+                                    ],
+                                  )
+                                ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if(item.replyOn != null)
-                                  NotePreviewSummary(
-                                      item:item.replyOn!,
-                                      showImagePreview: true,
-                                      showTimestamp: false,
-                                      expanded: false,),
-                                  _buildItem(item),
-                                ],
-                              )
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }
-                },
+                        );
+                      }
+                    },
+                  ),
+                ),
               ),
+              // Input box with attachments and send button
+              isSelecting ? _buildSelectionClear() : _buildInputBox(),
+            ],
+          ),
+          if(canScrollToBottom)Positioned(
+            bottom: 100, // Adjust for FAB height and margin
+            right: 20,
+            child: FloatingActionButton(
+              heroTag: "scrollToBottom",
+              mini: true,
+              onPressed: () {
+                initialFetchItems(null);
+              },
+              shape: const CircleBorder(),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              child: const Icon(Icons.keyboard_double_arrow_down),
             ),
           ),
-          // Input box with attachments and send button
-          isSelecting ? _buildSelectionClear() : _buildInputBox(),
         ],
-      ),
+      ), 
     );
   }
 
@@ -740,7 +778,7 @@ class _PageItemsState extends State<PageItems> {
   // Input box with attachment and send button
   Widget _buildInputBox() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(10.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
