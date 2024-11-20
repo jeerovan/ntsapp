@@ -2,6 +2,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -586,6 +587,125 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class NotePreviewSummary extends StatelessWidget {
+  final ModelItem? item;
+  final bool? showTimestamp;
+  final bool? showImagePreview;
+
+  const NotePreviewSummary({
+    super.key,
+    this.item,
+    this.showTimestamp,
+    this.showImagePreview,
+  });
+
+  IconData _getIcon() {
+    if (item == null){
+      return Icons.text_snippet;
+    } else {
+      switch (item!.type) {
+        case 100000:
+          return Icons.text_snippet;
+        case 110000:
+        case 110100:
+          return Icons.image;
+        case 120000:
+          return Icons.videocam;
+        case 130000:
+          return Icons.audiotrack;
+        case 160000:
+          return Icons.contact_phone;
+        case 150000:
+          return Icons.location_on;
+        default: // Document
+          return Icons.insert_drive_file;
+      }
+    }
+  }
+
+  String _getMessageText() {
+    if (item == null) {
+      return "So empty...";
+    } else {
+      switch (item!.type) {
+        case 100000:
+          return item!.text; // Text content
+        case 110000:
+        case 120000:
+        case 130000:
+        case 140000:
+          return item!.data!["name"]; // File name for media types
+        case 160000:
+          return item!.data!["name"]; // Contact name
+        case 150000:
+          return "Location";
+        default:
+          return "Unknown";
+      }
+    }
+  }
+
+  String _formatTimestamp() {
+    if (item == null){
+      return "";
+    } else {
+      final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item!.at! * 1000, isUtc: true);
+      final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); 
+      return formattedTime;
+    }
+  }
+
+  Widget _previewImage(ModelItem item){
+    switch (item.type) {
+        case 110000:
+        case 120000:
+        case 160000:
+          return item.thumbnail == null
+                 ? const SizedBox.shrink()
+                 : ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: SizedBox(
+                      width: 40,
+                      child: Image.memory(
+                        item.thumbnail!, // Full width of container
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+        default:
+          return const SizedBox.shrink();
+      }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          _getIcon(),
+          size: 15,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            _getMessageText(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis, // Ellipsis for long text
+            style: const TextStyle(fontSize: 12,),
+          ),
+        ),
+        const SizedBox(width: 4),
+        if(showImagePreview!)_previewImage(item!),
+        const SizedBox(width: 4),
+        if(showTimestamp!)Text(
+          _formatTimestamp(),
+          style: const TextStyle(fontSize: 10,),
+        ),
+      ],
     );
   }
 }

@@ -53,6 +53,8 @@ class _PageItemsState extends State<PageItems> {
   Timer? _recordingTimer;
   int _recordingDuration = 0; // In seconds
 
+  ModelItem? replyToItem;
+
   @override
   void initState() {
     super.initState();
@@ -457,6 +459,17 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
+  Future<void> replyOnSwipe(ModelItem item) async {
+    setState(() {
+      replyToItem = item;
+    });
+  }
+  Future<void> cancelReplyItem() async {
+    setState(() {
+      replyToItem = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double size = 40;
@@ -532,27 +545,40 @@ class _PageItemsState extends State<PageItems> {
                   if (item.type == 170000){
                     return ItemWidgetDate(item:item);
                   } else {
-                    return GestureDetector(
-                      onLongPress: (){
-                        onItemLongPressed(item);
+                    return Dismissible(
+                      key: ValueKey(item.id),
+                      direction: DismissDirection.startToEnd,
+                      confirmDismiss: (direction) async {
+                        replyOnSwipe(item);
+                        return false;
                       },
-                      onTap: (){
-                        onItemTapped(item);
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
-                        margin: const EdgeInsets.symmetric(vertical: 1),
-                        child: Align(
-                          alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(10),
+                      background: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 20),
+                        child: const Icon(Icons.reply,),
+                      ),
+                      child: GestureDetector(
+                        onLongPress: (){
+                          onItemLongPressed(item);
+                        },
+                        onTap: (){
+                          onItemTapped(item);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
+                          margin: const EdgeInsets.symmetric(vertical: 1),
+                          child: Align(
+                            alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _buildItem(item)
                             ),
-                            child: _buildItem(item)
                           ),
                         ),
                       ),
@@ -628,7 +654,7 @@ class _PageItemsState extends State<PageItems> {
     amplitude: 0.5,
     color: Colors.red,
     frequency: 4,
-    speed: 0.15,
+    speed: 0.10,
   );
     return Center(
       child: Row(
@@ -707,20 +733,49 @@ class _PageItemsState extends State<PageItems> {
           Expanded(
             child: _isRecording
                     ? _buildWaveform()
-                    : TextField(
-              controller: _textController,
-              maxLines: null,
-              keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
-                hintText: "What's on your mind?",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                suffixIcon: _buildInputSuffix(),
-              ),
-              onChanged: (value) => _onInputTextChanged(value),
-            ),
+                    : Column(
+                      children: [
+                        if (replyToItem != null)
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: NotePreviewSummary(
+                                        item:replyToItem!,
+                                        showTimestamp: false,
+                                        showImagePreview: true,),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: cancelReplyItem, // Cancel reply action
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextField(
+                          controller: _textController,
+                          maxLines: null,
+                          keyboardType: TextInputType.multiline,
+                          decoration: InputDecoration(
+                            filled: true,
+                            hintText: "What's on your mind?",
+                            fillColor: Theme.of(context).colorScheme.surface,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                            suffixIcon: _buildInputSuffix(),
+                          ),
+                          onChanged: (value) => _onInputTextChanged(value),
+                        ),
+                      ],
+                    ),
           ),
           GestureDetector(
             onLongPress: () async {
@@ -805,5 +860,54 @@ class _PageItemsState extends State<PageItems> {
         );
       },
     );
+  }
+
+  Widget _buildReplyPreviewItem(ModelItem item) {
+    switch (item.type) {
+      case 100000:
+        return _buildReplyPreviewTextItem(item);
+      case 110000:
+        return _buildReplyPreviewImageItem(item);
+      case 120000:
+        return _buildReplyPreviewVideoItem(item);
+      case 130000:
+        return _buildReplyPreviewAudioItem(item);
+      case 140000:
+        return _buildReplyPreviewDocumentItem(item);
+      case 150000:
+        return _buildReplyPreviewLocationItem(item);
+      case 160000:
+        return _buildReplyPreviewContactItem(item);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+  Widget _buildReplyPreviewTextItem(ModelItem item){
+    return Text(
+              item.text,
+              style: const TextStyle(
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            );
+  }
+  Widget _buildReplyPreviewImageItem(ModelItem item){
+    return const SizedBox.shrink();
+  }
+  Widget _buildReplyPreviewVideoItem(ModelItem item){
+    return const SizedBox.shrink();
+  }
+  Widget _buildReplyPreviewAudioItem(ModelItem item){
+    return const SizedBox.shrink();
+  }
+  Widget _buildReplyPreviewDocumentItem(ModelItem item){
+    return const SizedBox.shrink();
+  }
+  Widget _buildReplyPreviewLocationItem(ModelItem item){
+    return const SizedBox.shrink();
+  }
+  Widget _buildReplyPreviewContactItem(ModelItem item){
+    return const SizedBox.shrink();
   }
 }
