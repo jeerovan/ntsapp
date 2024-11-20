@@ -73,7 +73,6 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
         const SizedBox(height: 5),
         Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
             const SizedBox(width:5),
@@ -595,12 +594,14 @@ class NotePreviewSummary extends StatelessWidget {
   final ModelItem? item;
   final bool? showTimestamp;
   final bool? showImagePreview;
+  final bool? expanded;
 
   const NotePreviewSummary({
     super.key,
     this.item,
     this.showTimestamp,
     this.showImagePreview,
+    this.expanded,
   });
 
   IconData _getIcon() {
@@ -684,23 +685,31 @@ class NotePreviewSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           _getIcon(),
           size: 15,
         ),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            _getMessageText(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis, // Ellipsis for long text
-            style: const TextStyle(fontSize: 12,),
-          ),
+        expanded == true
+        ? Expanded(
+            child: Text(
+              _getMessageText(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis, // Ellipsis for long text
+              style: const TextStyle(fontSize: 12,),
+            ),
+          )
+        : Text(
+          _getMessageText(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis, // Ellipsis for long text
+          style: const TextStyle(fontSize: 12,),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         if(showImagePreview!)_previewImage(item!),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         if(showTimestamp!)Text(
           _formatTimestamp(),
           style: const TextStyle(fontSize: 10,),

@@ -269,7 +269,8 @@ class _PageGroupState extends State<PageGroup> {
                   subtitle: NotePreviewSummary(
                             item: item.lastItem,
                             showTimestamp: true,
-                            showImagePreview: false,),
+                            showImagePreview: false,
+                            expanded: true,),
                   onTap: () => navigateToItems(item.id!),
                 );
               },

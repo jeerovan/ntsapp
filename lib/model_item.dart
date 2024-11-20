@@ -16,6 +16,7 @@ class ModelItem {
   int type;
   int? state;
   Map<String,dynamic>? data;
+  ModelItem? replyOn;
   int? at;
   ModelItem({
     this.id,
@@ -26,6 +27,7 @@ class ModelItem {
     required this.type,
     this.state,
     this.data,
+    this.replyOn,
     this.at,
   });
   factory ModelItem.init(){
@@ -38,6 +40,7 @@ class ModelItem {
       type: 100000,
       state:0,
       data: {"path":"assets/image.webp"},
+      replyOn: null,
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -57,11 +60,18 @@ class ModelItem {
   static Future<ModelItem> fromMap(Map<String,dynamic> map) async {
     Uuid uuid = const Uuid();
     Map<String, dynamic>? dataMap;
+    ModelItem? replyOn;
     if (map.containsKey('data') && map['data'] != null) {
       if (map['data'] is String) {
         dataMap = jsonDecode(map['data']);
       } else {
         dataMap = map['data'];
+      }
+    }
+    if (dataMap != null){
+      if (dataMap.containsKey("reply_on")){
+        String replyOnId = dataMap["reply_on"];
+        replyOn = await get(replyOnId);
       }
     }
     Uint8List? thumbnail;
@@ -81,6 +91,7 @@ class ModelItem {
       type: map.containsKey('type') ? map['type'] : 100000,
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
+      replyOn: replyOn,
       at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
     );
   }

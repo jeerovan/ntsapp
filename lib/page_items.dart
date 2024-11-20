@@ -53,7 +53,7 @@ class _PageItemsState extends State<PageItems> {
   Timer? _recordingTimer;
   int _recordingDuration = 0; // In seconds
 
-  ModelItem? replyToItem;
+  ModelItem? replyOnItem;
 
   @override
   void initState() {
@@ -228,13 +228,20 @@ class _PageItemsState extends State<PageItems> {
     // TO-DO implement
   }
 
-  // Handle adding text item
+  // Handle adding item
   void _addItem(String text,
                 int type,
                 Uint8List? thumbnail,
                 Map<String,dynamic>? data,
                 ) async {
     await checkAddDateItem();
+    if (replyOnItem != null){
+      if (data != null){
+        data["reply_on"] = replyOnItem!.id;
+      } else {
+        data = {"reply_on":replyOnItem!.id};
+      }
+    }
     int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     ModelItem item = await ModelItem.fromMap({
                               "group_id": widget.groupId,
@@ -246,6 +253,7 @@ class _PageItemsState extends State<PageItems> {
     await item.insert();
     setState(() {
       _items.insert(0, item);
+      replyOnItem = null;
     });
   }
 
@@ -461,12 +469,12 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> replyOnSwipe(ModelItem item) async {
     setState(() {
-      replyToItem = item;
+      replyOnItem = item;
     });
   }
   Future<void> cancelReplyItem() async {
     setState(() {
-      replyToItem = null;
+      replyOnItem = null;
     });
   }
 
@@ -577,7 +585,18 @@ class _PageItemsState extends State<PageItems> {
                                 color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: _buildItem(item)
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if(item.replyOn != null)
+                                  NotePreviewSummary(
+                                      item:item.replyOn!,
+                                      showImagePreview: true,
+                                      showTimestamp: false,
+                                      expanded: false,),
+                                  _buildItem(item),
+                                ],
+                              )
                             ),
                           ),
                         ),
@@ -723,6 +742,7 @@ class _PageItemsState extends State<PageItems> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           /* IconButton(
             icon: const Icon(Icons.check_circle),
@@ -735,7 +755,7 @@ class _PageItemsState extends State<PageItems> {
                     ? _buildWaveform()
                     : Column(
                       children: [
-                        if (replyToItem != null)
+                        if (replyOnItem != null)
                         Container(
                           padding: const EdgeInsets.all(4),
                           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
@@ -747,9 +767,10 @@ class _PageItemsState extends State<PageItems> {
                             children: [
                               Expanded(
                                 child: NotePreviewSummary(
-                                        item:replyToItem!,
+                                        item:replyOnItem!,
                                         showTimestamp: false,
-                                        showImagePreview: true,),
+                                        showImagePreview: true,
+                                        expanded: true,),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.close),
@@ -788,31 +809,34 @@ class _PageItemsState extends State<PageItems> {
                 await _stopRecording();
               }
             },
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Container(
-                width: 45,
-                height: 45,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: IconButton(
-                  icon: Icon(
-                    _isTyping ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
-                    color: Colors.black,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: _isTyping
-                      ? () {
-                          final String text = _textController.text.trim();
-                          if (text.isNotEmpty) {
-                            _addItem(text, 100000, null, null);
-                            _textController.clear();
-                            _onInputTextChanged("");
+                  alignment: Alignment.center,
+                  child: IconButton(
+                    icon: Icon(
+                      _isTyping ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
+                      color: Colors.black,
+                    ),
+                    onPressed: _isTyping
+                        ? () {
+                            final String text = _textController.text.trim();
+                            if (text.isNotEmpty) {
+                              _addItem(text, 100000, null, null);
+                              _textController.clear();
+                              _onInputTextChanged("");
+                            }
                           }
-                        }
-                      : _isRecording ? _stopRecording : null,
+                        : _isRecording ? _stopRecording : null,
+                  ),
                 ),
               ),
             ),
@@ -862,52 +886,4 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
-  Widget _buildReplyPreviewItem(ModelItem item) {
-    switch (item.type) {
-      case 100000:
-        return _buildReplyPreviewTextItem(item);
-      case 110000:
-        return _buildReplyPreviewImageItem(item);
-      case 120000:
-        return _buildReplyPreviewVideoItem(item);
-      case 130000:
-        return _buildReplyPreviewAudioItem(item);
-      case 140000:
-        return _buildReplyPreviewDocumentItem(item);
-      case 150000:
-        return _buildReplyPreviewLocationItem(item);
-      case 160000:
-        return _buildReplyPreviewContactItem(item);
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-  Widget _buildReplyPreviewTextItem(ModelItem item){
-    return Text(
-              item.text,
-              style: const TextStyle(
-                fontStyle: FontStyle.italic,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            );
-  }
-  Widget _buildReplyPreviewImageItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildReplyPreviewVideoItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildReplyPreviewAudioItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildReplyPreviewDocumentItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildReplyPreviewLocationItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
-  Widget _buildReplyPreviewContactItem(ModelItem item){
-    return const SizedBox.shrink();
-  }
 }
