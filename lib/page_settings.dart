@@ -1,6 +1,8 @@
 
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:ntsapp/backup_restore.dart';
@@ -22,11 +24,45 @@ class SettingsPage extends StatefulWidget {
 }
 
 class SettingsPageState extends State<SettingsPage> {
+  final LocalAuthentication _auth = LocalAuthentication();
+  bool isAuthSupported = false;
+  bool isAuthEnabled = false;
   
   @override
   void initState() {
     super.initState();
-    
+    isAuthEnabled = ModelSetting.getForKey("local_auth", "no") == "yes";
+  }
+
+  Future<void> checkDeviceAuth() async {
+    isAuthSupported = await _auth.isDeviceSupported();
+  }
+  Future<void> setAuthSetting() async {
+    isAuthEnabled = !isAuthEnabled;
+    if (isAuthEnabled) {
+      ModelSetting.update("local_auth", "yes");
+    } else {
+      ModelSetting.update("local_auth", "no");
+    }
+    if(mounted)setState(() {});
+  }
+
+  Future<void> _authenticate() async {
+    try {
+      bool isAuthenticated = await _auth.authenticate(
+        localizedReason: 'Please authenticate',
+        options: const AuthenticationOptions(
+          biometricOnly: false, // Use only biometric
+          stickyAuth: true, // Keeps the authentication open
+        ),
+      );
+
+      if (isAuthenticated) {
+        setAuthSetting();
+      }
+    } catch (e) {
+      debugPrint("Authentication Error: $e");
+    }
   }
 
   void showProcessing(){
@@ -132,6 +168,16 @@ class SettingsPageState extends State<SettingsPage> {
                 ),
               ),
               onPressed: () => widget.onThemeToggle(),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock),
+            title: const Text("Lock"),
+            trailing: Switch(
+              value: isAuthEnabled,
+              onChanged: (bool value) {
+                _authenticate();
+              },
             ),
           ),
           ListTile(

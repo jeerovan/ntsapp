@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
 import 'common.dart';
@@ -30,6 +32,7 @@ class PageGroup extends StatefulWidget {
 }
 
 class _PageGroupState extends State<PageGroup> {
+  final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelGroup> _items = [];
   bool _isLoading = false;
@@ -40,7 +43,11 @@ class _PageGroupState extends State<PageGroup> {
   @override
   void initState() {
     super.initState();
-    _setCategory();
+    if (ModelSetting.getForKey("local_auth", "no") == "no"){
+      _setCategory();
+    } else {
+      _authenticateOnStart();
+    }
   }
 
   Future<void> _setCategory() async {
@@ -91,6 +98,37 @@ class _PageGroupState extends State<PageGroup> {
       }
     });
   }
+
+  Future<void> _authenticateOnStart() async {
+    try {
+      bool isAuthenticated = await _auth.authenticate(
+        localizedReason: 'Please authenticate',
+        options: const AuthenticationOptions(
+          biometricOnly: false, // Use only biometric
+          stickyAuth: true, // Keeps the authentication open
+        ),
+      );
+
+      if (!isAuthenticated) {
+        _exitApp();
+      } else {
+        _setCategory();
+      }
+    } catch (e) {
+      debugPrint("Authentication Error: $e");
+      _exitApp();
+    }
+  }
+
+  void _exitApp() {
+  if (Platform.isAndroid || Platform.isWindows || Platform.isLinux) {
+    // Closes the app
+    SystemNavigator.pop();
+  } else if (Platform.isIOS || Platform.isMacOS) {
+    // For iOS and macOS, exit the process
+    exit(0);
+  }
+}
 
   void createNoteGroup(String title) async {
     if(title.isNotEmpty){

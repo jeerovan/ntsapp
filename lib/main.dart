@@ -8,7 +8,6 @@ import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 import 'themes.dart';
 
 // Set to false if running on Desktop
