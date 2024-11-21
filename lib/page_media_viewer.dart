@@ -117,16 +117,6 @@ class _PageMediaState extends State<PageMedia> {
     }
     Widget widget = const SizedBox.shrink();
     switch (item.type){
-      case 110100: // gif
-        widget = fileAvailable
-                  ? Image.file(
-                      file,
-                      fit: BoxFit.cover, // Ensures the image covers the available space
-                    )
-                  : Image.memory(
-                      item.thumbnail!,
-                      fit: BoxFit.cover,
-                    );
       case 110000: // image
         widget = fileAvailable
                   ? Image.file(

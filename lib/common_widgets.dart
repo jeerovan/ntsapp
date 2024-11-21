@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'common.dart';
 import 'package:video_player/video_player.dart';
@@ -205,24 +206,32 @@ class WidgetVideo extends StatefulWidget {
   State<WidgetVideo> createState() => _WidgetVideoState();
 }
 class _WidgetVideoState extends State<WidgetVideo> {
-  late VideoPlayerController _controller;
+  late final VideoPlayerController _controller;
+  ChewieController? _chewieController;
 
   @override
   void initState() {
     super.initState();
     _controller = VideoPlayerController.file(File(widget.videoPath));
+    initialize();
+  }
 
-    _controller.addListener(() {
-      if (mounted)setState(() {});}
-    );
-    _controller.setLooping(true);
-    _controller.initialize().then((_) => setState(() {}));
-    _controller.play();
+  Future<void> initialize() async {
+    await _controller.initialize();
+    _chewieController = ChewieController(
+                          videoPlayerController: _controller,
+                          autoPlay: true,
+                          looping: true,
+                        );
+    setState(() {
+      
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _chewieController?.dispose();
     super.dispose();
   }
 
@@ -235,9 +244,9 @@ class _WidgetVideoState extends State<WidgetVideo> {
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: <Widget>[
-                  VideoPlayer(_controller),
-                  _ControlsOverlay(controller: _controller),
-                  VideoProgressIndicator(_controller, allowScrubbing: true),
+                  _chewieController == null ? const SizedBox.shrink() : Chewie(controller: _chewieController!),
+                  //_ControlsOverlay(controller: _controller),
+                  //VideoProgressIndicator(_controller, allowScrubbing: true),
                 ],
               ),
             ),
