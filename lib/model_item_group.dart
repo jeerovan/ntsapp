@@ -77,7 +77,8 @@ class ModelGroup {
       where: 'category_id = ?',
       limit: limit,
       offset: offset,
-      whereArgs: [categoryId]
+      whereArgs: [categoryId],
+      orderBy: "at DESC"
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

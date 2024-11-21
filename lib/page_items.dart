@@ -258,6 +258,9 @@ class _PageItemsState extends State<PageItems> {
       _items.insert(0, item);
       replyOnItem = null;
     });
+    // update this group's last accessed at
+    ModelGroup? group = await ModelGroup.get(widget.groupId);
+    if (group != null) await group.update();
   }
 
   Future<void> checkAddDateItem() async{
