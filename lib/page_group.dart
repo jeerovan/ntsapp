@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
 import 'common.dart';
 import 'model_category.dart';
+import 'model_item.dart';
 import 'model_setting.dart';
 import 'page_items.dart';
 import 'page_search.dart';
@@ -18,7 +20,7 @@ import 'package:path/path.dart' as path;
 
 import 'widgets_item.dart';
 
-bool debug = true;
+bool debug = false;
 
 class PageGroup extends StatefulWidget {
   final bool isDarkMode;
@@ -35,6 +37,9 @@ class _PageGroupState extends State<PageGroup> {
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelGroup> _items = [];
+  final List<ModelGroup> _selection = [];
+  bool selectionHasPinnedGroup = true;
+  bool isSelecting = false;
   bool _isLoading = false;
   bool _hasMore = true;
   int _offset = 0;
@@ -171,13 +176,75 @@ class _PageGroupState extends State<PageGroup> {
     ));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    double size = 40;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('NTS'),
-        actions: [
+  void updateSelectionHasPinnedGroup() {
+    selectionHasPinnedGroup = true;
+    for (ModelGroup group in _selection){
+      if (group.pinned == 0){
+        selectionHasPinnedGroup = false;
+      }
+    }
+  }
+  Future<void> deleteSelectedGroups() async {
+    for (ModelGroup group in _selection){
+      List<ModelItem> items = await ModelItem.getAllInGroup(group.id!);
+      for (ModelItem item in items){
+        await item.delete();
+      }
+      await group.delete();
+      _items.remove(group);
+      if(mounted)setState(() {});
+    }
+    _selection.clear();
+    isSelecting = false;
+    if(mounted)setState(() {});
+  }
+  Future<void> setPinnedStatus() async {
+    for (ModelGroup group in _selection){
+      if (selectionHasPinnedGroup){
+        group.pinned = 0;
+      } else {
+        group.pinned = 1;
+      }
+      group.update();
+    }
+    _selection.clear();
+    isSelecting = false;
+    if(mounted)setState(() {});
+  }
+  void onItemLongPressed(ModelGroup group){
+    setState(() {
+      if (_selection.contains(group)) {
+        _selection.remove(group);
+        if (_selection.isEmpty){
+          isSelecting = false;
+        }
+      } else {
+        _selection.add(group);
+        if (!isSelecting) isSelecting = true;
+      }
+      updateSelectionHasPinnedGroup();
+    });
+  }
+  void onItemTapped(ModelGroup group){
+    if (isSelecting){
+      setState(() {
+        if (_selection.contains(group)) {
+          _selection.remove(group);
+          if (_selection.isEmpty){
+            isSelecting = false;
+          }
+        } else {
+          _selection.add(group);
+        }
+        updateSelectionHasPinnedGroup();
+      });
+    } else {
+      navigateToItems(group.id!);
+    }
+  }
+
+  List<Widget> defaultActions(double size) {
+    return [
           GestureDetector(
             onTap: (){
               selectCategory();
@@ -261,7 +328,32 @@ class _PageGroupState extends State<PageGroup> {
                 ));
               }
             ),
-        ],
+        ];
+  }
+  List<Widget> selectionActions(){
+    return [
+        IconButton(
+          onPressed: () {setPinnedStatus();},
+          icon: FaIcon(
+            selectionHasPinnedGroup ? FontAwesomeIcons.thumbtackSlash : FontAwesomeIcons.thumbtack,
+            size: 18,),
+        ),
+        const SizedBox(width: 5,),
+        IconButton(
+          onPressed: (){deleteSelectedGroups();},
+          icon: const Icon(Icons.delete_outlined),
+        ),
+        const SizedBox(width: 5,),
+      ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double size = 40;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('NTS'),
+        actions: isSelecting ? selectionActions() : defaultActions(size),
       ),
       body: Stack(
         children:[
@@ -276,45 +368,67 @@ class _PageGroupState extends State<PageGroup> {
               itemCount: _items.length, // Additional item for the loading indicator
               itemBuilder: (context, index) {
                 final item = _items[index];
-                return ListTile(
-                  leading: item.thumbnail == null
-                    ? Container(
+                return GestureDetector(
+                  onLongPress: (){
+                    onItemLongPressed(item);
+                  },
+                  onTap: (){
+                    onItemTapped(item);
+                  },
+                  child: Container(
+                    color: _selection.contains(item) ? Theme.of(context).colorScheme.inversePrimary : Colors.transparent,
+                    margin: const EdgeInsets.symmetric(vertical: 1),
+                    child: ListTile(
+                      leading: item.thumbnail == null
+                        ? Container(
+                            width: size,
+                            height: size,
+                            decoration: BoxDecoration(
+                              color: colorFromHex(item.color),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center, // Center the text inside the circle
+                            child: Text(
+                              item.title[0].toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: size / 2, // Adjust font size relative to the circle size
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                      : SizedBox(
                         width: size,
                         height: size,
-                        decoration: BoxDecoration(
-                          color: colorFromHex(item.color),
-                          shape: BoxShape.circle,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Center(
+                              child: CircleAvatar(
+                                radius: 20,
+                                backgroundImage: MemoryImage(item.thumbnail!),
+                              ),
+                            ),
                         ),
-                        alignment: Alignment.center, // Center the text inside the circle
-                        child: Text(
-                          item.title[0].toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: size / 2, // Adjust font size relative to the circle size
-                            fontWeight: FontWeight.bold,
+                      ),
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              overflow: TextOverflow.ellipsis, 
+                              ),
                           ),
-                        ),
-                      )
-                  : SizedBox(
-                    width: size,
-                    height: size,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Center(
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundImage: MemoryImage(item.thumbnail!),
-                          ),
-                        ),
+                          item.pinned == 1 ? const FaIcon(FontAwesomeIcons.thumbtack,size: 10,) : const SizedBox.shrink(),
+                        ],
+                      ),
+                      subtitle: NotePreviewSummary(
+                                item: item.lastItem,
+                                showTimestamp: true,
+                                showImagePreview: false,
+                                expanded: true,),
+                      
                     ),
                   ),
-                  title: Text(item.title),
-                  subtitle: NotePreviewSummary(
-                            item: item.lastItem,
-                            showTimestamp: true,
-                            showImagePreview: false,
-                            expanded: true,),
-                  onTap: () => navigateToItems(item.id!),
                 );
               },
             ),

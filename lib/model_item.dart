@@ -106,20 +106,6 @@ class ModelItem {
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<List<ModelItem>> getForTagInGroup(String tag,int groupId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    String sql = '''
-      SELECT DISTINCT item.*
-      FROM item
-      INNER JOIN itemtag ON itemtag.item_id = item.id
-      INNER JOIN tag ON tag.id = itemtag.tag_id
-      WHERE item.group_id = ?
-        AND tag.title LIKE ?
-    ''';
-    List<Map<String,dynamic>> rows = await db.rawQuery(sql,[groupId,'%$tag%']);
-    return await Future.wait(rows.map((map) => fromMap(map)));
-  }
   static Future<int> mediaCountInGroup(String groupId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
@@ -249,6 +235,16 @@ class ModelItem {
       orderBy:'at DESC',
       offset: offset,
       limit: limit,
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+  static Future<List<ModelItem>> getAllInGroup(String groupId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      "item",
+      where: "group_id = ?",
+      whereArgs: [groupId],
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

@@ -78,7 +78,7 @@ class ModelGroup {
       limit: limit,
       offset: offset,
       whereArgs: [categoryId],
-      orderBy: "at DESC"
+      orderBy: "pinned DESC, at DESC"
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

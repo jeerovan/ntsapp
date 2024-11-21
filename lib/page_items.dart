@@ -455,10 +455,8 @@ class _PageItemsState extends State<PageItems> {
     ));
   }
 
-  Widget _buildSelectionOptions(){
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
+  List<Widget> _buildSelectionOptions(){
+    return [
         IconButton(
           onPressed: () { markSelectedItemsStarred();},
           icon: const Icon(Icons.star),
@@ -469,8 +467,7 @@ class _PageItemsState extends State<PageItems> {
           icon: const Icon(Icons.delete_outlined),
         ),
         const SizedBox(width: 5,),
-      ],
-    );
+      ];
   }
 
   Future<void> replyOnSwipe(ModelItem item) async {
@@ -500,53 +497,52 @@ class _PageItemsState extends State<PageItems> {
     bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
     return Scaffold(
       appBar: AppBar(
-        title: isSelecting
-               ? _buildSelectionOptions()
-               : group == null
-                  ? const SizedBox.shrink()
-                  : GestureDetector(
-                    onTap: () {
-                      editGroup();
-                    },
-                    child: Row(
-                      children: [
-                        group!.thumbnail == null
-                        ? Container(
-                            width: size,
-                            height: size,
-                            decoration: BoxDecoration(
-                              color: colorFromHex(group!.color),
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center, // Center the text inside the circle
-                            child: Text(
-                              group!.title[0].toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: size / 2, // Adjust font size relative to the circle size
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Center(
-                              child: CircleAvatar(
-                                radius: 20,
-                                backgroundImage: MemoryImage(group!.thumbnail!),
-                              ),
-                            ),
+        actions: isSelecting ? _buildSelectionOptions() : [],
+        title: group == null
+              ? const SizedBox.shrink()
+              : GestureDetector(
+                onTap: () {
+                  editGroup();
+                },
+                child: Row(
+                  children: [
+                    group!.thumbnail == null
+                    ? Container(
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          color: colorFromHex(group!.color),
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: 5,),
-                        Expanded(
-                          child: Text(
-                            group!.title,
-                            overflow: TextOverflow.ellipsis, 
+                        alignment: Alignment.center, // Center the text inside the circle
+                        child: Text(
+                          group!.title[0].toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: size / 2, // Adjust font size relative to the circle size
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Center(
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundImage: MemoryImage(group!.thumbnail!),
+                          ),
+                        ),
                     ),
-                  ),
+                    const SizedBox(width: 5,),
+                    Expanded(
+                      child: Text(
+                        group!.title,
+                        overflow: TextOverflow.ellipsis, 
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ),
       body: Stack(
         children: [
@@ -594,7 +590,7 @@ class _PageItemsState extends State<PageItems> {
                             },
                             child: Container(
                               width: double.infinity,
-                              color: _selection.contains(item) ? Theme.of(context).colorScheme.primaryFixedDim : Colors.transparent,
+                              color: _selection.contains(item) ? Theme.of(context).colorScheme.inversePrimary : Colors.transparent,
                               margin: const EdgeInsets.symmetric(vertical: 1),
                               child: Align(
                                 alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
