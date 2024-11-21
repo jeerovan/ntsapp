@@ -33,7 +33,6 @@ class PageGroup extends StatefulWidget {
 
 class _PageGroupState extends State<PageGroup> {
   final LocalAuthentication _auth = LocalAuthentication();
-  bool isAuthenticated = false;
   ModelCategory? category;
   final List<ModelGroup> _items = [];
   bool _isLoading = false;
@@ -44,11 +43,13 @@ class _PageGroupState extends State<PageGroup> {
   @override
   void initState() {
     super.initState();
+    checkAuthAndLoad();
+  }
+
+  void checkAuthAndLoad(){
     if (ModelSetting.getForKey("local_auth", "no") == "no"){
       _setCategory();
-      isAuthenticated = true;
     } else {
-      isAuthenticated = false;
       _authenticateOnStart();
     }
   }
@@ -229,7 +230,7 @@ class _PageGroupState extends State<PageGroup> {
                     Directory directory = await getApplicationDocumentsDirectory();
                     File backupFile = File(path.join(directory.path,"ntsbackup.zip"));
                     if(backupFile.existsSync())backupFile.deleteSync();
-                    if(isAuthenticated)_setCategory();
+                    checkAuthAndLoad();
                   });
                   break;
                 case 1:
