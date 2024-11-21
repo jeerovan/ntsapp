@@ -73,6 +73,8 @@ class DatabaseHelper {
         color TEXT,
         at INTEGER,
         thumbnail TEXT,
+        data TEXT,
+        state INTEGER,
         FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
       )
     ''');

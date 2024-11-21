@@ -7,6 +7,7 @@ enum ItemType {
   location,
   contact,
   date,
+  task,
 }
 
 extension ItemTypeExtension on ItemType {
@@ -28,6 +29,8 @@ extension ItemTypeExtension on ItemType {
         return 160000;
       case ItemType.date:
         return 170000;
+      case ItemType.task:
+        return 180000;
     }
   }
 
@@ -49,6 +52,8 @@ extension ItemTypeExtension on ItemType {
         return ItemType.contact;
       case 170000:
         return ItemType.date;
+      case 180000:
+        return ItemType.task;
       default:
         return null;
     }

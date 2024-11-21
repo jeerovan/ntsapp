@@ -270,6 +270,16 @@ class ModelItem {
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
+  static Future<List<ModelItem>> getTasksInGroup(String groupId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      "item",
+      where: "group_id = ? AND type >= ? AND type < ?",
+      whereArgs: [groupId,ItemType.task.value,ItemType.task.value+10000],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
   static Future<ModelItem?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
     List<Map<String,dynamic>> rows = await dbHelper.getWithId("item", id);

@@ -39,9 +39,10 @@ class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
+  final List<ModelItem> _tasks = [];
   bool isSelecting = false;
   final TextEditingController _textController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _itemScrollController = ScrollController();
   ModelGroup? group;
 
   bool _isLoading = false;
@@ -73,7 +74,7 @@ class _PageItemsState extends State<PageItems> {
   void dispose(){
     _recordingTimer?.cancel();
     _textController.dispose();
-    _scrollController.dispose();
+    _itemScrollController.dispose();
     _audioRecorder.dispose();
     super.dispose();
   }
@@ -96,8 +97,10 @@ class _PageItemsState extends State<PageItems> {
     setState(() {
       _items.clear();
       _items.addAll(newItems);
-      _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      _itemScrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
+    List<ModelItem> taskItems = await ModelItem.getTasksInGroup(widget.groupId);
+    _tasks.addAll(taskItems);
   }
 
   Future<void> scrollFetchItems(bool up) async {
@@ -259,8 +262,13 @@ class _PageItemsState extends State<PageItems> {
                               "at": utcSeconds});
     await item.insert();
     setState(() {
-      _items.insert(0, item);
-      replyOnItem = null;
+      // update view
+      if (type == ItemType.task){
+        _tasks.insert(0, item);
+      } else {
+        _items.insert(0, item);
+        replyOnItem = null;
+      }
     });
     // update this group's last accessed at
     ModelGroup? group = await ModelGroup.get(widget.groupId);
@@ -571,7 +579,7 @@ class _PageItemsState extends State<PageItems> {
                     return false;
                   },
                   child: ListView.builder(
-                    controller: _scrollController,
+                    controller: _itemScrollController,
                     reverse: true,
                     itemCount: _items.length, // Additional item for the loading indicator
                     itemBuilder: (context, index) {
@@ -801,52 +809,53 @@ class _PageItemsState extends State<PageItems> {
             },
           ),
           Expanded(
-            child: _isRecording
-                    ? _buildWaveform()
-                    : Column(
+            child: 
+              _isRecording
+              ? _buildWaveform()
+              : Column(
+                children: [
+                  if (replyOnItem != null)
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
                       children: [
-                        if (replyOnItem != null)
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: NotePreviewSummary(
-                                        item:replyOnItem!,
-                                        showTimestamp: false,
-                                        showImagePreview: true,
-                                        expanded: true,),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.close),
-                                onPressed: cancelReplyItem, // Cancel reply action
-                              ),
-                            ],
-                          ),
+                        Expanded(
+                          child: NotePreviewSummary(
+                                  item:replyOnItem!,
+                                  showTimestamp: false,
+                                  showImagePreview: true,
+                                  expanded: true,),
                         ),
-                        TextField(
-                          controller: _textController,
-                          maxLines: null,
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            filled: true,
-                            hintText: isEditingTasks ? "Create a task." : "What's on your mind?",
-                            fillColor: Theme.of(context).colorScheme.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                            suffixIcon: isEditingTasks ? const SizedBox.shrink() : _buildInputSuffix(),
-                          ),
-                          onChanged: (value) => _onInputTextChanged(value),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: cancelReplyItem, // Cancel reply action
                         ),
                       ],
                     ),
+                  ),
+                  TextField(
+                    controller: _textController,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      filled: true,
+                      hintText: isEditingTasks ? "Create a task." : "What's on your mind?",
+                      fillColor: Theme.of(context).colorScheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      suffixIcon: isEditingTasks ? const SizedBox.shrink() : _buildInputSuffix(),
+                    ),
+                    onChanged: (value) => _onInputTextChanged(value),
+                  ),
+                ],
+              ),
           ),
           if(!isEditingTasks)GestureDetector(
             onLongPress: () async {
@@ -880,7 +889,8 @@ class _PageItemsState extends State<PageItems> {
                         ? () {
                             final String text = _textController.text.trim();
                             if (text.isNotEmpty) {
-                              _addItem(text, ItemType.text, null, null);
+                              ItemType itemType = isEditingTasks ? ItemType.task : ItemType.text;
+                              _addItem(text, itemType, null, null);
                               _textController.clear();
                               _onInputTextChanged("");
                             }

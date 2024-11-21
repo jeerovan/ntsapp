@@ -13,6 +13,8 @@ class ModelGroup {
   String color;
   int? at;
   ModelItem? lastItem;
+  Map<String,dynamic>? data;
+  int? state;
   ModelGroup({
     this.id,
     required this.categoryId,
@@ -22,6 +24,8 @@ class ModelGroup {
     required this.color,
     this.at,
     this.lastItem,
+    this.data,
+    this.state,
   });
   factory ModelGroup.init(){
     return ModelGroup(
@@ -33,6 +37,8 @@ class ModelGroup {
       color: "",
       at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       lastItem: null,
+      data:null,
+      state: 0,
     );
   }
   Map<String,dynamic> toMap() {
@@ -43,6 +49,8 @@ class ModelGroup {
       'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'pinned':pinned,
       'color':color,
+      'state':state,
+      'data':data == null ? null : data is String ? data : jsonEncode(data),
       'at':at,
     };
   }
@@ -50,11 +58,19 @@ class ModelGroup {
     Uuid uuid = const Uuid();
     String groupId = map.containsKey("id") ? map['id'] : uuid.v4();
     Uint8List? thumbnail;
+    Map<String, dynamic>? dataMap;
     if (map.containsKey("thumbnail")){
       if (map["thumbnail"] is String){
         thumbnail = base64Decode(map["thumbnail"]);
       } else {
         thumbnail = map["thumbnail"];
+      }
+    }
+    if (map.containsKey('data') && map['data'] != null) {
+      if (map['data'] is String) {
+        dataMap = jsonDecode(map['data']);
+      } else {
+        dataMap = map['data'];
       }
     }
     ModelItem? item = await ModelItem.getLatestInGroup(groupId);
@@ -65,6 +81,8 @@ class ModelGroup {
       thumbnail: thumbnail,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
+      state: map.containsKey('state') ? map['state'] : 0,
+      data: dataMap,
       at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       lastItem: item,
     );
