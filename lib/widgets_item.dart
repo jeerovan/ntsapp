@@ -3,7 +3,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ntsapp/enum_note_type.dart';
+import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -610,17 +610,17 @@ class NotePreviewSummary extends StatelessWidget {
       return Icons.text_snippet;
     } else {
       switch (item!.type) {
-        case NoteType.text:
+        case ItemType.text:
           return Icons.text_snippet;
-        case NoteType.image:
+        case ItemType.image:
           return Icons.image;
-        case NoteType.video:
+        case ItemType.video:
           return Icons.videocam;
-        case NoteType.audio:
+        case ItemType.audio:
           return Icons.audiotrack;
-        case NoteType.contact:
+        case ItemType.contact:
           return Icons.contact_phone;
-        case NoteType.location:
+        case ItemType.location:
           return Icons.location_on;
         default: // Document
           return Icons.insert_drive_file;
@@ -633,16 +633,16 @@ class NotePreviewSummary extends StatelessWidget {
       return "So empty...";
     } else {
       switch (item!.type) {
-        case NoteType.text:
+        case ItemType.text:
           return item!.text; // Text content
-        case NoteType.image:
-        case NoteType.video:
-        case NoteType.audio:
-        case NoteType.document:
+        case ItemType.image:
+        case ItemType.video:
+        case ItemType.audio:
+        case ItemType.document:
           return item!.data!["name"]; // File name for media types
-        case NoteType.contact:
+        case ItemType.contact:
           return item!.data!["name"]; // Contact name
-        case NoteType.location:
+        case ItemType.location:
           return "Location";
         default:
           return "Unknown";
@@ -662,9 +662,9 @@ class NotePreviewSummary extends StatelessWidget {
 
   Widget _previewImage(ModelItem item){
     switch (item.type) {
-        case NoteType.image:
-        case NoteType.video:
-        case NoteType.contact:
+        case ItemType.image:
+        case ItemType.video:
+        case ItemType.contact:
           return item.thumbnail == null
                  ? const SizedBox.shrink()
                  : ClipRRect(

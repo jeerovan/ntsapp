@@ -1,7 +1,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:ntsapp/enum_note_type.dart';
+import 'package:ntsapp/enum_item_type.dart';
 
 import 'model_item.dart';
 import 'model_setting.dart';
@@ -163,7 +163,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
                 itemCount: _items.length, // Additional item for the loading indicator
                 itemBuilder: (context, index) {
                   final item = _items[index];
-                  if (item.type == NoteType.date){
+                  if (item.type == ItemType.date){
                     return ItemWidgetDate(item:item);
                   } else {
                     return GestureDetector(
@@ -201,19 +201,19 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   // Widget for displaying different item types
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
-      case NoteType.text:
+      case ItemType.text:
         return ItemWidgetText(item:item);
-      case NoteType.image:
+      case ItemType.image:
         return ItemWidgetImage(item:item,onTap: onItemTapped);
-      case NoteType.video:
+      case ItemType.video:
         return ItemWidgetVideo(item:item,onTap: onItemTapped);
-      case NoteType.audio:
+      case ItemType.audio:
         return ItemWidgetAudio(item:item);
-      case NoteType.document:
+      case ItemType.document:
         return ItemWidgetDocument(item: item, onTap: onItemTapped);
-      case NoteType.location:
+      case ItemType.location:
         return ItemWidgetLocation(item:item,onTap: onItemTapped);
-      case NoteType.contact:
+      case ItemType.contact:
         return ItemWidgetContact(item:item,onTap: onItemTapped);
       default:
         return const SizedBox.shrink();

@@ -6,9 +6,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:ntsapp/enum_note_type.dart';
+import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
@@ -57,6 +58,8 @@ class _PageItemsState extends State<PageItems> {
   ModelItem? replyOnItem;
 
   bool canScrollToBottom = false;
+
+  bool isEditingTasks = false;
 
   @override
   void initState() {
@@ -126,7 +129,7 @@ class _PageItemsState extends State<PageItems> {
     });
   }
   void onItemTapped(ModelItem item){
-    if (item.type == NoteType.text){
+    if (item.type == ItemType.text){
       onItemLongPressed(item);
     } else {
       setState(() {
@@ -234,7 +237,7 @@ class _PageItemsState extends State<PageItems> {
 
   // Handle adding item
   void _addItem(String text,
-                NoteType type,
+                ItemType type,
                 Uint8List? thumbnail,
                 Map<String,dynamic>? data,
                 ) async {
@@ -300,7 +303,7 @@ class _PageItemsState extends State<PageItems> {
                                         "name":name,
                                         "size":attrs["size"]};
             String text = 'DND|#image|$name';
-            _addItem(text, NoteType.image, thumbnail, data);
+            _addItem(text, ItemType.image, thumbnail, data);
           }
         case "video":
           VideoPlayerController controller = VideoPlayerController.file(File(newPath));
@@ -316,7 +319,7 @@ class _PageItemsState extends State<PageItems> {
                                         "aspect":aspect,
                                         "duration":duration};
             String text = 'DND|#video|$name';
-            _addItem(text, NoteType.video, null, data);
+            _addItem(text, ItemType.video, null, data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
@@ -332,7 +335,7 @@ class _PageItemsState extends State<PageItems> {
                                         "size":attrs["size"],
                                         "duration":duration};
             String text = 'DND|#audio|$name';
-            _addItem(text, NoteType.audio, null, data);
+            _addItem(text, ItemType.audio, null, data);
           } else {
             debugPrint("Could not get duration");
           }
@@ -343,7 +346,7 @@ class _PageItemsState extends State<PageItems> {
                                       "name":name,
                                       "size":attrs["size"]};
           String text = 'DND|#document|$name';
-          _addItem(text, NoteType.document, null, data);
+          _addItem(text, ItemType.document, null, data);
       }
     }
     hideProcessing();
@@ -417,7 +420,7 @@ class _PageItemsState extends State<PageItems> {
           LatLng position = value as LatLng;
           Map<String,dynamic> data = {"lat":position.latitude,
                                       "lng":position.longitude};
-          _addItem("DND|#location", NoteType.location, null, data);
+          _addItem("DND|#location", ItemType.location, null, data);
         }
       });
     } else if (type == "contact"){
@@ -440,7 +443,7 @@ class _PageItemsState extends State<PageItems> {
                                       "emails":emails,
                                       "addresses":addresses
                                       };
-          _addItem(details, NoteType.contact, contact.thumbnail, data);
+          _addItem(details, ItemType.contact, contact.thumbnail, data);
         }
       });
     }
@@ -454,6 +457,12 @@ class _PageItemsState extends State<PageItems> {
         onUpdate: (){setState(() {});},
         ),
     ));
+  }
+
+  void setTaskMode(){
+    setState(() {
+      isEditingTasks = !isEditingTasks;
+    });
   }
 
   List<Widget> _buildSelectionOptions(){
@@ -567,7 +576,7 @@ class _PageItemsState extends State<PageItems> {
                     itemCount: _items.length, // Additional item for the loading indicator
                     itemBuilder: (context, index) {
                       final item = _items[index];
-                      if (item.type == NoteType.date){
+                      if (item.type == ItemType.date){
                         return ItemWidgetDate(item:item);
                       } else {
                         return Dismissible(
@@ -655,19 +664,19 @@ class _PageItemsState extends State<PageItems> {
   // Widget for displaying different item types
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
-      case NoteType.text:
+      case ItemType.text:
         return ItemWidgetText(item:item);
-      case NoteType.image:
+      case ItemType.image:
         return ItemWidgetImage(item:item,onTap: viewMedia);
-      case NoteType.video:
+      case ItemType.video:
         return ItemWidgetVideo(item:item,onTap: viewMedia);
-      case NoteType.audio:
+      case ItemType.audio:
         return ItemWidgetAudio(item:item);
-      case NoteType.document:
+      case ItemType.document:
         return ItemWidgetDocument(item: item, onTap: openItemMedia);
-      case NoteType.location:
+      case ItemType.location:
         return ItemWidgetLocation(item:item,onTap: openLocation);
-      case NoteType.contact:
+      case ItemType.contact:
         return ItemWidgetContact(item:item,onTap:addToContacts);
       default:
         return const SizedBox.shrink();
@@ -782,12 +791,15 @@ class _PageItemsState extends State<PageItems> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          /* IconButton(
-            icon: const Icon(Icons.check_circle),
+          IconButton(
+            icon: FaIcon(
+              isEditingTasks ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck,
+              color:isEditingTasks ? null : Theme.of(context).colorScheme.inversePrimary,
+              ),
             onPressed: () {
-              // TODO Implement tasks
+              setTaskMode();
             },
-          ), */
+          ),
           Expanded(
             child: _isRecording
                     ? _buildWaveform()
@@ -823,20 +835,20 @@ class _PageItemsState extends State<PageItems> {
                           keyboardType: TextInputType.multiline,
                           decoration: InputDecoration(
                             filled: true,
-                            hintText: "What's on your mind?",
+                            hintText: isEditingTasks ? "Create a task." : "What's on your mind?",
                             fillColor: Theme.of(context).colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25.0),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                            suffixIcon: _buildInputSuffix(),
+                            suffixIcon: isEditingTasks ? const SizedBox.shrink() : _buildInputSuffix(),
                           ),
                           onChanged: (value) => _onInputTextChanged(value),
                         ),
                       ],
                     ),
           ),
-          GestureDetector(
+          if(!isEditingTasks)GestureDetector(
             onLongPress: () async {
               if (!_isTyping) {
                 await _startRecording();
@@ -852,8 +864,8 @@ class _PageItemsState extends State<PageItems> {
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Container(
-                  width: 45,
-                  height: 45,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primaryContainer,
                     shape: BoxShape.circle,
@@ -868,7 +880,7 @@ class _PageItemsState extends State<PageItems> {
                         ? () {
                             final String text = _textController.text.trim();
                             if (text.isNotEmpty) {
-                              _addItem(text, NoteType.text, null, null);
+                              _addItem(text, ItemType.text, null, null);
                               _textController.clear();
                               _onInputTextChanged("");
                             }

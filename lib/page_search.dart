@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:ntsapp/enum_note_type.dart';
+import 'package:ntsapp/enum_item_type.dart';
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
@@ -149,19 +149,19 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildItem(ModelSearchItem search) {
     ModelItem item = search.item;
     switch (item.type) {
-      case NoteType.text:
+      case ItemType.text:
         return _buildTextItem(search);
-      case NoteType.image:
+      case ItemType.image:
         return _buildImageItem(search);
-      case NoteType.video:
+      case ItemType.video:
         return _buildVideoItem(search);
-      case NoteType.audio:
+      case ItemType.audio:
         return _buildAudioItem(search);
-      case NoteType.document:
+      case ItemType.document:
         return _buildDocumentItem(search);
-      case NoteType.location:
+      case ItemType.location:
         return _buildLocationItem(search);
-      case NoteType.contact:
+      case ItemType.contact:
         return _buildContactItem(search);
       default:
         return const SizedBox.shrink();

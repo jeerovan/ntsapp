@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:ntsapp/enum_note_type.dart';
+import 'package:ntsapp/enum_item_type.dart';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
@@ -14,7 +14,7 @@ class ModelItem {
   String text;
   Uint8List? thumbnail;
   int? starred;
-  NoteType type;
+  ItemType type;
   int? state;
   Map<String,dynamic>? data;
   ModelItem? replyOn;
@@ -38,7 +38,7 @@ class ModelItem {
       text:"",
       thumbnail:null,
       starred: 0,
-      type: NoteType.text,
+      type: ItemType.text,
       state:0,
       data: {"path":"assets/image.webp"},
       replyOn: null,
@@ -83,12 +83,12 @@ class ModelItem {
         thumbnail = map["thumbnail"];
       }
     }
-    late NoteType mediaType;
+    late ItemType mediaType;
     if (map.containsKey('type')) {
-      if (map['type'] is NoteType){
+      if (map['type'] is ItemType){
         mediaType = map['type'];
       } else {
-        mediaType = NoteTypeExtension.fromValue(map['type'])!;
+        mediaType = ItemTypeExtension.fromValue(map['type'])!;
       }
     }
     return ModelItem(

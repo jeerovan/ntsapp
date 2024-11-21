@@ -2,7 +2,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ntsapp/enum_note_type.dart';
+import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'common.dart';
@@ -69,7 +69,7 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
       if (file.existsSync()){
         Map<String,dynamic> attrs = await processAndGetFileAttributes(oldPath);
         String newPath = attrs["path"];
-        if (item.type == NoteType.image){
+        if (item.type == ItemType.image){
           Uint8List fileBytes = await File(newPath).readAsBytes();
           Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
           if(thumbnail != null){
@@ -81,7 +81,7 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
                                         "size":attrs["size"]};
           item.data = newData;
           item.update();
-        } else if (item.type == NoteType.audio){
+        } else if (item.type == ItemType.audio){
           String? duration = await getAudioDuration(newPath);
           if (duration != null){
             Map<String,dynamic> newData = {"path":newPath,
