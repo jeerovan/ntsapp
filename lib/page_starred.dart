@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:ntsapp/enum_note_type.dart';
 
 import 'model_item.dart';
 import 'model_setting.dart';
@@ -162,7 +163,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
                 itemCount: _items.length, // Additional item for the loading indicator
                 itemBuilder: (context, index) {
                   final item = _items[index];
-                  if (item.type == 170000){
+                  if (item.type == NoteType.date){
                     return ItemWidgetDate(item:item);
                   } else {
                     return GestureDetector(
@@ -200,19 +201,19 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   // Widget for displaying different item types
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
-      case 100000:
+      case NoteType.text:
         return ItemWidgetText(item:item);
-      case 110000:
+      case NoteType.image:
         return ItemWidgetImage(item:item,onTap: onItemTapped);
-      case 120000:
+      case NoteType.video:
         return ItemWidgetVideo(item:item,onTap: onItemTapped);
-      case 130000:
+      case NoteType.audio:
         return ItemWidgetAudio(item:item);
-      case 140000:
+      case NoteType.document:
         return ItemWidgetDocument(item: item, onTap: onItemTapped);
-      case 150000:
+      case NoteType.location:
         return ItemWidgetLocation(item:item,onTap: onItemTapped);
-      case 160000:
+      case NoteType.contact:
         return ItemWidgetContact(item:item,onTap: onItemTapped);
       default:
         return const SizedBox.shrink();

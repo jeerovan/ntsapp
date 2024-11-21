@@ -3,6 +3,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ntsapp/enum_note_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -609,18 +610,17 @@ class NotePreviewSummary extends StatelessWidget {
       return Icons.text_snippet;
     } else {
       switch (item!.type) {
-        case 100000:
+        case NoteType.text:
           return Icons.text_snippet;
-        case 110000:
-        case 110100:
+        case NoteType.image:
           return Icons.image;
-        case 120000:
+        case NoteType.video:
           return Icons.videocam;
-        case 130000:
+        case NoteType.audio:
           return Icons.audiotrack;
-        case 160000:
+        case NoteType.contact:
           return Icons.contact_phone;
-        case 150000:
+        case NoteType.location:
           return Icons.location_on;
         default: // Document
           return Icons.insert_drive_file;
@@ -633,16 +633,16 @@ class NotePreviewSummary extends StatelessWidget {
       return "So empty...";
     } else {
       switch (item!.type) {
-        case 100000:
+        case NoteType.text:
           return item!.text; // Text content
-        case 110000:
-        case 120000:
-        case 130000:
-        case 140000:
+        case NoteType.image:
+        case NoteType.video:
+        case NoteType.audio:
+        case NoteType.document:
           return item!.data!["name"]; // File name for media types
-        case 160000:
+        case NoteType.contact:
           return item!.data!["name"]; // Contact name
-        case 150000:
+        case NoteType.location:
           return "Location";
         default:
           return "Unknown";
@@ -662,9 +662,9 @@ class NotePreviewSummary extends StatelessWidget {
 
   Widget _previewImage(ModelItem item){
     switch (item.type) {
-        case 110000:
-        case 120000:
-        case 160000:
+        case NoteType.image:
+        case NoteType.video:
+        case NoteType.contact:
           return item.thumbnail == null
                  ? const SizedBox.shrink()
                  : ClipRRect(

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ntsapp/enum_note_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
@@ -125,7 +126,7 @@ class _PageItemsState extends State<PageItems> {
     });
   }
   void onItemTapped(ModelItem item){
-    if (item.type == 100000){
+    if (item.type == NoteType.text){
       onItemLongPressed(item);
     } else {
       setState(() {
@@ -233,7 +234,7 @@ class _PageItemsState extends State<PageItems> {
 
   // Handle adding item
   void _addItem(String text,
-                int type,
+                NoteType type,
                 Uint8List? thumbnail,
                 Map<String,dynamic>? data,
                 ) async {
@@ -299,7 +300,7 @@ class _PageItemsState extends State<PageItems> {
                                         "name":name,
                                         "size":attrs["size"]};
             String text = 'DND|#image|$name';
-            _addItem(text, 110000, thumbnail, data);
+            _addItem(text, NoteType.image, thumbnail, data);
           }
         case "video":
           VideoPlayerController controller = VideoPlayerController.file(File(newPath));
@@ -315,7 +316,7 @@ class _PageItemsState extends State<PageItems> {
                                         "aspect":aspect,
                                         "duration":duration};
             String text = 'DND|#video|$name';
-            _addItem(text, 120000, null, data);
+            _addItem(text, NoteType.video, null, data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
@@ -331,7 +332,7 @@ class _PageItemsState extends State<PageItems> {
                                         "size":attrs["size"],
                                         "duration":duration};
             String text = 'DND|#audio|$name';
-            _addItem(text, 130000, null, data);
+            _addItem(text, NoteType.audio, null, data);
           } else {
             debugPrint("Could not get duration");
           }
@@ -342,7 +343,7 @@ class _PageItemsState extends State<PageItems> {
                                       "name":name,
                                       "size":attrs["size"]};
           String text = 'DND|#document|$name';
-          _addItem(text, 140000, null, data);
+          _addItem(text, NoteType.document, null, data);
       }
     }
     hideProcessing();
@@ -416,7 +417,7 @@ class _PageItemsState extends State<PageItems> {
           LatLng position = value as LatLng;
           Map<String,dynamic> data = {"lat":position.latitude,
                                       "lng":position.longitude};
-          _addItem("DND|#location", 150000, null, data);
+          _addItem("DND|#location", NoteType.location, null, data);
         }
       });
     } else if (type == "contact"){
@@ -439,7 +440,7 @@ class _PageItemsState extends State<PageItems> {
                                       "emails":emails,
                                       "addresses":addresses
                                       };
-          _addItem(details, 160000, contact.thumbnail, data);
+          _addItem(details, NoteType.contact, contact.thumbnail, data);
         }
       });
     }
@@ -566,7 +567,7 @@ class _PageItemsState extends State<PageItems> {
                     itemCount: _items.length, // Additional item for the loading indicator
                     itemBuilder: (context, index) {
                       final item = _items[index];
-                      if (item.type == 170000){
+                      if (item.type == NoteType.date){
                         return ItemWidgetDate(item:item);
                       } else {
                         return Dismissible(
@@ -654,19 +655,19 @@ class _PageItemsState extends State<PageItems> {
   // Widget for displaying different item types
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
-      case 100000:
+      case NoteType.text:
         return ItemWidgetText(item:item);
-      case 110000:
+      case NoteType.image:
         return ItemWidgetImage(item:item,onTap: viewMedia);
-      case 120000:
+      case NoteType.video:
         return ItemWidgetVideo(item:item,onTap: viewMedia);
-      case 130000:
+      case NoteType.audio:
         return ItemWidgetAudio(item:item);
-      case 140000:
+      case NoteType.document:
         return ItemWidgetDocument(item: item, onTap: openItemMedia);
-      case 150000:
+      case NoteType.location:
         return ItemWidgetLocation(item:item,onTap: openLocation);
-      case 160000:
+      case NoteType.contact:
         return ItemWidgetContact(item:item,onTap:addToContacts);
       default:
         return const SizedBox.shrink();
@@ -867,7 +868,7 @@ class _PageItemsState extends State<PageItems> {
                         ? () {
                             final String text = _textController.text.trim();
                             if (text.isNotEmpty) {
-                              _addItem(text, 100000, null, null);
+                              _addItem(text, NoteType.text, null, null);
                               _textController.clear();
                               _onInputTextChanged("");
                             }

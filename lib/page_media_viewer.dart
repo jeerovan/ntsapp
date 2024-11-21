@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:ntsapp/enum_note_type.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
 
@@ -117,7 +118,7 @@ class _PageMediaState extends State<PageMedia> {
     }
     Widget widget = const SizedBox.shrink();
     switch (item.type){
-      case 110000: // image
+      case NoteType.image: // image
         widget = fileAvailable
                   ? Image.file(
                       file,
@@ -127,7 +128,7 @@ class _PageMediaState extends State<PageMedia> {
                       item.thumbnail!,
                       fit: BoxFit.cover,
                     );
-      case 120000: // video
+      case NoteType.video: // video
         widget = fileAvailable
                   ? WidgetVideo(videoPath: item.data!["path"])
                   : Image.file(

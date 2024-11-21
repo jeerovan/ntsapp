@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/enum_note_type.dart';
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
@@ -148,19 +149,19 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildItem(ModelSearchItem search) {
     ModelItem item = search.item;
     switch (item.type) {
-      case 100000:
+      case NoteType.text:
         return _buildTextItem(search);
-      case 110000:
+      case NoteType.image:
         return _buildImageItem(search);
-      case 120000:
+      case NoteType.video:
         return _buildVideoItem(search);
-      case 130000:
+      case NoteType.audio:
         return _buildAudioItem(search);
-      case 140000:
+      case NoteType.document:
         return _buildDocumentItem(search);
-      case 150000:
+      case NoteType.location:
         return _buildLocationItem(search);
-      case 160000:
+      case NoteType.contact:
         return _buildContactItem(search);
       default:
         return const SizedBox.shrink();

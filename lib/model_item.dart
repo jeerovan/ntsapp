@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:ntsapp/enum_note_type.dart';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
@@ -13,7 +14,7 @@ class ModelItem {
   String text;
   Uint8List? thumbnail;
   int? starred;
-  int type;
+  NoteType type;
   int? state;
   Map<String,dynamic>? data;
   ModelItem? replyOn;
@@ -37,7 +38,7 @@ class ModelItem {
       text:"",
       thumbnail:null,
       starred: 0,
-      type: 100000,
+      type: NoteType.text,
       state:0,
       data: {"path":"assets/image.webp"},
       replyOn: null,
@@ -51,7 +52,7 @@ class ModelItem {
       'text':text,
       'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'starred':starred,
-      'type':type,
+      'type':type.value,
       'state':state,
       'data':data == null ? null : data is String ? data : jsonEncode(data),
       'at':at,
@@ -82,13 +83,21 @@ class ModelItem {
         thumbnail = map["thumbnail"];
       }
     }
+    late NoteType mediaType;
+    if (map.containsKey('type')) {
+      if (map['type'] is NoteType){
+        mediaType = map['type'];
+      } else {
+        mediaType = NoteTypeExtension.fromValue(map['type'])!;
+      }
+    }
     return ModelItem(
       id:map.containsKey('id') ? map['id'] : uuid.v4(),
       groupId:map.containsKey('group_id') ? map['group_id'] : "",
       text:map.containsKey('text') ? map['text'] : "",
       thumbnail:thumbnail,
       starred: map.containsKey('starred') ? map['starred'] : 0,
-      type: map.containsKey('type') ? map['type'] : 100000,
+      type: mediaType,
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
       replyOn: replyOn,

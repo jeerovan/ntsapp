@@ -281,29 +281,6 @@ String colorToHex(Color color) {
   return '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
 }
 
-int getMessageType(String? mime){
-  if(mime != null){
-    String type = mime.split("/").first;
-    switch(type){
-      case "image":
-        return 110000;
-      case "video":
-        return 120000;
-      case "audio":
-        return 130000;
-      case "document":
-        return 140000;
-      case "location":
-        return 150000;
-      case "contact":
-        return 160000;
-      default:
-        return 100000;
-    }
-  }
-  return 100000;
-}
-
 Future<File?> getFile(String fileType,String fileName) async {
   String filePath = await getMediaPath(fileType,fileName);
   File file = File(filePath);
