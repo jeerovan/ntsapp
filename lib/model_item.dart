@@ -180,8 +180,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "type != 170000 AND group_id = ?",
-      whereArgs: [groupId],
+      where: "type >= ? AND type < ? AND group_id = ?",
+      whereArgs: [ItemType.text.value,ItemType.date.value,groupId],
       orderBy:'at DESC',
       limit: 1,
     );
@@ -227,8 +227,8 @@ class ModelItem {
     String comparison = up ? '<' : '>';
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id = ? AND at $comparison (SELECT at from item WHERE id = ?)",
-      whereArgs: [groupId,itemId],
+      where: "type >= ? AND type <= ? AND group_id = ? AND at $comparison (SELECT at from item WHERE id = ?)",
+      whereArgs: [ItemType.text.value,ItemType.date.value,groupId,itemId],
       orderBy:'at $orderBy',
       limit: limit,
     );
@@ -239,8 +239,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id = ?",
-      whereArgs: [groupId],
+      where: "group_id = ? AND type >= ? AND type <= ?",
+      whereArgs: [groupId,ItemType.text.value,ItemType.date.value],
       orderBy:'at DESC',
       offset: offset,
       limit: limit,
@@ -277,6 +277,7 @@ class ModelItem {
       "item",
       where: "group_id = ? AND type >= ? AND type < ?",
       whereArgs: [groupId,ItemType.task.value,ItemType.task.value+10000],
+      orderBy: "type ASC,at DESC"
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
@@ -294,8 +295,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id = ? AND text = ?",
-      whereArgs: [groupId,date],
+      where: "group_id = ? AND text = ? AND type = ?",
+      whereArgs: [groupId,date,ItemType.date.value],
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
@@ -304,7 +305,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "type = 110000 OR type = 130000",
+      where: "type = ? OR type = ?",
+      whereArgs: [ItemType.image.value,ItemType.audio.value]
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

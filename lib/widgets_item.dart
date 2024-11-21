@@ -718,3 +718,47 @@ class NotePreviewSummary extends StatelessWidget {
     );
   }
 }
+
+class ItemWidgetTask extends StatefulWidget {
+  final ModelItem item;
+  const ItemWidgetTask({
+    super.key,
+    required this.item});
+
+  @override
+  State<ItemWidgetTask> createState() => _ItemWidgetTaskState();
+}
+
+class _ItemWidgetTaskState extends State<ItemWidgetTask> {
+
+  Future<void> onItemTap(ModelItem item) async {
+    if (item.type == ItemType.task){
+      item.type = ItemType.completedTask;
+    } else {
+      item.type = ItemType.task;
+    }
+    setState(() {
+      item.update();
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: (){
+        onItemTap(widget.item);
+      },
+      child: ListTile(
+              leading: Icon(
+                widget.item.type == ItemType.completedTask
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color:widget.item.type == ItemType.task ? Theme.of(context).colorScheme.inversePrimary : Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
+                widget.item.text,
+              ),
+            ),
+    );
+  }
+}

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/widgets_item.dart';
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
@@ -163,9 +164,31 @@ class SearchPageState extends State<SearchPage> {
         return _buildLocationItem(search);
       case ItemType.contact:
         return _buildContactItem(search);
+      case ItemType.completedTask:
+        return _buildTaskItem(search);
+      case ItemType.task:
+        return _buildTaskItem(search);
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildTaskItem(ModelSearchItem search){
+    ModelItem item = search.item;
+    return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Breadcrumbs
+              Text(
+                  '${search.category!.title} > ${search.group!.title}',
+                  style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              ItemWidgetTask(item: item),
+            ]
+          );
   }
 
   Widget _buildTextItem(ModelSearchItem search){

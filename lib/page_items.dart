@@ -90,6 +90,7 @@ class _PageItemsState extends State<PageItems> {
   Future<void> initialFetchItems(String? itemId) async {
     List<ModelItem> newItems;
     if (itemId != null){
+      canScrollToBottom = true;
       newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
     } else {
       newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit);
@@ -100,6 +101,7 @@ class _PageItemsState extends State<PageItems> {
       _itemScrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
     List<ModelItem> taskItems = await ModelItem.getTasksInGroup(widget.groupId);
+    _tasks.clear();
     _tasks.addAll(taskItems);
   }
 
@@ -470,6 +472,7 @@ class _PageItemsState extends State<PageItems> {
   void setTaskMode(){
     setState(() {
       isEditingTasks = !isEditingTasks;
+      canScrollToBottom = false;
     });
   }
 
@@ -500,6 +503,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> showHideScrollToBottomButton(double scrolledHeight) async {
+    if(!mounted)return;
     setState(() {
       if (scrolledHeight > 100){
         canScrollToBottom = true;
@@ -562,18 +566,19 @@ class _PageItemsState extends State<PageItems> {
                 ),
               ),
       ),
-      body: Stack(
+      body: Column(
         children: [
           // Items view (displaying the messages)
-          Column(
-            children: [
-              Expanded(
-                child: NotificationListener<ScrollNotification>(
+          Expanded(
+            child: Stack(
+              children:[
+                if(!isEditingTasks)
+                NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
                       scrollFetchItems(true);
                     } else if (scrollInfo.metrics.pixels == scrollInfo.metrics.minScrollExtent) {
-                        scrollFetchItems(false);
+                      scrollFetchItems(false);
                     }
                     showHideScrollToBottomButton(scrollInfo.metrics.pixels);
                     return false;
@@ -645,27 +650,36 @@ class _PageItemsState extends State<PageItems> {
                     },
                   ),
                 ),
-              ),
-              // Input box with attachments and send button
-              isSelecting ? _buildSelectionClear() : _buildInputBox(),
-            ],
-          ),
-          if(canScrollToBottom)Positioned(
-            bottom: 100, // Adjust for FAB height and margin
-            right: 20,
-            child: FloatingActionButton(
-              heroTag: "scrollToBottom",
-              mini: true,
-              onPressed: () {
-                initialFetchItems(null);
-              },
-              shape: const CircleBorder(),
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              child: const Icon(Icons.keyboard_double_arrow_down),
+                if(isEditingTasks)
+                ListView.builder(
+                  reverse: true,
+                  itemCount: _tasks.length,
+                  itemBuilder: (context, index) {
+                    ModelItem item = _tasks[index];
+                    return _buildItem(item);
+                  }
+                ),
+                if(canScrollToBottom)Positioned(
+                  bottom: 20, // Adjust for FAB height and margin
+                  right: 20,
+                  child: FloatingActionButton(
+                    heroTag: "scrollToBottom",
+                    mini: true,
+                    onPressed: () {
+                      initialFetchItems(null);
+                    },
+                    shape: const CircleBorder(),
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    child: const Icon(Icons.keyboard_double_arrow_down),
+                  ),
+                ),
+              ],
             ),
           ),
+          // Input box with attachments and send button
+          isSelecting ? _buildSelectionClear() : _buildInputBox(),
         ],
-      ), 
+      ),
     );
   }
 
@@ -686,6 +700,10 @@ class _PageItemsState extends State<PageItems> {
         return ItemWidgetLocation(item:item,onTap: openLocation);
       case ItemType.contact:
         return ItemWidgetContact(item:item,onTap:addToContacts);
+      case ItemType.completedTask:
+        return ItemWidgetTask(item: item);
+      case ItemType.task:
+        return ItemWidgetTask(item: item);
       default:
         return const SizedBox.shrink();
     }
@@ -739,7 +757,7 @@ class _PageItemsState extends State<PageItems> {
               controller: controller,
               options: const IOS7SiriWaveformOptions(
                 height: 50,
-                width: 170
+                width: 150
               ),
           ),
           Text(
@@ -857,14 +875,14 @@ class _PageItemsState extends State<PageItems> {
                 ],
               ),
           ),
-          if(!isEditingTasks)GestureDetector(
+          GestureDetector(
             onLongPress: () async {
-              if (!_isTyping) {
+              if (!_isTyping && !isEditingTasks) {
                 await _startRecording();
               }
             },
             onLongPressUp: () async {
-              if (_isRecording) {
+              if (_isRecording && !isEditingTasks) {
                 await _stopRecording();
               }
             },
@@ -882,7 +900,7 @@ class _PageItemsState extends State<PageItems> {
                   alignment: Alignment.center,
                   child: IconButton(
                     icon: Icon(
-                      _isTyping ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
+                      _isTyping || isEditingTasks ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
                       color: Colors.black,
                     ),
                     onPressed: _isTyping
