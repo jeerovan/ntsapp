@@ -42,6 +42,7 @@ class _PageItemsState extends State<PageItems> {
   bool isSelecting = false;
   bool selectionHasStarredItems = true;
   bool selectionHasTaskItems = true;
+  bool selectionHasNonTaskItem = false;
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _itemScrollController = ScrollController();
@@ -123,12 +124,16 @@ class _PageItemsState extends State<PageItems> {
   void updateSelectionBools() {
     selectionHasStarredItems = true;
     selectionHasTaskItems = true;
+    selectionHasNonTaskItem = false;
     for (ModelItem item in _selection){
       if (item.starred == 0){
         selectionHasStarredItems = false;
       }
       if (item.type.value < ItemType.task.value || item.type.value > ItemType.task.value+10000){
         selectionHasTaskItems = false;
+      }
+      if (item.type.value > ItemType.text.value && item.type.value < ItemType.task.value) {
+        selectionHasNonTaskItem = true;
       }
     }
   }
@@ -505,6 +510,7 @@ class _PageItemsState extends State<PageItems> {
 
   List<Widget> _buildSelectionOptions(){
     return [
+      if(!selectionHasNonTaskItem)
       IconButton(
         onPressed: () { updateSelectedItemsTaskType();},
         icon: selectionHasTaskItems ? const Icon(Icons.title) : const Icon(Icons.check_circle),
@@ -663,13 +669,11 @@ class _PageItemsState extends State<PageItems> {
                                         onTap: (){
                                           initialFetchItems(item.replyOn!.id);
                                         },
-                                        child: Flexible(
-                                          child: NotePreviewSummary(
-                                              item:item.replyOn!,
-                                              showImagePreview: true,
-                                              showTimestamp: false,
-                                              expanded: false,),
-                                        ),
+                                        child: NotePreviewSummary(
+                                            item:item.replyOn!,
+                                            showImagePreview: true,
+                                            showTimestamp: false,
+                                            expanded: false,),
                                       ),
                                       _buildItem(item),
                                     ],

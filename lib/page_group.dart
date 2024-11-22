@@ -309,23 +309,29 @@ class _PageGroupState extends State<PageGroup> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem<int>(
+              PopupMenuItem<int>(
                 value: 1,
                 child: Row(
                   children: [
-                    Icon(Icons.star_outline),
-                    SizedBox(width: 5,),
-                    Text('Starred Notes'),
+                    Icon(
+                      Icons.star_outline,
+                      color: Theme.of(context).colorScheme.primary,
+                      ),
+                    const SizedBox(width: 5,),
+                    const Text('Starred Notes'),
                   ],
                 ),
               ),
-              const PopupMenuItem<int>(
+              PopupMenuItem<int>(
                 value: 0,
                 child: Row(
                   children: [
-                    Icon(Icons.settings),
-                    SizedBox(width: 5,),
-                    Text('Settings'),
+                    Icon(
+                      Icons.settings,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 5,),
+                    const Text('Settings'),
                   ],
                 ),
               ),
