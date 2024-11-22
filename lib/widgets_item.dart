@@ -564,6 +564,10 @@ class NotePreviewSummary extends StatelessWidget {
           return Icons.contact_phone;
         case ItemType.location:
           return Icons.location_on;
+        case ItemType.task:
+          return Icons.radio_button_unchecked;
+        case ItemType.completedTask:
+          return Icons.check_circle;
         default: // Document
           return Icons.insert_drive_file;
       }
@@ -586,6 +590,9 @@ class NotePreviewSummary extends StatelessWidget {
           return item!.data!["name"]; // Contact name
         case ItemType.location:
           return "Location";
+        case ItemType.task:
+        case ItemType.completedTask:
+          return item!.text;
         default:
           return "Unknown";
       }
@@ -643,11 +650,13 @@ class NotePreviewSummary extends StatelessWidget {
               style: const TextStyle(fontSize: 12,),
             ),
           )
-        : Text(
-          _getMessageText(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis, // Ellipsis for long text
-          style: const TextStyle(fontSize: 12,),
+        : Flexible(
+          child: Text(
+            _getMessageText(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis, // Ellipsis for long text
+            style: const TextStyle(fontSize: 12,),
+          ),
         ),
         const SizedBox(width: 8),
         if(showImagePreview!)_previewImage(item!),

@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:ntsapp/enum_item_type.dart';
@@ -627,11 +626,13 @@ class _PageItemsState extends State<PageItems> {
                                         onTap: (){
                                           initialFetchItems(item.replyOn!.id);
                                         },
-                                        child: NotePreviewSummary(
-                                            item:item.replyOn!,
-                                            showImagePreview: true,
-                                            showTimestamp: false,
-                                            expanded: false,),
+                                        child: Flexible(
+                                          child: NotePreviewSummary(
+                                              item:item.replyOn!,
+                                              showImagePreview: true,
+                                              showTimestamp: false,
+                                              expanded: false,),
+                                        ),
                                       ),
                                       _buildItem(item),
                                     ],
@@ -804,10 +805,10 @@ class _PageItemsState extends State<PageItems> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: FaIcon(
-              isCreatingTask ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck,
+            icon: Icon(
+              Icons.check_circle,
               color:isCreatingTask ? null : Theme.of(context).colorScheme.inversePrimary,
-              ),
+            ),
             onPressed: () {
               setTaskMode();
             },

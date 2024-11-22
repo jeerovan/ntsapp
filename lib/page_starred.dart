@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 
 import 'model_item.dart';
@@ -131,7 +132,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       children: [
         IconButton(
           onPressed: () { markSelectedUnStarred();},
-          icon: const Icon(Icons.star_outline),
+          icon: iconStarCrossed(),
         ),
         const SizedBox(width: 5,),
         IconButton(

@@ -552,3 +552,37 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
     return spans;
   }
 }
+
+Widget iconStarCrossed(){
+  return Stack(
+    alignment: Alignment.center, // Align icons at the center
+    children: [
+      const Icon(
+        Icons.star_outline_sharp,
+      ),
+      Transform.rotate(
+        angle: 0.785398, // Angle in radians (e.g., 45 degrees = π/4 ≈ 0.785398)
+        child: const Icon(
+          Icons.horizontal_rule_sharp,
+          size:30
+        ),
+      ),
+    ],
+  );
+}
+Widget iconPinCrossed(){
+  return Stack(
+    alignment: Alignment.center, // Align icons at the center
+    children: [
+      const Icon(
+        Icons.push_pin_outlined,
+      ),
+      Transform.rotate(
+        angle: 0.785398, // Angle in radians (e.g., 45 degrees = π/4 ≈ 0.785398)
+        child: const Icon(
+          Icons.horizontal_rule_sharp,
+        ),
+      ),
+    ],
+  );
+}

@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
 import 'common.dart';
@@ -334,9 +334,7 @@ class _PageGroupState extends State<PageGroup> {
     return [
         IconButton(
           onPressed: () {setPinnedStatus();},
-          icon: FaIcon(
-            selectionHasPinnedGroup ? FontAwesomeIcons.thumbtackSlash : FontAwesomeIcons.thumbtack,
-            size: 18,),
+          icon: selectionHasPinnedGroup ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
         ),
         const SizedBox(width: 5,),
         IconButton(
@@ -418,7 +416,7 @@ class _PageGroupState extends State<PageGroup> {
                               overflow: TextOverflow.ellipsis, 
                               ),
                           ),
-                          item.pinned == 1 ? const FaIcon(FontAwesomeIcons.thumbtack,size: 10,) : const SizedBox.shrink(),
+                          if(item.pinned == 1)const Icon(Icons.push_pin_outlined,size: 12,),
                         ],
                       ),
                       subtitle: NotePreviewSummary(

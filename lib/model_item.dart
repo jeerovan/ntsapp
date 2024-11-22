@@ -181,7 +181,7 @@ class ModelItem {
     List<Map<String,dynamic>> rows = await db.query(
       "item",
       where: "type >= ? AND type < ? AND group_id = ?",
-      whereArgs: [ItemType.text.value,ItemType.date.value,groupId],
+      whereArgs: [ItemType.text.value,ItemType.task.value+10000,groupId],
       orderBy:'at DESC',
       limit: 1,
     );
