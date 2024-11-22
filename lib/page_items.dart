@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/widgets_item.dart';
@@ -39,6 +40,9 @@ class _PageItemsState extends State<PageItems> {
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
   bool isSelecting = false;
+  bool selectionHasStarredItems = true;
+  bool selectionHasTaskItems = true;
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _itemScrollController = ScrollController();
   ModelGroup? group;
@@ -116,6 +120,18 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
+  void updateSelectionBools() {
+    selectionHasStarredItems = true;
+    selectionHasTaskItems = true;
+    for (ModelItem item in _selection){
+      if (item.starred == 0){
+        selectionHasStarredItems = false;
+      }
+      if (item.type.value < ItemType.task.value || item.type.value > ItemType.task.value+10000){
+        selectionHasTaskItems = false;
+      }
+    }
+  }
   void onItemLongPressed(ModelItem item){
     setState(() {
       if (_selection.contains(item)) {
@@ -127,6 +143,7 @@ class _PageItemsState extends State<PageItems> {
         _selection.add(item);
         if (!isSelecting) isSelecting = true;
       }
+      updateSelectionBools();
     });
   }
   void onItemTapped(ModelItem item) async {
@@ -141,6 +158,7 @@ class _PageItemsState extends State<PageItems> {
         } else {
           _selection.add(item);
         }
+        updateSelectionBools();
       } else if (item.type == ItemType.task){
         item.type = ItemType.completedTask;
         await item.update();
@@ -162,10 +180,24 @@ class _PageItemsState extends State<PageItems> {
     });
     clearSelection();
   }
-  Future<void> markSelectedItemsStarred() async {
+  Future<void> updateSelectedItemsStar() async {
     setState(() {
       for (ModelItem item in _selection){
-        item.starred = 1;
+        item.starred = selectionHasStarredItems ? 0 : 1;
+        item.update();
+      }
+    });
+    clearSelection();
+  }
+  Future<void> updateSelectedItemsTaskType() async {
+    ItemType setType = selectionHasTaskItems ? ItemType.text : ItemType.task;
+    setState(() {
+      for (ModelItem item in _selection){
+        if(setType == ItemType.text){
+          item.type = setType;
+        } else if (setType == ItemType.task){
+          if (item.type == ItemType.text) item.type = setType;
+        }
         item.update();
       }
     });
@@ -473,17 +505,22 @@ class _PageItemsState extends State<PageItems> {
 
   List<Widget> _buildSelectionOptions(){
     return [
-        IconButton(
-          onPressed: () { markSelectedItemsStarred();},
-          icon: const Icon(Icons.star),
-        ),
-        const SizedBox(width: 5,),
-        IconButton(
-          onPressed: (){deleteSelectedItems();},
-          icon: const Icon(Icons.delete_outlined),
-        ),
-        const SizedBox(width: 5,),
-      ];
+      IconButton(
+        onPressed: () { updateSelectedItemsTaskType();},
+        icon: selectionHasTaskItems ? const Icon(Icons.title) : const Icon(Icons.check_circle),
+      ),
+      const SizedBox(width: 5,),
+      IconButton(
+        onPressed: () { updateSelectedItemsStar();},
+        icon: selectionHasStarredItems ? iconStarCrossed() : const Icon(Icons.star_outline),
+      ),
+      const SizedBox(width: 5,),
+      IconButton(
+        onPressed: (){deleteSelectedItems();},
+        icon: const Icon(Icons.delete_outlined),
+      ),
+      const SizedBox(width: 5,),
+    ];
   }
 
   Future<void> replyOnSwipe(ModelItem item) async {

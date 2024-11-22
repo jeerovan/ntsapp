@@ -564,7 +564,7 @@ Widget iconStarCrossed(){
         angle: 0.785398, // Angle in radians (e.g., 45 degrees = π/4 ≈ 0.785398)
         child: const Icon(
           Icons.horizontal_rule_sharp,
-          size:30
+          
         ),
       ),
     ],
