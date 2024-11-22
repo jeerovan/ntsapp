@@ -1,11 +1,9 @@
 
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
@@ -65,12 +63,7 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
     return Column(
       crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: TextSpan(
-            children: _buildTextWithLinks(context, item.text),
-          ),
-          textAlign: TextAlign.left,
-        ),
+        WidgetTextWithLinks(text: item.text),
         const SizedBox(height: 5),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -86,58 +79,7 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
       ],
     );
   }
-  List<TextSpan> _buildTextWithLinks(BuildContext context, String text) {
-    final List<TextSpan> spans = [];
-    final RegExp linkRegExp = RegExp(r'(https?://[^\s]+)');
-    final matches = linkRegExp.allMatches(text);
-
-    int lastMatchEnd = 0;
-
-    for (final match in matches) {
-      final start = match.start;
-      final end = match.end;
-
-      // Add plain text before the link
-      if (start > lastMatchEnd) {
-        spans.add(TextSpan(
-          text: text.substring(lastMatchEnd, start),
-          style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        );
-      }
-
-      // Add the link text
-      final linkText = text.substring(start, end);
-      final linkUri = Uri.parse(linkText);
-      spans.add(TextSpan(
-        text: linkText,
-        style: const TextStyle(
-          color: Colors.blue,
-          decoration: TextDecoration.underline,
-        ),
-        recognizer: TapGestureRecognizer()
-          ..onTap = () async {
-            if (await canLaunchUrl(linkUri)) {
-              await launchUrl(linkUri);
-            } else {
-              debugPrint("Could not launch $linkText");
-            }
-          },
-      ));
-
-      lastMatchEnd = end;
-    }
-
-    // Add the remaining plain text after the last link
-    if (lastMatchEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastMatchEnd),
-        style: Theme.of(context).textTheme.bodyLarge,
-      ));
-    }
-
-    return spans;
-  }
+  
 }
 
 class ItemWidgetImage extends StatefulWidget {
@@ -730,35 +672,39 @@ class ItemWidgetTask extends StatefulWidget {
 }
 
 class _ItemWidgetTaskState extends State<ItemWidgetTask> {
-
-  Future<void> onItemTap(ModelItem item) async {
-    if (item.type == ItemType.task){
-      item.type = ItemType.completedTask;
-    } else {
-      item.type = ItemType.task;
-    }
-    setState(() {
-      item.update();
-    });
-  }
   
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: (){
-        onItemTap(widget.item);
-      },
-      child: ListTile(
-              leading: Icon(
-                widget.item.type == ItemType.completedTask
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                color:widget.item.type == ItemType.task ? Theme.of(context).colorScheme.inversePrimary : Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(
-                widget.item.text,
-              ),
+    bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
+    return Column(
+      crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              widget.item.type == ItemType.completedTask
+                  ? Icons.check_circle
+                  : Icons.radio_button_unchecked,
+            color:widget.item.type == ItemType.task ? Theme.of(context).colorScheme.inversePrimary : Theme.of(context).colorScheme.primary,
             ),
+            const SizedBox(width:10),
+            Flexible(child: WidgetTextWithLinks(text: widget.item.text)),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            widget.item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
+            const SizedBox(width:5),
+            Text(
+              getFormattedTime(widget.item.at!),
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

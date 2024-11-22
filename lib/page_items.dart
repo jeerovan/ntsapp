@@ -39,7 +39,6 @@ class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
-  final List<ModelItem> _tasks = [];
   bool isSelecting = false;
   final TextEditingController _textController = TextEditingController();
   final ScrollController _itemScrollController = ScrollController();
@@ -60,7 +59,7 @@ class _PageItemsState extends State<PageItems> {
 
   bool canScrollToBottom = false;
 
-  bool isEditingTasks = false;
+  bool isCreatingTask = false;
 
   @override
   void initState() {
@@ -93,6 +92,7 @@ class _PageItemsState extends State<PageItems> {
       canScrollToBottom = true;
       newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
     } else {
+      canScrollToBottom = false;
       newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit);
     }
     setState(() {
@@ -100,9 +100,6 @@ class _PageItemsState extends State<PageItems> {
       _items.addAll(newItems);
       _itemScrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
-    List<ModelItem> taskItems = await ModelItem.getTasksInGroup(widget.groupId);
-    _tasks.clear();
-    _tasks.addAll(taskItems);
   }
 
   Future<void> scrollFetchItems(bool up) async {
@@ -133,23 +130,26 @@ class _PageItemsState extends State<PageItems> {
       }
     });
   }
-  void onItemTapped(ModelItem item){
-    if (item.type == ItemType.text){
-      onItemLongPressed(item);
-    } else {
-      setState(() {
-        if (isSelecting){
-          if (_selection.contains(item)) {
-            _selection.remove(item);
-            if (_selection.isEmpty){
-              isSelecting = false;
-            }
-          } else {
-            _selection.add(item);
+  void onItemTapped(ModelItem item) async {
+      if (item.type == ItemType.text){
+        onItemLongPressed(item);
+      } else if (isSelecting){
+        if (_selection.contains(item)) {
+          _selection.remove(item);
+          if (_selection.isEmpty){
+            isSelecting = false;
           }
+        } else {
+          _selection.add(item);
         }
-      });
-    }
+      } else if (item.type == ItemType.task){
+        item.type = ItemType.completedTask;
+        await item.update();
+      } else if (item.type == ItemType.completedTask){
+        item.type = ItemType.task;
+        await item.update();
+      }
+    setState(() {});
   }
 
   Future<void> deleteSelectedItems() async {
@@ -265,12 +265,8 @@ class _PageItemsState extends State<PageItems> {
     await item.insert();
     setState(() {
       // update view
-      if (type == ItemType.task){
-        _tasks.insert(0, item);
-      } else {
-        _items.insert(0, item);
-        replyOnItem = null;
-      }
+      _items.insert(0, item);
+      replyOnItem = null;
     });
     // update this group's last accessed at
     ModelGroup? group = await ModelGroup.get(widget.groupId);
@@ -471,7 +467,7 @@ class _PageItemsState extends State<PageItems> {
 
   void setTaskMode(){
     setState(() {
-      isEditingTasks = !isEditingTasks;
+      isCreatingTask = !isCreatingTask;
       canScrollToBottom = false;
     });
   }
@@ -572,7 +568,6 @@ class _PageItemsState extends State<PageItems> {
           Expanded(
             child: Stack(
               children:[
-                if(!isEditingTasks)
                 NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
@@ -650,15 +645,6 @@ class _PageItemsState extends State<PageItems> {
                     },
                   ),
                 ),
-                if(isEditingTasks)
-                ListView.builder(
-                  reverse: true,
-                  itemCount: _tasks.length,
-                  itemBuilder: (context, index) {
-                    ModelItem item = _tasks[index];
-                    return _buildItem(item);
-                  }
-                ),
                 if(canScrollToBottom)Positioned(
                   bottom: 20, // Adjust for FAB height and margin
                   right: 20,
@@ -701,9 +687,9 @@ class _PageItemsState extends State<PageItems> {
       case ItemType.contact:
         return ItemWidgetContact(item:item,onTap:addToContacts);
       case ItemType.completedTask:
-        return ItemWidgetTask(item: item);
+        return ItemWidgetTask(item: item,);
       case ItemType.task:
-        return ItemWidgetTask(item: item);
+        return ItemWidgetTask(item: item,);
       default:
         return const SizedBox.shrink();
     }
@@ -819,8 +805,8 @@ class _PageItemsState extends State<PageItems> {
         children: [
           IconButton(
             icon: FaIcon(
-              isEditingTasks ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck,
-              color:isEditingTasks ? null : Theme.of(context).colorScheme.inversePrimary,
+              isCreatingTask ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck,
+              color:isCreatingTask ? null : Theme.of(context).colorScheme.inversePrimary,
               ),
             onPressed: () {
               setTaskMode();
@@ -862,13 +848,13 @@ class _PageItemsState extends State<PageItems> {
                     keyboardType: TextInputType.multiline,
                     decoration: InputDecoration(
                       filled: true,
-                      hintText: isEditingTasks ? "Create a task." : "What's on your mind?",
+                      hintText: isCreatingTask ? "Create a task." : "What's on your mind?",
                       fillColor: Theme.of(context).colorScheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25.0),
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                      suffixIcon: isEditingTasks ? const SizedBox.shrink() : _buildInputSuffix(),
+                      suffixIcon: isCreatingTask ? const SizedBox.shrink() : _buildInputSuffix(),
                     ),
                     onChanged: (value) => _onInputTextChanged(value),
                   ),
@@ -877,12 +863,12 @@ class _PageItemsState extends State<PageItems> {
           ),
           GestureDetector(
             onLongPress: () async {
-              if (!_isTyping && !isEditingTasks) {
+              if (!_isTyping && !isCreatingTask) {
                 await _startRecording();
               }
             },
             onLongPressUp: () async {
-              if (_isRecording && !isEditingTasks) {
+              if (_isRecording && !isCreatingTask) {
                 await _stopRecording();
               }
             },
@@ -900,14 +886,14 @@ class _PageItemsState extends State<PageItems> {
                   alignment: Alignment.center,
                   child: IconButton(
                     icon: Icon(
-                      _isTyping || isEditingTasks ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
+                      _isTyping || isCreatingTask ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
                       color: Colors.black,
                     ),
                     onPressed: _isTyping
                         ? () {
                             final String text = _textController.text.trim();
                             if (text.isNotEmpty) {
-                              ItemType itemType = isEditingTasks ? ItemType.task : ItemType.text;
+                              ItemType itemType = isCreatingTask ? ItemType.task : ItemType.text;
                               _addItem(text, itemType, null, null);
                               _textController.clear();
                               _onInputTextChanged("");

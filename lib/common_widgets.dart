@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chewie/chewie.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'common.dart';
 import 'package:video_player/video_player.dart';
 
@@ -473,4 +475,80 @@ Widget widgetAudioDetails(ModelItem item){
       ),
     ],
   );
+}
+
+class WidgetTextWithLinks extends StatefulWidget {
+  final String text;
+  final TextAlign? align;
+  const WidgetTextWithLinks({super.key,required this.text,this.align});
+
+  @override
+  State<WidgetTextWithLinks> createState() => _WidgetTextWithLinksState();
+}
+
+class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+          softWrap: true,
+          overflow: TextOverflow.visible,
+          text: TextSpan(
+            children: _buildTextWithLinks(context, widget.text),
+          ),
+          textAlign: widget.align == null ? TextAlign.left : widget.align!,
+        );
+  }
+
+  List<TextSpan> _buildTextWithLinks(BuildContext context, String text) {
+    final List<TextSpan> spans = [];
+    final RegExp linkRegExp = RegExp(r'(https?://[^\s]+)');
+    final matches = linkRegExp.allMatches(text);
+
+    int lastMatchEnd = 0;
+
+    for (final match in matches) {
+      final start = match.start;
+      final end = match.end;
+
+      // Add plain text before the link
+      if (start > lastMatchEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastMatchEnd, start),
+          style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        );
+      }
+
+      // Add the link text
+      final linkText = text.substring(start, end);
+      final linkUri = Uri.parse(linkText);
+      spans.add(TextSpan(
+        text: linkText,
+        style: const TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+        ),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () async {
+            if (await canLaunchUrl(linkUri)) {
+              await launchUrl(linkUri);
+            } else {
+              debugPrint("Could not launch $linkText");
+            }
+          },
+      ));
+
+      lastMatchEnd = end;
+    }
+
+    // Add the remaining plain text after the last link
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastMatchEnd),
+        style: Theme.of(context).textTheme.bodyLarge,
+      ));
+    }
+
+    return spans;
+  }
 }

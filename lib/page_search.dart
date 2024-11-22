@@ -186,7 +186,7 @@ class SearchPageState extends State<SearchPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              ItemWidgetTask(item: item),
+              ItemWidgetTask(item: item,),
             ]
           );
   }

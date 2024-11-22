@@ -239,8 +239,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id = ? AND type >= ? AND type <= ?",
-      whereArgs: [groupId,ItemType.text.value,ItemType.date.value],
+      where: "group_id = ? AND type >= ? AND type < ?",
+      whereArgs: [groupId,ItemType.text.value,ItemType.task.value+10000],
       orderBy:'at DESC',
       offset: offset,
       limit: limit,
@@ -267,17 +267,6 @@ class ModelItem {
       orderBy:'at DESC',
       offset: offset,
       limit: limit,
-    );
-    return await Future.wait(rows.map((map) => fromMap(map)));
-  }
-  static Future<List<ModelItem>> getTasksInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    List<Map<String,dynamic>> rows = await db.query(
-      "item",
-      where: "group_id = ? AND type >= ? AND type < ?",
-      whereArgs: [groupId,ItemType.task.value,ItemType.task.value+10000],
-      orderBy: "type ASC,at DESC"
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
