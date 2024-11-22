@@ -77,7 +77,8 @@ class SettingsPageState extends State<SettingsPage> {
     String status = "";
     Directory directory = await getApplicationDocumentsDirectory();
     String dirPath = directory.path;
-    String backupFilePath = path.join(dirPath,"ntsbackup.zip");
+    String today = getTodayDate();
+    String backupFilePath = path.join(dirPath,"ntsbackup_$today.zip");
     File backupFile = File(backupFilePath);
     if(!backupFile.existsSync()){
       try {
