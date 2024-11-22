@@ -110,7 +110,7 @@ class DatabaseHelper {
   }
 
   Future<void> createCategoryOnFreshInstall(Database db) async {
-    int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
     String id1 = uuid.v4();
     Color color = getMaterialColor(1);
@@ -163,7 +163,7 @@ class DatabaseHelper {
   // db migration from 7 to 8
   Future<void> dbMigration(Database db) async {
     // Create a category first
-    int at = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
     String categoryId = uuid.v4();
     Color color = getMaterialColor(1);
@@ -178,7 +178,7 @@ class DatabaseHelper {
         final String title = groupRow["title"];
         final String image = groupRow["image"];
         if (groupUuid == null ) continue;
-        final int at = groupRow["updatedAt"] ~/ 1000;
+        final int at = groupRow["updatedAt"];
         String? thumbnail;
         if (image.length > 10){
           File file = File(image);
@@ -219,8 +219,8 @@ class DatabaseHelper {
           String? mediaPath = noteRow["media"];
           double? lat = noteRow["latitude"];
           double? lng = noteRow["longitude"];
-          int at = noteRow["updatedAt"] ~/ 1000;
-          String date = getDateFromUtcSeconds(at);
+          int at = noteRow["updatedAt"];
+          String date = getDateFromUtcMilliSeconds(at);
           List<Map<String,dynamic>> dateRows = await db.query("item",
                                                         where: "type = 170000 AND text = ? AND group_id = ?",
                                                         whereArgs: [date,groupId]);

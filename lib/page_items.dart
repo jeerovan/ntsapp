@@ -290,14 +290,14 @@ class _PageItemsState extends State<PageItems> {
         data = {"reply_on":replyOnItem!.id};
       }
     }
-    int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
     ModelItem item = await ModelItem.fromMap({
                               "group_id": widget.groupId,
                               "text": text,
                               "type": type,
                               "thumbnail":thumbnail,
                               "data":data,
-                              "at": utcSeconds});
+                              "at": utcMilliSeconds});
     await item.insert();
     setState(() {
       // update view
@@ -313,8 +313,8 @@ class _PageItemsState extends State<PageItems> {
     String today = getTodayDate();
     List<ModelItem> rows = await ModelItem.getDateItemForGroupId(widget.groupId, today);
     if(rows.isEmpty){
-      int utcSeconds = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-      ModelItem dateItem = await ModelItem.fromMap({"group_id":widget.groupId,"text":today,"type":170000,"at":utcSeconds-1});
+      int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
+      ModelItem dateItem = await ModelItem.fromMap({"group_id":widget.groupId,"text":today,"type":170000,"at":utcMilliSeconds-1});
       await dateItem.insert();
       _items.insert(0, dateItem);
     }

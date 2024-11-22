@@ -22,7 +22,7 @@ class ModelCategory {
       title:"",
       thumbnail: null,
       color: "",
-      at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      at: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
   }
   Map<String,dynamic> toMap() {
@@ -50,7 +50,7 @@ class ModelCategory {
       title:map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
       color: map.containsKey('color') ? map['color'] : "",
-      at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch,
     );
   }
   static Future<List<ModelCategory>> all() async {
@@ -89,7 +89,7 @@ class ModelCategory {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
-    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch;
     return await dbHelper.update("category",map,id);
   }
   Future<int> delete() async {

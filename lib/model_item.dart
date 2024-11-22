@@ -42,7 +42,7 @@ class ModelItem {
       state:0,
       data: {"path":"assets/image.webp"},
       replyOn: null,
-      at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      at: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
   }
   Map<String,dynamic> toMap() {
@@ -101,7 +101,7 @@ class ModelItem {
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
       replyOn: replyOn,
-      at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch,
     );
   }
   static Future<List<ModelItem>> all(String groupId) async {
@@ -239,8 +239,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id = ? AND type >= ? AND type < ?",
-      whereArgs: [groupId,ItemType.text.value,ItemType.task.value+10000],
+      where: "group_id = ?",
+      whereArgs: [groupId,],
       orderBy:'at DESC',
       offset: offset,
       limit: limit,

@@ -20,7 +20,7 @@ class ItemWidgetDate extends StatefulWidget {
 class _ItemWidgetDateState extends State<ItemWidgetDate> {
   @override
   Widget build(BuildContext context) {
-    String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(widget.item.at! * 1000, isUtc: true));
+    String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(widget.item.at!, isUtc: true));
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min, // Shrinks to fit the text width
@@ -603,7 +603,7 @@ class NotePreviewSummary extends StatelessWidget {
     if (item == null){
       return "";
     } else {
-      final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item!.at! * 1000, isUtc: true);
+      final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item!.at!, isUtc: true);
       final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); 
       return formattedTime;
     }

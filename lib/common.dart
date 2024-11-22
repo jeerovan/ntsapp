@@ -173,8 +173,8 @@ String getTodayDate() {
   return '$year$monthFormatted$dayFormatted';
 }
 
-String getDateFromUtcSeconds(int utcSeconds){
-  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcSeconds * 1000, isUtc: true);
+String getDateFromUtcMilliSeconds(int utcMilliSeconds){
+  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
   int year = dateTime.year;
   int month = dateTime.month;
   int date = dateTime.day;
@@ -199,8 +199,8 @@ String getReadableDate(DateTime date) {
   }
 }
 
-String getFormattedTime(int utcSeconds){
-  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcSeconds * 1000, isUtc: true);
+String getFormattedTime(int utcMilliSeconds){
+  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
   final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
   return formattedTime;
 }

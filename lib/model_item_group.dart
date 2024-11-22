@@ -35,7 +35,7 @@ class ModelGroup {
       thumbnail: null,
       pinned: 0,
       color: "",
-      at: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      at: DateTime.now().toUtc().millisecondsSinceEpoch,
       lastItem: null,
       data:null,
       state: 0,
@@ -83,7 +83,7 @@ class ModelGroup {
       color: map.containsKey('color') ? map['color'] : "",
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
-      at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
+      at: map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch,
       lastItem: item,
     );
   }
@@ -138,7 +138,7 @@ class ModelGroup {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String,dynamic> map = toMap();
-    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch;
     return await dbHelper.update("itemgroup",map,id);
   }
   Future<int> delete() async {
