@@ -99,6 +99,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     } else {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageItems(groupId: item.groupId,loadItemId:item.id),
+        settings: const RouteSettings(name: "Notes"),
       ));
     }
   }

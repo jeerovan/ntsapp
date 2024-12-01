@@ -158,6 +158,7 @@ class _PageGroupState extends State<PageGroup> {
   void navigateToItems(String groupId){
     Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => PageItems(groupId: groupId,),
+            settings: const RouteSettings(name: "Notes"),
           )).then((_) {
             setState(() {
               initialLoad();
@@ -172,7 +173,8 @@ class _PageGroupState extends State<PageGroup> {
           ModelSetting.update("category",id);
           setCategory(id);
         }
-      )
+      ),
+      settings: const RouteSettings(name: "SelectCategory"),
     ));
   }
 
@@ -291,7 +293,9 @@ class _PageGroupState extends State<PageGroup> {
                     context,
                     MaterialPageRoute(builder: (context) => SettingsPage(
                             isDarkMode: widget.isDarkMode,
-                            onThemeToggle: widget.onThemeToggle,)),
+                            onThemeToggle: widget.onThemeToggle,),
+                            settings: const RouteSettings(name: "Settings"),
+                            ),
                   ).then((_) async {
                     // remove backup file if exists
                     Directory directory = await getApplicationDocumentsDirectory();
@@ -303,7 +307,9 @@ class _PageGroupState extends State<PageGroup> {
                 case 1:
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const PageStarredItems()),
+                    MaterialPageRoute(builder: (context) => const PageStarredItems(),
+                    settings: const RouteSettings(name: "StarredNotes"),
+                    ),
                   );
                   break;
               }
@@ -458,6 +464,7 @@ class _PageGroupState extends State<PageGroup> {
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => const SearchPage(),
+                  settings: const RouteSettings(name: "SearchNotes"),
                 ));
               },
               shape: const CircleBorder(),
@@ -469,8 +476,7 @@ class _PageGroupState extends State<PageGroup> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          addEditTitlePopup(context, "Add Note Group", (text){
-            createNoteGroup(text);},);
+          addEditTitlePopup(context, "Add Note Group", (text){createNoteGroup(text);},);
         },
         shape: const CircleBorder(),
         child: const Icon(Icons.add),

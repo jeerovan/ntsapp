@@ -43,6 +43,5 @@ app.*.map.json
 /android/app/release
 
 # Firebase
-firebase.json
-/lib/firebase_options.dart
+sentry_dsn.txt
 /android/app/google-services.json

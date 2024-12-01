@@ -456,6 +456,7 @@ class _PageItemsState extends State<PageItems> {
       Navigator.of(context).push(
         MaterialPageRoute(
                     builder: (context) => const LocationPicker(),
+                    settings: const RouteSettings(name: "LocationPicker"),
         )
       ).then((value) {
         if (value != null){
@@ -469,6 +470,7 @@ class _PageItemsState extends State<PageItems> {
       Navigator.of(context).push(
         MaterialPageRoute(
                     builder: (context) =>  const PageContacts(),
+                    settings: const RouteSettings(name: "ContactPicker"),
         )
       ).then((value) {
         if (value != null){
@@ -498,6 +500,7 @@ class _PageItemsState extends State<PageItems> {
         group: group!,
         onUpdate: (){setState(() {});},
         ),
+      settings: const RouteSettings(name: "NoteGroupEdit"),
     ));
   }
 
@@ -748,6 +751,7 @@ class _PageItemsState extends State<PageItems> {
       if (mounted){
         Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => PageMedia(id: id, groupId: groupId,index: index,count: count,),
+                      settings: const RouteSettings(name: "NoteGroupMedia"),
                     ));
       }
     }

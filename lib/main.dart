@@ -2,25 +2,20 @@
 
 import 'dart:io';
 import 'dart:ui';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/page_media_migration.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'themes.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 // Set to false if running on Desktop
 bool mobile = Platform.isAndroid || Platform.isIOS;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   
   if (!mobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
@@ -34,9 +29,39 @@ Future<void> main() async {
   ModelSetting.appJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
   };
-  // Enable analytics collection
-  await  FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
-  runApp(const MainApp());
+
+  // Read the DSN from the configuration file
+  final dsn = await _readDsnFromFile();
+
+  if (dsn == null || dsn.isEmpty) {
+    debugPrint('Error: Sentry DSN is not configured.');
+    return;
+  }
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = dsn;
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+      // The sampling rate for profiling is relative to tracesSampleRate
+      // Setting to 1.0 will profile 100% of sampled transactions:
+      options.profilesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const MainApp()),
+  );
+}
+
+Future<String?> _readDsnFromFile() async {
+  try {
+    final file = File('sentry_dsn.txt');
+    if (await file.exists()) {
+      final lines = await file.readAsLines();
+      return lines[0];
+    }
+  } catch (e) {
+    debugPrint('Error reading DSN file: $e');
+  }
+  return null; // Return null if not found or error occurred
 }
 
 class MainApp extends StatefulWidget {
@@ -49,11 +74,6 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   ThemeMode _themeMode = ThemeMode.system;
   late bool isDark;
-
-  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  
-  static FirebaseAnalyticsObserver observer =
-      FirebaseAnalyticsObserver(analytics: analytics);
 
   @override
   void initState() {
@@ -85,10 +105,6 @@ class _MainAppState extends State<MainApp> {
       isDark = !isDark;
       ModelSetting.update("theme", isDark ? "dark" : "light");
     });
-    await FirebaseAnalytics.instance.logEvent(
-      name: 'theme',
-      parameters: {'mode': isDark ? "dark" : "light"},
-    );
   }
 
   @override
@@ -107,7 +123,9 @@ class _MainAppState extends State<MainApp> {
       darkTheme: AppThemes.darkTheme,
       themeMode: _themeMode, // Uses system theme by default
       home: page,
-      navigatorObservers: <NavigatorObserver>[observer],
+      navigatorObservers: [
+        SentryNavigatorObserver(),
+      ],
       debugShowCheckedModeBanner: false,
     );
   }

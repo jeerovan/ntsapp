@@ -29,10 +29,9 @@ class PageCategoryState extends State<PageCategory> {
     .push(MaterialPageRoute(
       builder: (context) => AddEditCategory(
         categoryId: categoryId,
-        onUpdate: (){setState(() {
-          
-        });},
+        onUpdate: (){setState(() {});},
         ),
+      settings: const RouteSettings(name: "Add/Edit Category"),
     ));
   }
 

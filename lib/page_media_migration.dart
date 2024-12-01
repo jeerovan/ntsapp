@@ -31,9 +31,12 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
 
   void navigateToPageGroup(){
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => PageGroup(
-        isDarkMode: widget.isDarkMode,
-        onThemeToggle: widget.onThemeToggle,)));
+      MaterialPageRoute(
+        builder: (_) => PageGroup(
+          isDarkMode: widget.isDarkMode,
+          onThemeToggle: widget.onThemeToggle,),
+        settings: const RouteSettings(name: "NoteGroups"),
+        ));
   }
 
   Future<void> migrateMedia() async {

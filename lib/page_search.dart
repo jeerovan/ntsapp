@@ -108,6 +108,7 @@ class SearchPageState extends State<SearchPage> {
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => PageItems(groupId: item.group!.id!,loadItemId:item.item.id!),
+                          settings: const RouteSettings(name: "Notes")
                         ));
                       },
                       child: Container(
