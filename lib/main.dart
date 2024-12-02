@@ -1,15 +1,18 @@
 // main.dart
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/page_media_migration.dart';
+//import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'themes.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 // Set to false if running on Desktop
 bool mobile = Platform.isAndroid || Platform.isIOS;
@@ -31,12 +34,8 @@ Future<void> main() async {
   };
 
   // Read the DSN from the configuration file
-  final dsn = await _readDsnFromFile();
+  final dsn = await rootBundle.loadString('assets/sentry_dsn.txt');
 
-  if (dsn == null || dsn.isEmpty) {
-    debugPrint('Error: Sentry DSN is not configured.');
-    return;
-  }
   await SentryFlutter.init(
     (options) {
       options.dsn = dsn;
@@ -51,19 +50,6 @@ Future<void> main() async {
   );
 }
 
-Future<String?> _readDsnFromFile() async {
-  try {
-    final file = File('sentry_dsn.txt');
-    if (await file.exists()) {
-      final lines = await file.readAsLines();
-      return lines[0];
-    }
-  } catch (e) {
-    debugPrint('Error reading DSN file: $e');
-  }
-  return null; // Return null if not found or error occurred
-}
-
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
@@ -75,10 +61,13 @@ class _MainAppState extends State<MainApp> {
   ThemeMode _themeMode = ThemeMode.system;
   late bool isDark;
 
+  // sharing intent
+  late StreamSubscription _intentSub;
+  //final _sharedFiles = <SharedMediaFile>[];
+
   @override
   void initState() {
     super.initState();
-    
     // Load the theme from saved preferences
     String? savedTheme = ModelSetting.getForKey("theme", null);
     switch (savedTheme) {
@@ -96,6 +85,38 @@ class _MainAppState extends State<MainApp> {
         isDark = PlatformDispatcher.instance.platformBrightness == Brightness.dark;
         break;
     }
+    //sharing intent
+    /* if (mobile){
+      // Listen to media sharing coming from outside the app while the app is in the memory.
+      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
+        setState(() {
+          _sharedFiles.clear();
+          _sharedFiles.addAll(value);
+
+          print(_sharedFiles.map((f) => f.toMap()));
+        });
+      }, onError: (err) {
+        debugPrint("getIntentDataStream error: $err");
+      });
+
+      // Get the media sharing coming from outside the app while the app is closed.
+      ReceiveSharingIntent.instance.getInitialMedia().then((value) {
+        setState(() {
+          _sharedFiles.clear();
+          _sharedFiles.addAll(value);
+          print(_sharedFiles.map((f) => f.toMap()));
+
+          // Tell the library that we are done processing the intent.
+          ReceiveSharingIntent.instance.reset();
+        });
+      });
+    } */
+  }
+
+  @override
+  void dispose(){
+    _intentSub.cancel();
+    super.dispose();
   }
 
   // Toggle between light and dark modes
