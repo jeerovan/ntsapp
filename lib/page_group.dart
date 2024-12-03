@@ -23,9 +23,11 @@ import 'widgets_item.dart';
 bool debug = false;
 
 class PageGroup extends StatefulWidget {
+  final List<String> sharedContents;
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
   const PageGroup({super.key,
+                  required this.sharedContents,
                   required this.isDarkMode,
                   required this.onThemeToggle});
 
@@ -34,6 +36,7 @@ class PageGroup extends StatefulWidget {
 }
 
 class _PageGroupState extends State<PageGroup> {
+
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelGroup> _items = [];
@@ -157,13 +160,17 @@ class _PageGroupState extends State<PageGroup> {
 
   void navigateToItems(String groupId){
     Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => PageItems(groupId: groupId,),
-            settings: const RouteSettings(name: "Notes"),
-          )).then((_) {
-            setState(() {
-              initialLoad();
-            });
-          });
+        builder: (context) => PageItems(
+            groupId: groupId,
+            sharedContents: widget.sharedContents,
+          ),
+        settings: const RouteSettings(name: "Notes"),
+      )).then((_) {
+        setState(() {
+          widget.sharedContents.clear();
+          initialLoad();
+        });
+      });
   }
 
   void selectCategory(){
@@ -374,7 +381,7 @@ class _PageGroupState extends State<PageGroup> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NTS'),
+        title: Text(widget.sharedContents.isNotEmpty ? "Select a group" : "NTS"),
         actions: isSelecting ? selectionActions() : defaultActions(size),
       ),
       body: Stack(
@@ -392,7 +399,7 @@ class _PageGroupState extends State<PageGroup> {
                 final item = _items[index];
                 return GestureDetector(
                   onLongPress: (){
-                    onItemLongPressed(item);
+                    if(widget.sharedContents.isEmpty)onItemLongPressed(item);
                   },
                   onTap: (){
                     onItemTapped(item);

@@ -5,7 +5,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/page_media_migration.dart';
-//import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'page_group.dart';
 import 'database_helper.dart';
@@ -63,7 +63,7 @@ class _MainAppState extends State<MainApp> {
 
   // sharing intent
   late StreamSubscription _intentSub;
-  //final _sharedFiles = <SharedMediaFile>[];
+  final List<String> _sharedContent = [];
 
   @override
   void initState() {
@@ -86,31 +86,31 @@ class _MainAppState extends State<MainApp> {
         break;
     }
     //sharing intent
-    /* if (mobile){
+    if (mobile){
       // Listen to media sharing coming from outside the app while the app is in the memory.
-      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
+      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((sharedContents) {
         setState(() {
-          _sharedFiles.clear();
-          _sharedFiles.addAll(value);
-
-          print(_sharedFiles.map((f) => f.toMap()));
+          _sharedContent.clear();
+          for(SharedMediaFile sharedContent in sharedContents) {
+            _sharedContent.add(sharedContent.path);
+          }
         });
       }, onError: (err) {
         debugPrint("getIntentDataStream error: $err");
       });
 
       // Get the media sharing coming from outside the app while the app is closed.
-      ReceiveSharingIntent.instance.getInitialMedia().then((value) {
+      ReceiveSharingIntent.instance.getInitialMedia().then((sharedContents) {
         setState(() {
-          _sharedFiles.clear();
-          _sharedFiles.addAll(value);
-          print(_sharedFiles.map((f) => f.toMap()));
-
+          _sharedContent.clear();
+          for(SharedMediaFile sharedContent in sharedContents) {
+            _sharedContent.add(sharedContent.path);
+          }
           // Tell the library that we are done processing the intent.
           ReceiveSharingIntent.instance.reset();
         });
       });
-    } */
+    }
   }
 
   @override
@@ -118,6 +118,7 @@ class _MainAppState extends State<MainApp> {
     _intentSub.cancel();
     super.dispose();
   }
+
 
   // Toggle between light and dark modes
   Future<void> _toggleTheme() async {
@@ -132,6 +133,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     String processMedia = ModelSetting.getForKey("process_media","no");
     Widget page = PageGroup(
+        sharedContents: _sharedContent,
         isDarkMode: isDark,
         onThemeToggle: _toggleTheme,);
     if (processMedia == "yes"){

@@ -27,9 +27,14 @@ import 'package:record/record.dart';
 bool isMobile = Platform.isAndroid || Platform.isIOS;
 
 class PageItems extends StatefulWidget {
+  final List<String> sharedContents;
   final String groupId;
   final String? loadItemId;
-  const PageItems({super.key, required this.groupId, this.loadItemId});
+  const PageItems({
+      super.key, 
+      required this.sharedContents,
+      required this.groupId, 
+      this.loadItemId});
 
   @override
   State<PageItems> createState() => _PageItemsState();
@@ -71,6 +76,9 @@ class _PageItemsState extends State<PageItems> {
     _audioRecorder = AudioRecorder();
     loadGroup();
     initialFetchItems(widget.loadItemId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadSharedContents();
+    });
   }
 
   @override
@@ -104,6 +112,26 @@ class _PageItemsState extends State<PageItems> {
       _items.addAll(newItems);
       _itemScrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
+  }
+  Future<void> loadSharedContents() async {
+    if (widget.sharedContents.isNotEmpty){
+      debugPrint("Items:${widget.sharedContents.toString()}");
+      List<String> sharedFiles = [];
+      List<String> sharedTexts = [];
+      for(String sharedContent in widget.sharedContents){
+        File file = File(sharedContent);
+        if (file.existsSync()){
+          sharedFiles.add(sharedContent);
+        } else {
+          sharedTexts.add(sharedContent);
+        }
+      }
+      processFiles(sharedFiles);
+      for (String text in sharedTexts){
+        _addItem(text, ItemType.text, null, null);
+      }
+      widget.sharedContents.clear();
+    }
   }
 
   Future<void> scrollFetchItems(bool up) async {

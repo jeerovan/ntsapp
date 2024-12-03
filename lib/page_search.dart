@@ -107,7 +107,10 @@ class SearchPageState extends State<SearchPage> {
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => PageItems(groupId: item.group!.id!,loadItemId:item.item.id!),
+                          builder: (context) => PageItems(
+                            groupId: item.group!.id!,
+                            sharedContents: const [],
+                            loadItemId:item.item.id!),
                           settings: const RouteSettings(name: "Notes")
                         ));
                       },
