@@ -97,7 +97,7 @@ class ModelGroup {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "itemgroup",
-      where: 'category_id = ?',
+      where: 'category_id = ? AND archived_at = 0',
       limit: limit,
       offset: offset,
       whereArgs: [categoryId],

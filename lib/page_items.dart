@@ -202,9 +202,10 @@ class _PageItemsState extends State<PageItems> {
     setState(() {});
   }
 
-  Future<void> deleteSelectedItems() async {
+  Future<void> archiveSelectedItems() async {
     for (ModelItem item in _selection){
-      await item.delete();
+      item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+      await item.update();
     }
     setState(() {
       for (ModelItem item in _selection){
@@ -553,8 +554,8 @@ class _PageItemsState extends State<PageItems> {
       ),
       const SizedBox(width: 5,),
       IconButton(
-        onPressed: (){deleteSelectedItems();},
-        icon: const Icon(Icons.delete_outlined),
+        onPressed: (){archiveSelectedItems();},
+        icon: const Icon(Icons.archive_outlined),
       ),
       const SizedBox(width: 5,),
     ];

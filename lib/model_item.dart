@@ -114,17 +114,6 @@ class ModelItem {
       at:map.containsKey('at') ? map['at'] : DateTime.now().toUtc().millisecondsSinceEpoch,
     );
   }
-  static Future<List<ModelItem>> all(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    List<Map<String,dynamic>> rows = await db.query(
-      "item",
-      where: "group_id = ?",
-      whereArgs: [groupId],
-      orderBy:'at',
-    );
-    return await Future.wait(rows.map((map) => fromMap(map)));
-  }
   static Future<int> mediaCountInGroup(String groupId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
@@ -132,7 +121,7 @@ class ModelItem {
       SELECT count(*) as count
       FROM item
       WHERE type > 100000 AND type < 130000
-        AND group_id = ?
+        AND group_id = ? AND archived_at = 0
     ''';
     final rows = await db.rawQuery(sql, [groupId]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
@@ -144,7 +133,7 @@ class ModelItem {
       SELECT count(*) as count
       FROM item
       WHERE type > 100000 AND type < 130000
-        AND group_id = ?
+        AND group_id = ? AND archived_at = 0
         AND at < (SELECT at FROM item WHERE id = ?)
       ORDER BY at ASC
     ''';
@@ -156,7 +145,7 @@ class ModelItem {
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
-      WHERE type > 100000 AND type < 130000 AND group_id = ?
+      WHERE type > 100000 AND type < 130000 AND group_id = ? AND archived_at = 0
         AND at < (SELECT at FROM item WHERE id = ?)
       ORDER BY at DESC
       LIMIT 1
@@ -173,7 +162,7 @@ class ModelItem {
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
-      WHERE type > 100000 AND type < 130000 AND group_id = ?
+      WHERE type > 100000 AND type < 130000 AND group_id = ? AND archived_at = 0
         AND at > (SELECT at FROM item WHERE id = ?)
       ORDER BY at ASC
       LIMIT 1
@@ -190,7 +179,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "type >= ? AND type < ? AND group_id = ?",
+      where: "type >= ? AND type < ? AND group_id = ? AND archived_at = 0",
       whereArgs: [ItemType.text.value,ItemType.task.value+10000,groupId],
       orderBy:'at DESC',
       limit: 1,
@@ -210,7 +199,7 @@ class ModelItem {
     } else {
       List<Map<String,dynamic>> rows = await db.query(
         "item",
-        where: "group_id = ? AND at > ?",
+        where: "group_id = ? AND archived_at = 0 AND at > ?",
         whereArgs: [groupId,item.at],
         orderBy:'at ASC',
         limit: 4,
@@ -220,7 +209,7 @@ class ModelItem {
       items.add(item);
       rows = await db.query(
         "item",
-        where: "group_id = ? AND at < ?",
+        where: "group_id = ? AND archived_at = 0 AND at < ?",
         whereArgs: [groupId,item.at],
         orderBy:'at DESC',
         limit: 4,
@@ -237,7 +226,7 @@ class ModelItem {
     String comparison = up ? '<' : '>';
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "type >= ? AND type <= ? AND group_id = ? AND at $comparison (SELECT at from item WHERE id = ?)",
+      where: "type >= ? AND type <= ? AND group_id = ? AND archived_at = 0 AND at $comparison (SELECT at from item WHERE id = ?)",
       whereArgs: [ItemType.text.value,ItemType.date.value,groupId,itemId],
       orderBy:'at $orderBy',
       limit: limit,
@@ -249,21 +238,11 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "group_id = ?",
+      where: "group_id = ? AND archived_at = 0",
       whereArgs: [groupId,],
       orderBy:'at DESC',
       offset: offset,
       limit: limit,
-    );
-    return await Future.wait(rows.map((map) => fromMap(map)));
-  }
-  static Future<List<ModelItem>> getAllInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    List<Map<String,dynamic>> rows = await db.query(
-      "item",
-      where: "group_id = ?",
-      whereArgs: [groupId],
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
@@ -272,7 +251,7 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "starred = ?",
+      where: "starred = ? AND archived_at = 0",
       whereArgs: [1],
       orderBy:'at DESC',
       offset: offset,
