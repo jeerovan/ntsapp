@@ -47,7 +47,8 @@ class _PageItemsState extends State<PageItems> {
   bool isSelecting = false;
   bool selectionHasStarredItems = true;
   bool selectionHasTaskItems = true;
-  bool selectionHasNonTaskItem = false;
+  bool selectionHasTextItems = false;
+  bool selectionHasPinnedItem = true;
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _itemScrollController = ScrollController();
@@ -152,7 +153,8 @@ class _PageItemsState extends State<PageItems> {
   void updateSelectionBools() {
     selectionHasStarredItems = true;
     selectionHasTaskItems = true;
-    selectionHasNonTaskItem = false;
+    selectionHasTextItems = false;
+    selectionHasPinnedItem = true;
     for (ModelItem item in _selection){
       if (item.starred == 0){
         selectionHasStarredItems = false;
@@ -161,7 +163,10 @@ class _PageItemsState extends State<PageItems> {
         selectionHasTaskItems = false;
       }
       if (item.type.value > ItemType.text.value && item.type.value < ItemType.task.value) {
-        selectionHasNonTaskItem = true;
+        selectionHasTextItems = true;
+      }
+      if (item.pinned! == 0){
+        selectionHasPinnedItem = false;
       }
     }
   }
@@ -214,7 +219,16 @@ class _PageItemsState extends State<PageItems> {
     });
     clearSelection();
   }
-  Future<void> updateSelectedItemsStar() async {
+  Future<void> updateSelectedItemsPinned() async {
+    setState(() {
+      for (ModelItem item in _selection){
+        item.pinned = selectionHasPinnedItem ? 0 : 1;
+        item.update();
+      }
+    });
+    clearSelection();
+  }
+  Future<void> updateSelectedItemsStarred() async {
     setState(() {
       for (ModelItem item in _selection){
         item.starred = selectionHasStarredItems ? 0 : 1;
@@ -542,18 +556,22 @@ class _PageItemsState extends State<PageItems> {
 
   List<Widget> _buildSelectionOptions(){
     return [
-      if(!selectionHasNonTaskItem)
+      if(!selectionHasTextItems)
       IconButton(
         onPressed: () { updateSelectedItemsTaskType();},
         icon: selectionHasTaskItems ? const Icon(Icons.title) : const Icon(Icons.check_circle),
       ),
       IconButton(
-        onPressed: () { updateSelectedItemsStar();},
+        onPressed: () { updateSelectedItemsStarred();},
         icon: selectionHasStarredItems ? iconStarCrossed() : const Icon(Icons.star_outline),
       ),
       IconButton(
         onPressed: (){archiveSelectedItems();},
         icon: const Icon(Icons.archive_outlined),
+      ),
+      IconButton(
+        onPressed: () { updateSelectedItemsPinned();},
+        icon: selectionHasPinnedItem ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
       ),
     ];
   }

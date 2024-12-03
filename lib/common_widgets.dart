@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/widgets_item.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'common.dart';
 import 'package:video_player/video_player.dart';
@@ -435,7 +436,6 @@ class _WidgetAudioState extends State<WidgetAudio> {
 }
 
 Widget widgetAudioDetails(ModelItem item){
-  final String formattedTime = getFormattedTime(item.at!);
   return Row(
     children: [
       // File size text at the left
@@ -462,17 +462,7 @@ Widget widgetAudioDetails(ModelItem item){
           ),
         ),
       ),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-          const SizedBox(width:5),
-          Text(
-            formattedTime,
-            style: const TextStyle(fontSize: 10),
-          ),
-        ],
-      ),
+      WidgetTimeStamp(item: item),
     ],
   );
 }
@@ -552,6 +542,8 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
     return spans;
   }
 }
+
+
 
 Widget iconStarCrossed(){
   return Stack(

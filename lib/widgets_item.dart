@@ -1,7 +1,6 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
 
@@ -46,6 +45,34 @@ class _ItemWidgetDateState extends State<ItemWidgetDate> {
   }
 }
 
+class WidgetTimeStamp extends StatefulWidget {
+  final ModelItem item;
+  const WidgetTimeStamp({super.key,required this.item});
+
+  @override
+  State<WidgetTimeStamp> createState() => _WidgetTimeStampState();
+}
+
+class _WidgetTimeStampState extends State<WidgetTimeStamp> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            widget.item.pinned == 1 ? Icon(Icons.push_pin,size: 10,color: Theme.of(context).colorScheme.inversePrimary) : const SizedBox.shrink(),
+            const SizedBox(width:2),
+            widget.item.starred == 1 ? Icon(Icons.star,size: 11,color: Theme.of(context).colorScheme.inversePrimary) : const SizedBox.shrink(),
+            const SizedBox(width:3),
+            Text(
+              getFormattedTime(widget.item.at!),
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        );
+  }
+}
+
 class ItemWidgetText extends StatefulWidget {
   final ModelItem item;
   const ItemWidgetText({super.key,required this.item});
@@ -59,23 +86,12 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    final String formattedTime = getFormattedTime(item.at!);
     return Column(
       crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         WidgetTextWithLinks(text: item.text),
         const SizedBox(height: 5),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-            const SizedBox(width:5),
-            Text(
-              formattedTime,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ],
-        ),
+        WidgetTimeStamp(item: item),
       ],
     );
   }
@@ -99,7 +115,6 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
     double size = 200;
-    final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: () {
         widget.onTap(item);
@@ -133,20 +148,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
                   ],
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                  const SizedBox(width:5),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
+              child: WidgetTimeStamp(item: item),
             ),
           ),
         ],
@@ -172,7 +174,6 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
     double size = 200;
-    final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: () {
         widget.onTap(item);
@@ -219,17 +220,7 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                       ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                      const SizedBox(width:5),
-                      Text(
-                        formattedTime,
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ],
-                  ),
+                  WidgetTimeStamp(item: item),
                 ],
               ),
             ),
@@ -281,7 +272,6 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: (){
         widget.onTap(item);
@@ -319,17 +309,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
                 readableBytes(item.data!["size"]),
                 style: const TextStyle(fontSize: 10),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                  const SizedBox(width:5),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              ),
+              WidgetTimeStamp(item: item),
             ],
           ),
         ],
@@ -354,7 +334,6 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: (){
         widget.onTap(item);
@@ -378,18 +357,7 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
               ),
             ],
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-              const SizedBox(width:5),
-              Text(
-                formattedTime,
-                style: const TextStyle( fontSize: 10),
-              ),
-            ],
-          ),
+          WidgetTimeStamp(item: item),
         ],
       ),
     );
@@ -412,7 +380,6 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    final String formattedTime = getFormattedTime(item.at!);
     return GestureDetector(
       onTap: () {
         widget.onTap(item);
@@ -514,17 +481,7 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                     ),
                   ],
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-                  const SizedBox(width:5),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              ),
+              WidgetTimeStamp(item: item),
             ],
           ),
         ),
@@ -599,16 +556,6 @@ class NotePreviewSummary extends StatelessWidget {
     }
   }
 
-  String _formatTimestamp() {
-    if (item == null){
-      return "";
-    } else {
-      final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(item!.at!, isUtc: true);
-      final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); 
-      return formattedTime;
-    }
-  }
-
   Widget _previewImage(ModelItem item){
     switch (item.type) {
         case ItemType.image:
@@ -662,7 +609,7 @@ class NotePreviewSummary extends StatelessWidget {
         if(showImagePreview!)_previewImage(item!),
         const SizedBox(width: 8),
         if(showTimestamp!)Text(
-          _formatTimestamp(),
+          item == null ? "" : getFormattedTime(item!.at!),
           style: const TextStyle(fontSize: 10,),
         ),
       ],
@@ -684,6 +631,7 @@ class _ItemWidgetTaskState extends State<ItemWidgetTask> {
   
   @override
   Widget build(BuildContext context) {
+    ModelItem item = widget.item;
     bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
     return Column(
       crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -702,17 +650,7 @@ class _ItemWidgetTaskState extends State<ItemWidgetTask> {
           ],
         ),
         const SizedBox(height: 5),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            widget.item.starred == 1 ? const Icon(Icons.star,size: 10,) : const SizedBox.shrink(),
-            const SizedBox(width:5),
-            Text(
-              getFormattedTime(widget.item.at!),
-              style: const TextStyle(fontSize: 10),
-            ),
-          ],
-        ),
+        WidgetTimeStamp(item: item),
       ],
     );
   }
