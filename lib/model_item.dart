@@ -15,7 +15,7 @@ class ModelItem {
   Uint8List? thumbnail;
   int? starred;
   int? pinned;
-  int? archived;
+  int? archivedAt;
   ItemType type;
   int? state;
   Map<String,dynamic>? data;
@@ -28,7 +28,7 @@ class ModelItem {
     this.thumbnail,
     this.starred,
     this.pinned,
-    this.archived,
+    this.archivedAt,
     required this.type,
     this.state,
     this.data,
@@ -43,7 +43,7 @@ class ModelItem {
       thumbnail:null,
       starred: 0,
       pinned: 0,
-      archived: 0,
+      archivedAt: 0,
       type: ItemType.text,
       state:0,
       data: {"path":"assets/image.webp"},
@@ -59,7 +59,7 @@ class ModelItem {
       'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'starred':starred,
       'pinned':pinned,
-      'archived':archived,
+      'archived_at':archivedAt,
       'type':type.value,
       'state':state,
       'data':data == null ? null : data is String ? data : jsonEncode(data),
@@ -106,7 +106,7 @@ class ModelItem {
       thumbnail:thumbnail,
       starred: map.containsKey('starred') ? map['starred'] : 0,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
-      archived: map.containsKey('archived') ? map['archived'] : 0,
+      archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
       type: mediaType,
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,

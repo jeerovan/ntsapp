@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'app_config.dart';
 import 'common.dart';
 import 'model_category.dart';
-import 'model_item.dart';
 import 'model_setting.dart';
 import 'page_items.dart';
 import 'page_search.dart';
@@ -194,13 +193,10 @@ class _PageGroupState extends State<PageGroup> {
       }
     }
   }
-  Future<void> deleteSelectedGroups() async {
+  Future<void> archiveSelectedGroups() async {
     for (ModelGroup group in _selection){
-      List<ModelItem> items = await ModelItem.getAllInGroup(group.id!);
-      for (ModelItem item in items){
-        await item.delete();
-      }
-      await group.delete();
+      group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+      await group.update();
       _items.remove(group);
       if(mounted)setState(() {});
     }
@@ -373,8 +369,8 @@ class _PageGroupState extends State<PageGroup> {
         ),
         const SizedBox(width: 5,),
         IconButton(
-          onPressed: (){deleteSelectedGroups();},
-          icon: const Icon(Icons.delete_outlined),
+          onPressed: (){archiveSelectedGroups();},
+          icon: const Icon(Icons.archive_outlined),
         ),
         const SizedBox(width: 5,),
       ];
