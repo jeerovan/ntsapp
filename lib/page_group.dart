@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/page_archive.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
 import 'app_config.dart';
@@ -193,17 +194,6 @@ class _PageGroupState extends State<PageGroup> {
       }
     }
   }
-  Future<void> archiveSelectedGroups() async {
-    for (ModelGroup group in _selection){
-      group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
-      await group.update();
-      _items.remove(group);
-      if(mounted)setState(() {});
-    }
-    _selection.clear();
-    isSelecting = false;
-    if(mounted)setState(() {});
-  }
   Future<void> setPinnedStatus() async {
     for (ModelGroup group in _selection){
       if (selectionHasPinnedGroup){
@@ -319,9 +309,30 @@ class _PageGroupState extends State<PageGroup> {
                     ),
                   );
                   break;
+                case 2:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PageArchived(),
+                    settings: const RouteSettings(name: "ArchivedNotes"),
+                    ),
+                  );
+                  break;
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem<int>(
+                value: 2,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.archive_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                      ),
+                    const SizedBox(width: 5,),
+                    const Text('Archived Notes'),
+                  ],
+                ),
+              ),
               PopupMenuItem<int>(
                 value: 1,
                 child: Row(
@@ -367,12 +378,6 @@ class _PageGroupState extends State<PageGroup> {
           onPressed: () {setPinnedStatus();},
           icon: selectionHasPinnedGroup ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
         ),
-        const SizedBox(width: 5,),
-        IconButton(
-          onPressed: (){archiveSelectedGroups();},
-          icon: const Icon(Icons.archive_outlined),
-        ),
-        const SizedBox(width: 5,),
       ];
   }
 

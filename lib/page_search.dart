@@ -28,10 +28,10 @@ class SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _textController.addListener(_onSearchChanged);
+    _textController.addListener(_onSearchInputChanged);
   }
 
-  void _onSearchChanged() {
+  void _onSearchInputChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
       final query = _textController.text.trim();
@@ -60,7 +60,7 @@ class SearchPageState extends State<SearchPage> {
     });
   }
 
-  Future<void> _scrollSearch() async {
+  Future<void> _searchAfterScroll() async {
     if (_isLoading || !_hasMore) return;
     setState(() => _isLoading = true);
 
@@ -75,7 +75,7 @@ class SearchPageState extends State<SearchPage> {
 
   @override
   void dispose() {
-    _textController.removeListener(_onSearchChanged);
+    _textController.removeListener(_onSearchInputChanged);
     _textController.dispose();
     _debounce?.cancel();
     super.dispose();
@@ -96,7 +96,7 @@ class SearchPageState extends State<SearchPage> {
               child: NotificationListener<ScrollNotification>(
                 onNotification: (ScrollNotification scrollInfo) {
                   if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-                    _scrollSearch();
+                    _searchAfterScroll();
                   }
                   return false;
                 },
@@ -123,7 +123,7 @@ class SearchPageState extends State<SearchPage> {
                           color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: _buildItem(item),
+                        child: _buildDisplayItem(item),
                       ),
                     );
                   },
@@ -131,14 +131,14 @@ class SearchPageState extends State<SearchPage> {
               ),
             ),
             const SizedBox(height: 20),
-            _buildInputBox()
+            _buildSearchInputBox()
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputBox() {
+  Widget _buildSearchInputBox() {
     return TextField(
       controller: _textController,
       autofocus: true,
@@ -153,7 +153,7 @@ class SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildItem(ModelSearchItem search) {
+  Widget _buildDisplayItem(ModelSearchItem search) {
     ModelItem item = search.item;
     switch (item.type) {
       case ItemType.text:
@@ -193,7 +193,7 @@ class SearchPageState extends State<SearchPage> {
                   ),
                 ),
               ),
-              if(item.archivedAt! > 0)const Icon(Icons.archive_outlined,size: 14,),
+              if(item.archivedAt! > 0) Icon(Icons.archive_outlined,size: 14,color: Theme.of(context).colorScheme.inversePrimary,),
             ],
           );
   }

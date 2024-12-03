@@ -1,22 +1,20 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 
 import 'model_item.dart';
 import 'model_setting.dart';
-import 'page_items.dart';
 import 'widgets_item.dart';
 
-class PageStarredItems extends StatefulWidget {
-  const PageStarredItems({super.key});
+class PageArchived extends StatefulWidget {
+  const PageArchived({super.key});
 
   @override
-  State<PageStarredItems> createState() => _PageStarredItemsState();
+  State<PageArchived> createState() => _PageArchivedState();
 }
 
-class _PageStarredItemsState extends State<PageStarredItems> {
+class _PageArchivedState extends State<PageArchived> {
   final List<ModelItem> _items = [];
   final List<ModelItem> _selection = [];
   bool _isSelecting = false;
@@ -28,7 +26,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   @override
   void initState(){
     super.initState();
-    fetchStarredItemsOnInit();
+    fetchArchivedItemsOnInit();
   }
 
   @override
@@ -36,12 +34,12 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     super.dispose();
   }
 
-  Future<void> fetchStarredItemsOnInit() async {
+  Future<void> fetchArchivedItemsOnInit() async {
     _items.clear();
     setState(() {
       _isLoading = true;
     });
-    final topItems = await ModelItem.getStarred(0,_limit);
+    final topItems = await ModelItem.getArchived(0,_limit);
     if (topItems.length == _limit){
       _offset += _limit;
     } else {
@@ -53,12 +51,12 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     });
   }
 
-  Future<void> fetchStarredOnScroll() async {
+  Future<void> fetchArchivedOnScroll() async {
     if (_isLoading || !_hasMore) return;
     if (_offset == 0) _items.clear();
     setState(() => _isLoading = true);
 
-    final newItems = await ModelItem.getStarred( _offset, _limit);
+    final newItems = await ModelItem.getArchived( _offset, _limit);
     setState(() {
       _items.addAll(newItems);
       if (newItems.length == _limit) {
@@ -70,7 +68,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     });
   }
 
-  void onItemLongPressed(ModelItem item){
+  void onItemTapped(ModelItem item){
     setState(() {
       if (_selection.contains(item)) {
         _selection.remove(item);
@@ -84,44 +82,21 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     });
   }
 
-  void onItemTapped(ModelItem item){
-    if (_isSelecting){
-      setState(() {
-        if (_selection.contains(item)) {
-        _selection.remove(item);
-        if (_selection.isEmpty){
-          _isSelecting = false;
-        }
-      } else {
-        _selection.add(item);
-      }
-      });
-    } else {
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => PageItems(
-          groupId: item.groupId,
-          sharedContents: const [],
-          loadItemId:item.id),
-        settings: const RouteSettings(name: "Notes"),
-      ));
-    }
-  }
-
-  Future<void> archiveSelectedItems() async {
+  Future<void> unArchiveSelectedItems() async {
     for (ModelItem item in _selection){
-      item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+      item.archivedAt = 0;
       await item.update();
     }
     clearSelection();
-    fetchStarredItemsOnInit();
+    fetchArchivedItemsOnInit();
   }
-  Future<void> markSelectedUnStarred() async {
+  Future<void> deleteSelectedItems() async {
     for (ModelItem item in _selection){
-      item.starred = 0;
-      item.update();
+      await item.delete();
+      _items.remove(item);
     }
     clearSelection();
-    fetchStarredItemsOnInit();
+    fetchArchivedItemsOnInit();
   }
 
   void clearSelection(){
@@ -136,13 +111,13 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         IconButton(
-          onPressed: () { markSelectedUnStarred();},
-          icon: iconStarCrossed(),
+          onPressed: () { deleteSelectedItems();},
+          icon: const Icon(Icons.delete_outline),
         ),
         const SizedBox(width: 5,),
         IconButton(
-          onPressed: (){archiveSelectedItems();},
-          icon: const Icon(Icons.archive_outlined),
+          onPressed: (){unArchiveSelectedItems();},
+          icon: const Icon(Icons.unarchive_outlined),
         ),
         const SizedBox(width: 5,),
       ],
@@ -156,12 +131,12 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       appBar: AppBar(
         title: _isSelecting
         ? _buildSelectionOptions()
-        : const Text("Starred Notes")
+        : const Text("Archived Notes")
       ),
       body: NotificationListener<ScrollNotification>(
               onNotification: (ScrollNotification scrollInfo) {
                 if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-                  fetchStarredOnScroll();
+                  fetchArchivedOnScroll();
                 }
                 return false;
               },
@@ -173,9 +148,6 @@ class _PageStarredItemsState extends State<PageStarredItems> {
                     return ItemWidgetDate(item:item);
                   } else {
                     return GestureDetector(
-                      onLongPress: (){
-                        onItemLongPressed(item);
-                      },
                       onTap: (){
                         onItemTapped(item);
                       },
