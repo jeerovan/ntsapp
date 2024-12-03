@@ -547,17 +547,14 @@ class _PageItemsState extends State<PageItems> {
         onPressed: () { updateSelectedItemsTaskType();},
         icon: selectionHasTaskItems ? const Icon(Icons.title) : const Icon(Icons.check_circle),
       ),
-      const SizedBox(width: 5,),
       IconButton(
         onPressed: () { updateSelectedItemsStar();},
         icon: selectionHasStarredItems ? iconStarCrossed() : const Icon(Icons.star_outline),
       ),
-      const SizedBox(width: 5,),
       IconButton(
         onPressed: (){archiveSelectedItems();},
         icon: const Icon(Icons.archive_outlined),
       ),
-      const SizedBox(width: 5,),
     ];
   }
 
@@ -590,7 +587,7 @@ class _PageItemsState extends State<PageItems> {
     return Scaffold(
       appBar: AppBar(
         actions: isSelecting ? _buildSelectionOptions() : [],
-        title: group == null
+        title: group == null || isSelecting
               ? const SizedBox.shrink()
               : GestureDetector(
                 onTap: () {

@@ -489,13 +489,13 @@ class WidgetTextWithLinks extends StatefulWidget {
 class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
   @override
   Widget build(BuildContext context) {
-    return RichText(
-          softWrap: true,
-          overflow: TextOverflow.visible,
-          text: TextSpan(
+    return SelectableText.rich(
+          TextSpan(
             children: _buildTextWithLinks(context, widget.text),
           ),
           textAlign: widget.align == null ? TextAlign.left : widget.align!,
+          showCursor: true,
+          cursorColor: Colors.blue,
         );
   }
 
@@ -526,7 +526,7 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
         text: linkText,
         style: const TextStyle(
           color: Colors.blue,
-          decoration: TextDecoration.underline,
+          //decoration: TextDecoration.underline,
         ),
         recognizer: TapGestureRecognizer()
           ..onTap = () async {
