@@ -9,7 +9,8 @@ class ModelGroup {
   String categoryId;
   String title;
   Uint8List? thumbnail;
-  int pinned;
+  int? pinned;
+  int? archived;
   String color;
   int? at;
   ModelItem? lastItem;
@@ -21,6 +22,7 @@ class ModelGroup {
     required this.title,
     this.thumbnail,
     required this.pinned,
+    required this.archived,
     required this.color,
     this.at,
     this.lastItem,
@@ -34,6 +36,7 @@ class ModelGroup {
       title:"",
       thumbnail: null,
       pinned: 0,
+      archived: 0,
       color: "",
       at: DateTime.now().toUtc().millisecondsSinceEpoch,
       lastItem: null,
@@ -48,6 +51,7 @@ class ModelGroup {
       'title':title,
       'thumbnail':thumbnail == null ? null : base64Encode(thumbnail!),
       'pinned':pinned,
+      'archived':archived,
       'color':color,
       'state':state,
       'data':data == null ? null : data is String ? data : jsonEncode(data),
@@ -80,6 +84,7 @@ class ModelGroup {
       title:map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
+      archived: map.containsKey('archived') ? map['archived'] : 0,
       color: map.containsKey('color') ? map['color'] : "",
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
