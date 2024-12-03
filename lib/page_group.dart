@@ -312,10 +312,13 @@ class _PageGroupState extends State<PageGroup> {
                 case 2:
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const PageArchived(),
-                    settings: const RouteSettings(name: "ArchivedNotes"),
+                    MaterialPageRoute(
+                      builder: (context) => const PageArchived(),
+                      settings: const RouteSettings(name: "ArchivedNotes"),
                     ),
-                  );
+                  ).then((_) {
+                    initialLoad();
+                  });
                   break;
               }
             },

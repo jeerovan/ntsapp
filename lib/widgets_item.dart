@@ -510,7 +510,7 @@ class NotePreviewSummary extends StatelessWidget {
     } else {
       switch (item!.type) {
         case ItemType.text:
-          return Icons.text_snippet;
+          return Icons.notes;
         case ItemType.image:
           return Icons.image;
         case ItemType.video:
@@ -526,7 +526,7 @@ class NotePreviewSummary extends StatelessWidget {
         case ItemType.completedTask:
           return Icons.check_circle;
         default: // Document
-          return Icons.insert_drive_file;
+          return Icons.description;
       }
     }
   }
@@ -585,14 +585,13 @@ class NotePreviewSummary extends StatelessWidget {
       children: [
         Icon(
           _getIcon(),
-          size: 15,
+          size: 13,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 5),
         expanded == true
         ? Expanded(
             child: Text(
               _getMessageText(),
-              maxLines: 1,
               overflow: TextOverflow.ellipsis, // Ellipsis for long text
               style: const TextStyle(fontSize: 12,),
             ),
@@ -600,7 +599,6 @@ class NotePreviewSummary extends StatelessWidget {
         : Flexible(
           child: Text(
             _getMessageText(),
-            maxLines: 1,
             overflow: TextOverflow.ellipsis, // Ellipsis for long text
             style: const TextStyle(fontSize: 12,),
           ),
