@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:ntsapp/app_config.dart';
 import 'package:uuid/uuid.dart';
 import 'common.dart';
 import 'package:sqflite/sqflite.dart';
@@ -20,8 +21,8 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-
-    _database = await _initDB('notetoself.db');
+    String dbFileName = AppConfig.get("db_file");
+    _database = await _initDB(dbFileName);
     return _database!;
   }
 

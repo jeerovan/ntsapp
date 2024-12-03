@@ -15,6 +15,8 @@ import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import 'package:image/image.dart' as img;
 
+import 'app_config.dart';
+
 
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
@@ -292,7 +294,8 @@ Future<File?> getFile(String fileType,String fileName) async {
 
 Future<String> getMediaPath(String fileType,String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
-  return path.join(directory.path,"ntsmedia", fileType,fileName);
+  String mediaDir = AppConfig.get("media_dir");
+  return path.join(directory.path,mediaDir, fileType,fileName);
 }
 
 void copyFile(Map<String,String> mediaData) {
@@ -326,6 +329,7 @@ Future<Map<String,dynamic>> processAndGetFileAttributes(String filePath) async {
   await checkAndCreateDirectory(newPath);
   if(existing == null){
     Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
+    // TODO if file is in cache, rename it to move to newPath
     await compute(copyFile,mediaData);
   }
   return {"path":newPath,"name":fileName,"size":fileSize,"mime":mime};

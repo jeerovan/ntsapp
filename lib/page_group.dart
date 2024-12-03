@@ -6,6 +6,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
+import 'app_config.dart';
 import 'common.dart';
 import 'model_category.dart';
 import 'model_item.dart';
@@ -305,8 +306,11 @@ class _PageGroupState extends State<PageGroup> {
                             ),
                   ).then((_) async {
                     // remove backup file if exists
-                    Directory directory = await getApplicationDocumentsDirectory();
-                    File backupFile = File(path.join(directory.path,"ntsbackup.zip"));
+                    String todayDate = getTodayDate();
+                    Directory baseDir = await getApplicationDocumentsDirectory();
+                    String backupDir = AppConfig.get("backup_dir");
+                    final String zipFilePath = path.join(baseDir.path,'${backupDir}_$todayDate.zip');
+                    File backupFile = File(zipFilePath);
                     if(backupFile.existsSync())backupFile.deleteSync();
                     checkAuthAndLoad();
                   });

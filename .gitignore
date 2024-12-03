@@ -43,5 +43,5 @@ app.*.map.json
 /android/app/release
 
 
-assets/sentry_dsn.txt
+assets/config.txt
 /android/app/google-services.json

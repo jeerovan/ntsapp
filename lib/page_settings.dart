@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'app_config.dart';
 import 'common.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -78,7 +79,8 @@ class SettingsPageState extends State<SettingsPage> {
     Directory directory = await getApplicationDocumentsDirectory();
     String dirPath = directory.path;
     String today = getTodayDate();
-    String backupFilePath = path.join(dirPath,"ntsbackup_$today.zip");
+    String backupDir = AppConfig.get("backup_dir");
+    String backupFilePath = path.join(dirPath,"${backupDir}_$today.zip");
     File backupFile = File(backupFilePath);
     if(!backupFile.existsSync()){
       try {
@@ -89,7 +91,7 @@ class SettingsPageState extends State<SettingsPage> {
     }
     hideProcessing();
     if(status.isNotEmpty){
-      if(mounted)showAlertMessage(context, "Could not process", status);
+      if(mounted)showAlertMessage(context, "Could not create", status);
     } else {
       try {
         // Use Share package to trigger download or share intent
@@ -101,7 +103,7 @@ class SettingsPageState extends State<SettingsPage> {
         status = e.toString();
       }
       if(status.isNotEmpty){
-        if(mounted)showAlertMessage(context, "Error", status);
+        if(mounted)showAlertMessage(context, "Could not share file", status);
       }
     }
   }
@@ -115,7 +117,8 @@ class SettingsPageState extends State<SettingsPage> {
     if (result != null){
       if (result.files.isNotEmpty){
         PlatformFile selectedFile = result.files[0];
-        if(selectedFile.name.startsWith("ntsbackup_")){
+        String backupDir = AppConfig.get("backup_dir");
+        if(selectedFile.name.startsWith("${backupDir}_")){
           String zipFilePath = selectedFile.path!;
           Directory directory = await getApplicationDocumentsDirectory();
           String dirPath = directory.path;

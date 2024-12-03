@@ -7,19 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'app_config.dart';
 import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'themes.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 // Set to false if running on Desktop
 bool mobile = Platform.isAndroid || Platform.isIOS;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+  // Load the configuration before running the app
+  await AppConfig.load();
+
   if (!mobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
     sqfliteFfiInit();
@@ -27,18 +29,14 @@ Future<void> main() async {
   }
   // initialize the db
   DatabaseHelper dbHelper = DatabaseHelper.instance;
-
   List<Map<String, dynamic>> keyValuePairs = await dbHelper.getAll('setting');
   ModelSetting.appJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
   };
 
-  // Read the DSN from the configuration file
-  final dsn = await rootBundle.loadString('assets/sentry_dsn.txt');
-
   await SentryFlutter.init(
     (options) {
-      options.dsn = dsn;
+      options.dsn = AppConfig.get("sentry_dsn");
       // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
       // We recommend adjusting this value in production.
       options.tracesSampleRate = 1.0;

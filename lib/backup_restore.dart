@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ntsapp/common.dart';
+import 'app_config.dart';
+import 'common.dart';
 import 'package:path/path.dart' as path;
 import 'database_helper.dart';
 import 'model_category.dart';
@@ -15,7 +16,8 @@ Future<String> createBackup(String baseDirPath) async {
   String error = "";
 
   // empty db backup directory
-  final String dbFilesDirPath = path.join(baseDirPath,"ntsbackup");
+  String backupDir = AppConfig.get("backup_dir");
+  final String dbFilesDirPath = path.join(baseDirPath,backupDir);
   await emptyDbFilesDir(dbFilesDirPath);
 
   // create db backup files
@@ -40,23 +42,30 @@ Future<String> createBackup(String baseDirPath) async {
       break;
     }
   }
-
   // create zip file
   if (error.isEmpty){
-    error = await compute(zipDbFiles,baseDirPath);
+    Map<String,String> data = {
+      "base":baseDirPath,
+      "media":AppConfig.get("media_dir"),
+      "backup":AppConfig.get("backup_dir")
+    };
+    error = await compute(zipDbFiles,data);
   }
   return error;
 }
 
-Future<String> zipDbFiles(String baseDirPath) async {
+Future<String> zipDbFiles(Map<String,String> data) async {
   String error = "";
   try {
     String todayDate = getTodayDate();
-    final String zipFilePath = path.join(baseDirPath,'ntsbackup_$todayDate.zip');
+    String baseDirPath = data["base"]!;
+    String backupDir = data["backup"]!;
+    String mediaDir = data["media"]!;
+    final String zipFilePath = path.join(baseDirPath,'${backupDir}_$todayDate.zip');
     final ZipFileEncoder encoder = ZipFileEncoder();
     encoder.create(zipFilePath);
-    await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsmedia")));
-    await encoder.addDirectory(Directory(path.join(baseDirPath,"ntsbackup")));
+    await encoder.addDirectory(Directory(path.join(baseDirPath,mediaDir)));
+    await encoder.addDirectory(Directory(path.join(baseDirPath,backupDir)));
     await encoder.close();
   } catch (e) {
     error = e.toString();
@@ -92,7 +101,8 @@ Future<String> unZipDbFiles(Map<String,String> data) async {
 Future<String> restoreBackup(Map<String,String> data) async {
   String baseDirPath = data["dir"]!;
   //empty db files dir 
-  final String dbFilesDirPath = path.join(baseDirPath,"ntsbackup");
+  String backupDir = AppConfig.get("backup_dir");
+  final String dbFilesDirPath = path.join(baseDirPath,backupDir);
   await emptyDbFilesDir(dbFilesDirPath);
 
   // media files can be overwritten if present
@@ -118,7 +128,8 @@ Future<String> restoreDbFiles(String baseDirPath) async {
   List<String> tables = ["category","itemgroup","item","setting"];
   for (String table in tables){
     try {
-      final file = File(path.join(baseDirPath,"ntsbackup",'$table.txt'));
+      String backupDir = AppConfig.get("backup_dir");
+      final file = File(path.join(baseDirPath,backupDir,'$table.txt'));
       if (file.existsSync()){
         final lines = await file.readAsLines();
         for (final line in lines) {
