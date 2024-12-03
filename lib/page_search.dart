@@ -106,13 +106,15 @@ class SearchPageState extends State<SearchPage> {
                     final item = _items[index];
                     return GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
+                        if(item.item.archivedAt == 0) {
+                          Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => PageItems(
                             groupId: item.group!.id!,
                             sharedContents: const [],
                             loadItemId:item.item.id!),
                           settings: const RouteSettings(name: "Notes")
                         ));
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
@@ -177,19 +179,31 @@ class SearchPageState extends State<SearchPage> {
     }
   }
 
+  Widget _buildCategoryGroupHeader(ModelSearchItem search) {
+    ModelItem item = search.item;
+    return Row(
+            children: [
+              Expanded(
+                child: Text(
+                    '${search.category!.title} > ${search.group!.title}',
+                    style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              if(item.archivedAt! > 0)const Icon(Icons.archive_outlined,size: 14,),
+            ],
+          );
+  }
+
   Widget _buildTaskItem(ModelSearchItem search){
     ModelItem item = search.item;
     return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Breadcrumbs
-              Text(
-                  '${search.category!.title} > ${search.group!.title}',
-                  style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              _buildCategoryGroupHeader(search),
               ItemWidgetTask(item: item,),
             ]
           );
@@ -201,14 +215,7 @@ class SearchPageState extends State<SearchPage> {
     return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Breadcrumbs
-              Text(
-                  '${search.category!.title} > ${search.group!.title}',
-                  style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              _buildCategoryGroupHeader(search),
               const SizedBox(height: 5),
               Text(item.text),
               const SizedBox(height: 5),
@@ -228,14 +235,7 @@ class SearchPageState extends State<SearchPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Breadcrumbs
-            Text(
-                '${search.category!.title} > ${search.group!.title}',
-                style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            _buildCategoryGroupHeader(search),
             const SizedBox(height: 5),
             Text(
               formattedTime,
@@ -265,14 +265,7 @@ class SearchPageState extends State<SearchPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Breadcrumbs
-            Text(
-                '${search.category!.title} > ${search.group!.title}',
-                style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            _buildCategoryGroupHeader(search),
             const SizedBox(height: 5),
             Row(
               children: [
@@ -308,14 +301,7 @@ class SearchPageState extends State<SearchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Breadcrumbs
-        Text(
-            '${search.category!.title} > ${search.group!.title}',
-            style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        _buildCategoryGroupHeader(search),
         const SizedBox(height: 5),
         Row(
           children: [
@@ -358,14 +344,7 @@ class SearchPageState extends State<SearchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Breadcrumbs
-        Text(
-            '${search.category!.title} > ${search.group!.title}',
-            style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        _buildCategoryGroupHeader(search),
         const SizedBox(height: 5),
         Row(
           children: [
@@ -408,13 +387,7 @@ class SearchPageState extends State<SearchPage> {
     return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${search.category!.title} > ${search.group!.title}',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              _buildCategoryGroupHeader(search),
               const SizedBox(height: 5),
               const Row(
                 //mainAxisSize: MainAxisSize.max,
@@ -445,13 +418,7 @@ class SearchPageState extends State<SearchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '${search.category!.title} > ${search.group!.title}',
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        _buildCategoryGroupHeader(search),
         ListTile(
           leading:
             item.thumbnail != null
@@ -497,5 +464,4 @@ class SearchPageState extends State<SearchPage> {
       ],
     );
   }
-
 }
