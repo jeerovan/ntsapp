@@ -1,4 +1,6 @@
 
+import 'package:ntsapp/enum_item_type.dart';
+
 import 'database_helper.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -40,7 +42,7 @@ class ModelSearchItem {
     String whereClause = tokens.map((token) => "text LIKE '%$token%'").join(" AND ");
     List<Map<String,dynamic>> rows = await db.rawQuery(
       '''SELECT * FROM item
-         WHERE type != 170000 AND $whereClause
+         WHERE type != ${ItemType.date.value} AND $whereClause
          ORDER BY at DESC
          LIMIT $limit
          OFFSET $offset

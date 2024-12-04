@@ -195,7 +195,7 @@ class ModelItem {
     ModelItem? item = await get(itemId);
     List<ModelItem> items = [];
     if (item == null){
-      items.addAll(await getInGroup(groupId, 0, 10));
+      items.addAll(await getInGroup(groupId, 0, 10, {}));
     } else {
       List<Map<String,dynamic>> rows = await db.query(
         "item",
@@ -233,16 +233,59 @@ class ModelItem {
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
-  static Future<List<ModelItem>> getInGroup(String groupId,int offset, int limit) async {
+  static Future<List<ModelItem>> getInGroup(String groupId,int offset, int limit, Map<String,bool> filters) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
-    List<Map<String,dynamic>> rows = await db.query(
-      "item",
-      where: "group_id = ? AND archived_at = 0",
-      whereArgs: [groupId,],
-      orderBy:'at DESC',
-      offset: offset,
-      limit: limit,
+    List<String> filterParams = [];
+    if (filters["pinned"]!){
+      filterParams.add("pinned = 1");
+    }
+    if (filters["starred"]!){
+      filterParams.add("starred = 1");
+    }
+    if (filters["notes"]!){
+      filterParams.add("type = ${ItemType.text.value}");
+    }
+    if (filters["tasks"]!){
+      filterParams.add("type = ${ItemType.task.value} OR type = ${ItemType.completedTask.value}");
+    }
+    if (filters["links"]!){
+      filterParams.add("text LIKE '%http%'");
+    }
+    if (filters["images"]!){
+      filterParams.add("type = ${ItemType.image.value}");
+    }
+    if (filters["audio"]!){
+      filterParams.add("type = ${ItemType.audio.value}");
+    }
+    if (filters["video"]!){
+      filterParams.add("type = ${ItemType.video.value}");
+    }
+    if (filters["documents"]!){
+      filterParams.add("type = ${ItemType.document.value}");
+    }
+    if (filters["contacts"]!){
+      filterParams.add("type = ${ItemType.contact.value}");
+    }
+    if (filters["locations"]!){
+      filterParams.add("type = ${ItemType.location.value}");
+    }
+    String filterQuery = "";
+    if (filterParams.isNotEmpty){
+      if (filterParams.length == 1){
+        filterQuery = " AND ${filterParams.join("")}";
+      } else {
+        filterQuery = " AND (${filterParams.join(" OR ")})";
+      }
+    }
+    List<Map<String,dynamic>> rows = await db.rawQuery(
+      '''
+        SELECT * FROM item
+        WHERE group_id = '$groupId' AND archived_at = 0 $filterQuery
+        ORDER BY at DESC
+        LIMIT $limit
+        OFFSET $offset
+      '''
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
@@ -271,6 +314,18 @@ class ModelItem {
       limit: limit,
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+  static Future<int> pinnedCountInGroup(String groupId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String sql = '''
+      SELECT count(*) as count
+      FROM item
+      WHERE pinned = 1 AND
+        AND group_id = ? AND archived_at = 0
+    ''';
+    final rows = await db.rawQuery(sql, [groupId]);
+    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
   static Future<ModelItem?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;

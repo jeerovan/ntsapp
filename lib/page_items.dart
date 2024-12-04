@@ -71,6 +71,21 @@ class _PageItemsState extends State<PageItems> {
 
   bool isCreatingTask = false;
 
+  final Map<String,bool> _filters = {
+    "pinned":false,
+    "starred":false,
+    "notes":false,
+    "tasks":false,
+    "links":false,
+    "images":false,
+    "audio":false,
+    "video":false,
+    "documents":false,
+    "contacts":false,
+    "locations":false
+  };
+  bool _filtersEnabled = false;
+
   @override
   void initState() {
     super.initState();
@@ -106,7 +121,7 @@ class _PageItemsState extends State<PageItems> {
       newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
     } else {
       canScrollToBottom = false;
-      newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit);
+      newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit, _filters);
     }
     setState(() {
       _items.clear();
@@ -148,6 +163,236 @@ class _PageItemsState extends State<PageItems> {
       }
       _isLoading = false;
     });
+  }
+
+  //Filters 
+  void _applyFilters() {
+    setState(() {
+      _filtersEnabled = _filters["pinned"] == true ||
+                        _filters["starred"] == true ||
+                        _filters["notes"] == true ||
+                        _filters["tasks"] == true ||
+                        _filters["links"] == true ||
+                        _filters["images"] == true ||
+                        _filters["audio"] == true ||
+                        _filters["video"] == true ||
+                        _filters["documents"] == true ||
+                        _filters["contacts"] == true ||
+                        _filters["locations"] == true ;
+      initialFetchItems(null);
+    });
+  }
+  void _toggleFilter(String filter){
+    setState(() {
+      _filters[filter] = !_filters[filter]!;
+    });
+    _applyFilters();
+  }
+  void _openFilterDialog() {
+    bool pinned = _filters["pinned"]!;
+    bool starred = _filters["starred"]!;
+    bool notes = _filters["notes"]!;
+    bool tasks = _filters["tasks"]!;
+    bool links = _filters["links"]!;
+    bool images = _filters["images"]!;
+    bool audio = _filters["audio"]!;
+    bool video = _filters["video"]!;
+    bool documents = _filters["documents"]!;
+    bool contacts = _filters["contacts"]!;
+    bool locations = _filters["locations"]!;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: const Text('Filter Notes'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          pinned = !pinned;
+                        _toggleFilter("pinned");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.push_pin,
+                        color: pinned ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          starred = !starred;
+                        _toggleFilter("starred");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.star,
+                        color: starred ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          notes = !notes;
+                        _toggleFilter("notes");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.notes,
+                        color: notes ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          tasks = !tasks;
+                        _toggleFilter("tasks");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.check_circle,
+                        color: tasks ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          links = !links;
+                        _toggleFilter("links");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.link,
+                        color: links ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          images = !images;
+                        _toggleFilter("images");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.image,
+                        color: images ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          audio = !audio;
+                        _toggleFilter("audio");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.audiotrack,
+                        color: audio ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          video = !video;
+                        _toggleFilter("video");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.videocam,
+                        color: video ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          documents = !documents;
+                        _toggleFilter("documents");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.insert_drive_file,
+                        color: documents ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          contacts = !contacts;
+                        _toggleFilter("contacts");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.contact_phone,
+                        color: contacts ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                        setState(() {
+                          locations = !locations;
+                        _toggleFilter("locations");
+                        });
+                      }, 
+                      icon: Icon(
+                        Icons.location_on,
+                        color: locations ? null : Theme.of(context).colorScheme.inversePrimary,
+                        ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: const Text('Show'),
+              ),
+            ],
+          );
+        }
+        );
+      },
+    );
   }
 
   void updateSelectionBools() {
@@ -657,6 +902,7 @@ class _PageItemsState extends State<PageItems> {
           Expanded(
             child: Stack(
               children:[
+                
                 NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
@@ -746,6 +992,18 @@ class _PageItemsState extends State<PageItems> {
                     shape: const CircleBorder(),
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     child: const Icon(Icons.keyboard_double_arrow_down),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    onPressed: (){
+                      _openFilterDialog();
+                    },
+                    icon: Icon(
+                      Icons.filter_alt,
+                      color: _filtersEnabled ? null : Theme.of(context).colorScheme.inversePrimary,
+                    ),
                   ),
                 ),
               ],
