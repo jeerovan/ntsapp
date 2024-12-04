@@ -119,7 +119,7 @@ class DatabaseHelper {
     String id1 = uuid.v4();
     Color color = getMaterialColor(1);
     String hexCode = colorToHex(color);
-    await db.insert("category", {"id": id1, "title": "Private", "color":hexCode, "thumbnail":null, "at":at});
+    await db.insert("category", {"id": id1, "title": "Android", "color":hexCode, "thumbnail":null, "at":at});
   }
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {
@@ -171,7 +171,7 @@ class DatabaseHelper {
     Uuid uuid = const Uuid();
     String categoryId = uuid.v4();
     Color color = getMaterialColor(1);
-    await db.insert("category", {"id": categoryId, "title": "Private", "color":colorToHex(color), "thumbnail":null, "at":at});
+    await db.insert("category", {"id": categoryId, "title": "Android", "color":colorToHex(color), "thumbnail":null, "at":at});
 
     // create note groups
     int groupCount = 1;

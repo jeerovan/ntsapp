@@ -49,6 +49,9 @@ class _PageGroupState extends State<PageGroup> {
   int _offset = 0;
   final int _limit = 20;
 
+  // hide category
+  bool hideCategory = true;
+
   @override
   void initState() {
     super.initState();
@@ -241,7 +244,7 @@ class _PageGroupState extends State<PageGroup> {
 
   List<Widget> defaultActions(double size) {
     return [
-          GestureDetector(
+          if (!hideCategory)GestureDetector(
             onTap: (){
               selectCategory();
             },

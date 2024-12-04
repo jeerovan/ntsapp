@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enum_item_type.dart';
-import 'package:ntsapp/model_category.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'common.dart';
 import 'model_item.dart';
 import 'model_setting.dart';
@@ -41,29 +39,6 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
   }
 
   Future<void> migrateMedia() async {
-    // get set category from shared prefs
-    final prefs = await SharedPreferences.getInstance();
-    String? userName = prefs.getString("APP_USER_NAME");
-    String? userPic = prefs.getString("APP_USER_PIC");
-    if (userName != null || userPic != null){
-      List<ModelCategory> categories = await ModelCategory.all();
-      if (categories.isNotEmpty){
-        ModelCategory category = categories.first;
-        if (userName != null){
-          category.title = userName;
-        }
-        if (userPic != null){
-          File userPicFile = File(userPic);
-          if (userPicFile.existsSync()){
-            Uint8List fileBytes = await userPicFile.readAsBytes();
-            Uint8List? userPicThumbnail = await compute(getImageThumbnail,fileBytes);
-            category.thumbnail = userPicThumbnail;
-          }
-        }
-        category.update();
-      }
-    }
-    
     // process media for image/audio
     List<ModelItem> items = await ModelItem.getImageAudio();
     for(ModelItem item in items){
