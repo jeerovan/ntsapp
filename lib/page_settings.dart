@@ -116,13 +116,13 @@ class SettingsPageState extends State<SettingsPage> {
     );
     if (result != null){
       if (result.files.isNotEmpty){
+        Directory directory = await getApplicationDocumentsDirectory();
+        String dirPath = directory.path;
         PlatformFile selectedFile = result.files[0];
         String backupDir = AppConfig.get("backup_dir");
+        String zipFilePath = selectedFile.path!;
+        String error = "";
         if(selectedFile.name.startsWith("${backupDir}_")){
-          String zipFilePath = selectedFile.path!;
-          Directory directory = await getApplicationDocumentsDirectory();
-          String dirPath = directory.path;
-          String error = "";
           showProcessing();
           try {
             error = await restoreBackup({"dir":dirPath,"zip": zipFilePath});
@@ -133,9 +133,19 @@ class SettingsPageState extends State<SettingsPage> {
           if (error.isNotEmpty){
             if(mounted)showAlertMessage(context, "Error", error);
           }
+        } else if (selectedFile.name.startsWith("NTS")) {
+          showProcessing();
+          try {
+            error = await restoreOldBackup({"dir":dirPath,"zip": zipFilePath});
+          } catch(e) {
+            error = e.toString();
+          }
+          hideProcessing();
+          if (error.isNotEmpty){
+            if(mounted)showAlertMessage(context, "Error", error);
+          }
         }
       }
-      
     }
   }
 
