@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -49,6 +50,7 @@ class _PageItemsState extends State<PageItems> {
   bool selectionHasTaskItems = true;
   bool selectionHasTextItems = false;
   bool selectionHasPinnedItem = true;
+  bool selectionHasOnlyTextOrTaskItem = true;
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _itemScrollController = ScrollController();
@@ -422,6 +424,7 @@ class _PageItemsState extends State<PageItems> {
     selectionHasTaskItems = true;
     selectionHasTextItems = false;
     selectionHasPinnedItem = true;
+    selectionHasOnlyTextOrTaskItem = true;
     for (ModelItem item in _selection){
       if (item.starred == 0){
         selectionHasStarredItems = false;
@@ -431,6 +434,7 @@ class _PageItemsState extends State<PageItems> {
       }
       if (item.type.value > ItemType.text.value && item.type.value < ItemType.task.value) {
         selectionHasTextItems = true;
+        selectionHasOnlyTextOrTaskItem = false;
       }
       if (item.pinned! == 0){
         selectionHasPinnedItem = false;
@@ -510,6 +514,20 @@ class _PageItemsState extends State<PageItems> {
         item.update();
       }
     });
+    clearSelection();
+  }
+  Future<void> copyToClipboard() async {
+    List<String> texts = [];
+    for(ModelItem item in _selection){
+      if (item.type == ItemType.text || item.type == ItemType.task || item.type == ItemType.completedTask){
+        texts.add(item.text);
+      }
+    }
+    String textToCopy = texts.reversed.join("\n");
+    Clipboard.setData(ClipboardData(text: textToCopy));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Copied to clipboard'),duration: Duration(seconds: 1),),
+    );
     clearSelection();
   }
   Future<void> updateSelectedItemsTaskType() async {
@@ -832,6 +850,11 @@ class _PageItemsState extends State<PageItems> {
 
   List<Widget> _buildSelectionOptions(){
     return [
+      if(selectionHasOnlyTextOrTaskItem)
+      IconButton(
+        onPressed: () { copyToClipboard();},
+        icon: const Icon(Icons.copy),
+      ),
       if(!selectionHasTextItems)
       IconButton(
         onPressed: () { updateSelectedItemsTaskType();},

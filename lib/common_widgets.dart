@@ -553,13 +553,11 @@ class WidgetTextWithLinks extends StatefulWidget {
 class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
   @override
   Widget build(BuildContext context) {
-    return SelectableText.rich(
-          TextSpan(
+    return RichText(
+          text:TextSpan(
             children: _buildTextWithLinks(context, widget.text),
           ),
           textAlign: widget.align == null ? TextAlign.left : widget.align!,
-          showCursor: true,
-          cursorColor: Colors.blue,
         );
   }
 
