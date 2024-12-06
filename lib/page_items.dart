@@ -182,6 +182,22 @@ class _PageItemsState extends State<PageItems> {
       initialFetchItems(null);
     });
   }
+  void _clearFilters() {
+    setState(() {
+      _filters["pinned"] = false;
+      _filters["starred"] = false;
+      _filters["notes"] = false;
+      _filters["tasks"] = false;
+      _filters["links"] = false;
+      _filters["images"] = false;
+      _filters["audio"] = false;
+      _filters["video"] = false;
+      _filters["documents"] = false;
+      _filters["contacts"] = false;
+      _filters["locations"] = false;
+      _applyFilters();
+    });
+  }
   void _toggleFilter(String filter){
     setState(() {
       _filters[filter] = !_filters[filter]!;
@@ -380,7 +396,13 @@ class _PageItemsState extends State<PageItems> {
               ],
             ),
             actions: [
-              
+              TextButton(
+                onPressed: () {
+                  _clearFilters();
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: const Text('Clear'),
+              ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
