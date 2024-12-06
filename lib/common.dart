@@ -201,6 +201,21 @@ String getReadableDate(DateTime date) {
   }
 }
 
+String getNoteGroupDateTitle() {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  final now = DateTime.now();
+  final dayOfWeek = days[now.weekday-1];
+  final day = now.day.toString().padLeft(2, '0'); // Ensure 2 digits
+  final month = months[now.month-1];
+  final year = now.year % 100; // Last two digits of the year
+
+  return "$dayOfWeek $day $month'$year";
+}
+
 String getFormattedTime(int utcMilliSeconds){
   final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
   final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats

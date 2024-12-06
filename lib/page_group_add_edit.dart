@@ -6,23 +6,55 @@ import 'package:image_picker/image_picker.dart';
 
 import 'common.dart';
 
-class PageGroupEdit extends StatefulWidget {
-  final ModelGroup group;
+class PageGroupAddEdit extends StatefulWidget {
+  final String categoryId;
+  final ModelGroup? group;
   final Function() onUpdate;
-  const PageGroupEdit({super.key,required this.group,required this.onUpdate});
+  const PageGroupAddEdit({
+    super.key,
+    required this.categoryId,
+    this.group,
+    required this.onUpdate});
 
   @override
-  PageGroupEditState createState() => PageGroupEditState();
+  PageGroupAddEditState createState() => PageGroupAddEditState();
 }
 
-class PageGroupEditState extends State<PageGroupEdit> {
+class PageGroupAddEditState extends State<PageGroupAddEdit> {
   final TextEditingController titleController = TextEditingController();
 
   bool processing = false;
   bool itemChanged = false;
 
-  void init() async {
-    titleController.text = widget.group.title;
+  String? title;
+  Uint8List? thumbnail;
+  String? colorCode;
+  String dateTitle = getNoteGroupDateTitle();
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> init() async {
+    if (widget.group == null){
+      itemChanged = true;
+      int count = await ModelGroup.getCount(widget.categoryId);
+      Color color = getMaterialColor(count+1);
+      colorCode = colorToHex(color);
+    } else {
+      colorCode = widget.group!.color;
+    }
+    title = widget.group == null ? dateTitle : widget.group!.title;
+    titleController.text = title!;
+    thumbnail = widget.group?.thumbnail;
+    if(mounted)setState(() {});
   }
 
   Future<void> _getPicture(ImageSource source) async {
@@ -33,7 +65,7 @@ class PageGroupEditState extends State<PageGroupEdit> {
     });
     if (pickedFile != null) {
       Uint8List bytes = await File(pickedFile.path).readAsBytes();
-      widget.group.thumbnail = await compute(getImageThumbnail, bytes);
+      thumbnail = await compute(getImageThumbnail, bytes);
       itemChanged = true;
     }
     setState(() {
@@ -41,19 +73,31 @@ class PageGroupEditState extends State<PageGroupEdit> {
     });
   }
 
-  void saveCategory() async {
+  Future<void> saveCategory() async {
+    ModelGroup? updatedGroup;
     if (itemChanged){
-      await widget.group.update();
+      if (widget.group == null){
+        updatedGroup = await ModelGroup.fromMap({
+          "category_id":widget.categoryId, 
+          "thumbnail":thumbnail,
+          "title":title, 
+          "color":colorCode});
+        await updatedGroup.insert();
+      } else {
+        widget.group!.thumbnail = thumbnail;
+        widget.group!.title = title!;
+        await widget.group!.update();
+      }
       widget.onUpdate();
     }
-    if(mounted)Navigator.of(context).pop();
+    if(mounted)Navigator.of(context).pop(updatedGroup);
   }
 
   Widget getBoxContent() {
     double size = 100;
     if (processing) {
       return  const CircularProgressIndicator();
-    } else if (widget.group.thumbnail != null) {
+    } else if (thumbnail != null) {
       return ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Container(
@@ -61,14 +105,14 @@ class PageGroupEditState extends State<PageGroupEdit> {
               child: Center(
                 child: CircleAvatar(
                     radius: 50,
-                    backgroundImage: MemoryImage(widget.group.thumbnail!),
+                    backgroundImage: MemoryImage(thumbnail!),
                   ),
               ),
             ),
       );
     } else {
       return Text(
-              widget.group.title[0].toUpperCase(),
+              title == null ? "" : title![0].toUpperCase(),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: size / 2, // Adjust font size relative to the circle size
@@ -115,22 +159,12 @@ class PageGroupEditState extends State<PageGroupEdit> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    init();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     double size = 100;
+    String pageTitle = widget.group == null ? "Add Group" : "Edit Group";
     return Scaffold(
       appBar: AppBar(
-        title: Text("Edit Group",style: Theme.of(context).textTheme.labelLarge),
+        title: Text(pageTitle,style: Theme.of(context).textTheme.labelLarge),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -145,35 +179,48 @@ class PageGroupEditState extends State<PageGroupEdit> {
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
-                  color: colorFromHex(widget.group.color),
+                  color: colorFromHex(colorCode ?? "000000"),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center, // Center the text inside the circle
                 child: Center(child: getBoxContent()),
               ),
             ),
-            const SizedBox(height: 10,),
-            TextField(
-              controller: titleController,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Title', // Placeholder
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    autofocus: widget.group == null ? false : true,
+                    decoration: const InputDecoration(
+                      hintText: 'Title', // Placeholder
+                    ),
+                    onChanged: (value) {
+                      title = value.trim();
+                      itemChanged = true;
+                    },
+                  ),
+                ],
               ),
-              onChanged: (value) {
-                widget.group.title = value.trim();
-                itemChanged = true;
-              },
             ),
-            const SizedBox(height: 10,),
-            IconButton(
-              color: Theme.of(context).colorScheme.primary,
-              icon: const Icon(Icons.check),
-              onPressed: () {
-                saveCategory();
-              },
+            if(widget.group == null) Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Title is optional.",
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        key: const Key("done_note_group"),
+        onPressed: () {
+          saveCategory();
+        },
+        shape: const CircleBorder(),
+        child: Icon(widget.group == null ? Icons.arrow_forward : Icons.check),
       ),
     );
   }

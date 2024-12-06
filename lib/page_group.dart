@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_archive.dart';
+import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
 import 'app_config.dart';
@@ -42,9 +44,10 @@ class _PageGroupState extends State<PageGroup> {
   ModelCategory? category;
   final List<ModelGroup> _items = [];
   final List<ModelGroup> _selection = [];
-  bool selectionHasPinnedGroup = true;
-  bool isSelecting = false;
+  bool _selectionHasPinnedGroup = true;
+  bool _hasGroupsSelected = false;
   bool _isLoading = false;
+  bool _hasInitiated = false;
   bool _hasMore = true;
   int _offset = 0;
   final int _limit = 20;
@@ -71,7 +74,7 @@ class _PageGroupState extends State<PageGroup> {
     if (lastId == null){
       List<ModelCategory> categories = await ModelCategory.all();
       if (categories.isNotEmpty){
-        lastId = categories[0].id!;
+        lastId = categories.first.id!;
       }
     }
     setCategory(lastId!);
@@ -86,6 +89,7 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   Future<void> initialLoad() async {
+    setState(() => _isLoading = true);
     _items.clear();
     final topItems = await ModelGroup.all(category!.id!, 0,_limit);
     if (topItems.length == _limit){
@@ -95,7 +99,9 @@ class _PageGroupState extends State<PageGroup> {
     }
     setState(() {
       _items.addAll(topItems);
+      _isLoading = false;
     });
+    _hasInitiated = true;
   }
 
   Future<void> _fetchItems() async {
@@ -147,19 +153,19 @@ class _PageGroupState extends State<PageGroup> {
   }
 }
 
-  void createNoteGroup(String title) async {
-    if(title.isNotEmpty){
-      String categoryId = category!.id!;
-      int count = await ModelGroup.getCount(categoryId);
-      Color color = getMaterialColor(count+1);
-      String hexCode = colorToHex(color);
-      ModelGroup group = await ModelGroup.fromMap({"category_id":categoryId, "title":title, "color":hexCode});
-      await group.insert();
-      initialLoad();
-      if(mounted){
-        navigateToItems(group.id!);
-      }
-    }
+  void createNoteGroup() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageGroupAddEdit(
+          categoryId: category!.id!,
+          onUpdate: (){},
+          ),
+        settings: const RouteSettings(name: "CreateNoteGroup"),
+      )).then((noteGroup) {
+        ModelGroup? group = noteGroup;
+        if (group != null){
+          navigateToItems(group.id!);
+        }
+      });
   }
 
   void navigateToItems(String groupId){
@@ -190,16 +196,16 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   void updateSelectionHasPinnedGroup() {
-    selectionHasPinnedGroup = true;
+    _selectionHasPinnedGroup = true;
     for (ModelGroup group in _selection){
       if (group.pinned == 0){
-        selectionHasPinnedGroup = false;
+        _selectionHasPinnedGroup = false;
       }
     }
   }
   Future<void> setPinnedStatus() async {
     for (ModelGroup group in _selection){
-      if (selectionHasPinnedGroup){
+      if (_selectionHasPinnedGroup){
         group.pinned = 0;
       } else {
         group.pinned = 1;
@@ -207,7 +213,7 @@ class _PageGroupState extends State<PageGroup> {
       group.update();
     }
     _selection.clear();
-    isSelecting = false;
+    _hasGroupsSelected = false;
     if(mounted)setState(() {});
   }
   void onItemLongPressed(ModelGroup group){
@@ -215,22 +221,22 @@ class _PageGroupState extends State<PageGroup> {
       if (_selection.contains(group)) {
         _selection.remove(group);
         if (_selection.isEmpty){
-          isSelecting = false;
+          _hasGroupsSelected = false;
         }
       } else {
         _selection.add(group);
-        if (!isSelecting) isSelecting = true;
+        if (!_hasGroupsSelected) _hasGroupsSelected = true;
       }
       updateSelectionHasPinnedGroup();
     });
   }
   void onItemTapped(ModelGroup group){
-    if (isSelecting){
+    if (_hasGroupsSelected){
       setState(() {
         if (_selection.contains(group)) {
           _selection.remove(group);
           if (_selection.isEmpty){
-            isSelecting = false;
+            _hasGroupsSelected = false;
           }
         } else {
           _selection.add(group);
@@ -242,7 +248,7 @@ class _PageGroupState extends State<PageGroup> {
     }
   }
 
-  List<Widget> defaultActions(double size) {
+  List<Widget> _buildDefaultActions(double size) {
     return [
           if (!hideCategory)GestureDetector(
             onTap: (){
@@ -378,11 +384,11 @@ class _PageGroupState extends State<PageGroup> {
             ),
         ];
   }
-  List<Widget> selectionActions(){
+  List<Widget> _buildSelectionActions(){
     return [
         IconButton(
           onPressed: () {setPinnedStatus();},
-          icon: selectionHasPinnedGroup ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
+          icon: _selectionHasPinnedGroup ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
         ),
       ];
   }
@@ -392,8 +398,8 @@ class _PageGroupState extends State<PageGroup> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.sharedContents.isNotEmpty ? "Select a group" : "NTS"),
-        actions: isSelecting ? selectionActions() : defaultActions(size),
+        title: Text(widget.sharedContents.isNotEmpty ? "Select a group" : "Note to self"),
+        actions: _hasGroupsSelected ? _buildSelectionActions() : _buildDefaultActions(size),
       ),
       body: Stack(
         children:[
@@ -473,7 +479,7 @@ class _PageGroupState extends State<PageGroup> {
               },
             ),
           ),
-          Positioned(
+          if(_items.isNotEmpty)Positioned(
             bottom: 90, // Adjust for FAB height and margin
             right: 22,
             child: FloatingActionButton(
@@ -490,11 +496,28 @@ class _PageGroupState extends State<PageGroup> {
               child: const Icon(Icons.search),
             ),
           ),
+          if (_hasInitiated && _items.isEmpty && !_isLoading) Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   Text("Hi there!",style: Theme.of(context).textTheme.bodyLarge,),
+                   const SizedBox(height: 20,),
+                   Text("It's kind of looking empty in here.",style: Theme.of(context).textTheme.bodyLarge),
+                   const SizedBox(height: 20,),
+                   Text("Go ahead and tap the + button to create a new note group and write your heart out. :)",style: Theme.of(context).textTheme.bodyLarge),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        key: const Key("add_note_group"),
         onPressed: () {
-          addEditTitlePopup(context, "Add Note Group", (text){createNoteGroup(text);},);
+          createNoteGroup();
         },
         shape: const CircleBorder(),
         child: const Icon(Icons.add),

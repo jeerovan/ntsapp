@@ -15,7 +15,7 @@ import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:siri_wave/siri_wave.dart';
 import 'page_contact_pick.dart';
-import 'page_group_edit.dart';
+import 'page_group_add_edit.dart';
 import 'page_location_pick.dart';
 import 'page_media_viewer.dart';
 import 'package:video_player/video_player.dart';
@@ -806,11 +806,12 @@ class _PageItemsState extends State<PageItems> {
   void editGroup(){
     Navigator.of(context)
     .push(MaterialPageRoute(
-      builder: (context) => PageGroupEdit(
+      builder: (context) => PageGroupAddEdit(
+        categoryId: group!.categoryId,
         group: group!,
         onUpdate: (){setState(() {});},
         ),
-      settings: const RouteSettings(name: "NoteGroupEdit"),
+      settings: const RouteSettings(name: "EditNoteGroup"),
     ));
   }
 
