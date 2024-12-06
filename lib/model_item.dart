@@ -289,6 +289,16 @@ class ModelItem {
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
+  static Future<List<ModelItem>> getAllInGroup(String groupId) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      "item",
+      where: "group_id = ?",
+      whereArgs: [groupId,],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
   static Future<List<ModelItem>> getStarred(int offset, int limit) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;

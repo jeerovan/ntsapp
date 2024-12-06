@@ -54,9 +54,9 @@ class AppThemes {
     ),
     appBarTheme: const AppBarTheme(
       color: Colors.teal,
-      iconTheme: IconThemeData(color: Colors.white),
+      iconTheme: IconThemeData(color: Colors.black87),
       titleTextStyle: TextStyle(
-        color: Colors.white,
+        color: Colors.black87,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),

@@ -1,11 +1,9 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
-import 'package:ntsapp/page_archive.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,6 +11,7 @@ import 'app_config.dart';
 import 'common.dart';
 import 'model_category.dart';
 import 'model_setting.dart';
+import 'page_archived.dart';
 import 'page_items.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
@@ -20,8 +19,6 @@ import 'model_item_group.dart';
 import 'page_db.dart';
 import 'page_category.dart';
 import 'package:path/path.dart' as path;
-
-import 'widgets_item.dart';
 
 bool debug = false;
 
@@ -203,7 +200,25 @@ class _PageGroupState extends State<PageGroup> {
       }
     }
   }
-  Future<void> setPinnedStatus() async {
+  Future<void> archiveSelectedGroups() async {
+    for (ModelGroup group in _selection){
+      group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+      group.update();
+      _items.remove(group);
+    }
+    _selection.clear();
+    _hasGroupsSelected = false;
+    if(mounted){
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Moved to recycle bin",),
+          duration: Duration(seconds: 1),
+        )
+      );
+    }
+  }
+  Future<void> updatePinnedStatus() async {
     for (ModelGroup group in _selection){
       if (_selectionHasPinnedGroup){
         group.pinned = 0;
@@ -323,7 +338,7 @@ class _PageGroupState extends State<PageGroup> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const PageArchived(),
-                      settings: const RouteSettings(name: "ArchivedNotes"),
+                      settings: const RouteSettings(name: "Recycle bin"),
                     ),
                   ).then((_) {
                     initialLoad();
@@ -337,11 +352,11 @@ class _PageGroupState extends State<PageGroup> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.archive_outlined,
+                      Icons.restore,
                       color: Theme.of(context).colorScheme.primary,
                       ),
                     const SizedBox(width: 5,),
-                    const Text('Archived Notes'),
+                    const Text('Recycle bin'),
                   ],
                 ),
               ),
@@ -387,8 +402,12 @@ class _PageGroupState extends State<PageGroup> {
   List<Widget> _buildSelectionActions(){
     return [
         IconButton(
-          onPressed: () {setPinnedStatus();},
+          onPressed: () {updatePinnedStatus();},
           icon: _selectionHasPinnedGroup ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
+        ),
+        IconButton(
+          onPressed: () {archiveSelectedGroups();},
+          icon: _selectionHasPinnedGroup ? iconPinCrossed() : const Icon(Icons.delete_outline),
         ),
       ];
   }
@@ -424,56 +443,7 @@ class _PageGroupState extends State<PageGroup> {
                   child: Container(
                     color: _selection.contains(item) ? Theme.of(context).colorScheme.inversePrimary : Colors.transparent,
                     margin: const EdgeInsets.symmetric(vertical: 1),
-                    child: ListTile(
-                      leading: item.thumbnail == null
-                        ? Container(
-                            width: size,
-                            height: size,
-                            decoration: BoxDecoration(
-                              color: colorFromHex(item.color),
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center, // Center the text inside the circle
-                            child: Text(
-                              item.title[0].toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: size / 2, // Adjust font size relative to the circle size
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          )
-                      : SizedBox(
-                        width: size,
-                        height: size,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Center(
-                              child: CircleAvatar(
-                                radius: 20,
-                                backgroundImage: MemoryImage(item.thumbnail!),
-                              ),
-                            ),
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.title,
-                              overflow: TextOverflow.ellipsis, 
-                              ),
-                          ),
-                          if(item.pinned == 1)const Icon(Icons.push_pin_outlined,size: 12,),
-                        ],
-                      ),
-                      subtitle: NotePreviewSummary(
-                                item: item.lastItem,
-                                showTimestamp: true,
-                                showImagePreview: false,
-                                expanded: true,),
-                      
-                    ),
+                    child: WidgetGroup(group: item, showLastItemSummary: true),
                   ),
                 );
               },

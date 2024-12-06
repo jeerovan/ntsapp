@@ -10,6 +10,7 @@ import 'common.dart';
 import 'package:video_player/video_player.dart';
 
 import 'model_item.dart';
+import 'model_item_group.dart';
 
 
 class MessageInCenter extends StatelessWidget {
@@ -197,6 +198,79 @@ class IconButtonWithBadge extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class WidgetGroup extends StatefulWidget {
+  final ModelGroup group;
+  final bool showLastItemSummary;
+  const WidgetGroup({
+    super.key,
+    required this.group,
+    required this.showLastItemSummary,
+    });
+
+  @override
+  State<WidgetGroup> createState() => _WidgetGroupState();
+}
+
+class _WidgetGroupState extends State<WidgetGroup> {
+  @override
+  Widget build(BuildContext context) {
+    double size = 40;
+    ModelGroup item = widget.group;
+    return ListTile(
+      leading: item.thumbnail == null
+        ? Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: colorFromHex(item.color),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center, // Center the text inside the circle
+            child: Text(
+              item.title[0].toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: size / 2, // Adjust font size relative to the circle size
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
+      : SizedBox(
+        width: size,
+        height: size,
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Center(
+              child: CircleAvatar(
+                radius: 20,
+                backgroundImage: MemoryImage(item.thumbnail!),
+              ),
+            ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              item.title,
+              overflow: TextOverflow.ellipsis, 
+              ),
+          ),
+          if(item.pinned == 1)const Icon(Icons.push_pin_outlined,size: 12,),
+        ],
+      ),
+      subtitle: widget.showLastItemSummary
+                ? NotePreviewSummary(
+                    item: item.lastItem,
+                    showTimestamp: true,
+                    showImagePreview: false,
+                    expanded: true,
+                  )
+                : const SizedBox.shrink(),
     );
   }
 }

@@ -92,6 +92,19 @@ class ModelGroup {
       lastItem: item,
     );
   }
+  static Future<List<ModelGroup>> getArchived(int offset, int limit) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String,dynamic>> rows = await db.query(
+      "itemgroup",
+      where: "archived_at > ?",
+      whereArgs: [0],
+      orderBy:'at DESC',
+      offset: offset,
+      limit: limit,
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
   static Future<List<ModelGroup>> all(String categoryId, int offset, int limit) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;

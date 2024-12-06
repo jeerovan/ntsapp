@@ -164,7 +164,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     String pageTitle = widget.group == null ? "Add Group" : "Edit Group";
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageTitle,style: Theme.of(context).textTheme.labelLarge),
+        title: Text(pageTitle,),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),

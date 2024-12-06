@@ -44,7 +44,7 @@ class _PageItemsState extends State<PageItems> {
 
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
-  bool isSelecting = false;
+  bool _hasNotesSelected = false;
   bool selectionHasStarredItems = true;
   bool selectionHasTaskItems = true;
   bool selectionHasTextItems = false;
@@ -442,11 +442,11 @@ class _PageItemsState extends State<PageItems> {
       if (_selection.contains(item)) {
         _selection.remove(item);
         if (_selection.isEmpty){
-          isSelecting = false;
+          _hasNotesSelected = false;
         }
       } else {
         _selection.add(item);
-        if (!isSelecting) isSelecting = true;
+        if (!_hasNotesSelected) _hasNotesSelected = true;
       }
       updateSelectionBools();
     });
@@ -454,11 +454,11 @@ class _PageItemsState extends State<PageItems> {
   void onItemTapped(ModelItem item) async {
       if (item.type == ItemType.text){
         onItemLongPressed(item);
-      } else if (isSelecting){
+      } else if (_hasNotesSelected){
         if (_selection.contains(item)) {
           _selection.remove(item);
           if (_selection.isEmpty){
-            isSelecting = false;
+            _hasNotesSelected = false;
           }
         } else {
           _selection.add(item);
@@ -484,6 +484,14 @@ class _PageItemsState extends State<PageItems> {
         _items.remove(item);
       }
     });
+    if (mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Moved to recycle bin"),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
     clearSelection();
   }
   Future<void> updateSelectedItemsPinned() async {
@@ -522,7 +530,7 @@ class _PageItemsState extends State<PageItems> {
   void clearSelection(){
     setState(() {
       _selection.clear();
-      isSelecting = false;
+      _hasNotesSelected = false;
     });
   }
 
@@ -580,7 +588,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void addToContacts(ModelItem item){
-    if (isSelecting){
+    if (_hasNotesSelected){
       onItemTapped(item);
     }
     // TO-DO implement
@@ -835,7 +843,7 @@ class _PageItemsState extends State<PageItems> {
       ),
       IconButton(
         onPressed: (){archiveSelectedItems();},
-        icon: const Icon(Icons.archive_outlined),
+        icon: const Icon(Icons.delete_outline),
       ),
       IconButton(
         onPressed: () { updateSelectedItemsPinned();},
@@ -872,8 +880,8 @@ class _PageItemsState extends State<PageItems> {
     bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
     return Scaffold(
       appBar: AppBar(
-        actions: isSelecting ? _buildSelectionOptions() : [],
-        title: group == null || isSelecting
+        actions: _hasNotesSelected ? _buildSelectionOptions() : [],
+        title: group == null || _hasNotesSelected
               ? const SizedBox.shrink()
               : GestureDetector(
                 onTap: () {
@@ -1033,7 +1041,7 @@ class _PageItemsState extends State<PageItems> {
             ),
           ),
           // Input box with attachments and send button
-          isSelecting ? _buildSelectionClear() : _buildInputBox(),
+          _hasNotesSelected ? _buildSelectionClear() : _buildInputBox(),
         ],
       ),
     );
@@ -1066,7 +1074,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void viewMedia(ModelItem item) async {
-    if (isSelecting){
+    if (_hasNotesSelected){
       onItemTapped(item);
     } else {
       String id = item.id!;
@@ -1083,7 +1091,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void openItemMedia(ModelItem item){
-    if (isSelecting){
+    if (_hasNotesSelected){
       onItemTapped(item);
     } else {
       openMedia(item.data!["path"]);
@@ -1091,7 +1099,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void openLocation(ModelItem item){
-    if (isSelecting){
+    if (_hasNotesSelected){
       onItemTapped(item);
     } else {
       openLocationInMap(item.data!["lat"], item.data!["lng"]);

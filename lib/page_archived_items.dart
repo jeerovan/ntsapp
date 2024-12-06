@@ -7,14 +7,22 @@ import 'model_item.dart';
 import 'model_setting.dart';
 import 'widgets_item.dart';
 
-class PageArchived extends StatefulWidget {
-  const PageArchived({super.key});
+class PageArchivedItems extends StatefulWidget {
+  final Function(bool) onSelectionChange;
+  final Function(VoidCallback) setDeleteCallback;
+  final Function(VoidCallback) setRestoreCallback;
+  const PageArchivedItems({
+    super.key,
+    required this.onSelectionChange,
+    required this.setDeleteCallback,
+    required this.setRestoreCallback,
+    });
 
   @override
-  State<PageArchived> createState() => _PageArchivedState();
+  State<PageArchivedItems> createState() => _PageArchivedItemsState();
 }
 
-class _PageArchivedState extends State<PageArchived> {
+class _PageArchivedItemsState extends State<PageArchivedItems> {
   final List<ModelItem> _items = [];
   final List<ModelItem> _selection = [];
   bool _isSelecting = false;
@@ -27,6 +35,19 @@ class _PageArchivedState extends State<PageArchived> {
   void initState(){
     super.initState();
     fetchArchivedItemsOnInit();
+    widget.setDeleteCallback(() {
+      setState(() {
+        deleteSelectedItems();
+        widget.onSelectionChange(false);
+      });
+    });
+
+    widget.setRestoreCallback(() {
+      setState(() {
+        restoreSelectedItems();
+        widget.onSelectionChange(false);
+      });
+    });
   }
 
   @override
@@ -74,18 +95,30 @@ class _PageArchivedState extends State<PageArchived> {
         _selection.remove(item);
         if (_selection.isEmpty){
           _isSelecting = false;
+          widget.onSelectionChange(false);
         }
       } else {
         _selection.add(item);
-        if (!_isSelecting) _isSelecting = true;
+        if (!_isSelecting){
+          _isSelecting = true;
+          widget.onSelectionChange(true);
+        }
       }
     });
   }
 
-  Future<void> unArchiveSelectedItems() async {
+  Future<void> restoreSelectedItems() async {
     for (ModelItem item in _selection){
       item.archivedAt = 0;
       await item.update();
+    }
+    if(mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Restored.",),
+          duration: Duration(seconds: 1),
+        )
+      );
     }
     clearSelection();
     fetchArchivedItemsOnInit();
@@ -94,6 +127,14 @@ class _PageArchivedState extends State<PageArchived> {
     for (ModelItem item in _selection){
       await item.delete();
       _items.remove(item);
+    }
+    if(mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Deleted permanently.",),
+          duration: Duration(seconds: 1),
+        )
+      );
     }
     clearSelection();
     fetchArchivedItemsOnInit();
@@ -106,33 +147,11 @@ class _PageArchivedState extends State<PageArchived> {
     });
   }
 
-  Widget _buildSelectionOptions(){
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        IconButton(
-          onPressed: () { deleteSelectedItems();},
-          icon: const Icon(Icons.delete_outline),
-        ),
-        const SizedBox(width: 5,),
-        IconButton(
-          onPressed: (){unArchiveSelectedItems();},
-          icon: const Icon(Icons.unarchive_outlined),
-        ),
-        const SizedBox(width: 5,),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
     return Scaffold(
-      appBar: AppBar(
-        title: _isSelecting
-        ? _buildSelectionOptions()
-        : const Text("Archived Notes")
-      ),
       body: NotificationListener<ScrollNotification>(
               onNotification: (ScrollNotification scrollInfo) {
                 if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
