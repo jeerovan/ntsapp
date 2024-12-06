@@ -179,8 +179,8 @@ class ModelItem {
     final db = await dbHelper.database;
     List<Map<String,dynamic>> rows = await db.query(
       "item",
-      where: "type >= ? AND type < ? AND group_id = ? AND archived_at = 0",
-      whereArgs: [ItemType.text.value,ItemType.task.value+10000,groupId],
+      where: "type >= ? AND type < ? AND group_id = ? AND archived_at = 0 AND type != ?",
+      whereArgs: [ItemType.text.value,ItemType.task.value+10000,groupId,ItemType.date.value],
       orderBy:'at DESC',
       limit: 1,
     );

@@ -60,11 +60,6 @@ class _PageArchivedState extends State<PageArchived> {
             ),
           ],
           bottom: TabBar(
-            labelColor: Theme.of(context).colorScheme.onPrimary, // Text color for the selected tab
-            labelStyle: Theme.of(context).textTheme.displaySmall,
-            unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7), // Muted color for unselected tabs
-            indicatorColor: Theme.of(context).colorScheme.secondary, // Indicator color
-            indicatorWeight: 4.0, // Thickness of the indicator
             tabs: const [
               Tab(text: "Notes"), // Tab for Notes
               Tab(text: "Groups"), // Tab for Groups

@@ -39,6 +39,7 @@ class SearchPageState extends State<SearchPage> {
         setState(() {
           _searchQuery = query;
         });
+        _offset = 0;
         _performSearch(query);
       }
     });
@@ -106,7 +107,7 @@ class SearchPageState extends State<SearchPage> {
                     final item = _items[index];
                     return GestureDetector(
                       onTap: () {
-                        if(item.item.archivedAt == 0) {
+                        if(item.item.archivedAt == 0 && item.group!.archivedAt == 0) {
                           Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => PageItems(
                             groupId: item.group!.id!,
@@ -181,19 +182,24 @@ class SearchPageState extends State<SearchPage> {
 
   Widget _buildCategoryGroupHeader(ModelSearchItem search) {
     ModelItem item = search.item;
+    List<String> headerParts = [];
+    if (search.category!.title != "DND"){
+      headerParts.add(search.category!.title);
+    }
+    headerParts.add(search.group!.title);
+    String header = headerParts.join(" > ");
     return Row(
             children: [
-              Expanded(
-                child: Text(
-                    '${search.category!.title} > ${search.group!.title}',
-                    style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              Text(
+                  header,
+                  style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if(item.archivedAt! > 0) Icon(Icons.archive_outlined,size: 14,color: Theme.of(context).colorScheme.inversePrimary,),
+              const SizedBox(width: 2,),
+              if(item.archivedAt! > 0 || search.group!.archivedAt! > 0) Icon(Icons.delete_outline,size: 15,color: Theme.of(context).colorScheme.inversePrimary,),
             ],
           );
   }

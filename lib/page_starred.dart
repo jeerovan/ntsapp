@@ -112,6 +112,14 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
       await item.update();
     }
+    if(mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Moved to recycle bin",),
+          duration: Duration(seconds: 1),
+        )
+      );
+    }
     clearSelection();
     fetchStarredItemsOnInit();
   }
@@ -142,7 +150,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
         const SizedBox(width: 5,),
         IconButton(
           onPressed: (){archiveSelectedItems();},
-          icon: const Icon(Icons.archive_outlined),
+          icon: const Icon(Icons.delete_outline),
         ),
         const SizedBox(width: 5,),
       ],

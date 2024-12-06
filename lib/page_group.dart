@@ -353,7 +353,6 @@ class _PageGroupState extends State<PageGroup> {
                   children: [
                     Icon(
                       Icons.restore,
-                      color: Theme.of(context).colorScheme.primary,
                       ),
                     const SizedBox(width: 5,),
                     const Text('Recycle bin'),
@@ -366,7 +365,6 @@ class _PageGroupState extends State<PageGroup> {
                   children: [
                     Icon(
                       Icons.star_outline,
-                      color: Theme.of(context).colorScheme.primary,
                       ),
                     const SizedBox(width: 5,),
                     const Text('Starred Notes'),
@@ -379,7 +377,6 @@ class _PageGroupState extends State<PageGroup> {
                   children: [
                     Icon(
                       Icons.settings,
-                      color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: 5,),
                     const Text('Settings'),
@@ -462,7 +459,7 @@ class _PageGroupState extends State<PageGroup> {
                 ));
               },
               shape: const CircleBorder(),
-              backgroundColor: Theme.of(context).colorScheme.secondary,
+              backgroundColor: Theme.of(context).colorScheme.onPrimary,
               child: const Icon(Icons.search),
             ),
           ),

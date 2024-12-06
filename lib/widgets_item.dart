@@ -506,7 +506,7 @@ class NotePreviewSummary extends StatelessWidget {
 
   IconData _getIcon() {
     if (item == null){
-      return Icons.text_snippet;
+      return Icons.notes;
     } else {
       switch (item!.type) {
         case ItemType.text:
