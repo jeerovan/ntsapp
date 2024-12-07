@@ -61,7 +61,7 @@ class _MainAppState extends State<MainApp> {
 
   // sharing intent
   late StreamSubscription _intentSub;
-  final List<String> _sharedContents = [];
+  List<String> _sharedContents = [];
 
   @override
   void initState() {

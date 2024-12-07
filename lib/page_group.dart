@@ -52,12 +52,11 @@ class _PageGroupState extends State<PageGroup> {
   // hide category
   bool hideCategory = true;
 
-  bool loadedSharedContents = true;
+  bool loadedSharedContents = false;
 
   @override
   void initState() {
     super.initState();
-    loadedSharedContents = widget.sharedContents.isEmpty;
     checkAuthAndLoad();
   }
 
@@ -169,7 +168,7 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   void navigateToItems(String groupId){
-    List<String> sharedContents = loadedSharedContents ? [] : widget.sharedContents;
+    List<String> sharedContents = loadedSharedContents || widget.sharedContents.isEmpty ? [] : widget.sharedContents;
     loadedSharedContents = true;
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageItems(
@@ -418,7 +417,7 @@ class _PageGroupState extends State<PageGroup> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: Text(loadedSharedContents ?  "Note to self": "Select a group"),
+        title: Text(loadedSharedContents || widget.sharedContents.isEmpty ?  "Note to self": "Select a group"),
         actions: _hasGroupsSelected ? _buildSelectionActions() : _buildDefaultActions(size),
       ),
       body: Stack(
@@ -436,7 +435,7 @@ class _PageGroupState extends State<PageGroup> {
                 final item = _items[index];
                 return GestureDetector(
                   onLongPress: (){
-                    if(loadedSharedContents)onItemLongPressed(item);
+                    if(loadedSharedContents || widget.sharedContents.isEmpty)onItemLongPressed(item);
                   },
                   onTap: (){
                     onItemTapped(item);
