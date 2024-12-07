@@ -1,15 +1,17 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'model_category.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'common.dart';
+import 'model_category.dart';
 
 class AddEditCategory extends StatefulWidget {
   final String? categoryId;
   final Function() onUpdate;
-  const AddEditCategory({super.key,this.categoryId,required this.onUpdate});
+
+  const AddEditCategory({super.key, this.categoryId, required this.onUpdate});
 
   @override
   State<AddEditCategory> createState() => _AddEditCategoryState();
@@ -32,9 +34,10 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   }
 
   Future<void> _loadCategory() async {
-    if (widget.categoryId != null){
-      ModelCategory? existingCategory = await ModelCategory.get(widget.categoryId!);
-      if (existingCategory != null){
+    if (widget.categoryId != null) {
+      ModelCategory? existingCategory =
+          await ModelCategory.get(widget.categoryId!);
+      if (existingCategory != null) {
         setState(() {
           category = existingCategory;
           image = category!.thumbnail;
@@ -46,8 +49,7 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   }
 
   Future<void> _getPicture(ImageSource source) async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: source);
+    final pickedFile = await ImagePicker().pickImage(source: source);
     setState(() {
       processing = true;
     });
@@ -60,8 +62,9 @@ class _AddEditCategoryState extends State<AddEditCategory> {
       processing = false;
     });
   }
+
   Future<void> _showMediaPickerDialog() async {
-    if(ImagePicker().supportsImageSource(ImageSource.camera)){
+    if (ImagePicker().supportsImageSource(ImageSource.camera)) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -97,12 +100,13 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   }
 
   void saveCategory() async {
-    if (itemChanged && title.isNotEmpty){
-      if (category == null){
+    if (itemChanged && title.isNotEmpty) {
+      if (category == null) {
         int count = await ModelCategory.getCount();
-        Color color = getMaterialColor(count+1);
+        Color color = getMaterialColor(count + 1);
         String hexCode = colorToHex(color);
-        ModelCategory newCategory = await ModelCategory.fromMap({"title":title,"color":hexCode,"thumbnail":image});
+        ModelCategory newCategory = await ModelCategory.fromMap(
+            {"title": title, "color": hexCode, "thumbnail": image});
         await newCategory.insert();
       } else {
         category!.thumbnail = image;
@@ -111,37 +115,40 @@ class _AddEditCategoryState extends State<AddEditCategory> {
       }
       widget.onUpdate();
     }
-    if(mounted)Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
   }
 
   Widget getBoxContent() {
     double size = 100;
     if (processing) {
-        return  const CircularProgressIndicator();
+      return const CircularProgressIndicator();
     } else if (image != null) {
-        return ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                child: Center(
-                  child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: MemoryImage(image!),
-                    ),
-                ),
-              ),
-          );
-    } else if (title.isNotEmpty){
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          child: Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundImage: MemoryImage(image!),
+            ),
+          ),
+        ),
+      );
+    } else if (title.isNotEmpty) {
       return Text(
-              title[0].toUpperCase(),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: size / 2, // Adjust font size relative to the circle size
-                fontWeight: FontWeight.bold,
-              ),
-            );
+        title[0].toUpperCase(),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size / 2, // Adjust font size relative to the circle size
+          fontWeight: FontWeight.bold,
+        ),
+      );
     } else {
-      return const Text("Tap here.",style: TextStyle(color: Colors.black),);
+      return const Text(
+        "Tap here.",
+        style: TextStyle(color: Colors.black),
+      );
     }
   }
 
@@ -154,14 +161,21 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   Widget build(BuildContext context) {
     String task = category == null ? "Add" : "Edit";
     double size = 100;
-    Color circleColor = category == null ? const Color.fromARGB(255, 207, 207, 207) : colorFromHex(category!.color);
+    Color circleColor = category == null
+        ? const Color.fromARGB(255, 207, 207, 207)
+        : colorFromHex(category!.color);
     return Scaffold(
       appBar: AppBar(
-        title: Text("$task Category",style: const TextStyle(fontSize: 20,)),
+        title: Text("$task Category",
+            style: const TextStyle(
+              fontSize: 20,
+            )),
       ),
       body: Column(
         children: [
-          const SizedBox(height: 20,),
+          const SizedBox(
+            height: 20,
+          ),
           Expanded(
             child: Column(
               children: [
@@ -176,10 +190,9 @@ class _AddEditCategoryState extends State<AddEditCategory> {
                       color: circleColor,
                       shape: BoxShape.circle,
                     ),
-                    alignment: Alignment.center, // Center the text inside the circle
-                    child: Center(
-                      child: getBoxContent()
-                    ),
+                    alignment: Alignment.center,
+                    // Center the text inside the circle
+                    child: Center(child: getBoxContent()),
                   ),
                 ),
                 Padding(

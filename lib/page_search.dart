@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/widgets_item.dart';
+
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
@@ -9,7 +11,9 @@ import 'model_search_item.dart';
 import 'page_items.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key,});
+  const SearchPage({
+    super.key,
+  });
 
   @override
   SearchPageState createState() => SearchPageState();
@@ -46,10 +50,10 @@ class SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _performSearch(String query) async {
-    if (query.isEmpty){
+    if (query.isEmpty) {
       _items.clear();
       return;
-    } else if (query.length < 2){
+    } else if (query.length < 2) {
       return;
     }
     final newItems = await ModelSearchItem.all(query, _offset, _limit);
@@ -86,8 +90,8 @@ class SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-                title: const Text("Search Notes"),
-              ),
+        title: const Text("Search Notes"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -96,29 +100,32 @@ class SearchPageState extends State<SearchPage> {
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (ScrollNotification scrollInfo) {
-                  if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                  if (scrollInfo.metrics.pixels ==
+                      scrollInfo.metrics.maxScrollExtent) {
                     _searchAfterScroll();
                   }
                   return false;
                 },
                 child: ListView.builder(
-                  itemCount: _items.length, // Additional item for the loading indicator
+                  itemCount: _items.length,
+                  // Additional item for the loading indicator
                   itemBuilder: (context, index) {
                     final item = _items[index];
                     return GestureDetector(
                       onTap: () {
-                        if(item.item.archivedAt == 0 && item.group!.archivedAt == 0) {
+                        if (item.item.archivedAt == 0 &&
+                            item.group!.archivedAt == 0) {
                           Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => PageItems(
-                            groupId: item.group!.id!,
-                            sharedContents: const [],
-                            loadItemId:item.item.id!),
-                          settings: const RouteSettings(name: "Notes")
-                        ));
+                              builder: (context) => PageItems(
+                                  groupId: item.group!.id!,
+                                  sharedContents: const [],
+                                  loadItemId: item.item.id!),
+                              settings: const RouteSettings(name: "Notes")));
                         }
                       },
                       child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
@@ -183,56 +190,60 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildCategoryGroupHeader(ModelSearchItem search) {
     ModelItem item = search.item;
     List<String> headerParts = [];
-    if (search.category!.title != "DND"){
+    if (search.category!.title != "DND") {
       headerParts.add(search.category!.title);
     }
     headerParts.add(search.group!.title);
     String header = headerParts.join(" > ");
     return Row(
-            children: [
-              Text(
-                  header,
-                  style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 2,),
-              if(item.archivedAt! > 0 || search.group!.archivedAt! > 0) Icon(Icons.delete_outline,size: 15,color: Theme.of(context).colorScheme.inversePrimary,),
-            ],
-          );
+      children: [
+        Text(
+          header,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(
+          width: 2,
+        ),
+        if (item.archivedAt! > 0 || search.group!.archivedAt! > 0)
+          Icon(
+            Icons.delete_outline,
+            size: 15,
+            color: Theme.of(context).colorScheme.inversePrimary,
+          ),
+      ],
+    );
   }
 
-  Widget _buildTaskItem(ModelSearchItem search){
+  Widget _buildTaskItem(ModelSearchItem search) {
     ModelItem item = search.item;
-    return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCategoryGroupHeader(search),
-              ItemWidgetTask(item: item,),
-            ]
-          );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildCategoryGroupHeader(search),
+      ItemWidgetTask(
+        item: item,
+      ),
+    ]);
   }
 
-  Widget _buildTextItem(ModelSearchItem search){
+  Widget _buildTextItem(ModelSearchItem search) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
-    return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCategoryGroupHeader(search),
-              const SizedBox(height: 5),
-              Text(item.text),
-              const SizedBox(height: 5),
-              Text(
-                formattedTime,
-                style: const TextStyle(fontSize: 10),
-              ),
-            ]
-          );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildCategoryGroupHeader(search),
+      const SizedBox(height: 5),
+      Text(item.text),
+      const SizedBox(height: 5),
+      Text(
+        formattedTime,
+        style: const TextStyle(fontSize: 10),
+      ),
+    ]);
   }
-  Widget _buildImageItem(ModelSearchItem search){
+
+  Widget _buildImageItem(ModelSearchItem search) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Row(
@@ -262,10 +273,11 @@ class SearchPageState extends State<SearchPage> {
       ],
     );
   }
-  Widget _buildVideoItem(ModelSearchItem search){
+
+  Widget _buildVideoItem(ModelSearchItem search) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
-     return Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
@@ -276,14 +288,18 @@ class SearchPageState extends State<SearchPage> {
             Row(
               children: [
                 const Icon(Icons.videocam, size: 20),
-                const SizedBox(width: 2,),
+                const SizedBox(
+                  width: 2,
+                ),
                 Text(
                   item.data!["duration"],
                   style: const TextStyle(color: Colors.white, fontSize: 10),
                 ),
               ],
             ),
-            const SizedBox(height: 5,),
+            const SizedBox(
+              height: 5,
+            ),
             Text(
               formattedTime,
               style: const TextStyle(fontSize: 10),
@@ -294,131 +310,135 @@ class SearchPageState extends State<SearchPage> {
           borderRadius: BorderRadius.circular(10),
           child: SizedBox(
             width: 50,
-            height: 50/item.data!["aspect"],
+            height: 50 / item.data!["aspect"],
             child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
           ),
         ),
       ],
     );
   }
-  Widget _buildAudioItem(ModelSearchItem search){
+
+  Widget _buildAudioItem(ModelSearchItem search) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildCategoryGroupHeader(search),
-        const SizedBox(height: 5),
-        Row(
-          children: [
-            // File size text at the left
-            Row(
-              children: [
-                const Icon(Icons.audiotrack,size: 15),
-                const SizedBox(width: 2,),
-                Text(
-                  item.data!["duration"],
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ],
-            ),
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text(
-                    item.data!["name"],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle( fontSize: 15),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        Text(
-          formattedTime,
-          style: const TextStyle(fontSize: 10),
-        ),
-      ]
-    );
-  }
-  Widget _buildDocumentItem(ModelSearchItem search){
-    ModelItem item = search.item;
-    String formattedTime = getFormattedTime(item.at!);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildCategoryGroupHeader(search),
-        const SizedBox(height: 5),
-        Row(
-          children: [
-            // File size text at the left
-            Row(
-              children: [
-                const Icon(Icons.insert_drive_file,size: 15),
-                const SizedBox(width: 2,),
-                Text(
-                  readableBytes(item.data!["size"]),
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ],
-            ),
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text(
-                    item.data!["name"],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle( fontSize: 15),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        Text(
-          formattedTime,
-          style: const TextStyle(fontSize: 10),
-        ),
-      ]
-    );
-  }
-  Widget _buildLocationItem(ModelSearchItem search){
-    ModelItem item = search.item;
-    String formattedTime = getFormattedTime(item.at!);
-    return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildCategoryGroupHeader(search),
+      const SizedBox(height: 5),
+      Row(
+        children: [
+          // File size text at the left
+          Row(
             children: [
-              _buildCategoryGroupHeader(search),
-              const SizedBox(height: 5),
-              const Row(
-                //mainAxisSize: MainAxisSize.max,
-                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    color: Colors.blue,
-                    size: 25,
-                  ),
-                  SizedBox(width: 10,),
-                  Text(
-                    "Location",
-                    style: TextStyle( fontSize: 15),
-                  ),
-                ],
+              const Icon(Icons.audiotrack, size: 15),
+              const SizedBox(
+                width: 2,
               ),
               Text(
-                formattedTime,
-                style: const TextStyle( fontSize: 10),
+                item.data!["duration"],
+                style: const TextStyle(fontSize: 10),
               ),
             ],
-          );
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text(
+                  item.data!["name"],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      Text(
+        formattedTime,
+        style: const TextStyle(fontSize: 10),
+      ),
+    ]);
   }
-  Widget _buildContactItem(ModelSearchItem search){
+
+  Widget _buildDocumentItem(ModelSearchItem search) {
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildCategoryGroupHeader(search),
+      const SizedBox(height: 5),
+      Row(
+        children: [
+          // File size text at the left
+          Row(
+            children: [
+              const Icon(Icons.insert_drive_file, size: 15),
+              const SizedBox(
+                width: 2,
+              ),
+              Text(
+                readableBytes(item.data!["size"]),
+                style: const TextStyle(fontSize: 10),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text(
+                  item.data!["name"],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      Text(
+        formattedTime,
+        style: const TextStyle(fontSize: 10),
+      ),
+    ]);
+  }
+
+  Widget _buildLocationItem(ModelSearchItem search) {
+    ModelItem item = search.item;
+    String formattedTime = getFormattedTime(item.at!);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildCategoryGroupHeader(search),
+        const SizedBox(height: 5),
+        const Row(
+          //mainAxisSize: MainAxisSize.max,
+          //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Icon(
+              Icons.location_on,
+              color: Colors.blue,
+              size: 25,
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text(
+              "Location",
+              style: TextStyle(fontSize: 15),
+            ),
+          ],
+        ),
+        Text(
+          formattedTime,
+          style: const TextStyle(fontSize: 10),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContactItem(ModelSearchItem search) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Column(
@@ -426,46 +446,47 @@ class SearchPageState extends State<SearchPage> {
       children: [
         _buildCategoryGroupHeader(search),
         ListTile(
-          leading:
-            item.thumbnail != null
-            ? CircleAvatar(
-                radius: 25,
-                backgroundImage: MemoryImage(item.thumbnail!),
-              )
-            : const CircleAvatar(
-                radius: 25,
-                child: Icon(Icons.person,size:25),
-              ),
-          title:
-            Text(
-              '${item.data!["name"]}'.trim(),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold,),
-              overflow: TextOverflow.ellipsis,
-            ),
-          subtitle:
-            Row(
-              children: [
-                const Icon(Icons.phone, size: 15, color: Colors.blue),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ...item.data!["phones"].map((phone) => 
-                      Text(
-                        phone,
-                        style: const TextStyle(fontSize: 10,),
-                        overflow: TextOverflow.ellipsis,
-                      ))
-                    ],
-                  ),
+          leading: item.thumbnail != null
+              ? CircleAvatar(
+                  radius: 25,
+                  backgroundImage: MemoryImage(item.thumbnail!),
+                )
+              : const CircleAvatar(
+                  radius: 25,
+                  child: Icon(Icons.person, size: 25),
                 ),
-              ],
+          title: Text(
+            '${item.data!["name"]}'.trim(),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Row(
+            children: [
+              const Icon(Icons.phone, size: 15, color: Colors.blue),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...item.data!["phones"].map((phone) => Text(
+                          phone,
+                          style: const TextStyle(
+                            fontSize: 10,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ))
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         Text(
           formattedTime,
-          style: const TextStyle( fontSize: 10),
+          style: const TextStyle(fontSize: 10),
         ),
       ],
     );

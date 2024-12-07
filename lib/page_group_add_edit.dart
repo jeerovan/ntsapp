@@ -1,20 +1,22 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'model_item_group.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'common.dart';
+import 'model_item_group.dart';
 
 class PageGroupAddEdit extends StatefulWidget {
   final String categoryId;
   final ModelGroup? group;
   final Function() onUpdate;
-  const PageGroupAddEdit({
-    super.key,
-    required this.categoryId,
-    this.group,
-    required this.onUpdate});
+
+  const PageGroupAddEdit(
+      {super.key,
+      required this.categoryId,
+      this.group,
+      required this.onUpdate});
 
   @override
   PageGroupAddEditState createState() => PageGroupAddEditState();
@@ -43,10 +45,10 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   }
 
   Future<void> init() async {
-    if (widget.group == null){
+    if (widget.group == null) {
       itemChanged = true;
       int count = await ModelGroup.getCount(widget.categoryId);
-      Color color = getMaterialColor(count+1);
+      Color color = getMaterialColor(count + 1);
       colorCode = colorToHex(color);
     } else {
       colorCode = widget.group!.color;
@@ -54,12 +56,11 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     title = widget.group == null ? dateTitle : widget.group!.title;
     titleController.text = title!;
     thumbnail = widget.group?.thumbnail;
-    if(mounted)setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _getPicture(ImageSource source) async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: source);
+    final pickedFile = await ImagePicker().pickImage(source: source);
     setState(() {
       processing = true;
     });
@@ -75,13 +76,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
 
   Future<void> saveCategory() async {
     ModelGroup? updatedGroup;
-    if (itemChanged){
-      if (widget.group == null){
+    if (itemChanged) {
+      if (widget.group == null) {
         updatedGroup = await ModelGroup.fromMap({
-          "category_id":widget.categoryId, 
-          "thumbnail":thumbnail,
-          "title":title, 
-          "color":colorCode});
+          "category_id": widget.categoryId,
+          "thumbnail": thumbnail,
+          "title": title,
+          "color": colorCode
+        });
         await updatedGroup.insert();
       } else {
         widget.group!.thumbnail = thumbnail;
@@ -90,40 +92,40 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       }
       widget.onUpdate();
     }
-    if(mounted)Navigator.of(context).pop(updatedGroup);
+    if (mounted) Navigator.of(context).pop(updatedGroup);
   }
 
   Widget getBoxContent() {
     double size = 100;
     if (processing) {
-      return  const CircularProgressIndicator();
+      return const CircularProgressIndicator();
     } else if (thumbnail != null) {
       return ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: Center(
-                child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: MemoryImage(thumbnail!),
-                  ),
-              ),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          child: Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundImage: MemoryImage(thumbnail!),
             ),
+          ),
+        ),
       );
     } else {
       return Text(
-              title == null ? "" : title![0].toUpperCase(),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: size / 2, // Adjust font size relative to the circle size
-                fontWeight: FontWeight.bold,
-              ),
-            );
+        title == null ? "" : title![0].toUpperCase(),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size / 2, // Adjust font size relative to the circle size
+          fontWeight: FontWeight.bold,
+        ),
+      );
     }
   }
 
   Future<void> _showMediaPickerDialog() async {
-    if(ImagePicker().supportsImageSource(ImageSource.camera)){
+    if (ImagePicker().supportsImageSource(ImageSource.camera)) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -164,13 +166,17 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     String pageTitle = widget.group == null ? "Add Group" : "Edit Group";
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageTitle,),
+        title: Text(
+          pageTitle,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            const SizedBox(height: 10,),
+            const SizedBox(
+              height: 10,
+            ),
             GestureDetector(
               onTap: () async {
                 _showMediaPickerDialog();
@@ -182,7 +188,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                   color: colorFromHex(colorCode ?? "000000"),
                   shape: BoxShape.circle,
                 ),
-                alignment: Alignment.center, // Center the text inside the circle
+                alignment: Alignment.center,
+                // Center the text inside the circle
                 child: Center(child: getBoxContent()),
               ),
             ),
@@ -204,13 +211,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 ],
               ),
             ),
-            if(widget.group == null) Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Title is optional.",
-                style: Theme.of(context).textTheme.bodyLarge,
+            if (widget.group == null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Title is optional.",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
               ),
-            ),
           ],
         ),
       ),

@@ -3,15 +3,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 import 'app_config.dart';
-import 'page_group.dart';
 import 'database_helper.dart';
 import 'model_setting.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'page_group.dart';
 import 'themes.dart';
 
 // Set to false if running on Desktop
@@ -80,16 +82,18 @@ class _MainAppState extends State<MainApp> {
       default:
         // Default to system theme
         _themeMode = ThemeMode.system;
-        isDark = PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+        isDark =
+            PlatformDispatcher.instance.platformBrightness == Brightness.dark;
         break;
     }
     //sharing intent
-    if (mobile){
+    if (mobile) {
       // Listen to media sharing coming from outside the app while the app is in the memory.
-      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((sharedContents) {
+      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+          (sharedContents) {
         setState(() {
           _sharedContents.clear();
-          for(SharedMediaFile sharedContent in sharedContents) {
+          for (SharedMediaFile sharedContent in sharedContents) {
             _sharedContents.add(sharedContent.path);
           }
         });
@@ -101,7 +105,7 @@ class _MainAppState extends State<MainApp> {
       ReceiveSharingIntent.instance.getInitialMedia().then((sharedContents) {
         setState(() {
           _sharedContents.clear();
-          for(SharedMediaFile sharedContent in sharedContents) {
+          for (SharedMediaFile sharedContent in sharedContents) {
             _sharedContents.add(sharedContent.path);
           }
           // Tell the library that we are done processing the intent.
@@ -112,11 +116,10 @@ class _MainAppState extends State<MainApp> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _intentSub.cancel();
     super.dispose();
   }
-
 
   // Toggle between light and dark modes
   Future<void> _toggleTheme() async {
@@ -129,20 +132,23 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
-    String processMedia = ModelSetting.getForKey("process_media","no");
+    String processMedia = ModelSetting.getForKey("process_media", "no");
     Widget page = PageGroup(
-        sharedContents: _sharedContents,
+      sharedContents: _sharedContents,
+      isDarkMode: isDark,
+      onThemeToggle: _toggleTheme,
+    );
+    if (processMedia == "yes") {
+      page = PageMediaMigration(
         isDarkMode: isDark,
-        onThemeToggle: _toggleTheme,);
-    if (processMedia == "yes"){
-        page = PageMediaMigration(
-          isDarkMode: isDark,
-          onThemeToggle: _toggleTheme,);
+        onThemeToggle: _toggleTheme,
+      );
     }
     return MaterialApp(
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-      themeMode: _themeMode, // Uses system theme by default
+      themeMode: _themeMode,
+      // Uses system theme by default
       home: page,
       navigatorObservers: [
         SentryNavigatorObserver(),

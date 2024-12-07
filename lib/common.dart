@@ -1,22 +1,21 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:path/path.dart' as path;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'dart:math' as math;
-import 'package:path/path.dart' as path;
-import 'package:image/image.dart' as img;
 
 import 'app_config.dart';
-
 
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
@@ -77,10 +76,11 @@ Future<void> openURL(String link) async {
     debugPrint('Error opening: $e');
   }
 }
+
 void openMedia(String filePath) async {
-  try{
+  try {
     OpenFilex.open(filePath);
-  } catch(e) {
+  } catch (e) {
     debugPrint(e.toString());
   }
 }
@@ -111,7 +111,8 @@ void showProcessingDialog(BuildContext context) {
     barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         child: const Padding(
           padding: EdgeInsets.all(24.0),
           child: Row(
@@ -175,8 +176,9 @@ String getTodayDate() {
   return '$year$monthFormatted$dayFormatted';
 }
 
-String getDateFromUtcMilliSeconds(int utcMilliSeconds){
-  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
+String getDateFromUtcMilliSeconds(int utcMilliSeconds) {
+  final DateTime dateTime =
+      DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
   int year = dateTime.year;
   int month = dateTime.month;
   int date = dateTime.day;
@@ -195,30 +197,44 @@ String getReadableDate(DateTime date) {
   } else if (date.isAfter(yesterday)) {
     return "Yesterday";
   } else if (now.difference(date).inDays < 7) {
-    return DateFormat('EEEE').format(date); // Day of the week for the last 7 days
+    return DateFormat('EEEE')
+        .format(date); // Day of the week for the last 7 days
   } else {
-    return DateFormat('MMMM d, yyyy').format(date); // Full date for older messages
+    return DateFormat('MMMM d, yyyy')
+        .format(date); // Full date for older messages
   }
 }
 
 String getNoteGroupDateTitle() {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
   final now = DateTime.now();
-  final dayOfWeek = days[now.weekday-1];
+  final dayOfWeek = days[now.weekday - 1];
   final day = now.day.toString().padLeft(2, '0'); // Ensure 2 digits
-  final month = months[now.month-1];
+  final month = months[now.month - 1];
   final year = now.year % 100; // Last two digits of the year
 
   return "$dayOfWeek $day $month'$year";
 }
 
-String getFormattedTime(int utcMilliSeconds){
-  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
-  final String formattedTime = DateFormat('hh:mm a').format(dateTime.toLocal()); // Converts to local time and formats
+String getFormattedTime(int utcMilliSeconds) {
+  final DateTime dateTime =
+      DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
+  final String formattedTime = DateFormat('hh:mm a')
+      .format(dateTime.toLocal()); // Converts to local time and formats
   return formattedTime;
 }
 
@@ -263,7 +279,7 @@ String getImageDimension(Uint8List bytes) {
   return '0x0';
 }
 
-Uint8List getBlankImage(int size){
+Uint8List getBlankImage(int size) {
   int width = size;
   int height = size;
   final img.Image blankImage = img.Image(width: width, height: height);
@@ -286,20 +302,22 @@ String readableBytes(int bytes, [int decimals = 2]) {
   return "${size.toStringAsFixed(decimals)} ${suffixes[i]}";
 }
 
-Color getMaterialColor(int index){
+Color getMaterialColor(int index) {
   return Colors.primaries[index % Colors.primaries.length];
 }
+
 Color colorFromHex(String hexString) {
   hexString = hexString.replaceFirst('#', ''); // Remove # if present
   int colorInt = int.parse(hexString, radix: 16);
   return Color(colorInt);
 }
+
 String colorToHex(Color color) {
   return '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
 }
 
-Future<File?> getFile(String fileType,String fileName) async {
-  String filePath = await getMediaPath(fileType,fileName);
+Future<File?> getFile(String fileType, String fileName) async {
+  String filePath = await getMediaPath(fileType, fileName);
   File file = File(filePath);
   if (file.existsSync()) {
     return file;
@@ -307,13 +325,13 @@ Future<File?> getFile(String fileType,String fileName) async {
   return null;
 }
 
-Future<String> getMediaPath(String fileType,String fileName) async {
+Future<String> getMediaPath(String fileType, String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
   String mediaDir = AppConfig.get("media_dir");
-  return path.join(directory.path,mediaDir, fileType,fileName);
+  return path.join(directory.path, mediaDir, fileType, fileName);
 }
 
-void copyFile(Map<String,String> mediaData) {
+void copyFile(Map<String, String> mediaData) {
   File systemFile = File(mediaData["oldPath"]!);
   String newPath = mediaData["newPath"]!;
   systemFile.copySync(newPath);
@@ -329,66 +347,69 @@ Future<void> checkAndCreateDirectory(String filePath) async {
   }
 }
 
-Future<Map<String,dynamic>> processAndGetFileAttributes(String filePath) async {
+Future<Map<String, dynamic>> processAndGetFileAttributes(
+    String filePath) async {
   File file = File(filePath);
   String fileName = basename(file.path);
   int fileSize = file.lengthSync();
   String mime = "application/unknown";
   String? fileMime = lookupMimeType(filePath);
-  if (fileMime != null){
+  if (fileMime != null) {
     mime = fileMime;
   }
   String directory = mime.split("/").first;
-  File? existing = await getFile(directory,fileName);
+  File? existing = await getFile(directory, fileName);
   String newPath = await getMediaPath(directory, fileName);
   await checkAndCreateDirectory(newPath);
-  if(existing == null){
-    Map<String,String> mediaData = {"oldPath":filePath,"newPath":newPath};
+  if (existing == null) {
+    Map<String, String> mediaData = {"oldPath": filePath, "newPath": newPath};
     // TODO if file is in cache, rename it to move to newPath
-    await compute(copyFile,mediaData);
+    await compute(copyFile, mediaData);
   }
-  return {"path":newPath,"name":fileName,"size":fileSize,"mime":mime};
+  return {"path": newPath, "name": fileName, "size": fileSize, "mime": mime};
 }
 
-void addEditTitlePopup(BuildContext context, String title, Function(String) onSubmit, [String initialText = ""]) {
-    final TextEditingController controller = TextEditingController(text: initialText);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: TextField(
-            controller: controller,
-            maxLines: 1,
-            decoration: const InputDecoration(
-              hintText: 'Enter text here...',
-            ),
+void addEditTitlePopup(
+    BuildContext context, String title, Function(String) onSubmit,
+    [String initialText = ""]) {
+  final TextEditingController controller =
+      TextEditingController(text: initialText);
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          maxLines: 1,
+          decoration: const InputDecoration(
+            hintText: 'Enter text here...',
           ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Save'),
-              onPressed: () {
-                onSubmit(controller.text.trim());
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Save'),
+            onPressed: () {
+              onSubmit(controller.text.trim());
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
 Future<String?> getAudioDuration(String filePath) async {
   final player = AudioPlayer();
   String? audioDuration;
   try {
-    
     // Retrieve duration after the audio is loaded
     player.onDurationChanged.listen((duration) {
       audioDuration = mediaFileDuration(duration.inSeconds);
@@ -400,7 +421,6 @@ Future<String?> getAudioDuration(String filePath) async {
     // Play briefly to trigger duration loading, then immediately stop
     await player.resume();
     await player.pause();
-
   } catch (e) {
     debugPrint(e.toString());
   } finally {
@@ -409,19 +429,22 @@ Future<String?> getAudioDuration(String filePath) async {
   return audioDuration;
 }
 
-Future<void> openLocationInMap(double latitude,double longitude) async {
-    final googleMapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
-    final appleMapsUri = Uri.parse('https://maps.apple.com/?q=$latitude,$longitude');
+Future<void> openLocationInMap(double latitude, double longitude) async {
+  final googleMapsUri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+  final appleMapsUri =
+      Uri.parse('https://maps.apple.com/?q=$latitude,$longitude');
 
-    if (await canLaunchUrl(googleMapsUri)) {
-      await launchUrl(googleMapsUri);
-    } else if (await canLaunchUrl(appleMapsUri)) {
-      await launchUrl(appleMapsUri);
-    } else {
-      // Open Google Maps URL in the browser as a fallback
-      await launchUrl(
-        googleMapsUri,
-        mode: LaunchMode.externalApplication, // Ensures it opens in the external browser
-      );
-    }
+  if (await canLaunchUrl(googleMapsUri)) {
+    await launchUrl(googleMapsUri);
+  } else if (await canLaunchUrl(appleMapsUri)) {
+    await launchUrl(appleMapsUri);
+  } else {
+    // Open Google Maps URL in the browser as a fallback
+    await launchUrl(
+      googleMapsUri,
+      mode: LaunchMode
+          .externalApplication, // Ensures it opens in the external browser
+    );
   }
+}

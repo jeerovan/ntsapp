@@ -1,18 +1,19 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 import 'app_config.dart';
 import 'common.dart';
-import 'package:path/path.dart' as path;
 import 'database_helper.dart';
 import 'enum_item_type.dart';
 import 'model_category.dart';
-import 'model_item_group.dart';
 import 'model_item.dart';
+import 'model_item_group.dart';
 import 'model_setting.dart';
 
 Future<String> createBackup(String baseDirPath) async {
@@ -20,16 +21,16 @@ Future<String> createBackup(String baseDirPath) async {
 
   // empty db backup directory
   String backupDir = AppConfig.get("backup_dir");
-  final String dbFilesDirPath = path.join(baseDirPath,backupDir);
+  final String dbFilesDirPath = path.join(baseDirPath, backupDir);
   await emptyDir(dbFilesDirPath);
 
   // create db backup files
   final dbHelper = DatabaseHelper.instance;
   final db = await dbHelper.database;
-  List<String> tables = ["category","itemgroup","item","setting"];
-  for (String table in tables){
+  List<String> tables = ["category", "itemgroup", "item", "setting"];
+  for (String table in tables) {
     try {
-      final file = File(path.join(dbFilesDirPath,'$table.txt'));
+      final file = File(path.join(dbFilesDirPath, '$table.txt'));
       final sink = file.openWrite();
       // Query all rows from the table
       final rows = await db.query(table);
@@ -40,35 +41,36 @@ Future<String> createBackup(String baseDirPath) async {
       }
       // Close the sink
       await sink.close();
-    } catch (e){
+    } catch (e) {
       error = e.toString();
       break;
     }
   }
   // create zip file
-  if (error.isEmpty){
-    Map<String,String> data = {
-      "base":baseDirPath,
-      "media":AppConfig.get("media_dir"),
-      "backup":AppConfig.get("backup_dir")
+  if (error.isEmpty) {
+    Map<String, String> data = {
+      "base": baseDirPath,
+      "media": AppConfig.get("media_dir"),
+      "backup": AppConfig.get("backup_dir")
     };
-    error = await compute(zipDbFiles,data);
+    error = await compute(zipDbFiles, data);
   }
   return error;
 }
 
-Future<String> zipDbFiles(Map<String,String> data) async {
+Future<String> zipDbFiles(Map<String, String> data) async {
   String error = "";
   try {
     String todayDate = getTodayDate();
     String baseDirPath = data["base"]!;
     String backupDir = data["backup"]!;
     String mediaDir = data["media"]!;
-    final String zipFilePath = path.join(baseDirPath,'${backupDir}_$todayDate.zip');
+    final String zipFilePath =
+        path.join(baseDirPath, '${backupDir}_$todayDate.zip');
     final ZipFileEncoder encoder = ZipFileEncoder();
     encoder.create(zipFilePath);
-    await encoder.addDirectory(Directory(path.join(baseDirPath,mediaDir)));
-    await encoder.addDirectory(Directory(path.join(baseDirPath,backupDir)));
+    await encoder.addDirectory(Directory(path.join(baseDirPath, mediaDir)));
+    await encoder.addDirectory(Directory(path.join(baseDirPath, backupDir)));
     await encoder.close();
   } catch (e) {
     error = e.toString();
@@ -76,24 +78,24 @@ Future<String> zipDbFiles(Map<String,String> data) async {
   return error;
 }
 
-Future<String> restoreBackup(Map<String,String> data) async {
+Future<String> restoreBackup(Map<String, String> data) async {
   String baseDirPath = data["dir"]!;
-  //empty db files dir 
+  //empty db files dir
   String backupDir = AppConfig.get("backup_dir");
-  final String dbFilesDirPath = path.join(baseDirPath,backupDir);
+  final String dbFilesDirPath = path.join(baseDirPath, backupDir);
   await emptyDir(dbFilesDirPath);
 
   // media files can be overwritten if present
 
   // extract zip file
-  String error = await compute(unZipFiles,data);
-  if (error.isEmpty){
+  String error = await compute(unZipFiles, data);
+  if (error.isEmpty) {
     error = await restoreDbFiles(baseDirPath);
   }
   return error;
 }
 
-Future<String> unZipFiles(Map<String,String> data) async {
+Future<String> unZipFiles(Map<String, String> data) async {
   String baseDirPath = data["dir"]!;
   String zipPath = data["zip"]!;
   String error = "";
@@ -101,15 +103,15 @@ Future<String> unZipFiles(Map<String,String> data) async {
     File zipFile = File(zipPath);
     final bytes = zipFile.readAsBytesSync();
     final archive = ZipDecoder().decodeBytes(bytes);
-    for (final file in archive){
+    for (final file in archive) {
       final fileName = file.name;
       if (file.isFile) {
         final data = file.content as List<int>;
-        File(path.join(baseDirPath,fileName))
+        File(path.join(baseDirPath, fileName))
           ..createSync(recursive: true)
           ..writeAsBytesSync(data);
       } else {
-        Directory(path.join(baseDirPath,fileName)).createSync(recursive: true);
+        Directory(path.join(baseDirPath, fileName)).createSync(recursive: true);
       }
     }
   } catch (e) {
@@ -128,16 +130,16 @@ Future<String> restoreDbFiles(String baseDirPath) async {
   }
 
   // load db backup files
-  List<String> tables = ["category","itemgroup","item","setting"];
-  for (String table in tables){
+  List<String> tables = ["category", "itemgroup", "item", "setting"];
+  for (String table in tables) {
     try {
       String backupDir = AppConfig.get("backup_dir");
-      final file = File(path.join(baseDirPath,backupDir,'$table.txt'));
-      if (file.existsSync()){
+      final file = File(path.join(baseDirPath, backupDir, '$table.txt'));
+      if (file.existsSync()) {
         final lines = await file.readAsLines();
         for (final line in lines) {
           final row = jsonDecode(line);
-          switch (table){
+          switch (table) {
             case "category":
               ModelCategory category = await ModelCategory.fromMap(row);
               await category.insert();
@@ -179,16 +181,16 @@ Future<void> emptyDir(String dirPath) async {
   }
 }
 
-Future<String> restoreOldBackup(Map<String,String> data) async {
+Future<String> restoreOldBackup(Map<String, String> data) async {
   String baseDirPath = data["dir"]!;
-  //empty db files dir 
+  //empty db files dir
   String backupDir = "oldBackup";
-  final String backupDirPath = path.join(baseDirPath,backupDir);
+  final String backupDirPath = path.join(baseDirPath, backupDir);
   await emptyDir(backupDirPath);
 
   // extract zip file
-  String error = await compute(unZipOldFiles,data);
-  if (error.isEmpty){
+  String error = await compute(unZipOldFiles, data);
+  if (error.isEmpty) {
     error = await restoreOldDb(baseDirPath);
   }
 
@@ -198,23 +200,23 @@ Future<String> restoreOldBackup(Map<String,String> data) async {
   return error;
 }
 
-Future<String> unZipOldFiles(Map<String,String> data) async {
-  String baseDirPath = path.join(data["dir"]!,"oldBackup");
+Future<String> unZipOldFiles(Map<String, String> data) async {
+  String baseDirPath = path.join(data["dir"]!, "oldBackup");
   String zipPath = data["zip"]!;
   String error = "";
   try {
     File zipFile = File(zipPath);
     final bytes = zipFile.readAsBytesSync();
     final archive = ZipDecoder().decodeBytes(bytes);
-    for (final file in archive){
+    for (final file in archive) {
       final fileName = file.name;
       if (file.isFile) {
         final data = file.content as List<int>;
-        File(path.join(baseDirPath,fileName))
+        File(path.join(baseDirPath, fileName))
           ..createSync(recursive: true)
           ..writeAsBytesSync(data);
       } else {
-        Directory(path.join(baseDirPath,fileName)).createSync(recursive: true);
+        Directory(path.join(baseDirPath, fileName)).createSync(recursive: true);
       }
     }
   } catch (e) {
@@ -225,8 +227,8 @@ Future<String> unZipOldFiles(Map<String,String> data) async {
 
 Future<String> restoreOldDb(String baseDirPath) async {
   String error = "";
-  String backupDirPath = path.join(baseDirPath,"oldBackup");
-  String oldDbPath = path.join(backupDirPath,"notetoself.db");
+  String backupDirPath = path.join(baseDirPath, "oldBackup");
+  String oldDbPath = path.join(backupDirPath, "notetoself.db");
   Database oldDb = await openDatabase(oldDbPath);
   try {
     // get category id
@@ -236,23 +238,24 @@ Future<String> restoreOldDb(String baseDirPath) async {
 
     // create note groups
     int groupCount = await ModelGroup.getCount(categoryId);
-    List<Map<String,dynamic>> groupRows = await oldDb.query("notegroups",);
-    for (Map<String,dynamic> groupRow in groupRows){
-      if (groupRow.containsKey("uuid") && groupRow.containsKey("title")){
+    List<Map<String, dynamic>> groupRows = await oldDb.query(
+      "notegroups",
+    );
+    for (Map<String, dynamic> groupRow in groupRows) {
+      if (groupRow.containsKey("uuid") && groupRow.containsKey("title")) {
         final String? groupUuid = groupRow["uuid"];
         final String title = groupRow["title"];
-        if (groupUuid == null ) continue;
+        if (groupUuid == null) continue;
         final int at = groupRow["updatedAt"];
         Color color = getMaterialColor(groupCount);
-        if( groupUuid.isNotEmpty && title.isNotEmpty){
-          ModelGroup newGroup = await ModelGroup.fromMap(
-            { "id":groupUuid,
-              "category_id":categoryId,
-              "title":title,
-              "color":colorToHex(color),
-              "at":at,
-            }
-          );
+        if (groupUuid.isNotEmpty && title.isNotEmpty) {
+          ModelGroup newGroup = await ModelGroup.fromMap({
+            "id": groupUuid,
+            "category_id": categoryId,
+            "title": title,
+            "color": colorToHex(color),
+            "at": at,
+          });
           newGroup.insert();
         }
         groupCount = groupCount + 1;
@@ -260,13 +263,15 @@ Future<String> restoreOldDb(String baseDirPath) async {
     }
 
     // process notes
-    List<Map<String,dynamic>> noteRows = await oldDb.query("notes",);
-    for (Map<String,dynamic> noteRow in noteRows){
-      if (noteRow.containsKey("uuid") && noteRow.containsKey("group_uuid")){
+    List<Map<String, dynamic>> noteRows = await oldDb.query(
+      "notes",
+    );
+    for (Map<String, dynamic> noteRow in noteRows) {
+      if (noteRow.containsKey("uuid") && noteRow.containsKey("group_uuid")) {
         String? groupId = noteRow["group_uuid"];
         if (groupId == null) continue;
         ModelGroup? group = await ModelGroup.get(groupId);
-        if (group != null){
+        if (group != null) {
           String? noteId = noteRow["uuid"];
           if (noteId == null) continue;
           int noteType = noteRow["note_type"];
@@ -277,89 +282,102 @@ Future<String> restoreOldDb(String baseDirPath) async {
           int at = noteRow["updatedAt"];
           // add date if not present
           String date = getDateFromUtcMilliSeconds(at);
-          List<ModelItem> dateRows = await ModelItem.getDateItemForGroupId(groupId, date);
-          if (dateRows.isEmpty){
-            ModelItem dateItem = await ModelItem.fromMap({"group_id":groupId,"text":date,"type":ItemType.date,"at":at-1});
+          List<ModelItem> dateRows =
+              await ModelItem.getDateItemForGroupId(groupId, date);
+          if (dateRows.isEmpty) {
+            ModelItem dateItem = await ModelItem.fromMap({
+              "group_id": groupId,
+              "text": date,
+              "type": ItemType.date,
+              "at": at - 1
+            });
             await dateItem.insert();
           }
           // process note
-          switch(noteType){
+          switch (noteType) {
             case 1:
-              ModelItem textNote = await ModelItem.fromMap(
-                {
-                  "id":noteId,
-                  "group_id":groupId,
-                  "text":noteText,
-                  "type":ItemType.text,
-                  "at":at
-                }
-              );
+              ModelItem textNote = await ModelItem.fromMap({
+                "id": noteId,
+                "group_id": groupId,
+                "text": noteText,
+                "type": ItemType.text,
+                "at": at
+              });
               await textNote.insert();
               break;
             case 2:
-              if (mediaPath != null){
+              if (mediaPath != null) {
                 String fileName = path.basename(mediaPath);
-                String filePath = path.join(backupDirPath,"images",fileName);
+                String filePath = path.join(backupDirPath, "images", fileName);
                 File imageFile = File(filePath);
-                if (imageFile.existsSync()){
-                  Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
+                if (imageFile.existsSync()) {
+                  Map<String, dynamic> attrs =
+                      await processAndGetFileAttributes(filePath);
                   String newPath = attrs["path"];
                   Uint8List fileBytes = await File(newPath).readAsBytes();
-                  Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
+                  Uint8List? thumbnail =
+                      await compute(getImageThumbnail, fileBytes);
                   String name = attrs["name"];
-                  Map<String,dynamic> data = {"path":newPath,
-                                              "mime":attrs["mime"],
-                                              "name":name,
-                                              "size":attrs["size"]};
-                  String text = 'DND|#image|$name'; 
+                  Map<String, dynamic> data = {
+                    "path": newPath,
+                    "mime": attrs["mime"],
+                    "name": name,
+                    "size": attrs["size"]
+                  };
+                  String text = 'DND|#image|$name';
                   ModelItem item = await ModelItem.fromMap({
-                        "group_id": groupId,
-                        "text": text,
-                        "type": ItemType.image,
-                        "thumbnail":thumbnail,
-                        "data":data,
-                        "at": at});
+                    "group_id": groupId,
+                    "text": text,
+                    "type": ItemType.image,
+                    "thumbnail": thumbnail,
+                    "data": data,
+                    "at": at
+                  });
                   await item.insert();
                 }
               }
               break;
             case 3:
-              if (mediaPath != null){
+              if (mediaPath != null) {
                 String fileName = path.basename(mediaPath);
-                String filePath = path.join(backupDirPath,"audio",fileName);
+                String filePath = path.join(backupDirPath, "audio", fileName);
                 File audioFile = File(filePath);
                 if (audioFile.existsSync()) {
-                  Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
+                  Map<String, dynamic> attrs =
+                      await processAndGetFileAttributes(filePath);
                   String newPath = attrs["path"];
                   String? duration = await getAudioDuration(newPath);
                   String name = attrs["name"];
-                  Map<String,dynamic> data = {"path":newPath,
-                                              "mime":attrs["mime"],
-                                              "name":name,
-                                              "size":attrs["size"],
-                                              "duration":duration ?? "0:00"};
+                  Map<String, dynamic> data = {
+                    "path": newPath,
+                    "mime": attrs["mime"],
+                    "name": name,
+                    "size": attrs["size"],
+                    "duration": duration ?? "0:00"
+                  };
                   String text = 'DND|#audio|$name';
                   ModelItem item = await ModelItem.fromMap({
-                        "group_id": groupId,
-                        "text": text,
-                        "type": ItemType.audio,
-                        "data":data,
-                        "at": at});
+                    "group_id": groupId,
+                    "text": text,
+                    "type": ItemType.audio,
+                    "data": data,
+                    "at": at
+                  });
                   await item.insert();
                 }
               }
               break;
             case 6:
-              if(lat != null && lng != null){
-                Map<String,dynamic> data = {"lat":lat,
-                                            "lng":lng};
+              if (lat != null && lng != null) {
+                Map<String, dynamic> data = {"lat": lat, "lng": lng};
                 String text = 'DND|#location';
                 ModelItem item = await ModelItem.fromMap({
-                      "group_id": groupId,
-                      "text": text,
-                      "type": ItemType.location,
-                      "data":data,
-                      "at": at});
+                  "group_id": groupId,
+                  "text": text,
+                  "type": ItemType.location,
+                  "data": data,
+                  "at": at
+                });
                 await item.insert();
               }
               break;

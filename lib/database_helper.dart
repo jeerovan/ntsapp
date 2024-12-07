@@ -1,17 +1,15 @@
-
-
-
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/app_config.dart';
-import 'package:uuid/uuid.dart';
-import 'common.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:uuid/uuid.dart';
+
+import 'common.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -31,8 +29,8 @@ class DatabaseHelper {
     final dbPath = join(dbDir, dbFileName);
     //debugPrint("DbPath:$dbPath");
     return await openDatabase(dbPath,
-        version: 8, 
-        onCreate: _onCreate, 
+        version: 8,
+        onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: _onOpen);
   }
@@ -119,7 +117,13 @@ class DatabaseHelper {
     String id1 = uuid.v4();
     Color color = getMaterialColor(1);
     String hexCode = colorToHex(color);
-    await db.insert("category", {"id": id1, "title": "DND", "color":hexCode, "thumbnail":null, "at":at});
+    await db.insert("category", {
+      "id": id1,
+      "title": "DND",
+      "color": hexCode,
+      "thumbnail": null,
+      "at": at
+    });
   }
 
   Future<int> insert(String tableName, Map<String, dynamic> row) async {
@@ -145,8 +149,7 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getWithId(
       String tableName, dynamic id) async {
     final db = await instance.database;
-    return await db.query(tableName,
-        where: "id = ?", whereArgs: [id]);
+    return await db.query(tableName, where: "id = ?", whereArgs: [id]);
   }
 
   Future<List<Map<String, dynamic>>> getAll(String tableName) async {
@@ -171,52 +174,65 @@ class DatabaseHelper {
     Uuid uuid = const Uuid();
     String categoryId = uuid.v4();
     Color color = getMaterialColor(1);
-    await db.insert("category", {"id": categoryId, "title": "DND", "color":colorToHex(color), "thumbnail":null, "at":at});
+    await db.insert("category", {
+      "id": categoryId,
+      "title": "DND",
+      "color": colorToHex(color),
+      "thumbnail": null,
+      "at": at
+    });
 
     // create note groups
     int groupCount = 1;
-    List<Map<String,dynamic>> groupRows = await db.query("notegroups",);
-    for (Map<String,dynamic> groupRow in groupRows){
-      if (groupRow.containsKey("uuid") && groupRow.containsKey("title") && groupRow.containsKey("image")){
+    List<Map<String, dynamic>> groupRows = await db.query(
+      "notegroups",
+    );
+    for (Map<String, dynamic> groupRow in groupRows) {
+      if (groupRow.containsKey("uuid") &&
+          groupRow.containsKey("title") &&
+          groupRow.containsKey("image")) {
         final String? groupUuid = groupRow["uuid"];
         final String title = groupRow["title"];
         final String image = groupRow["image"];
-        if (groupUuid == null ) continue;
+        if (groupUuid == null) continue;
         final int at = groupRow["updatedAt"];
         String? thumbnail;
-        if (image.length > 10){
+        if (image.length > 10) {
           File file = File(image);
-          if (file.existsSync()){
+          if (file.existsSync()) {
             Uint8List bytes = await file.readAsBytes();
             Uint8List? thumbnailBytes = await compute(getImageThumbnail, bytes);
             thumbnail = base64Encode(thumbnailBytes!);
           }
         }
         Color color = getMaterialColor(groupCount);
-        if( groupUuid.isNotEmpty && title.isNotEmpty){
-          await db.insert("itemgroup",
-                    { "id":groupUuid,
-                      "category_id":categoryId,
-                      "title":title,
-                      "pinned":0,
-                      "archived_at":0,
-                      "color":colorToHex(color),
-                      "thumbnail":thumbnail,
-                      "at":at,
-                    });
+        if (groupUuid.isNotEmpty && title.isNotEmpty) {
+          await db.insert("itemgroup", {
+            "id": groupUuid,
+            "category_id": categoryId,
+            "title": title,
+            "pinned": 0,
+            "archived_at": 0,
+            "color": colorToHex(color),
+            "thumbnail": thumbnail,
+            "at": at,
+          });
         }
         groupCount = groupCount + 1;
       }
     }
 
     // process notes
-    List<Map<String,dynamic>> noteRows = await db.query("notes",);
-    for (Map<String,dynamic> noteRow in noteRows){
-      if (noteRow.containsKey("uuid") && noteRow.containsKey("group_uuid")){
+    List<Map<String, dynamic>> noteRows = await db.query(
+      "notes",
+    );
+    for (Map<String, dynamic> noteRow in noteRows) {
+      if (noteRow.containsKey("uuid") && noteRow.containsKey("group_uuid")) {
         String? groupId = noteRow["group_uuid"];
         if (groupId == null) continue;
-        List<Map<String,dynamic>> groupRows = await db.query("itemgroup",where: "id = ?",whereArgs: [groupId]);
-        if (groupRows.isNotEmpty){
+        List<Map<String, dynamic>> groupRows =
+            await db.query("itemgroup", where: "id = ?", whereArgs: [groupId]);
+        if (groupRows.isNotEmpty) {
           String? noteId = noteRow["uuid"];
           if (noteId == null) continue;
           int noteType = noteRow["note_type"];
@@ -226,117 +242,118 @@ class DatabaseHelper {
           double? lng = noteRow["longitude"];
           int at = noteRow["updatedAt"];
           String date = getDateFromUtcMilliSeconds(at);
-          List<Map<String,dynamic>> dateRows = await db.query("item",
-                                                        where: "type = 170000 AND text = ? AND group_id = ?",
-                                                        whereArgs: [date,groupId]);
-          if (dateRows.isEmpty){
-            await db.insert("item", 
-                              {
-                                "id": uuid.v4(),
-                                "group_id": groupId,
-                                "text":date,
-                                "starred":0,
-                                "pinned":0,
-                                "archived_at":0,
-                                "type":170000,
-                                "data":null,
-                                "thumbnail":null,
-                                "state":0,
-                                "at":at-1
-                              }
-            );
+          List<Map<String, dynamic>> dateRows = await db.query("item",
+              where: "type = 170000 AND text = ? AND group_id = ?",
+              whereArgs: [date, groupId]);
+          if (dateRows.isEmpty) {
+            await db.insert("item", {
+              "id": uuid.v4(),
+              "group_id": groupId,
+              "text": date,
+              "starred": 0,
+              "pinned": 0,
+              "archived_at": 0,
+              "type": 170000,
+              "data": null,
+              "thumbnail": null,
+              "state": 0,
+              "at": at - 1
+            });
           }
-          switch(noteType){
+          switch (noteType) {
             case 1:
-              await db.insert("item",
-                        {
-                          "id":noteId,
-                          "group_id":groupId,
-                          "text":noteText,
-                          "starred":0,
-                          "pinned":0,
-                          "archived_at":0,
-                          "type":100000,
-                          "data":null,
-                          "thumbnail":null,
-                          "state":0,
-                          "at":at
-                        }
-              );
+              await db.insert("item", {
+                "id": noteId,
+                "group_id": groupId,
+                "text": noteText,
+                "starred": 0,
+                "pinned": 0,
+                "archived_at": 0,
+                "type": 100000,
+                "data": null,
+                "thumbnail": null,
+                "state": 0,
+                "at": at
+              });
               break;
             case 2:
-              if (mediaPath != null){
+              if (mediaPath != null) {
                 File imageFile = File(mediaPath);
-                if (imageFile.existsSync()){
-                  Map<String,dynamic> imageDataMap = {"path":mediaPath,"mime":"image/jpg","name":"","size":0};
+                if (imageFile.existsSync()) {
+                  Map<String, dynamic> imageDataMap = {
+                    "path": mediaPath,
+                    "mime": "image/jpg",
+                    "name": "",
+                    "size": 0
+                  };
                   String imageData = jsonEncode(imageDataMap);
-                  await db.insert("item",
-                            {
-                              "id":noteId,
-                              "group_id":groupId,
-                              "text":"DND|#image",
-                              "starred":0,
-                              "pinned":0,
-                              "archived_at":0,
-                              "type":110000,
-                              "data":imageData,
-                              "thumbnail":null,
-                              "state":0,
-                              "at":at
-                            }
-                  );
+                  await db.insert("item", {
+                    "id": noteId,
+                    "group_id": groupId,
+                    "text": "DND|#image",
+                    "starred": 0,
+                    "pinned": 0,
+                    "archived_at": 0,
+                    "type": 110000,
+                    "data": imageData,
+                    "thumbnail": null,
+                    "state": 0,
+                    "at": at
+                  });
                 }
               }
               break;
             case 3:
-              if (mediaPath != null){
+              if (mediaPath != null) {
                 File audioFile = File(mediaPath);
                 if (audioFile.existsSync()) {
-                  Map<String,dynamic> audioDataMap = {"path":mediaPath,"mime":"audio/mp4","name":"","size":0,"duration":"00:00"};
+                  Map<String, dynamic> audioDataMap = {
+                    "path": mediaPath,
+                    "mime": "audio/mp4",
+                    "name": "",
+                    "size": 0,
+                    "duration": "00:00"
+                  };
                   String audioData = jsonEncode(audioDataMap);
-                  await db.insert("item",
-                            {
-                              "id":noteId,
-                              "group_id":groupId,
-                              "text":"DND|#audio",
-                              "starred":0,
-                              "pinned":0,
-                              "archived_at":0,
-                              "type":130000,
-                              "data":audioData,
-                              "thumbnail":null,
-                              "state":0,
-                              "at":at
-                            }
-                  );
+                  await db.insert("item", {
+                    "id": noteId,
+                    "group_id": groupId,
+                    "text": "DND|#audio",
+                    "starred": 0,
+                    "pinned": 0,
+                    "archived_at": 0,
+                    "type": 130000,
+                    "data": audioData,
+                    "thumbnail": null,
+                    "state": 0,
+                    "at": at
+                  });
                 }
               }
               break;
             case 6:
-              if(lat != null && lng != null){
-                Map<String,dynamic> locationDataMap = {"lat":lat,"lng":lng};
+              if (lat != null && lng != null) {
+                Map<String, dynamic> locationDataMap = {"lat": lat, "lng": lng};
                 String locationData = jsonEncode(locationDataMap);
-                await db.insert("item",
-                          {
-                            "id":noteId,
-                            "group_id":groupId,
-                            "text":"DND|#location",
-                            "starred":0,
-                            "pinned":0,
-                            "archived_at":0,
-                            "type":150000,
-                            "data":locationData,
-                            "thumbnail":null,
-                            "state":0,
-                            "at":at
-                          }
-                );
+                await db.insert("item", {
+                  "id": noteId,
+                  "group_id": groupId,
+                  "text": "DND|#location",
+                  "starred": 0,
+                  "pinned": 0,
+                  "archived_at": 0,
+                  "type": 150000,
+                  "data": locationData,
+                  "thumbnail": null,
+                  "state": 0,
+                  "at": at
+                });
               }
               break;
           }
         }
       }
     }
-    await db.insert("setting", {"id":"process_media","value":"yes"});
+    await db.insert("setting", {"id": "process_media", "value": "yes"});
   }
 }

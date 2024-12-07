@@ -1,5 +1,5 @@
-
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -24,5 +24,4 @@ class AppConfig {
   static T get<T>(String key, [T? defaultValue]) {
     return _config.containsKey(key) ? _config[key] : defaultValue;
   }
-
 }

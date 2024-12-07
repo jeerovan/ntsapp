@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
@@ -10,7 +8,8 @@ import 'model_item.dart';
 
 class ItemWidgetDate extends StatefulWidget {
   final ModelItem item;
-  const ItemWidgetDate({super.key,required this.item});
+
+  const ItemWidgetDate({super.key, required this.item});
 
   @override
   State<ItemWidgetDate> createState() => _ItemWidgetDateState();
@@ -19,7 +18,8 @@ class ItemWidgetDate extends StatefulWidget {
 class _ItemWidgetDateState extends State<ItemWidgetDate> {
   @override
   Widget build(BuildContext context) {
-    String dateText = getReadableDate(DateTime.fromMillisecondsSinceEpoch(widget.item.at!, isUtc: true));
+    String dateText = getReadableDate(
+        DateTime.fromMillisecondsSinceEpoch(widget.item.at!, isUtc: true));
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min, // Shrinks to fit the text width
@@ -28,9 +28,9 @@ class _ItemWidgetDateState extends State<ItemWidgetDate> {
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(10),
-              ),
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Text(
               dateText,
               style: const TextStyle(
@@ -47,7 +47,8 @@ class _ItemWidgetDateState extends State<ItemWidgetDate> {
 
 class WidgetTimeStamp extends StatefulWidget {
   final ModelItem item;
-  const WidgetTimeStamp({super.key,required this.item});
+
+  const WidgetTimeStamp({super.key, required this.item});
 
   @override
   State<WidgetTimeStamp> createState() => _WidgetTimeStampState();
@@ -57,25 +58,32 @@ class _WidgetTimeStampState extends State<WidgetTimeStamp> {
   @override
   Widget build(BuildContext context) {
     return Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            widget.item.pinned == 1 ? Icon(Icons.push_pin,size: 10,color: Theme.of(context).colorScheme.inversePrimary) : const SizedBox.shrink(),
-            const SizedBox(width:2),
-            widget.item.starred == 1 ? Icon(Icons.star,size: 11,color: Theme.of(context).colorScheme.inversePrimary) : const SizedBox.shrink(),
-            const SizedBox(width:3),
-            Text(
-              getFormattedTime(widget.item.at!),
-              style: const TextStyle(fontSize: 10),
-            ),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        widget.item.pinned == 1
+            ? Icon(Icons.push_pin,
+                size: 10, color: Theme.of(context).colorScheme.inversePrimary)
+            : const SizedBox.shrink(),
+        const SizedBox(width: 2),
+        widget.item.starred == 1
+            ? Icon(Icons.star,
+                size: 11, color: Theme.of(context).colorScheme.inversePrimary)
+            : const SizedBox.shrink(),
+        const SizedBox(width: 3),
+        Text(
+          getFormattedTime(widget.item.at!),
+          style: const TextStyle(fontSize: 10),
+        ),
+      ],
+    );
   }
 }
 
 class ItemWidgetText extends StatefulWidget {
   final ModelItem item;
-  const ItemWidgetText({super.key,required this.item});
+
+  const ItemWidgetText({super.key, required this.item});
 
   @override
   State<ItemWidgetText> createState() => _ItemWidgetTextState();
@@ -83,11 +91,13 @@ class ItemWidgetText extends StatefulWidget {
 
 class _ItemWidgetTextState extends State<ItemWidgetText> {
   bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
+
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
     return Column(
-      crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+          isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         WidgetTextWithLinks(text: item.text),
         const SizedBox(height: 5),
@@ -95,16 +105,13 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
       ],
     );
   }
-  
 }
 
 class ItemWidgetImage extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
-  const ItemWidgetImage({
-    super.key,
-    required this.item,
-    required this.onTap});
+
+  const ItemWidgetImage({super.key, required this.item, required this.onTap});
 
   @override
   State<ItemWidgetImage> createState() => _ItemWidgetImageState();
@@ -118,7 +125,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
     return GestureDetector(
       onTap: () {
         widget.onTap(item);
-        },
+      },
       child: Stack(
         children: [
           ClipRRect(
@@ -143,8 +150,10 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.1), // Transparent black at the top
-                    Colors.black.withOpacity(0.3), // Darker black at the bottom
+                    Colors.black.withOpacity(0.1),
+                    // Transparent black at the top
+                    Colors.black.withOpacity(0.3),
+                    // Darker black at the bottom
                   ],
                 ),
               ),
@@ -160,10 +169,8 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
 class ItemWidgetVideo extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
-  const ItemWidgetVideo({
-    super.key,
-    required this.item,
-    required this.onTap});
+
+  const ItemWidgetVideo({super.key, required this.item, required this.onTap});
 
   @override
   State<ItemWidgetVideo> createState() => _ItemWidgetVideoState();
@@ -184,7 +191,7 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(
               width: size,
-              height: size/item.data!["aspect"],
+              height: size / item.data!["aspect"],
               child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
             ),
           ),
@@ -200,8 +207,10 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.1), // Transparent black at the top
-                    Colors.black.withOpacity(0.3), // Darker black at the bottom
+                    Colors.black.withOpacity(0.1),
+                    // Transparent black at the top
+                    Colors.black.withOpacity(0.3),
+                    // Darker black at the bottom
                   ],
                 ),
               ),
@@ -213,10 +222,13 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                   Row(
                     children: [
                       const Icon(Icons.videocam, size: 20),
-                      const SizedBox(width: 2,),
+                      const SizedBox(
+                        width: 2,
+                      ),
                       Text(
                         item.data!["duration"],
-                        style: const TextStyle(color: Colors.white, fontSize: 10),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 10),
                       ),
                     ],
                   ),
@@ -233,10 +245,11 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
 
 class ItemWidgetAudio extends StatefulWidget {
   final ModelItem item;
+
   const ItemWidgetAudio({
     super.key,
     required this.item,
-    });
+  });
 
   @override
   State<ItemWidgetAudio> createState() => _ItemWidgetAudioState();
@@ -259,10 +272,9 @@ class _ItemWidgetAudioState extends State<ItemWidgetAudio> {
 class ItemWidgetDocument extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
-  const ItemWidgetDocument({
-    super.key,
-    required this.item,
-    required this.onTap});
+
+  const ItemWidgetDocument(
+      {super.key, required this.item, required this.onTap});
 
   @override
   State<ItemWidgetDocument> createState() => _ItemWidgetDocumentState();
@@ -273,7 +285,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         widget.onTap(item);
       },
       child: Column(
@@ -294,7 +306,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
                     item.data!["name"],
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle( fontSize: 15),
+                    style: const TextStyle(fontSize: 15),
                   ),
                 ),
               ),
@@ -321,10 +333,9 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
 class ItemWidgetLocation extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
-  const ItemWidgetLocation({
-    super.key,
-    required this.item,
-    required this.onTap});
+
+  const ItemWidgetLocation(
+      {super.key, required this.item, required this.onTap});
 
   @override
   State<ItemWidgetLocation> createState() => _ItemWidgetLocationState();
@@ -335,7 +346,7 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         widget.onTap(item);
       },
       child: Column(
@@ -350,10 +361,12 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
                 color: Colors.blue,
                 size: 40,
               ),
-              SizedBox(width: 5,),
+              SizedBox(
+                width: 5,
+              ),
               Text(
                 "Location",
-                style: TextStyle( fontSize: 15),
+                style: TextStyle(fontSize: 15),
               ),
             ],
           ),
@@ -367,10 +380,8 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
 class ItemWidgetContact extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
-  const ItemWidgetContact({
-    super.key,
-    required this.item,
-    required this.onTap});
+
+  const ItemWidgetContact({super.key, required this.item, required this.onTap});
 
   @override
   State<ItemWidgetContact> createState() => _ItemWidgetContactState();
@@ -393,15 +404,15 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child:item.thumbnail != null
-                ? CircleAvatar(
-                    radius: 50,
-                    backgroundImage: MemoryImage(item.thumbnail!),
-                  )
-                : const CircleAvatar(
-                    radius: 50,
-                    child: Icon(Icons.person,size:50),
-                  ),
+                child: item.thumbnail != null
+                    ? CircleAvatar(
+                        radius: 50,
+                        backgroundImage: MemoryImage(item.thumbnail!),
+                      )
+                    : const CircleAvatar(
+                        radius: 50,
+                        child: Icon(Icons.person, size: 50),
+                      ),
               ),
               // Name Row
               Row(
@@ -409,7 +420,10 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                 children: [
                   Text(
                     '${item.data!["name"]}'.trim(),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -424,12 +438,13 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...item.data!["phones"].map((phone) => 
-                        Text(
-                          phone,
-                          style: const TextStyle(fontSize: 14,),
-                          overflow: TextOverflow.ellipsis,
-                        ))
+                        ...item.data!["phones"].map((phone) => Text(
+                              phone,
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ))
                       ],
                     ),
                   ),
@@ -446,13 +461,13 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ...item.data!["emails"].map((email) => (
-                            Text(
-                              email,
-                              style: const TextStyle(fontSize: 14,),
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          ))
+                          ...item.data!["emails"].map((email) => (Text(
+                                email,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              )))
                         ],
                       ),
                     ),
@@ -469,13 +484,13 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ...item.data!["addresses"].map((address) => (
-                          Text(
-                            address,
-                            style: const TextStyle(fontSize: 14,),
-                            overflow: TextOverflow.ellipsis,
-                          )
-                          )),
+                          ...item.data!["addresses"].map((address) => (Text(
+                                address,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ))),
                         ],
                       ),
                     ),
@@ -505,7 +520,7 @@ class NotePreviewSummary extends StatelessWidget {
   });
 
   IconData _getIcon() {
-    if (item == null){
+    if (item == null) {
       return Icons.notes;
     } else {
       switch (item!.type) {
@@ -556,26 +571,26 @@ class NotePreviewSummary extends StatelessWidget {
     }
   }
 
-  Widget _previewImage(ModelItem item){
+  Widget _previewImage(ModelItem item) {
     switch (item.type) {
-        case ItemType.image:
-        case ItemType.video:
-        case ItemType.contact:
-          return item.thumbnail == null
-                 ? const SizedBox.shrink()
-                 : ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: SizedBox(
-                      width: 40,
-                      child: Image.memory(
-                        item.thumbnail!, // Full width of container
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  );
-        default:
-          return const SizedBox.shrink();
-      }
+      case ItemType.image:
+      case ItemType.video:
+      case ItemType.contact:
+        return item.thumbnail == null
+            ? const SizedBox.shrink()
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: SizedBox(
+                  width: 40,
+                  child: Image.memory(
+                    item.thumbnail!, // Full width of container
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   @override
@@ -589,27 +604,34 @@ class NotePreviewSummary extends StatelessWidget {
         ),
         const SizedBox(width: 5),
         expanded == true
-        ? Expanded(
-            child: Text(
-              _getMessageText(),
-              overflow: TextOverflow.ellipsis, // Ellipsis for long text
-              style: const TextStyle(fontSize: 12,),
+            ? Expanded(
+                child: Text(
+                  _getMessageText(),
+                  overflow: TextOverflow.ellipsis, // Ellipsis for long text
+                  style: const TextStyle(
+                    fontSize: 12,
+                  ),
+                ),
+              )
+            : Flexible(
+                child: Text(
+                  _getMessageText(),
+                  overflow: TextOverflow.ellipsis, // Ellipsis for long text
+                  style: const TextStyle(
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+        const SizedBox(width: 8),
+        if (showImagePreview!) _previewImage(item!),
+        const SizedBox(width: 8),
+        if (showTimestamp!)
+          Text(
+            item == null ? "" : getFormattedTime(item!.at!),
+            style: const TextStyle(
+              fontSize: 10,
             ),
-          )
-        : Flexible(
-          child: Text(
-            _getMessageText(),
-            overflow: TextOverflow.ellipsis, // Ellipsis for long text
-            style: const TextStyle(fontSize: 12,),
           ),
-        ),
-        const SizedBox(width: 8),
-        if(showImagePreview!)_previewImage(item!),
-        const SizedBox(width: 8),
-        if(showTimestamp!)Text(
-          item == null ? "" : getFormattedTime(item!.at!),
-          style: const TextStyle(fontSize: 10,),
-        ),
       ],
     );
   }
@@ -617,22 +639,21 @@ class NotePreviewSummary extends StatelessWidget {
 
 class ItemWidgetTask extends StatefulWidget {
   final ModelItem item;
-  const ItemWidgetTask({
-    super.key,
-    required this.item});
+
+  const ItemWidgetTask({super.key, required this.item});
 
   @override
   State<ItemWidgetTask> createState() => _ItemWidgetTaskState();
 }
 
 class _ItemWidgetTaskState extends State<ItemWidgetTask> {
-  
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
+    bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Column(
-      crossAxisAlignment: isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+          isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -641,9 +662,11 @@ class _ItemWidgetTaskState extends State<ItemWidgetTask> {
               widget.item.type == ItemType.completedTask
                   ? Icons.check_circle
                   : Icons.radio_button_unchecked,
-            color:widget.item.type == ItemType.task ? Theme.of(context).colorScheme.inversePrimary : Theme.of(context).colorScheme.primary,
+              color: widget.item.type == ItemType.task
+                  ? Theme.of(context).colorScheme.inversePrimary
+                  : Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(width:10),
+            const SizedBox(width: 10),
             Flexible(child: WidgetTextWithLinks(text: widget.item.text)),
           ],
         ),

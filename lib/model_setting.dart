@@ -1,4 +1,3 @@
-
 import 'database_helper.dart';
 
 class ModelSetting {

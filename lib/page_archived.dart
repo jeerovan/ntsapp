@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 import 'page_archived_groups.dart';
@@ -55,7 +53,8 @@ class _PageArchivedState extends State<PageArchived> {
                     ],
                   );
                 }
-                return const SizedBox.shrink(); // Show nothing if no items are selected
+                return const SizedBox
+                    .shrink(); // Show nothing if no items are selected
               },
             ),
           ],
@@ -79,7 +78,7 @@ class _PageArchivedState extends State<PageArchived> {
                   _isAnyItemSelected.value = isSelected,
               setDeleteCallback: (callback) => onDelete = callback,
               setRestoreCallback: (callback) => onRestore = callback,
-            ),// Content for Groups tab
+            ), // Content for Groups tab
           ],
         ),
       ),

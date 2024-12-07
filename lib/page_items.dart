@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 
@@ -14,16 +13,17 @@ import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:siri_wave/siri_wave.dart';
+import 'package:video_player/video_player.dart';
+
+import 'common.dart';
+import 'model_item.dart';
+import 'model_item_group.dart';
 import 'page_contact_pick.dart';
 import 'page_group_add_edit.dart';
 import 'page_location_pick.dart';
 import 'page_media_viewer.dart';
-import 'package:video_player/video_player.dart';
-import 'common.dart';
-import 'model_item.dart';
-import 'model_item_group.dart';
-import 'package:record/record.dart';
 
 bool isMobile = Platform.isAndroid || Platform.isIOS;
 
@@ -31,10 +31,11 @@ class PageItems extends StatefulWidget {
   final List<String> sharedContents;
   final String groupId;
   final String? loadItemId;
-  const PageItems({
-      super.key, 
+
+  const PageItems(
+      {super.key,
       required this.sharedContents,
-      required this.groupId, 
+      required this.groupId,
       this.loadItemId});
 
   @override
@@ -42,7 +43,6 @@ class PageItems extends StatefulWidget {
 }
 
 class _PageItemsState extends State<PageItems> {
-
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
   bool _hasNotesSelected = false;
@@ -73,18 +73,18 @@ class _PageItemsState extends State<PageItems> {
 
   bool isCreatingTask = false;
 
-  final Map<String,bool> _filters = {
-    "pinned":false,
-    "starred":false,
-    "notes":false,
-    "tasks":false,
-    "links":false,
-    "images":false,
-    "audio":false,
-    "video":false,
-    "documents":false,
-    "contacts":false,
-    "locations":false
+  final Map<String, bool> _filters = {
+    "pinned": false,
+    "starred": false,
+    "notes": false,
+    "tasks": false,
+    "links": false,
+    "images": false,
+    "audio": false,
+    "video": false,
+    "documents": false,
+    "contacts": false,
+    "locations": false
   };
   bool _filtersEnabled = false;
 
@@ -102,7 +102,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _recordingTimer?.cancel();
     _textController.dispose();
     _itemScrollController.dispose();
@@ -112,40 +112,44 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> loadGroup() async {
     ModelGroup? modelGroup = await ModelGroup.get(widget.groupId);
-    if (modelGroup != null){
+    if (modelGroup != null) {
       setState(() {
-          group = modelGroup;
-        });
+        group = modelGroup;
+      });
     }
   }
+
   Future<void> initialFetchItems(String? itemId) async {
     List<ModelItem> newItems;
-    if (itemId != null){
+    if (itemId != null) {
       canScrollToBottom = true;
       newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
     } else {
       canScrollToBottom = false;
-      newItems = await ModelItem.getInGroup(widget.groupId, _offset, _limit, _filters);
+      newItems =
+          await ModelItem.getInGroup(widget.groupId, _offset, _limit, _filters);
     }
     setState(() {
       _items.clear();
       _items.addAll(newItems);
-      _itemScrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      _itemScrollController.animateTo(0,
+          duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
   }
+
   Future<void> loadSharedContents() async {
     List<String> sharedFiles = [];
     List<String> sharedTexts = [];
-    for(String sharedContent in widget.sharedContents){
+    for (String sharedContent in widget.sharedContents) {
       File file = File(sharedContent);
-      if (file.existsSync()){
+      if (file.existsSync()) {
         sharedFiles.add(sharedContent);
       } else {
         sharedTexts.add(sharedContent);
       }
     }
     processFiles(sharedFiles);
-    for (String text in sharedTexts){
+    for (String text in sharedTexts) {
       _addItem(text, ItemType.text, null, null);
     }
   }
@@ -154,9 +158,10 @@ class _PageItemsState extends State<PageItems> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
     final ModelItem start = up ? _items.last : _items.first;
-    final newItems = await ModelItem.getScrolledInGroup(widget.groupId, start.id!, up, _limit);
+    final newItems = await ModelItem.getScrolledInGroup(
+        widget.groupId, start.id!, up, _limit);
     setState(() {
-      if ( up ){
+      if (up) {
         _items.addAll(newItems);
       } else {
         _items.insertAll(0, newItems.reversed);
@@ -165,23 +170,24 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  //Filters 
+  //Filters
   void _applyFilters() {
     setState(() {
       _filtersEnabled = _filters["pinned"] == true ||
-                        _filters["starred"] == true ||
-                        _filters["notes"] == true ||
-                        _filters["tasks"] == true ||
-                        _filters["links"] == true ||
-                        _filters["images"] == true ||
-                        _filters["audio"] == true ||
-                        _filters["video"] == true ||
-                        _filters["documents"] == true ||
-                        _filters["contacts"] == true ||
-                        _filters["locations"] == true ;
+          _filters["starred"] == true ||
+          _filters["notes"] == true ||
+          _filters["tasks"] == true ||
+          _filters["links"] == true ||
+          _filters["images"] == true ||
+          _filters["audio"] == true ||
+          _filters["video"] == true ||
+          _filters["documents"] == true ||
+          _filters["contacts"] == true ||
+          _filters["locations"] == true;
       initialFetchItems(null);
     });
   }
+
   void _clearFilters() {
     setState(() {
       _filters["pinned"] = false;
@@ -198,12 +204,14 @@ class _PageItemsState extends State<PageItems> {
       _applyFilters();
     });
   }
-  void _toggleFilter(String filter){
+
+  void _toggleFilter(String filter) {
     setState(() {
       _filters[filter] = !_filters[filter]!;
     });
     _applyFilters();
   }
+
   void _openFilterDialog() {
     bool pinned = _filters["pinned"]!;
     bool starred = _filters["starred"]!;
@@ -220,7 +228,7 @@ class _PageItemsState extends State<PageItems> {
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
+            builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
             title: const Text('Filter Notes'),
             content: Column(
@@ -230,166 +238,198 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           pinned = !pinned;
-                        _toggleFilter("pinned");
+                          _toggleFilter("pinned");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.push_pin,
-                        color: pinned ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: pinned
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           starred = !starred;
-                        _toggleFilter("starred");
+                          _toggleFilter("starred");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.star,
-                        color: starred ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: starred
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 15,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           notes = !notes;
-                        _toggleFilter("notes");
+                          _toggleFilter("notes");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.notes,
-                        color: notes ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: notes
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           tasks = !tasks;
-                        _toggleFilter("tasks");
+                          _toggleFilter("tasks");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.check_circle,
-                        color: tasks ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: tasks
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 15,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           links = !links;
-                        _toggleFilter("links");
+                          _toggleFilter("links");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.link,
-                        color: links ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: links
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           images = !images;
-                        _toggleFilter("images");
+                          _toggleFilter("images");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.image,
-                        color: images ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: images
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 15,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           audio = !audio;
-                        _toggleFilter("audio");
+                          _toggleFilter("audio");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.audiotrack,
-                        color: audio ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: audio
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           video = !video;
-                        _toggleFilter("video");
+                          _toggleFilter("video");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.videocam,
-                        color: video ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: video
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 15,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           documents = !documents;
-                        _toggleFilter("documents");
+                          _toggleFilter("documents");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.insert_drive_file,
-                        color: documents ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: documents
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           contacts = !contacts;
-                        _toggleFilter("contacts");
+                          _toggleFilter("contacts");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.contact_phone,
-                        color: contacts ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: contacts
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 15,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      onPressed: (){
+                      onPressed: () {
                         setState(() {
                           locations = !locations;
-                        _toggleFilter("locations");
+                          _toggleFilter("locations");
                         });
-                      }, 
+                      },
                       icon: Icon(
                         Icons.location_on,
-                        color: locations ? null : Theme.of(context).colorScheme.inversePrimary,
-                        ),
+                        color: locations
+                            ? null
+                            : Theme.of(context).colorScheme.inversePrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -411,8 +451,7 @@ class _PageItemsState extends State<PageItems> {
               ),
             ],
           );
-        }
-        );
+        });
       },
     );
   }
@@ -423,27 +462,30 @@ class _PageItemsState extends State<PageItems> {
     selectionHasTextItems = false;
     selectionHasPinnedItem = true;
     selectionHasOnlyTextOrTaskItem = true;
-    for (ModelItem item in _selection){
-      if (item.starred == 0){
+    for (ModelItem item in _selection) {
+      if (item.starred == 0) {
         selectionHasStarredItems = false;
       }
-      if (item.type.value < ItemType.task.value || item.type.value > ItemType.task.value+10000){
+      if (item.type.value < ItemType.task.value ||
+          item.type.value > ItemType.task.value + 10000) {
         selectionHasTaskItems = false;
       }
-      if (item.type.value > ItemType.text.value && item.type.value < ItemType.task.value) {
+      if (item.type.value > ItemType.text.value &&
+          item.type.value < ItemType.task.value) {
         selectionHasTextItems = true;
         selectionHasOnlyTextOrTaskItem = false;
       }
-      if (item.pinned! == 0){
+      if (item.pinned! == 0) {
         selectionHasPinnedItem = false;
       }
     }
   }
-  void onItemLongPressed(ModelItem item){
+
+  void onItemLongPressed(ModelItem item) {
     setState(() {
       if (_selection.contains(item)) {
         _selection.remove(item);
-        if (_selection.isEmpty){
+        if (_selection.isEmpty) {
           _hasNotesSelected = false;
         }
       } else {
@@ -453,40 +495,41 @@ class _PageItemsState extends State<PageItems> {
       updateSelectionBools();
     });
   }
+
   void onItemTapped(ModelItem item) async {
-      if (item.type == ItemType.text){
-        onItemLongPressed(item);
-      } else if (_hasNotesSelected){
-        if (_selection.contains(item)) {
-          _selection.remove(item);
-          if (_selection.isEmpty){
-            _hasNotesSelected = false;
-          }
-        } else {
-          _selection.add(item);
+    if (item.type == ItemType.text) {
+      onItemLongPressed(item);
+    } else if (_hasNotesSelected) {
+      if (_selection.contains(item)) {
+        _selection.remove(item);
+        if (_selection.isEmpty) {
+          _hasNotesSelected = false;
         }
-        updateSelectionBools();
-      } else if (item.type == ItemType.task){
-        item.type = ItemType.completedTask;
-        await item.update();
-      } else if (item.type == ItemType.completedTask){
-        item.type = ItemType.task;
-        await item.update();
+      } else {
+        _selection.add(item);
       }
+      updateSelectionBools();
+    } else if (item.type == ItemType.task) {
+      item.type = ItemType.completedTask;
+      await item.update();
+    } else if (item.type == ItemType.completedTask) {
+      item.type = ItemType.task;
+      await item.update();
+    }
     setState(() {});
   }
 
   Future<void> archiveSelectedItems() async {
-    for (ModelItem item in _selection){
+    for (ModelItem item in _selection) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
       await item.update();
     }
     setState(() {
-      for (ModelItem item in _selection){
+      for (ModelItem item in _selection) {
         _items.remove(item);
       }
     });
-    if (mounted){
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Moved to recycle bin"),
@@ -496,45 +539,54 @@ class _PageItemsState extends State<PageItems> {
     }
     clearSelection();
   }
+
   Future<void> updateSelectedItemsPinned() async {
     setState(() {
-      for (ModelItem item in _selection){
+      for (ModelItem item in _selection) {
         item.pinned = selectionHasPinnedItem ? 0 : 1;
         item.update();
       }
     });
     clearSelection();
   }
+
   Future<void> updateSelectedItemsStarred() async {
     setState(() {
-      for (ModelItem item in _selection){
+      for (ModelItem item in _selection) {
         item.starred = selectionHasStarredItems ? 0 : 1;
         item.update();
       }
     });
     clearSelection();
   }
+
   Future<void> copyToClipboard() async {
     List<String> texts = [];
-    for(ModelItem item in _selection){
-      if (item.type == ItemType.text || item.type == ItemType.task || item.type == ItemType.completedTask){
+    for (ModelItem item in _selection) {
+      if (item.type == ItemType.text ||
+          item.type == ItemType.task ||
+          item.type == ItemType.completedTask) {
         texts.add(item.text);
       }
     }
     String textToCopy = texts.reversed.join("\n");
     Clipboard.setData(ClipboardData(text: textToCopy));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Copied to clipboard'),duration: Duration(seconds: 1),),
+      SnackBar(
+        content: Text('Copied to clipboard'),
+        duration: Duration(seconds: 1),
+      ),
     );
     clearSelection();
   }
+
   Future<void> updateSelectedItemsTaskType() async {
     ItemType setType = selectionHasTaskItems ? ItemType.text : ItemType.task;
     setState(() {
-      for (ModelItem item in _selection){
-        if(setType == ItemType.text){
+      for (ModelItem item in _selection) {
+        if (setType == ItemType.text) {
           item.type = setType;
-        } else if (setType == ItemType.task){
+        } else if (setType == ItemType.task) {
           if (item.type == ItemType.text) item.type = setType;
         }
         item.update();
@@ -543,7 +595,7 @@ class _PageItemsState extends State<PageItems> {
     clearSelection();
   }
 
-  void clearSelection(){
+  void clearSelection() {
     setState(() {
       _selection.clear();
       _hasNotesSelected = false;
@@ -567,13 +619,10 @@ class _PageItemsState extends State<PageItems> {
   Future<void> _startRecording() async {
     if (await _audioRecorder.hasPermission()) {
       final tempDir = await getTemporaryDirectory();
-      final int utcSeconds = DateTime.now().millisecondsSinceEpoch~/1000;
+      final int utcSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       _audioFilePath = '${tempDir.path}/recording_$utcSeconds.m4a';
 
-      await _audioRecorder.start(
-        const RecordConfig(),
-        path: _audioFilePath!
-      );
+      await _audioRecorder.start(const RecordConfig(), path: _audioFilePath!);
 
       setState(() {
         _isRecording = true;
@@ -582,9 +631,11 @@ class _PageItemsState extends State<PageItems> {
 
       _startRecordingTimer();
     } else {
-      if(mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Microphone permission is required to record audio.")),
+          const SnackBar(
+              content:
+                  Text("Microphone permission is required to record audio.")),
         );
       }
     }
@@ -596,42 +647,44 @@ class _PageItemsState extends State<PageItems> {
     setState(() {
       _isRecording = false;
     });
-    if (path != null){
+    if (path != null) {
       await processFiles([path]);
       File tempFile = File(path);
       tempFile.delete();
     }
   }
 
-  void addToContacts(ModelItem item){
-    if (_hasNotesSelected){
+  void addToContacts(ModelItem item) {
+    if (_hasNotesSelected) {
       onItemTapped(item);
     }
     // TO-DO implement
   }
 
   // Handle adding item
-  void _addItem(String text,
-                ItemType type,
-                Uint8List? thumbnail,
-                Map<String,dynamic>? data,
-                ) async {
+  void _addItem(
+    String text,
+    ItemType type,
+    Uint8List? thumbnail,
+    Map<String, dynamic>? data,
+  ) async {
     await checkAddDateItem();
-    if (replyOnItem != null){
-      if (data != null){
+    if (replyOnItem != null) {
+      if (data != null) {
         data["reply_on"] = replyOnItem!.id;
       } else {
-        data = {"reply_on":replyOnItem!.id};
+        data = {"reply_on": replyOnItem!.id};
       }
     }
     int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
     ModelItem item = await ModelItem.fromMap({
-                              "group_id": widget.groupId,
-                              "text": text,
-                              "type": type,
-                              "thumbnail":thumbnail,
-                              "data":data,
-                              "at": utcMilliSeconds});
+      "group_id": widget.groupId,
+      "text": text,
+      "type": type,
+      "thumbnail": thumbnail,
+      "data": data,
+      "at": utcMilliSeconds
+    });
     await item.insert();
     setState(() {
       // update view
@@ -643,57 +696,70 @@ class _PageItemsState extends State<PageItems> {
     if (group != null) await group.update();
   }
 
-  Future<void> checkAddDateItem() async{
+  Future<void> checkAddDateItem() async {
     String today = getTodayDate();
-    List<ModelItem> rows = await ModelItem.getDateItemForGroupId(widget.groupId, today);
-    if(rows.isEmpty){
+    List<ModelItem> rows =
+        await ModelItem.getDateItemForGroupId(widget.groupId, today);
+    if (rows.isEmpty) {
       int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
-      ModelItem dateItem = await ModelItem.fromMap({"group_id":widget.groupId,"text":today,"type":170000,"at":utcMilliSeconds-1});
+      ModelItem dateItem = await ModelItem.fromMap({
+        "group_id": widget.groupId,
+        "text": today,
+        "type": 170000,
+        "at": utcMilliSeconds - 1
+      });
       await dateItem.insert();
       _items.insert(0, dateItem);
     }
   }
 
-  void showProcessing(){
+  void showProcessing() {
     showProcessingDialog(context);
   }
-  void hideProcessing(){
+
+  void hideProcessing() {
     Navigator.pop(context);
   }
 
   Future<void> processFiles(List<String> filePaths) async {
     showProcessing();
-    for (String filePath in filePaths){
-      Map<String,dynamic> attrs = await processAndGetFileAttributes(filePath);
+    for (String filePath in filePaths) {
+      Map<String, dynamic> attrs = await processAndGetFileAttributes(filePath);
       String mime = attrs["mime"];
       String newPath = attrs["path"];
       String type = mime.split("/").first;
-      switch(type){
+      switch (type) {
         case "image":
           Uint8List fileBytes = await File(newPath).readAsBytes();
-          Uint8List? thumbnail = await compute(getImageThumbnail,fileBytes);
-          if(thumbnail != null){
+          Uint8List? thumbnail = await compute(getImageThumbnail, fileBytes);
+          if (thumbnail != null) {
             String name = attrs["name"];
-            Map<String,dynamic> data = {"path":newPath,
-                                        "mime":attrs["mime"],
-                                        "name":name,
-                                        "size":attrs["size"]};
+            Map<String, dynamic> data = {
+              "path": newPath,
+              "mime": attrs["mime"],
+              "name": name,
+              "size": attrs["size"]
+            };
             String text = 'DND|#image|$name';
             _addItem(text, ItemType.image, thumbnail, data);
           }
         case "video":
-          VideoPlayerController controller = VideoPlayerController.file(File(newPath));
+          VideoPlayerController controller =
+              VideoPlayerController.file(File(newPath));
           try {
             await controller.initialize();
-            String duration = mediaFileDuration(controller.value.duration.inSeconds);
+            String duration =
+                mediaFileDuration(controller.value.duration.inSeconds);
             double aspect = controller.value.aspectRatio; // width/height
             String name = attrs["name"];
-            Map<String,dynamic> data = {"path":newPath,
-                                        "mime":attrs["mime"],
-                                        "name":name,
-                                        "size":attrs["size"],
-                                        "aspect":aspect,
-                                        "duration":duration};
+            Map<String, dynamic> data = {
+              "path": newPath,
+              "mime": attrs["mime"],
+              "name": name,
+              "size": attrs["size"],
+              "aspect": aspect,
+              "duration": duration
+            };
             String text = 'DND|#video|$name';
             _addItem(text, ItemType.video, null, data);
           } catch (e) {
@@ -703,13 +769,15 @@ class _PageItemsState extends State<PageItems> {
           }
         case "audio":
           String? duration = await getAudioDuration(newPath);
-          if (duration != null){
+          if (duration != null) {
             String name = attrs["name"];
-            Map<String,dynamic> data = {"path":newPath,
-                                        "mime":attrs["mime"],
-                                        "name":name,
-                                        "size":attrs["size"],
-                                        "duration":duration};
+            Map<String, dynamic> data = {
+              "path": newPath,
+              "mime": attrs["mime"],
+              "name": name,
+              "size": attrs["size"],
+              "duration": duration
+            };
             String text = 'DND|#audio|$name';
             _addItem(text, ItemType.audio, null, data);
           } else {
@@ -717,10 +785,12 @@ class _PageItemsState extends State<PageItems> {
           }
         default:
           String name = attrs["name"];
-          Map<String,dynamic> data = {"path":newPath,
-                                      "mime":attrs["mime"],
-                                      "name":name,
-                                      "size":attrs["size"]};
+          Map<String, dynamic> data = {
+            "path": newPath,
+            "mime": attrs["mime"],
+            "name": name,
+            "size": attrs["size"]
+          };
           String text = 'DND|#document|$name';
           _addItem(text, ItemType.document, null, data);
       }
@@ -767,7 +837,7 @@ class _PageItemsState extends State<PageItems> {
         allowMultiple: true,
         type: FileType.any, // Restrict to audio files
       );
-      if (result != null){
+      if (result != null) {
         List<PlatformFile> pickedFiles = result.files;
         List<String> filePaths = [];
         for (var pickedFile in pickedFiles) {
@@ -776,99 +846,125 @@ class _PageItemsState extends State<PageItems> {
         }
         processFiles(filePaths);
       }
-    } else if (type == "camera_image"){
-      XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
-      if (pickedFile != null){
+    } else if (type == "camera_image") {
+      XFile? pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.camera);
+      if (pickedFile != null) {
         processFiles([pickedFile.path]);
       }
-    } else if (type == "camera_video"){
-      XFile? pickedFile = await ImagePicker().pickVideo(source: ImageSource.camera);
-      if (pickedFile != null){
+    } else if (type == "camera_video") {
+      XFile? pickedFile =
+          await ImagePicker().pickVideo(source: ImageSource.camera);
+      if (pickedFile != null) {
         processFiles([pickedFile.path]);
       }
-    } else if (type == "location"){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-                    builder: (context) => const LocationPicker(),
-                    settings: const RouteSettings(name: "LocationPicker"),
-        )
-      ).then((value) {
-        if (value != null){
+    } else if (type == "location") {
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+        builder: (context) => const LocationPicker(),
+        settings: const RouteSettings(name: "LocationPicker"),
+      ))
+          .then((value) {
+        if (value != null) {
           LatLng position = value as LatLng;
-          Map<String,dynamic> data = {"lat":position.latitude,
-                                      "lng":position.longitude};
+          Map<String, dynamic> data = {
+            "lat": position.latitude,
+            "lng": position.longitude
+          };
           _addItem("DND|#location", ItemType.location, null, data);
         }
       });
-    } else if (type == "contact"){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-                    builder: (context) =>  const PageContacts(),
-                    settings: const RouteSettings(name: "ContactPicker"),
-        )
-      ).then((value) {
-        if (value != null){
+    } else if (type == "contact") {
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+        builder: (context) => const PageContacts(),
+        settings: const RouteSettings(name: "ContactPicker"),
+      ))
+          .then((value) {
+        if (value != null) {
           Contact contact = value as Contact;
-          List<String> phones = contact.phones.map((phone) => phone.number).toList();
-          List<String> emails = contact.emails.map((email) => email.address).toList();
-          List<String> addresses = contact.addresses.map((address) => address.address).toList();
+          List<String> phones =
+              contact.phones.map((phone) => phone.number).toList();
+          List<String> emails =
+              contact.emails.map((email) => email.address).toList();
+          List<String> addresses =
+              contact.addresses.map((address) => address.address).toList();
           String phoneNumbers = phones.join("|");
-          String details = 'DND|#contact|${contact.displayName}|${contact.name.first}|${contact.name.last}|$phoneNumbers';
-          Map<String,dynamic> data = {"name":contact.displayName,
-                                      "first":contact.name.first,
-                                      "last":contact.name.last,
-                                      "phones":phones,
-                                      "emails":emails,
-                                      "addresses":addresses
-                                      };
+          String details =
+              'DND|#contact|${contact.displayName}|${contact.name.first}|${contact.name.last}|$phoneNumbers';
+          Map<String, dynamic> data = {
+            "name": contact.displayName,
+            "first": contact.name.first,
+            "last": contact.name.last,
+            "phones": phones,
+            "emails": emails,
+            "addresses": addresses
+          };
           _addItem(details, ItemType.contact, contact.thumbnail, data);
         }
       });
     }
   }
 
-  void editGroup(){
-    Navigator.of(context)
-    .push(MaterialPageRoute(
+  void editGroup() {
+    Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
         categoryId: group!.categoryId,
         group: group!,
-        onUpdate: (){setState(() {});},
-        ),
+        onUpdate: () {
+          setState(() {});
+        },
+      ),
       settings: const RouteSettings(name: "EditNoteGroup"),
     ));
   }
 
-  void setTaskMode(){
+  void setTaskMode() {
     setState(() {
       isCreatingTask = !isCreatingTask;
       canScrollToBottom = false;
     });
   }
 
-  List<Widget> _buildSelectionOptions(){
+  List<Widget> _buildSelectionOptions() {
     return [
-      if(selectionHasOnlyTextOrTaskItem)
+      if (selectionHasOnlyTextOrTaskItem)
+        IconButton(
+          onPressed: () {
+            copyToClipboard();
+          },
+          icon: const Icon(Icons.copy),
+        ),
+      if (!selectionHasTextItems)
+        IconButton(
+          onPressed: () {
+            updateSelectedItemsTaskType();
+          },
+          icon: selectionHasTaskItems
+              ? const Icon(Icons.title)
+              : const Icon(Icons.check_circle),
+        ),
       IconButton(
-        onPressed: () { copyToClipboard();},
-        icon: const Icon(Icons.copy),
+        onPressed: () {
+          updateSelectedItemsStarred();
+        },
+        icon: selectionHasStarredItems
+            ? iconStarCrossed()
+            : const Icon(Icons.star_outline),
       ),
-      if(!selectionHasTextItems)
       IconButton(
-        onPressed: () { updateSelectedItemsTaskType();},
-        icon: selectionHasTaskItems ? const Icon(Icons.title) : const Icon(Icons.check_circle),
-      ),
-      IconButton(
-        onPressed: () { updateSelectedItemsStarred();},
-        icon: selectionHasStarredItems ? iconStarCrossed() : const Icon(Icons.star_outline),
-      ),
-      IconButton(
-        onPressed: (){archiveSelectedItems();},
+        onPressed: () {
+          archiveSelectedItems();
+        },
         icon: const Icon(Icons.delete_outline),
       ),
       IconButton(
-        onPressed: () { updateSelectedItemsPinned();},
-        icon: selectionHasPinnedItem ? iconPinCrossed() : const Icon(Icons.push_pin_outlined),
+        onPressed: () {
+          updateSelectedItemsPinned();
+        },
+        icon: selectionHasPinnedItem
+            ? iconPinCrossed()
+            : const Icon(Icons.push_pin_outlined),
       ),
     ];
   }
@@ -878,6 +974,7 @@ class _PageItemsState extends State<PageItems> {
       replyOnItem = item;
     });
   }
+
   Future<void> cancelReplyItem() async {
     setState(() {
       replyOnItem = null;
@@ -885,9 +982,9 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> showHideScrollToBottomButton(double scrolledHeight) async {
-    if(!mounted)return;
+    if (!mounted) return;
     setState(() {
-      if (scrolledHeight > 100){
+      if (scrolledHeight > 100) {
         canScrollToBottom = true;
       } else {
         canScrollToBottom = false;
@@ -898,50 +995,54 @@ class _PageItemsState extends State<PageItems> {
   @override
   Widget build(BuildContext context) {
     double size = 40;
-    bool isRTL = ModelSetting.getForKey("rtl","no") == "yes";
+    bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
       appBar: AppBar(
         actions: _hasNotesSelected ? _buildSelectionOptions() : [],
         title: group == null || _hasNotesSelected
-              ? const SizedBox.shrink()
-              : GestureDetector(
+            ? const SizedBox.shrink()
+            : GestureDetector(
                 onTap: () {
                   editGroup();
                 },
                 child: Row(
                   children: [
                     group!.thumbnail == null
-                    ? Container(
-                        width: size,
-                        height: size,
-                        decoration: BoxDecoration(
-                          color: colorFromHex(group!.color),
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center, // Center the text inside the circle
-                        child: Text(
-                          group!.title[0].toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: size / 2, // Adjust font size relative to the circle size
-                            fontWeight: FontWeight.bold,
+                        ? Container(
+                            width: size,
+                            height: size,
+                            decoration: BoxDecoration(
+                              color: colorFromHex(group!.color),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            // Center the text inside the circle
+                            child: Text(
+                              group!.title[0].toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: size / 2,
+                                // Adjust font size relative to the circle size
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Center(
+                              child: CircleAvatar(
+                                radius: 20,
+                                backgroundImage: MemoryImage(group!.thumbnail!),
+                              ),
+                            ),
                           ),
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Center(
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundImage: MemoryImage(group!.thumbnail!),
-                          ),
-                        ),
+                    const SizedBox(
+                      width: 5,
                     ),
-                    const SizedBox(width: 5,),
                     Expanded(
                       child: Text(
                         group!.title,
-                        overflow: TextOverflow.ellipsis, 
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -953,13 +1054,14 @@ class _PageItemsState extends State<PageItems> {
           // Items view (displaying the messages)
           Expanded(
             child: Stack(
-              children:[
-                
+              children: [
                 NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
-                    if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                    if (scrollInfo.metrics.pixels ==
+                        scrollInfo.metrics.maxScrollExtent) {
                       scrollFetchItems(true);
-                    } else if (scrollInfo.metrics.pixels == scrollInfo.metrics.minScrollExtent) {
+                    } else if (scrollInfo.metrics.pixels ==
+                        scrollInfo.metrics.minScrollExtent) {
                       scrollFetchItems(false);
                     }
                     showHideScrollToBottomButton(scrollInfo.metrics.pixels);
@@ -968,11 +1070,12 @@ class _PageItemsState extends State<PageItems> {
                   child: ListView.builder(
                     controller: _itemScrollController,
                     reverse: true,
-                    itemCount: _items.length, // Additional item for the loading indicator
+                    itemCount: _items.length,
+                    // Additional item for the loading indicator
                     itemBuilder: (context, index) {
                       final item = _items[index];
-                      if (item.type == ItemType.date){
-                        return ItemWidgetDate(item:item);
+                      if (item.type == ItemType.date) {
+                        return ItemWidgetDate(item: item);
                       } else {
                         return Dismissible(
                           key: ValueKey(item.id),
@@ -984,46 +1087,56 @@ class _PageItemsState extends State<PageItems> {
                           background: Container(
                             alignment: Alignment.centerLeft,
                             padding: const EdgeInsets.only(left: 20),
-                            child: const Icon(Icons.reply,),
+                            child: const Icon(
+                              Icons.reply,
+                            ),
                           ),
                           child: GestureDetector(
-                            onLongPress: (){
+                            onLongPress: () {
                               onItemLongPressed(item);
                             },
-                            onTap: (){
+                            onTap: () {
                               onItemTapped(item);
                             },
                             child: Container(
                               width: double.infinity,
-                              color: _selection.contains(item) ? Theme.of(context).colorScheme.inversePrimary : Colors.transparent,
+                              color: _selection.contains(item)
+                                  ? Theme.of(context).colorScheme.inversePrimary
+                                  : Colors.transparent,
                               margin: const EdgeInsets.symmetric(vertical: 1),
                               child: Align(
-                                alignment: isRTL ? Alignment.centerRight : Alignment.centerLeft,
+                                alignment: isRTL
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
                                 child: Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      if(item.replyOn != null)
-                                      GestureDetector(
-                                        onTap: (){
-                                          initialFetchItems(item.replyOn!.id);
-                                        },
-                                        child: NotePreviewSummary(
-                                            item:item.replyOn!,
-                                            showImagePreview: true,
-                                            showTimestamp: false,
-                                            expanded: false,),
-                                      ),
-                                      _buildItem(item),
-                                    ],
-                                  )
-                                ),
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 10),
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Theme.of(context).colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (item.replyOn != null)
+                                          GestureDetector(
+                                            onTap: () {
+                                              initialFetchItems(
+                                                  item.replyOn!.id);
+                                            },
+                                            child: NotePreviewSummary(
+                                              item: item.replyOn!,
+                                              showImagePreview: true,
+                                              showTimestamp: false,
+                                              expanded: false,
+                                            ),
+                                          ),
+                                        _buildItem(item),
+                                      ],
+                                    )),
                               ),
                             ),
                           ),
@@ -1032,29 +1145,32 @@ class _PageItemsState extends State<PageItems> {
                     },
                   ),
                 ),
-                if(canScrollToBottom)Positioned(
-                  bottom: 20, // Adjust for FAB height and margin
-                  right: 20,
-                  child: FloatingActionButton(
-                    heroTag: "scrollToBottom",
-                    mini: true,
-                    onPressed: () {
-                      initialFetchItems(null);
-                    },
-                    shape: const CircleBorder(),
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    child: const Icon(Icons.keyboard_double_arrow_down),
+                if (canScrollToBottom)
+                  Positioned(
+                    bottom: 20, // Adjust for FAB height and margin
+                    right: 20,
+                    child: FloatingActionButton(
+                      heroTag: "scrollToBottom",
+                      mini: true,
+                      onPressed: () {
+                        initialFetchItems(null);
+                      },
+                      shape: const CircleBorder(),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      child: const Icon(Icons.keyboard_double_arrow_down),
+                    ),
                   ),
-                ),
                 Positioned(
                   right: 0,
                   child: IconButton(
-                    onPressed: (){
+                    onPressed: () {
                       _openFilterDialog();
                     },
                     icon: Icon(
                       Icons.filter_alt,
-                      color: _filtersEnabled ? null : Theme.of(context).colorScheme.inversePrimary,
+                      color: _filtersEnabled
+                          ? null
+                          : Theme.of(context).colorScheme.inversePrimary,
                     ),
                   ),
                 ),
@@ -1072,55 +1188,64 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
       case ItemType.text:
-        return ItemWidgetText(item:item);
+        return ItemWidgetText(item: item);
       case ItemType.image:
-        return ItemWidgetImage(item:item,onTap: viewMedia);
+        return ItemWidgetImage(item: item, onTap: viewMedia);
       case ItemType.video:
-        return ItemWidgetVideo(item:item,onTap: viewMedia);
+        return ItemWidgetVideo(item: item, onTap: viewMedia);
       case ItemType.audio:
-        return ItemWidgetAudio(item:item);
+        return ItemWidgetAudio(item: item);
       case ItemType.document:
         return ItemWidgetDocument(item: item, onTap: openItemMedia);
       case ItemType.location:
-        return ItemWidgetLocation(item:item,onTap: openLocation);
+        return ItemWidgetLocation(item: item, onTap: openLocation);
       case ItemType.contact:
-        return ItemWidgetContact(item:item,onTap:addToContacts);
+        return ItemWidgetContact(item: item, onTap: addToContacts);
       case ItemType.completedTask:
-        return ItemWidgetTask(item: item,);
+        return ItemWidgetTask(
+          item: item,
+        );
       case ItemType.task:
-        return ItemWidgetTask(item: item,);
+        return ItemWidgetTask(
+          item: item,
+        );
       default:
         return const SizedBox.shrink();
     }
   }
 
   void viewMedia(ModelItem item) async {
-    if (_hasNotesSelected){
+    if (_hasNotesSelected) {
       onItemTapped(item);
     } else {
       String id = item.id!;
       String groupId = item.groupId;
       int index = await ModelItem.mediaIndexInGroup(groupId, id);
       int count = await ModelItem.mediaCountInGroup(groupId);
-      if (mounted){
+      if (mounted) {
         Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PageMedia(id: id, groupId: groupId,index: index,count: count,),
-                      settings: const RouteSettings(name: "NoteGroupMedia"),
-                    ));
+          builder: (context) => PageMedia(
+            id: id,
+            groupId: groupId,
+            index: index,
+            count: count,
+          ),
+          settings: const RouteSettings(name: "NoteGroupMedia"),
+        ));
       }
     }
   }
 
-  void openItemMedia(ModelItem item){
-    if (_hasNotesSelected){
+  void openItemMedia(ModelItem item) {
+    if (_hasNotesSelected) {
       onItemTapped(item);
     } else {
       openMedia(item.data!["path"]);
     }
   }
 
-  void openLocation(ModelItem item){
-    if (_hasNotesSelected){
+  void openLocation(ModelItem item) {
+    if (_hasNotesSelected) {
       onItemTapped(item);
     } else {
       openLocationInMap(item.data!["lat"], item.data!["lng"]);
@@ -1129,22 +1254,19 @@ class _PageItemsState extends State<PageItems> {
 
   Widget _buildWaveform() {
     final controller = IOS7SiriWaveformController(
-    amplitude: 0.5,
-    color: Colors.red,
-    frequency: 4,
-    speed: 0.10,
-  );
+      amplitude: 0.5,
+      color: Colors.red,
+      frequency: 4,
+      speed: 0.10,
+    );
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.mic, color: Colors.red),
           SiriWaveform.ios7(
-              controller: controller,
-              options: const IOS7SiriWaveformOptions(
-                height: 50,
-                width: 150
-              ),
+            controller: controller,
+            options: const IOS7SiriWaveformOptions(height: 50, width: 150),
           ),
           Text(
             mediaFileDuration(_recordingDuration),
@@ -1168,34 +1290,41 @@ class _PageItemsState extends State<PageItems> {
           ),
           alignment: Alignment.center,
           child: IconButton(
-            onPressed: (){clearSelection();}, 
-            icon: const Icon(Icons.clear,color: Colors.black,)
-          ),
+              onPressed: () {
+                clearSelection();
+              },
+              icon: const Icon(
+                Icons.clear,
+                color: Colors.black,
+              )),
         ),
       ),
     );
   }
+
   Widget _buildInputSuffix() {
-    return _isTyping ? const SizedBox.shrink()
-     : Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.attach_file),
-          onPressed: () {
-            _showAttachmentOptions();
-          },
-        ),
-        if(ImagePicker().supportsImageSource(ImageSource.camera))
-        IconButton(
-          icon: const Icon(Icons.camera_alt_outlined),
-          onPressed: () {
-            _showCameraImageVideoDialog();
-          },
-        ),
-      ],
-    );
+    return _isTyping
+        ? const SizedBox.shrink()
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.attach_file),
+                onPressed: () {
+                  _showAttachmentOptions();
+                },
+              ),
+              if (ImagePicker().supportsImageSource(ImageSource.camera))
+                IconButton(
+                  icon: const Icon(Icons.camera_alt_outlined),
+                  onPressed: () {
+                    _showCameraImageVideoDialog();
+                  },
+                ),
+            ],
+          );
   }
+
   // Input box with attachment and send button
   Widget _buildInputBox() {
     return Padding(
@@ -1206,60 +1335,69 @@ class _PageItemsState extends State<PageItems> {
           IconButton(
             icon: Icon(
               Icons.check_circle,
-              color:isCreatingTask ? null : Theme.of(context).colorScheme.inversePrimary,
+              color: isCreatingTask
+                  ? null
+                  : Theme.of(context).colorScheme.inversePrimary,
             ),
             onPressed: () {
               setTaskMode();
             },
           ),
           Expanded(
-            child: 
-              _isRecording
-              ? _buildWaveform()
-              : Column(
-                children: [
-                  if (replyOnItem != null)
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: NotePreviewSummary(
-                                  item:replyOnItem!,
+            child: _isRecording
+                ? _buildWaveform()
+                : Column(
+                    children: [
+                      if (replyOnItem != null)
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: NotePreviewSummary(
+                                  item: replyOnItem!,
                                   showTimestamp: false,
                                   showImagePreview: true,
-                                  expanded: true,),
+                                  expanded: true,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed:
+                                    cancelReplyItem, // Cancel reply action
+                              ),
+                            ],
+                          ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: cancelReplyItem, // Cancel reply action
+                      TextField(
+                        controller: _textController,
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(
+                          filled: true,
+                          hintText: isCreatingTask
+                              ? "Create a task."
+                              : "What's on your mind?",
+                          fillColor: Theme.of(context).colorScheme.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 10),
+                          suffixIcon: isCreatingTask
+                              ? const SizedBox.shrink()
+                              : _buildInputSuffix(),
                         ),
-                      ],
-                    ),
-                  ),
-                  TextField(
-                    controller: _textController,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    decoration: InputDecoration(
-                      filled: true,
-                      hintText: isCreatingTask ? "Create a task." : "What's on your mind?",
-                      fillColor: Theme.of(context).colorScheme.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
+                        onChanged: (value) => _onInputTextChanged(value),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                      suffixIcon: isCreatingTask ? const SizedBox.shrink() : _buildInputSuffix(),
-                    ),
-                    onChanged: (value) => _onInputTextChanged(value),
+                    ],
                   ),
-                ],
-              ),
           ),
           GestureDetector(
             onLongPress: () async {
@@ -1286,20 +1424,28 @@ class _PageItemsState extends State<PageItems> {
                   alignment: Alignment.center,
                   child: IconButton(
                     icon: Icon(
-                      _isTyping || isCreatingTask ? Icons.send : _isRecording ? Icons.stop : Icons.mic,
+                      _isTyping || isCreatingTask
+                          ? Icons.send
+                          : _isRecording
+                              ? Icons.stop
+                              : Icons.mic,
                       color: Colors.black,
                     ),
                     onPressed: _isTyping
                         ? () {
                             final String text = _textController.text.trim();
                             if (text.isNotEmpty) {
-                              ItemType itemType = isCreatingTask ? ItemType.task : ItemType.text;
+                              ItemType itemType = isCreatingTask
+                                  ? ItemType.task
+                                  : ItemType.text;
                               _addItem(text, itemType, null, null);
                               _textController.clear();
                               _onInputTextChanged("");
                             }
                           }
-                        : _isRecording ? _stopRecording : null,
+                        : _isRecording
+                            ? _stopRecording
+                            : null,
                   ),
                 ),
               ),
@@ -1318,15 +1464,15 @@ class _PageItemsState extends State<PageItems> {
         return SafeArea(
           child: Wrap(
             children: [
-              if(Platform.isAndroid || Platform.isIOS)
-              ListTile(
-                leading: const Icon(Icons.contact_phone),
-                title: const Text("Contact"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia('contact');
-                },
-              ),
+              if (Platform.isAndroid || Platform.isIOS)
+                ListTile(
+                  leading: const Icon(Icons.contact_phone),
+                  title: const Text("Contact"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _addMedia('contact');
+                  },
+                ),
               ListTile(
                 leading: const Icon(Icons.location_on),
                 title: const Text("Location"),
@@ -1349,5 +1495,4 @@ class _PageItemsState extends State<PageItems> {
       },
     );
   }
-
 }

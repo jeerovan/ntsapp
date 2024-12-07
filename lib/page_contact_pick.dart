@@ -23,17 +23,16 @@ class _PageContactsState extends State<PageContacts> {
     if (!await FlutterContacts.requestPermission()) {
       setState(() => _permissionDenied = true);
     } else {
-      final contacts = await FlutterContacts.getContacts(withProperties:true,withThumbnail: true);
+      final contacts = await FlutterContacts.getContacts(
+          withProperties: true, withThumbnail: true);
       setState(() => _contacts = contacts);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-          appBar: AppBar(title: const Text('Pick a contact')),
-          body: _body());
-          
+    return Scaffold(
+        appBar: AppBar(title: const Text('Pick a contact')), body: _body());
   }
 
   Widget _body() {
@@ -57,7 +56,8 @@ class _PageContactsState extends State<PageContacts> {
         ),
       );
     }
-    if (_contacts == null) return const Center(child: CircularProgressIndicator());
+    if (_contacts == null)
+      return const Center(child: CircularProgressIndicator());
     return ListView.builder(
       itemCount: _contacts!.length,
       itemBuilder: (context, index) {
@@ -73,7 +73,10 @@ class _PageContactsState extends State<PageContacts> {
                 ),
           title: Text(
             contact.displayName.trim(),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

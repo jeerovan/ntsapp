@@ -32,13 +32,14 @@ class _LocationPickerState extends State<LocationPicker> {
     if (!serviceEnabled) {
       return;
     }
-    
+
     permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       return;
     }
     Position? position = await Geolocator.getLastKnownPosition();
-    if (position != null){
+    if (position != null) {
       setState(() {
         _selectedLocation = LatLng(position.latitude, position.longitude);
       });
@@ -73,7 +74,8 @@ class _LocationPickerState extends State<LocationPicker> {
       },
     );
   }
-  void _showServiceDisabled(){
+
+  void _showServiceDisabled() {
     showAlertMessage(context, "Location Services", "Please enable!");
   }
 
@@ -84,38 +86,39 @@ class _LocationPickerState extends State<LocationPicker> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // Location services are not enabled don't continue
-      // accessing the position and request users of the 
+      // accessing the position and request users of the
       // App to enable the location services.
       _showServiceDisabled();
       return;
     }
-    
+
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         // Permissions are denied, next time you could try
         // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale 
+        // Android's shouldShowRequestPermissionRationale
         // returned true. According to Android guidelines
         // your App should show an explanatory UI now.
         _showPermissionDeniedDialog();
         return;
       }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately. 
+      // Permissions are denied forever, handle appropriately.
       _showPermissionDeniedDialog();
       return;
-    } 
+    }
 
     LocationSettings locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
     // Get current location
-    Position position = await Geolocator.getCurrentPosition(locationSettings: locationSettings);
+    Position position =
+        await Geolocator.getCurrentPosition(locationSettings: locationSettings);
     setState(() {
       _selectedLocation = LatLng(position.latitude, position.longitude);
       serviceEnabled = true;
@@ -141,18 +144,19 @@ class _LocationPickerState extends State<LocationPicker> {
           IconButton(
             icon: const Icon(Icons.check),
             onPressed: () {
-                    Navigator.of(context).pop(_selectedLocation);
-                  }
-              ,
+              Navigator.of(context).pop(_selectedLocation);
+            },
           ),
         ],
       ),
       body: FlutterMap(
         mapController: _mapController,
         options: MapOptions(
-          initialCenter: _selectedLocation, // Default location if current location not available
+          initialCenter: _selectedLocation,
+          // Default location if current location not available
           initialZoom: 5.0,
-          onTap: (tapPosition, latLng) => _onMapTap(latLng), // Set location on map tap
+          onTap: (tapPosition, latLng) =>
+              _onMapTap(latLng), // Set location on map tap
         ),
         children: [
           TileLayer(

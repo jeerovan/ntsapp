@@ -6,15 +6,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'common.dart';
 import 'package:video_player/video_player.dart';
 
+import 'common.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 
-
 class MessageInCenter extends StatelessWidget {
   final String text;
+
   const MessageInCenter({
     super.key,
     required this.text,
@@ -205,11 +205,12 @@ class IconButtonWithBadge extends StatelessWidget {
 class WidgetGroup extends StatefulWidget {
   final ModelGroup group;
   final bool showLastItemSummary;
+
   const WidgetGroup({
     super.key,
     required this.group,
     required this.showLastItemSummary,
-    });
+  });
 
   @override
   State<WidgetGroup> createState() => _WidgetGroupState();
@@ -222,66 +223,74 @@ class _WidgetGroupState extends State<WidgetGroup> {
     ModelGroup item = widget.group;
     return ListTile(
       leading: item.thumbnail == null
-        ? Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: colorFromHex(item.color),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center, // Center the text inside the circle
-            child: Text(
-              item.title[0].toUpperCase(),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: size / 2, // Adjust font size relative to the circle size
-                fontWeight: FontWeight.bold,
+          ? Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: colorFromHex(item.color),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              // Center the text inside the circle
+              child: Text(
+                item.title[0].toUpperCase(),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize:
+                      size / 2, // Adjust font size relative to the circle size
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : SizedBox(
+              width: size,
+              height: size,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundImage: MemoryImage(item.thumbnail!),
+                  ),
+                ),
               ),
             ),
-          )
-      : SizedBox(
-        width: size,
-        height: size,
-        child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Center(
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: MemoryImage(item.thumbnail!),
-              ),
-            ),
-        ),
-      ),
       title: Row(
         children: [
           Expanded(
             child: Text(
               item.title,
-              overflow: TextOverflow.ellipsis, 
-              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          if(item.pinned == 1)const Icon(Icons.push_pin_outlined,size: 12,),
+          if (item.pinned == 1)
+            const Icon(
+              Icons.push_pin_outlined,
+              size: 12,
+            ),
         ],
       ),
       subtitle: widget.showLastItemSummary
-                ? NotePreviewSummary(
-                    item: item.lastItem,
-                    showTimestamp: true,
-                    showImagePreview: false,
-                    expanded: true,
-                  )
-                : const SizedBox.shrink(),
+          ? NotePreviewSummary(
+              item: item.lastItem,
+              showTimestamp: true,
+              showImagePreview: false,
+              expanded: true,
+            )
+          : const SizedBox.shrink(),
     );
   }
 }
 
 class WidgetVideo extends StatefulWidget {
   final String videoPath;
-  const WidgetVideo({super.key,required this.videoPath});
+
+  const WidgetVideo({super.key, required this.videoPath});
 
   @override
   State<WidgetVideo> createState() => _WidgetVideoState();
 }
+
 class _WidgetVideoState extends State<WidgetVideo> {
   late final VideoPlayerController _controller;
   ChewieController? _chewieController;
@@ -296,13 +305,11 @@ class _WidgetVideoState extends State<WidgetVideo> {
   Future<void> initialize() async {
     await _controller.initialize();
     _chewieController = ChewieController(
-                          videoPlayerController: _controller,
-                          autoPlay: true,
-                          looping: true,
-                        );
-    setState(() {
-      
-    });
+      videoPlayerController: _controller,
+      autoPlay: true,
+      looping: true,
+    );
+    setState(() {});
   }
 
   @override
@@ -315,19 +322,21 @@ class _WidgetVideoState extends State<WidgetVideo> {
   @override
   Widget build(BuildContext context) {
     return Container(
-            padding: const EdgeInsets.all(20),
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: <Widget>[
-                  _chewieController == null ? const SizedBox.shrink() : Chewie(controller: _chewieController!),
-                  //_ControlsOverlay(controller: _controller),
-                  //VideoProgressIndicator(_controller, allowScrubbing: true),
-                ],
-              ),
-            ),
-          );
+      padding: const EdgeInsets.all(20),
+      child: AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: <Widget>[
+            _chewieController == null
+                ? const SizedBox.shrink()
+                : Chewie(controller: _chewieController!),
+            //_ControlsOverlay(controller: _controller),
+            //VideoProgressIndicator(_controller, allowScrubbing: true),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -361,7 +370,7 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
       await _controller.setLooping(false); // No looping
       await _controller.pause(); // Pause to display the first frame
     }
-    
+
     if (mounted) {
       setState(() {
         _isInitialized = true;
@@ -391,7 +400,8 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.7), // Semi-transparent grey background
+                      color: Colors.grey.withOpacity(0.7),
+                      // Semi-transparent grey background
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -404,21 +414,25 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
               )
             : Image.file(
                 File("assets/image.webp"),
-                fit: BoxFit.cover, // Ensures the image covers the available space
+                fit: BoxFit
+                    .cover, // Ensures the image covers the available space
               )
         : const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Center(child: CircularProgressIndicator()),
-        );
+            padding: EdgeInsets.all(8.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
   }
 }
 
 class WidgetAudio extends StatefulWidget {
   final ModelItem item;
-  const WidgetAudio({super.key,required this.item});
+
+  const WidgetAudio({super.key, required this.item});
+
   @override
   State<WidgetAudio> createState() => _WidgetAudioState();
 }
+
 class _WidgetAudioState extends State<WidgetAudio> {
   late AudioPlayer _audioPlayer;
   Duration _totalDuration = Duration.zero;
@@ -439,10 +453,10 @@ class _WidgetAudioState extends State<WidgetAudio> {
 
     // Track current position of the audio
     _audioPlayer.onPositionChanged.listen((position) {
-      if(mounted) {
+      if (mounted) {
         setState(() {
-        _currentPosition = position;
-      });
+          _currentPosition = position;
+        });
       }
     });
 
@@ -495,7 +509,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
             value: _currentPosition.inSeconds.toDouble(),
             onChanged: (value) async {
               // Seek to the new position in the audio
-              final newPosition = Duration(seconds: value.toInt()-1);
+              final newPosition = Duration(seconds: value.toInt() - 1);
               await _audioPlayer.seek(newPosition);
             },
           ),
@@ -509,14 +523,16 @@ class _WidgetAudioState extends State<WidgetAudio> {
   }
 }
 
-Widget widgetAudioDetails(ModelItem item){
+Widget widgetAudioDetails(ModelItem item) {
   return Row(
     children: [
       // File size text at the left
       Row(
         children: [
-          const Icon(Icons.audiotrack,size: 15),
-          const SizedBox(width: 2,),
+          const Icon(Icons.audiotrack, size: 15),
+          const SizedBox(
+            width: 2,
+          ),
           Text(
             item.data!["duration"],
             style: const TextStyle(fontSize: 10),
@@ -531,7 +547,7 @@ Widget widgetAudioDetails(ModelItem item){
               item.data!["name"],
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle( fontSize: 15),
+              style: const TextStyle(fontSize: 15),
             ),
           ),
         ),
@@ -544,7 +560,8 @@ Widget widgetAudioDetails(ModelItem item){
 class WidgetTextWithLinks extends StatefulWidget {
   final String text;
   final TextAlign? align;
-  const WidgetTextWithLinks({super.key,required this.text,this.align});
+
+  const WidgetTextWithLinks({super.key, required this.text, this.align});
 
   @override
   State<WidgetTextWithLinks> createState() => _WidgetTextWithLinksState();
@@ -554,11 +571,11 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
   @override
   Widget build(BuildContext context) {
     return RichText(
-          text:TextSpan(
-            children: _buildTextWithLinks(context, widget.text),
-          ),
-          textAlign: widget.align == null ? TextAlign.left : widget.align!,
-        );
+      text: TextSpan(
+        children: _buildTextWithLinks(context, widget.text),
+      ),
+      textAlign: widget.align == null ? TextAlign.left : widget.align!,
+    );
   }
 
   List<TextSpan> _buildTextWithLinks(BuildContext context, String text) {
@@ -574,9 +591,10 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
 
       // Add plain text before the link
       if (start > lastMatchEnd) {
-        spans.add(TextSpan(
-          text: text.substring(lastMatchEnd, start),
-          style: Theme.of(context).textTheme.bodyLarge,
+        spans.add(
+          TextSpan(
+            text: text.substring(lastMatchEnd, start),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
         );
       }
@@ -615,9 +633,7 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
   }
 }
 
-
-
-Widget iconStarCrossed(){
+Widget iconStarCrossed() {
   return Stack(
     alignment: Alignment.center, // Align icons at the center
     children: [
@@ -628,13 +644,13 @@ Widget iconStarCrossed(){
         angle: 0.785398, // Angle in radians (e.g., 45 degrees = π/4 ≈ 0.785398)
         child: const Icon(
           Icons.horizontal_rule_sharp,
-          
         ),
       ),
     ],
   );
 }
-Widget iconPinCrossed(){
+
+Widget iconPinCrossed() {
   return Stack(
     alignment: Alignment.center, // Align icons at the center
     children: [
