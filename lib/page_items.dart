@@ -43,7 +43,6 @@ class PageItems extends StatefulWidget {
 
 class _PageItemsState extends State<PageItems> {
 
-  late List<String> sharedContents;
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
   bool _hasNotesSelected = false;
@@ -92,12 +91,13 @@ class _PageItemsState extends State<PageItems> {
   @override
   void initState() {
     super.initState();
-    sharedContents = List.from(widget.sharedContents);
     _audioRecorder = AudioRecorder();
     loadGroup();
     initialFetchItems(widget.loadItemId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadSharedContents();
+      if (widget.sharedContents.isNotEmpty) {
+        loadSharedContents();
+      }
     });
   }
 
@@ -134,23 +134,19 @@ class _PageItemsState extends State<PageItems> {
     });
   }
   Future<void> loadSharedContents() async {
-    if (sharedContents.isNotEmpty){
-      debugPrint("Items:${sharedContents.toString()}");
-      List<String> sharedFiles = [];
-      List<String> sharedTexts = [];
-      for(String sharedContent in sharedContents){
-        File file = File(sharedContent);
-        if (file.existsSync()){
-          sharedFiles.add(sharedContent);
-        } else {
-          sharedTexts.add(sharedContent);
-        }
+    List<String> sharedFiles = [];
+    List<String> sharedTexts = [];
+    for(String sharedContent in widget.sharedContents){
+      File file = File(sharedContent);
+      if (file.existsSync()){
+        sharedFiles.add(sharedContent);
+      } else {
+        sharedTexts.add(sharedContent);
       }
-      processFiles(sharedFiles);
-      for (String text in sharedTexts){
-        _addItem(text, ItemType.text, null, null);
-      }
-      sharedContents.clear();
+    }
+    processFiles(sharedFiles);
+    for (String text in sharedTexts){
+      _addItem(text, ItemType.text, null, null);
     }
   }
 

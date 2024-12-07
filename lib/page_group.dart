@@ -37,7 +37,6 @@ class PageGroup extends StatefulWidget {
 
 class _PageGroupState extends State<PageGroup> {
 
-  late List<String> sharedContents;
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelGroup> _items = [];
@@ -53,10 +52,12 @@ class _PageGroupState extends State<PageGroup> {
   // hide category
   bool hideCategory = true;
 
+  bool loadedSharedContents = true;
+
   @override
   void initState() {
     super.initState();
-    sharedContents = List.from(widget.sharedContents);
+    loadedSharedContents = widget.sharedContents.isEmpty;
     checkAuthAndLoad();
   }
 
@@ -168,6 +169,8 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   void navigateToItems(String groupId){
+    List<String> sharedContents = loadedSharedContents ? [] : widget.sharedContents;
+    loadedSharedContents = true;
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageItems(
             groupId: groupId,
@@ -176,7 +179,6 @@ class _PageGroupState extends State<PageGroup> {
         settings: const RouteSettings(name: "Notes"),
       )).then((_) {
         setState(() {
-          sharedContents.clear();
           initialLoad();
         });
       });
@@ -416,7 +418,7 @@ class _PageGroupState extends State<PageGroup> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: Text(sharedContents.isNotEmpty ? "Select a group" : "Note to self"),
+        title: Text(loadedSharedContents ?  "Note to self": "Select a group"),
         actions: _hasGroupsSelected ? _buildSelectionActions() : _buildDefaultActions(size),
       ),
       body: Stack(
@@ -434,7 +436,7 @@ class _PageGroupState extends State<PageGroup> {
                 final item = _items[index];
                 return GestureDetector(
                   onLongPress: (){
-                    if(sharedContents.isEmpty)onItemLongPressed(item);
+                    if(loadedSharedContents)onItemLongPressed(item);
                   },
                   onTap: (){
                     onItemTapped(item);

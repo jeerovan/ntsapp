@@ -61,7 +61,7 @@ class _MainAppState extends State<MainApp> {
 
   // sharing intent
   late StreamSubscription _intentSub;
-  final List<String> _sharedContent = [];
+  final List<String> _sharedContents = [];
 
   @override
   void initState() {
@@ -88,9 +88,9 @@ class _MainAppState extends State<MainApp> {
       // Listen to media sharing coming from outside the app while the app is in the memory.
       _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((sharedContents) {
         setState(() {
-          _sharedContent.clear();
+          _sharedContents.clear();
           for(SharedMediaFile sharedContent in sharedContents) {
-            _sharedContent.add(sharedContent.path);
+            _sharedContents.add(sharedContent.path);
           }
         });
       }, onError: (err) {
@@ -100,9 +100,9 @@ class _MainAppState extends State<MainApp> {
       // Get the media sharing coming from outside the app while the app is closed.
       ReceiveSharingIntent.instance.getInitialMedia().then((sharedContents) {
         setState(() {
-          _sharedContent.clear();
+          _sharedContents.clear();
           for(SharedMediaFile sharedContent in sharedContents) {
-            _sharedContent.add(sharedContent.path);
+            _sharedContents.add(sharedContent.path);
           }
           // Tell the library that we are done processing the intent.
           ReceiveSharingIntent.instance.reset();
@@ -131,7 +131,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     String processMedia = ModelSetting.getForKey("process_media","no");
     Widget page = PageGroup(
-        sharedContents: _sharedContent,
+        sharedContents: _sharedContents,
         isDarkMode: isDark,
         onThemeToggle: _toggleTheme,);
     if (processMedia == "yes"){
