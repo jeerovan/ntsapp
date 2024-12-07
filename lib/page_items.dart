@@ -43,6 +43,7 @@ class PageItems extends StatefulWidget {
 
 class _PageItemsState extends State<PageItems> {
 
+  late List<String> sharedContents;
   final List<ModelItem> _items = []; // Store items
   final List<ModelItem> _selection = [];
   bool _hasNotesSelected = false;
@@ -91,6 +92,7 @@ class _PageItemsState extends State<PageItems> {
   @override
   void initState() {
     super.initState();
+    sharedContents = List.from(widget.sharedContents);
     _audioRecorder = AudioRecorder();
     loadGroup();
     initialFetchItems(widget.loadItemId);
@@ -132,11 +134,11 @@ class _PageItemsState extends State<PageItems> {
     });
   }
   Future<void> loadSharedContents() async {
-    if (widget.sharedContents.isNotEmpty){
-      debugPrint("Items:${widget.sharedContents.toString()}");
+    if (sharedContents.isNotEmpty){
+      debugPrint("Items:${sharedContents.toString()}");
       List<String> sharedFiles = [];
       List<String> sharedTexts = [];
-      for(String sharedContent in widget.sharedContents){
+      for(String sharedContent in sharedContents){
         File file = File(sharedContent);
         if (file.existsSync()){
           sharedFiles.add(sharedContent);
@@ -148,7 +150,7 @@ class _PageItemsState extends State<PageItems> {
       for (String text in sharedTexts){
         _addItem(text, ItemType.text, null, null);
       }
-      widget.sharedContents.clear();
+      sharedContents.clear();
     }
   }
 

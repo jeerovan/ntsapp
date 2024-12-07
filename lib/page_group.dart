@@ -37,6 +37,7 @@ class PageGroup extends StatefulWidget {
 
 class _PageGroupState extends State<PageGroup> {
 
+  late List<String> sharedContents;
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelGroup> _items = [];
@@ -55,6 +56,7 @@ class _PageGroupState extends State<PageGroup> {
   @override
   void initState() {
     super.initState();
+    sharedContents = List.from(widget.sharedContents);
     checkAuthAndLoad();
   }
 
@@ -169,12 +171,12 @@ class _PageGroupState extends State<PageGroup> {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageItems(
             groupId: groupId,
-            sharedContents: widget.sharedContents,
+            sharedContents: sharedContents,
           ),
         settings: const RouteSettings(name: "Notes"),
       )).then((_) {
         setState(() {
-          widget.sharedContents.clear();
+          sharedContents.clear();
           initialLoad();
         });
       });
@@ -414,7 +416,7 @@ class _PageGroupState extends State<PageGroup> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.sharedContents.isNotEmpty ? "Select a group" : "Note to self"),
+        title: Text(sharedContents.isNotEmpty ? "Select a group" : "Note to self"),
         actions: _hasGroupsSelected ? _buildSelectionActions() : _buildDefaultActions(size),
       ),
       body: Stack(
@@ -432,7 +434,7 @@ class _PageGroupState extends State<PageGroup> {
                 final item = _items[index];
                 return GestureDetector(
                   onLongPress: (){
-                    if(widget.sharedContents.isEmpty)onItemLongPressed(item);
+                    if(sharedContents.isEmpty)onItemLongPressed(item);
                   },
                   onTap: (){
                     onItemTapped(item);
