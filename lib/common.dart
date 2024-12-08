@@ -17,6 +17,12 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import 'app_config.dart';
 
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+
+bool canUseVideoPlayer =
+    Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
+
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
     return 'Please enter data';
@@ -427,6 +433,88 @@ Future<String?> getAudioDuration(String filePath) async {
     player.dispose();
   }
   return audioDuration;
+}
+
+class VideoInfoExtractor {
+  final String filePath;
+  late Player? _player;
+  late VideoController _videoController;
+
+  VideoInfoExtractor(this.filePath) {
+    try {
+      // Create player
+      _player = Player(
+        configuration: const PlayerConfiguration(
+          bufferSize: 1024 * 1024, // 1 MB buffer
+          ready: null,
+        ),
+      );
+      _videoController = VideoController(_player!);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  // Get video metadata information
+  Future<Map<String, dynamic>> getVideoInfo() async {
+    try {
+      // Open the file
+      await _player!.open(Media(filePath), play: false);
+
+      // Wait a moment to ensure metadata is loaded
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      // Get video information
+      final duration = _player!.state.duration.inSeconds;
+      final aspectRatio = _player!.state.videoParams.aspect ?? 1 / 1;
+
+      return {
+        'duration': duration,
+        'aspect': aspectRatio,
+      };
+    } catch (e) {
+      debugPrint('Error extracting video info: $e');
+      return {
+        'duration': 0,
+        'aspect': 1 / 1,
+      };
+    }
+  }
+
+  // Get thumbnail image
+  // Make sure to call this after getinfo
+  Future<Uint8List?> getThumbnail({Duration? seekPosition}) async {
+    try {
+      // Seek to specific position if provided
+      if (seekPosition != null) {
+        await _player!.seek(seekPosition);
+        // Give a moment for seeking to complete
+        await Future.delayed(const Duration(milliseconds: 300));
+        await _player!.pause();
+      }
+
+      // Capture screenshot
+      final screenshot = await _player!.screenshot(format: "image/png");
+
+      // Check if screenshot is valid
+      if (screenshot == null) {
+        debugPrint('Failed to capture screenshot');
+        return null;
+      }
+
+      return screenshot;
+    } catch (e) {
+      debugPrint('Error getting thumbnail: $e');
+      return null;
+    }
+  }
+
+  // Dispose resources
+  void dispose() {
+    if (_player != null) {
+      _player!.dispose();
+    }
+  }
 }
 
 Future<void> openLocationInMap(double latitude, double longitude) async {

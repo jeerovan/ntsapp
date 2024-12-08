@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -18,9 +19,16 @@ import 'themes.dart';
 
 // Set to false if running on Desktop
 bool mobile = Platform.isAndroid || Platform.isIOS;
+bool mediaKitAvailable = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    MediaKit.ensureInitialized();
+    mediaKitAvailable = true;
+  } catch (e) {
+    debugPrint(e.toString());
+  }
   // Load the configuration before running the app
   await AppConfig.load();
 
@@ -63,7 +71,7 @@ class _MainAppState extends State<MainApp> {
 
   // sharing intent
   late StreamSubscription _intentSub;
-  List<String> _sharedContents = [];
+  final List<String> _sharedContents = [];
 
   @override
   void initState() {

@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:chewie/chewie.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
@@ -282,78 +283,69 @@ class _WidgetGroupState extends State<WidgetGroup> {
   }
 }
 
-class WidgetVideo extends StatefulWidget {
-  final String videoPath;
-
-  const WidgetVideo({super.key, required this.videoPath});
+class WidgetVideoImageThumbnail extends StatefulWidget {
+  final ModelItem item;
+  final double iconSize;
+  const WidgetVideoImageThumbnail(
+      {super.key, required this.item, required this.iconSize});
 
   @override
-  State<WidgetVideo> createState() => _WidgetVideoState();
+  State<WidgetVideoImageThumbnail> createState() =>
+      _WidgetVideoImageThumbnailState();
 }
 
-class _WidgetVideoState extends State<WidgetVideo> {
-  late final VideoPlayerController _controller;
-  ChewieController? _chewieController;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.file(File(widget.videoPath));
-    initialize();
-  }
-
-  Future<void> initialize() async {
-    await _controller.initialize();
-    _chewieController = ChewieController(
-      videoPlayerController: _controller,
-      autoPlay: true,
-      looping: true,
-    );
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _chewieController?.dispose();
-    super.dispose();
-  }
-
+class _WidgetVideoImageThumbnailState extends State<WidgetVideoImageThumbnail> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: AspectRatio(
-        aspectRatio: _controller.value.aspectRatio,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: <Widget>[
-            _chewieController == null
-                ? const SizedBox.shrink()
-                : Chewie(controller: _chewieController!),
-            //_ControlsOverlay(controller: _controller),
-            //VideoProgressIndicator(_controller, allowScrubbing: true),
-          ],
+    ModelItem item = widget.item;
+    return Stack(
+      alignment: Alignment.center, // Center the play button overlay
+      children: [
+        AspectRatio(
+          aspectRatio: item.data == null ? 16 / 9 : item.data!['aspect'],
+          child: Image.memory(
+            item.thumbnail!,
+            width: double.infinity, // Full width of container
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
+        // Play button overlay
+        Container(
+          width: widget.iconSize,
+          height: widget.iconSize,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6),
+            // Semi-transparent grey background
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.play_arrow,
+            color: Colors.white,
+            size: widget.iconSize / 2,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class WidgetVideoThumbnail extends StatefulWidget {
-  final String videoPath;
+class WidgetVideoPlayerThumbnail extends StatefulWidget {
+  final ModelItem item;
+  final double iconSize;
 
-  const WidgetVideoThumbnail({super.key, required this.videoPath});
+  const WidgetVideoPlayerThumbnail(
+      {super.key, required this.item, required this.iconSize});
 
   @override
-  State<WidgetVideoThumbnail> createState() => _WidgetVideoThumbnailState();
+  State<WidgetVideoPlayerThumbnail> createState() =>
+      _WidgetVideoPlayerThumbnailState();
 }
 
-class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
+class _WidgetVideoPlayerThumbnailState
+    extends State<WidgetVideoPlayerThumbnail> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _fileAvailable = false;
-
   @override
   void initState() {
     super.initState();
@@ -361,10 +353,11 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
   }
 
   Future<void> _initializeVideo() async {
-    File videoFile = File(widget.videoPath);
+    String videoPath = widget.item.data!["path"];
+    File videoFile = File(videoPath);
     if (videoFile.existsSync()) {
       _fileAvailable = true;
-      _controller = VideoPlayerController.file(File(widget.videoPath));
+      _controller = VideoPlayerController.file(File(videoPath));
       // Initialize the controller and display the first frame as a thumbnail
       await _controller.initialize();
       await _controller.setLooping(false); // No looping
@@ -397,22 +390,107 @@ class _WidgetVideoThumbnailState extends State<WidgetVideoThumbnail> {
                   ),
                   // Play button overlay
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: widget.iconSize,
+                    height: widget.iconSize,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.7),
+                      color: Colors.black.withOpacity(0.6),
                       // Semi-transparent grey background
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(Icons.play_arrow,
+                        color: Colors.white, size: widget.iconSize / 2),
+                  ),
+                ],
+              )
+            : Image.file(
+                // handle downloading with icon
+                File("assets/image.webp"),
+                fit: BoxFit
+                    .cover, // Ensures the image covers the available space
+              )
+        : const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+  }
+}
+
+class WidgetMediaKitThumbnail extends StatefulWidget {
+  final ModelItem item;
+  final double iconSize;
+
+  const WidgetMediaKitThumbnail(
+      {super.key, required this.item, required this.iconSize});
+
+  @override
+  State<WidgetMediaKitThumbnail> createState() =>
+      _WidgetMediaKitThumbnailState();
+}
+
+class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
+  // Create a [Player] to control playback.
+  late final player = Player();
+  // Create a [VideoController] to handle video output from [Player].
+  late final controller = VideoController(player);
+
+  bool _isInitialized = false;
+  bool _fileAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.item.data != null) {
+      String videoPath = widget.item.data!["path"];
+      File videoFile = File(videoPath);
+      if (videoFile.existsSync()) {
+        _fileAvailable = true;
+        player.open(Media(videoPath), play: false);
+      }
+    }
+    _isInitialized = true;
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isInitialized
+        ? _fileAvailable
+            ? Stack(
+                alignment: Alignment.center, // Center the play button overlay
+                children: [
+                  AspectRatio(
+                    aspectRatio: widget.item.data == null
+                        ? 1 / 1
+                        : widget.item.data!["aspect"],
+                    child: Video(
+                      controller: controller,
+                      controls: NoVideoControls,
+                    ),
+                  ),
+                  // Play button overlay
+                  Container(
+                    width: widget.iconSize,
+                    height: widget.iconSize,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      // Semi-transparent grey background
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
                       Icons.play_arrow,
                       color: Colors.white,
-                      size: 20,
+                      size: widget.iconSize / 2,
                     ),
                   ),
                 ],
               )
             : Image.file(
+                // handle downloading with icon
                 File("assets/image.webp"),
                 fit: BoxFit
                     .cover, // Ensures the image covers the available space

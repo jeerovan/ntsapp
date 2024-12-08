@@ -15,7 +15,6 @@ import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:siri_wave/siri_wave.dart';
-import 'package:video_player/video_player.dart';
 
 import 'common.dart';
 import 'model_item.dart';
@@ -744,14 +743,14 @@ class _PageItemsState extends State<PageItems> {
             _addItem(text, ItemType.image, thumbnail, data);
           }
         case "video":
-          VideoPlayerController controller =
-              VideoPlayerController.file(File(newPath));
+          VideoInfoExtractor extractor = VideoInfoExtractor(newPath);
           try {
-            await controller.initialize();
-            String duration =
-                mediaFileDuration(controller.value.duration.inSeconds);
-            double aspect = controller.value.aspectRatio; // width/height
-            String name = attrs["name"];
+            String name = attrs['name'];
+            final mediaInfo = await extractor.getVideoInfo();
+            String duration = mediaFileDuration(mediaInfo['duration']);
+            double aspect = mediaInfo['aspect'];
+            Uint8List? thumbnail = await extractor.getThumbnail(
+                seekPosition: Duration(milliseconds: 100));
             Map<String, dynamic> data = {
               "path": newPath,
               "mime": attrs["mime"],
@@ -761,11 +760,11 @@ class _PageItemsState extends State<PageItems> {
               "duration": duration
             };
             String text = 'DND|#video|$name';
-            _addItem(text, ItemType.video, null, data);
+            _addItem(text, ItemType.video, thumbnail, data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
-            controller.dispose();
+            extractor.dispose();
           }
         case "audio":
           String? duration = await getAudioDuration(newPath);

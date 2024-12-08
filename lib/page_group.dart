@@ -477,8 +477,9 @@ class _PageGroupState extends State<PageGroup> {
                 final item = _items[index];
                 return GestureDetector(
                   onLongPress: () {
-                    if (loadedSharedContents || widget.sharedContents.isEmpty)
+                    if (loadedSharedContents || widget.sharedContents.isEmpty) {
                       onItemLongPressed(item);
+                    }
                   },
                   onTap: () {
                     onItemTapped(item);

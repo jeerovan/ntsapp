@@ -56,8 +56,9 @@ class _PageContactsState extends State<PageContacts> {
         ),
       );
     }
-    if (_contacts == null)
+    if (_contacts == null) {
       return const Center(child: CircularProgressIndicator());
+    }
     return ListView.builder(
       itemCount: _contacts!.length,
       itemBuilder: (context, index) {

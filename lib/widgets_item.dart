@@ -192,7 +192,20 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
             child: SizedBox(
               width: size,
               height: size / item.data!["aspect"],
-              child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
+              child: item.thumbnail == null
+                  ? canUseVideoPlayer
+                      ? WidgetVideoPlayerThumbnail(
+                          item: item,
+                          iconSize: 40,
+                        )
+                      : WidgetMediaKitThumbnail(
+                          item: item,
+                          iconSize: 40,
+                        )
+                  : WidgetVideoImageThumbnail(
+                      item: item,
+                      iconSize: 40,
+                    ),
             ),
           ),
           Positioned(

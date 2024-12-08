@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enum_item_type.dart';
-
-import 'common_widgets.dart';
+import 'package:video_player/video_player.dart';
 import 'model_item.dart';
 
 class PageMedia extends StatefulWidget {
@@ -148,7 +151,9 @@ class _PageMediaState extends State<PageMedia> {
               );
       case ItemType.video: // video
         widget = fileAvailable
-            ? WidgetVideo(videoPath: item.data!["path"])
+            ? canUseVideoPlayer
+                ? WidgetVideoPlayer(videoPath: item.data!["path"])
+                : WidgetMediaKitPlayer(videoPath: item.data!["path"])
             : Image.file(
                 file,
                 fit: BoxFit
@@ -158,5 +163,99 @@ class _PageMediaState extends State<PageMedia> {
         widget = const SizedBox.shrink();
     }
     return widget;
+  }
+}
+
+class WidgetVideoPlayer extends StatefulWidget {
+  final String videoPath;
+
+  const WidgetVideoPlayer({super.key, required this.videoPath});
+
+  @override
+  State<WidgetVideoPlayer> createState() => _WidgetVideoPlayerState();
+}
+
+class _WidgetVideoPlayerState extends State<WidgetVideoPlayer> {
+  late final VideoPlayerController _controller;
+  ChewieController? _chewieController;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.file(File(widget.videoPath));
+    initialize();
+  }
+
+  Future<void> initialize() async {
+    await _controller.initialize();
+    _chewieController = ChewieController(
+      videoPlayerController: _controller,
+      autoPlay: true,
+      looping: true,
+    );
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: <Widget>[
+            _chewieController == null
+                ? const SizedBox.shrink()
+                : Chewie(controller: _chewieController!),
+            //_ControlsOverlay(controller: _controller),
+            //VideoProgressIndicator(_controller, allowScrubbing: true),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WidgetMediaKitPlayer extends StatefulWidget {
+  final String videoPath;
+  const WidgetMediaKitPlayer({super.key, required this.videoPath});
+
+  @override
+  State<WidgetMediaKitPlayer> createState() => _WidgetMediaKitPlayerState();
+}
+
+class _WidgetMediaKitPlayerState extends State<WidgetMediaKitPlayer> {
+  // Create a [Player] to control playback.
+  late final player = Player();
+  // Create a [VideoController] to handle video output from [Player].
+  late final controller = VideoController(player);
+
+  @override
+  void initState() {
+    super.initState();
+    player.open(
+      Media(widget.videoPath),
+    );
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Video(
+      controller: controller,
+    );
   }
 }

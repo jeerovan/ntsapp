@@ -261,7 +261,7 @@ class SearchPageState extends State<SearchPage> {
           ],
         ),
         ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(5),
           child: SizedBox(
             width: 50,
             child: Image.memory(
@@ -307,11 +307,24 @@ class SearchPageState extends State<SearchPage> {
           ],
         ),
         ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(5),
           child: SizedBox(
             width: 50,
             height: 50 / item.data!["aspect"],
-            child: WidgetVideoThumbnail(videoPath: item.data!["path"]),
+            child: item.thumbnail == null
+                ? canUseVideoPlayer
+                    ? WidgetVideoPlayerThumbnail(
+                        item: item,
+                        iconSize: 20,
+                      )
+                    : WidgetMediaKitThumbnail(
+                        item: item,
+                        iconSize: 20,
+                      )
+                : WidgetVideoImageThumbnail(
+                    item: item,
+                    iconSize: 20,
+                  ),
           ),
         ),
       ],
