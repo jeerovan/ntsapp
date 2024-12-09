@@ -1,7 +1,7 @@
 name: ntsapp
-description: "A new Flutter project."
+description: "Note to Self v2.0"
 publish_to: 'none'
-version: 2.0.0
+version: 2.0.0+45
 
 environment:
   sdk: ^3.5.1
