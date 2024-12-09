@@ -168,6 +168,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       appBar: AppBar(
         title: Text(
           pageTitle,
+          style: TextStyle(
+            fontSize: 18,
+          ),
         ),
       ),
       body: Padding(
@@ -175,7 +178,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         child: Column(
           children: [
             const SizedBox(
-              height: 10,
+              height: 48,
             ),
             GestureDetector(
               onTap: () async {
@@ -195,30 +198,40 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
             ),
             Expanded(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  TextField(
-                    controller: titleController,
-                    autofocus: widget.group == null ? false : true,
-                    decoration: const InputDecoration(
-                      hintText: 'Title', // Placeholder
+                  SizedBox(height: 48),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: TextField(
+                      controller: titleController,
+                      autofocus: widget.group == null ? false : true,
+                      decoration: const InputDecoration(
+                        hintText: 'Group title', // Placeholder
+                      ),
+                      onChanged: (value) {
+                        title = value.trim();
+                        itemChanged = true;
+                      },
                     ),
-                    onChanged: (value) {
-                      title = value.trim();
-                      itemChanged = true;
-                    },
-                  ),
+                  )
                 ],
               ),
             ),
             if (widget.group == null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Title is optional.",
-                  style: Theme.of(context).textTheme.bodyLarge,
+              Opacity(
+                opacity: 0.5,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Title is optional. Tap -> to continue.",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(fontSize: 12),
+                  ),
                 ),
-              ),
+              )
           ],
         ),
       ),

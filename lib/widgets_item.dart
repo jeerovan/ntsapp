@@ -28,7 +28,10 @@ class _ItemWidgetDateState extends State<ItemWidgetDate> {
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: Theme
+                  .of(context)
+                  .colorScheme
+                  .surface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -61,20 +64,30 @@ class _WidgetTimeStampState extends State<WidgetTimeStamp> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        Opacity(
+          opacity: 0.6,
+          child:
+          Text(
+            getFormattedTime(widget.item.at!),
+            style: const TextStyle(fontSize: 10),
+          ),
+        ),
+        const SizedBox(width: 4),
         widget.item.pinned == 1
             ? Icon(Icons.push_pin,
-                size: 10, color: Theme.of(context).colorScheme.inversePrimary)
+            size: 12, color: Theme
+                .of(context)
+                .colorScheme
+                .inversePrimary)
             : const SizedBox.shrink(),
         const SizedBox(width: 2),
         widget.item.starred == 1
             ? Icon(Icons.star,
-                size: 11, color: Theme.of(context).colorScheme.inversePrimary)
+            size: 12, color: Theme
+                .of(context)
+                .colorScheme
+                .inversePrimary)
             : const SizedBox.shrink(),
-        const SizedBox(width: 3),
-        Text(
-          getFormattedTime(widget.item.at!),
-          style: const TextStyle(fontSize: 10),
-        ),
       ],
     );
   }
@@ -97,7 +110,7 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
     ModelItem item = widget.item;
     return Column(
       crossAxisAlignment:
-          isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         WidgetTextWithLinks(text: item.text),
         const SizedBox(height: 5),
@@ -121,7 +134,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    double size = 200;
+    double size = 240;
     return GestureDetector(
       onTap: () {
         widget.onTap(item);
@@ -129,7 +142,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(5),
             child: SizedBox(
               width: size,
               child: Image.memory(
@@ -143,9 +156,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
             bottom: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -241,7 +252,7 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                       Text(
                         item.data!["duration"],
                         style:
-                            const TextStyle(color: Colors.white, fontSize: 10),
+                        const TextStyle(color: Colors.white, fontSize: 10),
                       ),
                     ],
                   ),
@@ -419,13 +430,13 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
               Center(
                 child: item.thumbnail != null
                     ? CircleAvatar(
-                        radius: 50,
-                        backgroundImage: MemoryImage(item.thumbnail!),
-                      )
+                  radius: 50,
+                  backgroundImage: MemoryImage(item.thumbnail!),
+                )
                     : const CircleAvatar(
-                        radius: 50,
-                        child: Icon(Icons.person, size: 50),
-                      ),
+                  radius: 50,
+                  child: Icon(Icons.person, size: 50),
+                ),
               ),
               // Name Row
               Row(
@@ -451,7 +462,8 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...item.data!["phones"].map((phone) => Text(
+                        ...item.data!["phones"].map((phone) =>
+                            Text(
                               phone,
                               style: const TextStyle(
                                 fontSize: 14,
@@ -474,13 +486,14 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ...item.data!["emails"].map((email) => (Text(
-                                email,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              )))
+                          ...item.data!["emails"].map((email) =>
+                          (Text(
+                            email,
+                            style: const TextStyle(
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          )))
                         ],
                       ),
                     ),
@@ -497,13 +510,14 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ...item.data!["addresses"].map((address) => (Text(
-                                address,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ))),
+                          ...item.data!["addresses"].map((address) =>
+                          (Text(
+                            address,
+                            style: const TextStyle(
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ))),
                         ],
                       ),
                     ),
@@ -592,15 +606,15 @@ class NotePreviewSummary extends StatelessWidget {
         return item.thumbnail == null
             ? const SizedBox.shrink()
             : ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: SizedBox(
-                  width: 40,
-                  child: Image.memory(
-                    item.thumbnail!, // Full width of container
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              );
+          borderRadius: BorderRadius.circular(5),
+          child: SizedBox(
+            width: 40,
+            child: Image.memory(
+              item.thumbnail!, // Full width of container
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -618,23 +632,23 @@ class NotePreviewSummary extends StatelessWidget {
         const SizedBox(width: 5),
         expanded == true
             ? Expanded(
-                child: Text(
-                  _getMessageText(),
-                  overflow: TextOverflow.ellipsis, // Ellipsis for long text
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
-              )
+          child: Text(
+            _getMessageText(),
+            overflow: TextOverflow.ellipsis, // Ellipsis for long text
+            style: const TextStyle(
+              fontSize: 12,
+            ),
+          ),
+        )
             : Flexible(
-                child: Text(
-                  _getMessageText(),
-                  overflow: TextOverflow.ellipsis, // Ellipsis for long text
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
-              ),
+          child: Text(
+            _getMessageText(),
+            overflow: TextOverflow.ellipsis, // Ellipsis for long text
+            style: const TextStyle(
+              fontSize: 12,
+            ),
+          ),
+        ),
         const SizedBox(width: 8),
         if (showImagePreview!) _previewImage(item!),
         const SizedBox(width: 8),
@@ -666,7 +680,7 @@ class _ItemWidgetTaskState extends State<ItemWidgetTask> {
     bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Column(
       crossAxisAlignment:
-          isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -676,8 +690,14 @@ class _ItemWidgetTaskState extends State<ItemWidgetTask> {
                   ? Icons.check_circle
                   : Icons.radio_button_unchecked,
               color: widget.item.type == ItemType.task
-                  ? Theme.of(context).colorScheme.inversePrimary
-                  : Theme.of(context).colorScheme.primary,
+                  ? Theme
+                  .of(context)
+                  .colorScheme
+                  .inversePrimary
+                  : Theme
+                  .of(context)
+                  .colorScheme
+                  .primary,
             ),
             const SizedBox(width: 10),
             Flexible(child: WidgetTextWithLinks(text: widget.item.text)),

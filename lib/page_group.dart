@@ -521,21 +521,16 @@ class _PageGroupState extends State<PageGroup> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      "Hi there!",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text("It's kind of looking empty in here.",
-                        style: Theme.of(context).textTheme.bodyLarge),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text(
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Text(
+                        "Hi there!\n\n"
+                        "It's kind of looking empty in here.\n\n"
                         "Go ahead and tap the + button to create a new note group and write your heart out. :)",
-                        style: Theme.of(context).textTheme.bodyLarge),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
                   ],
                 ),
               ),

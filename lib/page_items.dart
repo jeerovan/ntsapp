@@ -1030,18 +1030,19 @@ class _PageItemsState extends State<PageItems> {
                             borderRadius: BorderRadius.circular(20),
                             child: Center(
                               child: CircleAvatar(
-                                radius: 20,
+                                radius: 16,
                                 backgroundImage: MemoryImage(group!.thumbnail!),
                               ),
                             ),
                           ),
-                    const SizedBox(
-                      width: 5,
-                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         group!.title,
                         overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -1113,7 +1114,7 @@ class _PageItemsState extends State<PageItems> {
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
                                       color:
-                                          Theme.of(context).colorScheme.surface,
+                                          Theme.of(context).colorScheme.surfaceContainer,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Column(
@@ -1327,17 +1328,15 @@ class _PageItemsState extends State<PageItems> {
   // Input box with attachment and send button
   Widget _buildInputBox() {
     return Padding(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: Icon(
-              Icons.check_circle,
-              color: isCreatingTask
-                  ? null
-                  : Theme.of(context).colorScheme.inversePrimary,
-            ),
+            icon: Icon(Icons.check_circle,
+                color: isCreatingTask
+                    ? Theme.of(context).colorScheme.primary
+                    : null),
             onPressed: () {
               setTaskMode();
             },
@@ -1380,12 +1379,14 @@ class _PageItemsState extends State<PageItems> {
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           filled: true,
-                          hintText: isCreatingTask
-                              ? "Create a task."
-                              : "What's on your mind?",
+                          hintText:
+                              isCreatingTask ? "Create a task." : "Add a note",
                           fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
+                            borderSide: BorderSide(
+                              width: 0.5, // Border thickness
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
@@ -1414,8 +1415,8 @@ class _PageItemsState extends State<PageItems> {
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primaryContainer,
                     shape: BoxShape.circle,
@@ -1428,7 +1429,7 @@ class _PageItemsState extends State<PageItems> {
                           : _isRecording
                               ? Icons.stop
                               : Icons.mic,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     onPressed: _isTyping
                         ? () {
