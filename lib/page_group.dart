@@ -345,7 +345,6 @@ class _PageGroupState extends State<PageGroup> {
                     path.join(baseDir.path, '${backupDir}_$todayDate.zip');
                 File backupFile = File(zipFilePath);
                 if (backupFile.existsSync()) backupFile.deleteSync();
-                checkAuthAndLoad();
               });
               break;
             case 1:

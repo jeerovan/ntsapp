@@ -682,9 +682,9 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
       final linkUri = Uri.parse(linkText);
       spans.add(TextSpan(
         text: linkText,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.blue,
-          //decoration: TextDecoration.underline,
+          fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize,
         ),
         recognizer: TapGestureRecognizer()
           ..onTap = () async {
