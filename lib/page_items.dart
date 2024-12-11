@@ -29,21 +29,21 @@ bool isMobile = Platform.isAndroid || Platform.isIOS;
 class PageItems extends StatefulWidget {
   final List<String> sharedContents;
   final String groupId;
-  final String? loadItemId;
+  final String? loadItemIdOnInit;
 
   const PageItems(
       {super.key,
       required this.sharedContents,
       required this.groupId,
-      this.loadItemId});
+      this.loadItemIdOnInit});
 
   @override
   State<PageItems> createState() => _PageItemsState();
 }
 
 class _PageItemsState extends State<PageItems> {
-  final List<ModelItem> _items = []; // Store items
-  final List<ModelItem> _selection = [];
+  final List<ModelItem> _displayItemList = []; // Store items
+  final List<ModelItem> _selectedItems = [];
   bool _hasNotesSelected = false;
   bool selectionHasStarredItems = true;
   bool selectionHasTaskItems = true;
@@ -92,7 +92,7 @@ class _PageItemsState extends State<PageItems> {
     super.initState();
     _audioRecorder = AudioRecorder();
     loadGroup();
-    initialFetchItems(widget.loadItemId);
+    initialFetchItems(widget.loadItemIdOnInit);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.sharedContents.isNotEmpty) {
         loadSharedContents();
@@ -125,15 +125,80 @@ class _PageItemsState extends State<PageItems> {
       newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
     } else {
       canScrollToBottom = false;
-      newItems =
-          await ModelItem.getInGroup(widget.groupId, _offset, _limit, _filters);
+      newItems = await ModelItem.getInGroup(
+          widget.groupId, null, true, _offset, _limit, _filters);
     }
     setState(() {
-      _items.clear();
-      _items.addAll(newItems);
+      _displayItemList.clear();
+      _addItemsToDisplayList(newItems, true);
       _itemScrollController.animateTo(0,
           duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
     });
+  }
+
+  Future<void> _addItemsToDisplayList(
+      List<ModelItem> items, bool addOlder) async {
+    DateTime? lastDate;
+    int? lastItemAt;
+    if (addOlder) {
+      ModelItem? lastDisplayItem =
+          _displayItemList.isEmpty ? null : _displayItemList.last;
+      DateTime? lastDisplayItemDate = lastDisplayItem == null
+          ? null
+          : lastDisplayItem.type == ItemType.date
+              ? getLocalDateFromUtcMilliSeconds(lastDisplayItem.at!)
+              : null;
+      for (ModelItem item in items) {
+        final currentDate = getLocalDateFromUtcMilliSeconds(item.at!);
+        if (lastDisplayItemDate != null && lastDisplayItemDate == currentDate) {
+          _displayItemList.removeLast();
+          lastDisplayItemDate = null;
+        }
+        if (lastDate != null) {
+          if (currentDate != lastDate) {
+            final ModelItem dateItem = await ModelItem.fromMap({
+              "group_id": widget.groupId,
+              "text": getReadableDate(lastDate),
+              "type": 170000,
+              "at": lastItemAt! - 1
+            });
+            _displayItemList.add(dateItem);
+          }
+        }
+        _displayItemList.add(item);
+        lastDate = currentDate;
+        lastItemAt = item.at!;
+      }
+      if (lastDate != null) {
+        final ModelItem dateItem = await ModelItem.fromMap({
+          "group_id": widget.groupId,
+          "text": getReadableDate(lastDate),
+          "type": 170000,
+          "at": lastItemAt! - 1
+        });
+        _displayItemList.add(dateItem);
+      }
+    } else {
+      if (_displayItemList.isNotEmpty) {
+        lastDate = getLocalDateFromUtcMilliSeconds(_displayItemList.first.at!);
+      }
+      for (ModelItem item in items) {
+        final currentDate = getLocalDateFromUtcMilliSeconds(item.at!);
+        if (lastDate != null) {
+          if (currentDate != lastDate) {
+            final ModelItem dateItem = await ModelItem.fromMap({
+              "group_id": widget.groupId,
+              "text": getReadableDate(currentDate),
+              "type": 170000,
+              "at": item.at! - 1
+            });
+            _displayItemList.insert(0, dateItem);
+          }
+        }
+        _displayItemList.insert(0, item);
+        lastDate = currentDate;
+      }
+    }
   }
 
   Future<void> loadSharedContents() async {
@@ -149,24 +214,41 @@ class _PageItemsState extends State<PageItems> {
     }
     processFiles(sharedFiles);
     for (String text in sharedTexts) {
-      _addItem(text, ItemType.text, null, null);
+      _addItemToDbAndDisplayList(text, ItemType.text, null, null);
     }
   }
 
-  Future<void> scrollFetchItems(bool up) async {
+  ModelItem? getLastItemFromDisplayList() {
+    if (_displayItemList.isNotEmpty) {
+      final ModelItem item = _displayItemList.last;
+      if (item.type != ItemType.date) {
+        return item;
+      } else if (_displayItemList.length < 2) {
+        return null;
+      } else {
+        return _displayItemList[_displayItemList.length - 2];
+      }
+    } else {
+      return null;
+    }
+  }
+
+  Future<void> scrollFetchItems(bool fetchOlder) async {
     if (_isLoading) return;
     setState(() => _isLoading = true);
-    final ModelItem start = up ? _items.last : _items.first;
-    final newItems = await ModelItem.getScrolledInGroup(
-        widget.groupId, start.id!, up, _limit);
-    setState(() {
-      if (up) {
-        _items.addAll(newItems);
-      } else {
-        _items.insertAll(0, newItems.reversed);
-      }
-      _isLoading = false;
-    });
+    final ModelItem? start =
+        fetchOlder ? getLastItemFromDisplayList() : _displayItemList.first;
+    if (start != null) {
+      final newItems = await ModelItem.getInGroup(
+          widget.groupId, start.id!, fetchOlder, 0, _limit, _filters);
+      debugPrint(
+          "${fetchOlder ? "After" : "Before"}:${start.text}|NewItems:${newItems.length}");
+      await _addItemsToDisplayList(newItems, fetchOlder);
+    }
+    if (!fetchOlder) {
+      await Future.delayed(Duration(milliseconds: 500), () {});
+    }
+    _isLoading = false;
   }
 
   //Filters
@@ -461,7 +543,7 @@ class _PageItemsState extends State<PageItems> {
     selectionHasTextItems = false;
     selectionHasPinnedItem = true;
     selectionHasOnlyTextOrTaskItem = true;
-    for (ModelItem item in _selection) {
+    for (ModelItem item in _selectedItems) {
       if (item.starred == 0) {
         selectionHasStarredItems = false;
       }
@@ -482,13 +564,13 @@ class _PageItemsState extends State<PageItems> {
 
   void onItemLongPressed(ModelItem item) {
     setState(() {
-      if (_selection.contains(item)) {
-        _selection.remove(item);
-        if (_selection.isEmpty) {
+      if (_selectedItems.contains(item)) {
+        _selectedItems.remove(item);
+        if (_selectedItems.isEmpty) {
           _hasNotesSelected = false;
         }
       } else {
-        _selection.add(item);
+        _selectedItems.add(item);
         if (!_hasNotesSelected) _hasNotesSelected = true;
       }
       updateSelectionBools();
@@ -499,13 +581,13 @@ class _PageItemsState extends State<PageItems> {
     if (item.type == ItemType.text) {
       onItemLongPressed(item);
     } else if (_hasNotesSelected) {
-      if (_selection.contains(item)) {
-        _selection.remove(item);
-        if (_selection.isEmpty) {
+      if (_selectedItems.contains(item)) {
+        _selectedItems.remove(item);
+        if (_selectedItems.isEmpty) {
           _hasNotesSelected = false;
         }
       } else {
-        _selection.add(item);
+        _selectedItems.add(item);
       }
       updateSelectionBools();
     } else if (item.type == ItemType.task) {
@@ -519,13 +601,28 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> archiveSelectedItems() async {
-    for (ModelItem item in _selection) {
+    for (ModelItem item in _selectedItems) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
       await item.update();
     }
     setState(() {
-      for (ModelItem item in _selection) {
-        _items.remove(item);
+      for (ModelItem item in _selectedItems) {
+        int itemIndex = _displayItemList.indexOf(item);
+        // check if the next item is date
+        ModelItem nextItem = _displayItemList.elementAt(itemIndex + 1);
+        if (nextItem.type == ItemType.date) {
+          // check the previous item
+          if (itemIndex > 0) {
+            ModelItem previousItem = _displayItemList.elementAt(itemIndex - 1);
+            if (previousItem.type == ItemType.date) {
+              _displayItemList.removeAt(itemIndex + 1);
+            }
+          } else {
+            // if removing the first item, remove the date
+            _displayItemList.removeAt(itemIndex + 1);
+          }
+        }
+        _displayItemList.remove(item);
       }
     });
     if (mounted) {
@@ -541,7 +638,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> updateSelectedItemsPinned() async {
     setState(() {
-      for (ModelItem item in _selection) {
+      for (ModelItem item in _selectedItems) {
         item.pinned = selectionHasPinnedItem ? 0 : 1;
         item.update();
       }
@@ -551,7 +648,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> updateSelectedItemsStarred() async {
     setState(() {
-      for (ModelItem item in _selection) {
+      for (ModelItem item in _selectedItems) {
         item.starred = selectionHasStarredItems ? 0 : 1;
         item.update();
       }
@@ -561,7 +658,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> copyToClipboard() async {
     List<String> texts = [];
-    for (ModelItem item in _selection) {
+    for (ModelItem item in _selectedItems) {
       if (item.type == ItemType.text ||
           item.type == ItemType.task ||
           item.type == ItemType.completedTask) {
@@ -582,7 +679,7 @@ class _PageItemsState extends State<PageItems> {
   Future<void> updateSelectedItemsTaskType() async {
     ItemType setType = selectionHasTaskItems ? ItemType.text : ItemType.task;
     setState(() {
-      for (ModelItem item in _selection) {
+      for (ModelItem item in _selectedItems) {
         if (setType == ItemType.text) {
           item.type = setType;
         } else if (setType == ItemType.task) {
@@ -596,7 +693,7 @@ class _PageItemsState extends State<PageItems> {
 
   void clearSelection() {
     setState(() {
-      _selection.clear();
+      _selectedItems.clear();
       _hasNotesSelected = false;
     });
   }
@@ -660,14 +757,54 @@ class _PageItemsState extends State<PageItems> {
     // TO-DO implement
   }
 
+  // seed data for this group
+  Future<void> generateAddSeedItems() async {
+    showProcessing();
+    const int daysToGenerate = 10;
+    const int messagesPerDay = 50;
+
+    final now = DateTime.now();
+
+    for (int dayOffset = 0; dayOffset < daysToGenerate; dayOffset++) {
+      final date = now.subtract(Duration(days: dayOffset));
+      final dateString =
+          "${date.year} ${date.month.toString().padLeft(2, '0')} ${date.day.toString().padLeft(2, '0')}";
+
+      for (int messageCount = 1;
+          messageCount <= messagesPerDay;
+          messageCount++) {
+        final timestamp = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          14, // 2:00 PM
+          messageCount, // Increment minutes
+        ).millisecondsSinceEpoch;
+
+        final text = "$dateString, $messageCount";
+        final ModelItem item = await ModelItem.fromMap({
+          "group_id": widget.groupId,
+          "text": text,
+          "type": ItemType.text,
+          "at": timestamp
+        });
+        await item.insert();
+      }
+    }
+    hideProcessing();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   // Handle adding item
-  void _addItem(
+  void _addItemToDbAndDisplayList(
     String text,
     ItemType type,
     Uint8List? thumbnail,
     Map<String, dynamic>? data,
   ) async {
-    await checkAddDateItem();
+    //await checkAddDateItem();
     if (replyOnItem != null) {
       if (data != null) {
         data["reply_on"] = replyOnItem!.id;
@@ -687,7 +824,7 @@ class _PageItemsState extends State<PageItems> {
     await item.insert();
     setState(() {
       // update view
-      _items.insert(0, item);
+      _addItemsToDisplayList([item], true);
       replyOnItem = null;
     });
     // update this group's last accessed at
@@ -695,6 +832,8 @@ class _PageItemsState extends State<PageItems> {
     if (group != null) await group.update();
   }
 
+  // Having a date row in table can not accommodate timezone changes
+  // represents a flawed implementation
   Future<void> checkAddDateItem() async {
     String today = getTodayDate();
     List<ModelItem> rows =
@@ -708,7 +847,7 @@ class _PageItemsState extends State<PageItems> {
         "at": utcMilliSeconds - 1
       });
       await dateItem.insert();
-      _items.insert(0, dateItem);
+      _displayItemList.insert(0, dateItem);
     }
   }
 
@@ -740,7 +879,7 @@ class _PageItemsState extends State<PageItems> {
               "size": attrs["size"]
             };
             String text = 'DND|#image|$name';
-            _addItem(text, ItemType.image, thumbnail, data);
+            _addItemToDbAndDisplayList(text, ItemType.image, thumbnail, data);
           }
         case "video":
           VideoInfoExtractor extractor = VideoInfoExtractor(newPath);
@@ -760,7 +899,7 @@ class _PageItemsState extends State<PageItems> {
               "duration": duration
             };
             String text = 'DND|#video|$name';
-            _addItem(text, ItemType.video, thumbnail, data);
+            _addItemToDbAndDisplayList(text, ItemType.video, thumbnail, data);
           } catch (e) {
             debugPrint(e.toString());
           } finally {
@@ -778,7 +917,7 @@ class _PageItemsState extends State<PageItems> {
               "duration": duration
             };
             String text = 'DND|#audio|$name';
-            _addItem(text, ItemType.audio, null, data);
+            _addItemToDbAndDisplayList(text, ItemType.audio, null, data);
           } else {
             debugPrint("Could not get duration");
           }
@@ -791,7 +930,7 @@ class _PageItemsState extends State<PageItems> {
             "size": attrs["size"]
           };
           String text = 'DND|#document|$name';
-          _addItem(text, ItemType.document, null, data);
+          _addItemToDbAndDisplayList(text, ItemType.document, null, data);
       }
     }
     hideProcessing();
@@ -870,7 +1009,8 @@ class _PageItemsState extends State<PageItems> {
             "lat": position.latitude,
             "lng": position.longitude
           };
-          _addItem("DND|#location", ItemType.location, null, data);
+          _addItemToDbAndDisplayList(
+              "DND|#location", ItemType.location, null, data);
         }
       });
     } else if (type == "contact") {
@@ -899,7 +1039,8 @@ class _PageItemsState extends State<PageItems> {
             "emails": emails,
             "addresses": addresses
           };
-          _addItem(details, ItemType.contact, contact.thumbnail, data);
+          _addItemToDbAndDisplayList(
+              details, ItemType.contact, contact.thumbnail, data);
         }
       });
     }
@@ -925,7 +1066,11 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  List<Widget> _buildSelectionOptions() {
+  List<Widget> _buildAppbarDefaultOptions() {
+    return [];
+  }
+
+  List<Widget> _buildAppbarSelectionOptions() {
     return [
       if (selectionHasOnlyTextOrTaskItem)
         IconButton(
@@ -997,7 +1142,9 @@ class _PageItemsState extends State<PageItems> {
     bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
       appBar: AppBar(
-        actions: _hasNotesSelected ? _buildSelectionOptions() : [],
+        actions: _hasNotesSelected
+            ? _buildAppbarSelectionOptions()
+            : _buildAppbarDefaultOptions(),
         title: group == null || _hasNotesSelected
             ? const SizedBox.shrink()
             : GestureDetector(
@@ -1070,10 +1217,10 @@ class _PageItemsState extends State<PageItems> {
                   child: ListView.builder(
                     controller: _itemScrollController,
                     reverse: true,
-                    itemCount: _items.length,
+                    itemCount: _displayItemList.length,
                     // Additional item for the loading indicator
                     itemBuilder: (context, index) {
-                      final item = _items[index];
+                      final item = _displayItemList[index];
                       if (item.type == ItemType.date) {
                         return ItemWidgetDate(item: item);
                       } else {
@@ -1100,7 +1247,7 @@ class _PageItemsState extends State<PageItems> {
                             },
                             child: Container(
                               width: double.infinity,
-                              color: _selection.contains(item)
+                              color: _selectedItems.contains(item)
                                   ? Theme.of(context).colorScheme.inversePrimary
                                   : Colors.transparent,
                               margin: const EdgeInsets.symmetric(vertical: 1),
@@ -1113,8 +1260,9 @@ class _PageItemsState extends State<PageItems> {
                                         vertical: 5, horizontal: 10),
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color:
-                                          Theme.of(context).colorScheme.surfaceContainer,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainer,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Column(
@@ -1438,7 +1586,8 @@ class _PageItemsState extends State<PageItems> {
                               ItemType itemType = isCreatingTask
                                   ? ItemType.task
                                   : ItemType.text;
-                              _addItem(text, itemType, null, null);
+                              _addItemToDbAndDisplayList(
+                                  text, itemType, null, null);
                               _textController.clear();
                               _onInputTextChanged("");
                             }

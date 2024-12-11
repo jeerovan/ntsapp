@@ -241,7 +241,11 @@ class _PageGroupState extends State<PageGroup> {
     }
     _selection.clear();
     _hasGroupsSelected = false;
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        initialLoad();
+      });
+    }
   }
 
   void onItemLongPressed(ModelGroup group) {
@@ -439,9 +443,7 @@ class _PageGroupState extends State<PageGroup> {
         onPressed: () {
           archiveSelectedGroups();
         },
-        icon: _selectionHasPinnedGroup
-            ? iconPinCrossed()
-            : const Icon(Icons.delete_outline),
+        icon: const Icon(Icons.delete_outline),
       ),
     ];
   }

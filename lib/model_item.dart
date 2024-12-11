@@ -219,14 +219,14 @@ class ModelItem {
     ModelItem? item = await get(itemId);
     List<ModelItem> items = [];
     if (item == null) {
-      items.addAll(await getInGroup(groupId, 0, 10, {}));
+      items.addAll(await getInGroup(groupId, null, true, 0, 20, {}));
     } else {
       List<Map<String, dynamic>> rows = await db.query(
         "item",
-        where: "group_id = ? AND archived_at = 0 AND at > ?",
-        whereArgs: [groupId, item.at],
+        where: "type != ? AND group_id = ? AND archived_at = 0 AND at > ?",
+        whereArgs: [ItemType.date.value, groupId, item.at],
         orderBy: 'at ASC',
-        limit: 4,
+        limit: 7,
       );
       List<ModelItem> beforeItems =
           await Future.wait(rows.map((map) => fromMap(map)));
@@ -234,10 +234,10 @@ class ModelItem {
       items.add(item);
       rows = await db.query(
         "item",
-        where: "group_id = ? AND archived_at = 0 AND at < ?",
-        whereArgs: [groupId, item.at],
+        where: "type != ? AND group_id = ? AND archived_at = 0 AND at < ?",
+        whereArgs: [ItemType.date.value, groupId, item.at],
         orderBy: 'at DESC',
-        limit: 4,
+        limit: 7,
       );
       List<ModelItem> afterItems =
           await Future.wait(rows.map((map) => fromMap(map)));
@@ -246,25 +246,8 @@ class ModelItem {
     return items;
   }
 
-  static Future<List<ModelItem>> getScrolledInGroup(
-      String groupId, String itemId, bool up, int limit) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    String orderBy = up ? 'DESC' : 'ASC';
-    String comparison = up ? '<' : '>';
-    List<Map<String, dynamic>> rows = await db.query(
-      "item",
-      where:
-          "type >= ? AND type <= ? AND group_id = ? AND archived_at = 0 AND at $comparison (SELECT at from item WHERE id = ?)",
-      whereArgs: [ItemType.text.value, ItemType.date.value, groupId, itemId],
-      orderBy: 'at $orderBy',
-      limit: limit,
-    );
-    return await Future.wait(rows.map((map) => fromMap(map)));
-  }
-
-  static Future<List<ModelItem>> getInGroup(
-      String groupId, int offset, int limit, Map<String, bool> filters) async {
+  static Future<List<ModelItem>> getInGroup(String groupId, String? itemId,
+      bool fetchOlder, int offset, int limit, Map<String, bool> filters) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<String> filterParams = [];
@@ -310,12 +293,20 @@ class ModelItem {
         filterQuery = " AND (${filterParams.join(" OR ")})";
       }
     }
+    String orderBy = fetchOlder ? 'DESC' : 'ASC';
+    String comparison = fetchOlder ? '<' : '>';
+    String scrollQuery = "";
+    if (itemId != null) {
+      scrollQuery =
+          "AND at $comparison (SELECT at from item WHERE id = '$itemId')";
+    }
+    String offsetIfRequired = offset > 0 ? "OFFSET $offset" : "";
     List<Map<String, dynamic>> rows = await db.rawQuery('''
         SELECT * FROM item
-        WHERE group_id = '$groupId' AND archived_at = 0 $filterQuery
-        ORDER BY at DESC
+        WHERE type != ${ItemType.date.value} AND group_id = '$groupId' AND archived_at = 0 $scrollQuery $filterQuery
+        ORDER BY at $orderBy
         LIMIT $limit
-        OFFSET $offset
+        $offsetIfRequired
       ''');
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

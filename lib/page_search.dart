@@ -119,7 +119,7 @@ class SearchPageState extends State<SearchPage> {
                               builder: (context) => PageItems(
                                   groupId: item.group!.id!,
                                   sharedContents: const [],
-                                  loadItemId: item.item.id!),
+                                  loadItemIdOnInit: item.item.id!),
                               settings: const RouteSettings(name: "Notes")));
                         }
                       },

@@ -99,7 +99,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
         builder: (context) => PageItems(
             groupId: item.groupId,
             sharedContents: const [],
-            loadItemId: item.id),
+            loadItemIdOnInit: item.id),
         settings: const RouteSettings(name: "Notes"),
       ));
     }

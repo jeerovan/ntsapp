@@ -244,6 +244,13 @@ String getFormattedTime(int utcMilliSeconds) {
   return formattedTime;
 }
 
+DateTime getLocalDateFromUtcMilliSeconds(int utcMilliSeconds) {
+  final DateTime dateTime =
+      DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
+  final localDateTime = dateTime.toLocal();
+  return DateTime(localDateTime.year, localDateTime.month, localDateTime.day);
+}
+
 String mediaFileDuration(int seconds) {
   final int hours = seconds ~/ 3600;
   final int minutes = (seconds % 3600) ~/ 60;
