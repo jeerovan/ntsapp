@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
@@ -163,12 +164,13 @@ class _PageGroupState extends State<PageGroup> {
         .then((noteGroup) {
       ModelGroup? group = noteGroup;
       if (group != null) {
-        navigateToItems(group.id!);
+        navigateToItems(group);
       }
     });
   }
 
-  void navigateToItems(String groupId) {
+  void navigateToItems(ModelGroup group) {
+    String groupId = group.id!;
     List<String> sharedContents =
         loadedSharedContents || widget.sharedContents.isEmpty
             ? []
@@ -199,11 +201,10 @@ class _PageGroupState extends State<PageGroup> {
     ));
   }
 
-  Future<void> archiveSelectedGroups(ModelGroup group) async {
+  Future<void> archiveGroup(ModelGroup group) async {
     group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
     group.update();
     _noteGroups.remove(group);
-
     if (mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -371,12 +372,48 @@ class _PageGroupState extends State<PageGroup> {
                     reverse: true,
                     itemBuilder: (context, index) {
                       final item = _noteGroups[index];
-                      return GestureDetector(
-                        onTap: () {
-                          navigateToItems(item.id!);
-                        },
-                        child:
-                            WidgetGroup(group: item, showLastItemSummary: true),
+                      return Slidable(
+                        key: ValueKey(item.id),
+                        startActionPane: ActionPane(
+                          // A motion is a widget used to control how the pane animates.
+                          motion: const StretchMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (context) {
+                                archiveGroup(item);
+                              },
+                              backgroundColor: Color(0xFFFE4A49),
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete,
+                            ),
+                            SlidableAction(
+                              onPressed: (context) {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => PageGroupAddEdit(
+                                    categoryId: item.categoryId,
+                                    group: item,
+                                    onUpdate: () {
+                                      setState(() {});
+                                    },
+                                  ),
+                                  settings: const RouteSettings(
+                                      name: "EditNoteGroup"),
+                                ));
+                              },
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.inversePrimary,
+                              foregroundColor: Colors.white,
+                              icon: Icons.edit,
+                            ),
+                          ],
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            navigateToItems(item);
+                          },
+                          child: WidgetGroup(
+                              group: item, showLastItemSummary: true),
+                        ),
                       );
                     },
                   ),

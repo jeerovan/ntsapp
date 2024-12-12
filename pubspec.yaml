@@ -18,6 +18,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.1
   flutter_map: ^7.0.2
   flutter_native_splash: ^2.4.3
+  flutter_slidable: ^3.1.1
   geolocator: ^13.0.1
   image: ^4.3.0
   image_picker: ^1.1.2
