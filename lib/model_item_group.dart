@@ -128,7 +128,7 @@ class ModelGroup {
         limit: limit,
         offset: offset,
         whereArgs: [categoryId],
-        orderBy: "pinned DESC, at DESC");
+        orderBy: "pinned ASC, at ASC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
@@ -174,7 +174,6 @@ class ModelGroup {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String, dynamic> map = toMap();
-    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch;
     return await dbHelper.update("itemgroup", map, id);
   }
 

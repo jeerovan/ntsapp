@@ -96,7 +96,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   }
 
   Widget getBoxContent() {
-    double size = 100;
+    double radius = 50;
     if (processing) {
       return const CircularProgressIndicator();
     } else if (thumbnail != null) {
@@ -106,21 +106,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           padding: const EdgeInsets.all(10),
           child: Center(
             child: CircleAvatar(
-              radius: 50,
+              radius: radius,
               backgroundImage: MemoryImage(thumbnail!),
             ),
           ),
         ),
       );
     } else {
-      return Text(
-        title == null ? "" : title![0].toUpperCase(),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: size / 2, // Adjust font size relative to the circle size
-          fontWeight: FontWeight.bold,
-        ),
-      );
+      return const SizedBox.shrink();
     }
   }
 
@@ -173,75 +166,80 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 48,
-            ),
-            GestureDetector(
-              onTap: () async {
-                _showMediaPickerDialog();
-              },
-              child: Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  color: colorFromHex(colorCode ?? "000000"),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                // Center the text inside the circle
-                child: Center(child: getBoxContent()),
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 48,
+          ),
+          GestureDetector(
+            onTap: () async {
+              _showMediaPickerDialog();
+            },
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: colorFromHex(colorCode ?? "000000"),
+                shape: BoxShape.circle,
               ),
+              alignment: Alignment.center,
+              // Center the text inside the circle
+              child: Center(child: getBoxContent()),
             ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  SizedBox(height: 48),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: TextField(
-                      controller: titleController,
-                      autofocus: widget.group == null ? false : true,
-                      decoration: const InputDecoration(
-                        hintText: 'Group title', // Placeholder
-                      ),
-                      onChanged: (value) {
-                        title = value.trim();
-                        itemChanged = true;
-                      },
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(height: 48),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: TextField(
+                    controller: titleController,
+                    autofocus: widget.group == null ? false : true,
+                    decoration: const InputDecoration(
+                      hintText: 'Group title', // Placeholder
                     ),
-                  )
-                ],
-              ),
+                    onChanged: (value) {
+                      title = value.trim();
+                      itemChanged = true;
+                    },
+                  ),
+                )
+              ],
             ),
-            if (widget.group == null)
-              Opacity(
-                opacity: 0.5,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Title is optional. Tap -> to continue.",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontSize: 12),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: widget.group != null
+                          ? const SizedBox.shrink()
+                          : Text(
+                              "Title is optional. Tap -> to continue.",
+                            ),
+                    ),
                   ),
                 ),
-              )
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        key: const Key("done_note_group"),
-        onPressed: () {
-          saveCategory();
-        },
-        shape: const CircleBorder(),
-        child: Icon(widget.group == null ? Icons.arrow_forward : Icons.check),
+                FloatingActionButton(
+                  key: const Key("done_note_group"),
+                  onPressed: () {
+                    saveCategory();
+                  },
+                  shape: const CircleBorder(),
+                  child: Icon(
+                      widget.group == null ? Icons.arrow_forward : Icons.check),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1219,16 +1219,6 @@ class _PageItemsState extends State<PageItems> {
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
-                            // Center the text inside the circle
-                            child: Text(
-                              group!.title[0].toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: size / 2,
-                                // Adjust font size relative to the circle size
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                           )
                         : ClipRRect(
                             borderRadius: BorderRadius.circular(20),

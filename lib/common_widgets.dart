@@ -220,7 +220,7 @@ class WidgetGroup extends StatefulWidget {
 class _WidgetGroupState extends State<WidgetGroup> {
   @override
   Widget build(BuildContext context) {
-    double size = 40;
+    double size = 20;
     ModelGroup item = widget.group;
     return ListTile(
       leading: item.thumbnail == null
@@ -232,16 +232,6 @@ class _WidgetGroupState extends State<WidgetGroup> {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              // Center the text inside the circle
-              child: Text(
-                item.title[0].toUpperCase(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize:
-                      size / 2, // Adjust font size relative to the circle size
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             )
           : SizedBox(
               width: size,
