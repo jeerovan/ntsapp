@@ -14,6 +14,7 @@ import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:siri_wave/siri_wave.dart';
 
 import 'common.dart';
@@ -53,6 +54,10 @@ class _PageItemsState extends State<PageItems> {
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _itemScrollController = ScrollController();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+
   ModelGroup? group;
 
   bool _isLoading = false;
@@ -128,11 +133,36 @@ class _PageItemsState extends State<PageItems> {
       newItems = await ModelItem.getInGroup(
           widget.groupId, null, true, _offset, _limit, _filters);
     }
+    if (newItems.isEmpty) return;
+    _displayItemList.clear();
+    _isLoading = true;
+    await _addItemsToDisplayList(newItems, true);
     setState(() {
-      _displayItemList.clear();
-      _addItemsToDisplayList(newItems, true);
-      _itemScrollController.animateTo(0,
-          duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      if (itemId != null) {
+        ModelItem? itemInItems;
+        for (ModelItem item in newItems) {
+          if (item.id == itemId) {
+            itemInItems = item;
+            break;
+          }
+        }
+        if (itemInItems != null) {
+          int indexOfItem = _displayItemList.indexOf(itemInItems);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            itemScrollController.jumpTo(index: indexOfItem);
+            Future.delayed(Duration(seconds: 1), () {
+              _isLoading = false;
+            });
+          });
+        }
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemScrollController.jumpTo(index: 0);
+          Future.delayed(Duration(seconds: 1), () {
+            _isLoading = false;
+          });
+        });
+      }
     });
   }
 
@@ -194,6 +224,14 @@ class _PageItemsState extends State<PageItems> {
             });
             _displayItemList.insert(0, dateItem);
           }
+        } else {
+          final ModelItem dateItem = await ModelItem.fromMap({
+            "group_id": widget.groupId,
+            "text": getReadableDate(currentDate),
+            "type": 170000,
+            "at": item.at! - 1
+          });
+          _displayItemList.insert(0, dateItem);
         }
         _displayItemList.insert(0, item);
         lastDate = currentDate;
@@ -213,8 +251,10 @@ class _PageItemsState extends State<PageItems> {
       }
     }
     processFiles(sharedFiles);
-    for (String text in sharedTexts) {
-      _addItemToDbAndDisplayList(text, ItemType.text, null, null);
+    if (sharedTexts.isNotEmpty) {
+      for (String text in sharedTexts) {
+        _addItemToDbAndDisplayList(text, ItemType.text, null, null);
+      }
     }
   }
 
@@ -235,7 +275,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> scrollFetchItems(bool fetchOlder) async {
     if (_isLoading) return;
-    setState(() => _isLoading = true);
+    _isLoading = true;
     final ModelItem? start =
         fetchOlder ? getLastItemFromDisplayList() : _displayItemList.first;
     if (start != null) {
@@ -243,10 +283,10 @@ class _PageItemsState extends State<PageItems> {
           widget.groupId, start.id!, fetchOlder, 0, _limit, _filters);
       debugPrint(
           "${fetchOlder ? "After" : "Before"}:${start.text}|NewItems:${newItems.length}");
-      await _addItemsToDisplayList(newItems, fetchOlder);
-    }
-    if (!fetchOlder) {
-      await Future.delayed(Duration(milliseconds: 500), () {});
+      if (newItems.isNotEmpty) {
+        await _addItemsToDisplayList(newItems, fetchOlder);
+        if (mounted) setState(() {});
+      }
     }
     _isLoading = false;
   }
@@ -823,8 +863,7 @@ class _PageItemsState extends State<PageItems> {
     });
     await item.insert();
     setState(() {
-      // update view
-      _addItemsToDisplayList([item], true);
+      _addItemsToDisplayList([item], false);
       replyOnItem = null;
     });
     // update this group's last accessed at
@@ -860,6 +899,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> processFiles(List<String> filePaths) async {
+    if (filePaths.isEmpty) return;
     showProcessing();
     for (String filePath in filePaths) {
       Map<String, dynamic> attrs = await processAndGetFileAttributes(filePath);
@@ -1126,20 +1166,28 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> showHideScrollToBottomButton(double scrolledHeight) async {
-    if (!mounted) return;
-    setState(() {
-      if (scrolledHeight > 100) {
+    bool requiresUpdate = false;
+    if (scrolledHeight > 100) {
+      if (canScrollToBottom == false) {
         canScrollToBottom = true;
-      } else {
-        canScrollToBottom = false;
+        requiresUpdate = true;
       }
-    });
+    } else if (canScrollToBottom == true) {
+      canScrollToBottom = false;
+      requiresUpdate = true;
+    }
+    if (requiresUpdate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {});
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     double size = 40;
     bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
+    debugPrint("DisplayListLength:${_displayItemList.length}");
     return Scaffold(
       appBar: AppBar(
         actions: _hasNotesSelected
@@ -1204,22 +1252,27 @@ class _PageItemsState extends State<PageItems> {
               children: [
                 NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
-                    if (scrollInfo.metrics.pixels ==
-                        scrollInfo.metrics.maxScrollExtent) {
+                    if (scrollInfo.metrics.pixels >
+                        scrollInfo.metrics.maxScrollExtent - 200) {
                       scrollFetchItems(true);
                     } else if (scrollInfo.metrics.pixels ==
                         scrollInfo.metrics.minScrollExtent) {
                       scrollFetchItems(false);
                     }
-                    showHideScrollToBottomButton(scrollInfo.metrics.pixels);
+                    if (!_isLoading) {
+                      showHideScrollToBottomButton(scrollInfo.metrics.pixels);
+                    }
                     return false;
                   },
-                  child: ListView.builder(
-                    controller: _itemScrollController,
+                  child: ScrollablePositionedList.builder(
+                    itemScrollController: itemScrollController,
+                    itemPositionsListener: itemPositionsListener,
                     reverse: true,
                     itemCount: _displayItemList.length,
-                    // Additional item for the loading indicator
                     itemBuilder: (context, index) {
+                      if (index < 0 || index >= _displayItemList.length) {
+                        return const SizedBox.shrink();
+                      }
                       final item = _displayItemList[index];
                       if (item.type == ItemType.date) {
                         return ItemWidgetDate(item: item);

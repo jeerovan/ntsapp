@@ -162,35 +162,31 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
           itemCount: _items.length, // Additional item for the loading indicator
           itemBuilder: (context, index) {
             final item = _items[index];
-            if (item.type == ItemType.date) {
-              return ItemWidgetDate(item: item);
-            } else {
-              return GestureDetector(
-                onTap: () {
-                  onItemTapped(item);
-                },
-                child: Container(
-                  width: double.infinity,
-                  color: _selection.contains(item)
-                      ? Theme.of(context).colorScheme.inversePrimary
-                      : Colors.transparent,
-                  margin: const EdgeInsets.symmetric(vertical: 1),
-                  child: Align(
-                    alignment:
-                        isRTL ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 5, horizontal: 10),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: _buildItem(item)),
-                  ),
+            return GestureDetector(
+              onTap: () {
+                onItemTapped(item);
+              },
+              child: Container(
+                width: double.infinity,
+                color: _selection.contains(item)
+                    ? Theme.of(context).colorScheme.inversePrimary
+                    : Colors.transparent,
+                margin: const EdgeInsets.symmetric(vertical: 1),
+                child: Align(
+                  alignment:
+                      isRTL ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: _buildItem(item)),
                 ),
-              );
-            }
+              ),
+            );
           },
         ),
       ),
