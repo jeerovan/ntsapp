@@ -43,6 +43,7 @@ class PageItems extends StatefulWidget {
 }
 
 class _PageItemsState extends State<PageItems> {
+  String? showItemId;
   final List<ModelItem> _displayItemList = []; // Store items
   final List<ModelItem> _selectedItems = [];
   bool _hasNotesSelected = false;
@@ -53,9 +54,8 @@ class _PageItemsState extends State<PageItems> {
   bool selectionHasOnlyTextOrTaskItem = true;
 
   final TextEditingController _textController = TextEditingController();
-  final ScrollController _itemScrollController = ScrollController();
-  final ItemScrollController itemScrollController = ItemScrollController();
-  final ItemPositionsListener itemPositionsListener =
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
   ModelGroup? group;
@@ -92,12 +92,15 @@ class _PageItemsState extends State<PageItems> {
   };
   bool _filtersEnabled = false;
 
+  bool _shouldBlinkItem = false;
+
   @override
   void initState() {
     super.initState();
     _audioRecorder = AudioRecorder();
+    showItemId = widget.loadItemIdOnInit;
     loadGroup();
-    initialFetchItems(widget.loadItemIdOnInit);
+    initialFetchItems(showItemId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.sharedContents.isNotEmpty) {
         loadSharedContents();
@@ -109,7 +112,6 @@ class _PageItemsState extends State<PageItems> {
   void dispose() {
     _recordingTimer?.cancel();
     _textController.dispose();
-    _itemScrollController.dispose();
     _audioRecorder.dispose();
     super.dispose();
   }
@@ -149,7 +151,8 @@ class _PageItemsState extends State<PageItems> {
         if (itemInItems != null) {
           int indexOfItem = _displayItemList.indexOf(itemInItems);
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            itemScrollController.jumpTo(index: indexOfItem);
+            _itemScrollController.jumpTo(index: indexOfItem);
+            triggerItemBlink();
             Future.delayed(Duration(seconds: 1), () {
               _isLoading = false;
             });
@@ -157,7 +160,7 @@ class _PageItemsState extends State<PageItems> {
         }
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          itemScrollController.jumpTo(index: 0);
+          _itemScrollController.jumpTo(index: 0);
           Future.delayed(Duration(seconds: 1), () {
             _isLoading = false;
           });
@@ -239,25 +242,6 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Future<void> loadSharedContents() async {
-    List<String> sharedFiles = [];
-    List<String> sharedTexts = [];
-    for (String sharedContent in widget.sharedContents) {
-      File file = File(sharedContent);
-      if (file.existsSync()) {
-        sharedFiles.add(sharedContent);
-      } else {
-        sharedTexts.add(sharedContent);
-      }
-    }
-    processFiles(sharedFiles);
-    if (sharedTexts.isNotEmpty) {
-      for (String text in sharedTexts) {
-        _addItemToDbAndDisplayList(text, ItemType.text, null, null);
-      }
-    }
-  }
-
   ModelItem? getLastItemFromDisplayList() {
     if (_displayItemList.isNotEmpty) {
       final ModelItem item = _displayItemList.last;
@@ -289,6 +273,50 @@ class _PageItemsState extends State<PageItems> {
       }
     }
     _isLoading = false;
+  }
+
+  Future<void> loadSharedContents() async {
+    List<String> sharedFiles = [];
+    List<String> sharedTexts = [];
+    for (String sharedContent in widget.sharedContents) {
+      File file = File(sharedContent);
+      if (file.existsSync()) {
+        sharedFiles.add(sharedContent);
+      } else {
+        sharedTexts.add(sharedContent);
+      }
+    }
+    processFiles(sharedFiles);
+    if (sharedTexts.isNotEmpty) {
+      for (String text in sharedTexts) {
+        _addItemToDbAndDisplayList(text, ItemType.text, null, null);
+      }
+    }
+  }
+
+  void triggerItemBlink() {
+    int milliseconds = 250;
+    setState(() {
+      _shouldBlinkItem = true;
+    });
+
+    Future.delayed(Duration(milliseconds: milliseconds), () {
+      setState(() {
+        _shouldBlinkItem = false;
+      });
+
+      Future.delayed(Duration(milliseconds: milliseconds), () {
+        setState(() {
+          _shouldBlinkItem = true;
+        });
+
+        Future.delayed(Duration(milliseconds: milliseconds), () {
+          setState(() {
+            _shouldBlinkItem = false; // Final state
+          });
+        });
+      });
+    });
   }
 
   //Filters
@@ -871,25 +899,6 @@ class _PageItemsState extends State<PageItems> {
     if (group != null) await group.update();
   }
 
-  // Having a date row in table can not accommodate timezone changes
-  // represents a flawed implementation
-  Future<void> checkAddDateItem() async {
-    String today = getTodayDate();
-    List<ModelItem> rows =
-        await ModelItem.getDateItemForGroupId(widget.groupId, today);
-    if (rows.isEmpty) {
-      int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
-      ModelItem dateItem = await ModelItem.fromMap({
-        "group_id": widget.groupId,
-        "text": today,
-        "type": 170000,
-        "at": utcMilliSeconds - 1
-      });
-      await dateItem.insert();
-      _displayItemList.insert(0, dateItem);
-    }
-  }
-
   void showProcessing() {
     showProcessingDialog(context);
   }
@@ -1265,8 +1274,8 @@ class _PageItemsState extends State<PageItems> {
                     return false;
                   },
                   child: ScrollablePositionedList.builder(
-                    itemScrollController: itemScrollController,
-                    itemPositionsListener: itemPositionsListener,
+                    itemScrollController: _itemScrollController,
+                    itemPositionsListener: _itemPositionsListener,
                     reverse: true,
                     itemCount: _displayItemList.length,
                     itemBuilder: (context, index) {
@@ -1302,7 +1311,13 @@ class _PageItemsState extends State<PageItems> {
                               width: double.infinity,
                               color: _selectedItems.contains(item)
                                   ? Theme.of(context).colorScheme.inversePrimary
-                                  : Colors.transparent,
+                                  : _shouldBlinkItem &&
+                                          showItemId != null &&
+                                          showItemId == item.id
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .inversePrimary
+                                      : Colors.transparent,
                               margin: const EdgeInsets.symmetric(vertical: 1),
                               child: Align(
                                 alignment: isRTL
