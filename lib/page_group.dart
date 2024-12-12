@@ -216,8 +216,6 @@ class _PageGroupState extends State<PageGroup> {
     }
   }
 
-  Future<void> updateGroupPositions() async {}
-
   void _showMenuItems() {
     showModalBottomSheet(
       context: context,
@@ -343,6 +341,13 @@ class _PageGroupState extends State<PageGroup> {
     ];
   }
 
+  Future<void> _saveGroupPositions() async {
+    for (ModelGroup group in _noteGroups) {
+      group.pinned = _noteGroups.indexOf(group);
+      await group.update();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double size = 40;
@@ -367,54 +372,77 @@ class _PageGroupState extends State<PageGroup> {
                     }
                     return false;
                   },
-                  child: ListView.builder(
+                  child: ReorderableListView.builder(
                     itemCount: _noteGroups.length,
                     reverse: true,
+                    buildDefaultDragHandles: false,
                     itemBuilder: (context, index) {
                       final item = _noteGroups[index];
-                      return Slidable(
+                      return ReorderableDragStartListener(
                         key: ValueKey(item.id),
-                        startActionPane: ActionPane(
-                          // A motion is a widget used to control how the pane animates.
-                          motion: const StretchMotion(),
-                          children: [
-                            SlidableAction(
-                              onPressed: (context) {
-                                archiveGroup(item);
-                              },
-                              backgroundColor: Color(0xFFFE4A49),
-                              foregroundColor: Colors.white,
-                              icon: Icons.delete,
-                            ),
-                            SlidableAction(
-                              onPressed: (context) {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => PageGroupAddEdit(
-                                    categoryId: item.categoryId,
-                                    group: item,
-                                    onUpdate: () {
-                                      setState(() {});
-                                    },
-                                  ),
-                                  settings: const RouteSettings(
-                                      name: "EditNoteGroup"),
-                                ));
-                              },
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.inversePrimary,
-                              foregroundColor: Colors.white,
-                              icon: Icons.edit,
-                            ),
-                          ],
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            navigateToItems(item);
-                          },
-                          child: WidgetGroup(
-                              group: item, showLastItemSummary: true),
+                        index: index,
+                        child: Slidable(
+                          key: ValueKey(item.id),
+                          startActionPane: ActionPane(
+                            // A motion is a widget used to control how the pane animates.
+                            motion: const StretchMotion(),
+                            children: [
+                              SlidableAction(
+                                onPressed: (context) {
+                                  archiveGroup(item);
+                                },
+                                backgroundColor: Color(0xFFFE4A49),
+                                foregroundColor: Colors.white,
+                                icon: Icons.delete,
+                              ),
+                              SlidableAction(
+                                onPressed: (context) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => PageGroupAddEdit(
+                                      categoryId: item.categoryId,
+                                      group: item,
+                                      onUpdate: () {
+                                        setState(() {});
+                                      },
+                                    ),
+                                    settings: const RouteSettings(
+                                        name: "EditNoteGroup"),
+                                  ));
+                                },
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .inversePrimary,
+                                foregroundColor: Colors.white,
+                                icon: Icons.edit,
+                              ),
+                            ],
+                          ),
+                          child: GestureDetector(
+                            onTap: () {
+                              navigateToItems(item);
+                            },
+                            child: WidgetGroup(
+                                group: item, showLastItemSummary: true),
+                          ),
                         ),
                       );
+                    },
+                    onReorder: (int oldIndex, int newIndex) {
+                      setState(() {
+                        // Adjust newIndex if dragging an item down
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1;
+                        }
+
+                        // Remove the item from the old position
+                        final item = _noteGroups.removeAt(oldIndex);
+
+                        // Insert the item at the new position
+                        _noteGroups.insert(newIndex, item);
+
+                        // Print positions after reordering
+                        _saveGroupPositions();
+                      });
                     },
                   ),
                 ),

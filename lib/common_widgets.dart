@@ -254,11 +254,6 @@ class _WidgetGroupState extends State<WidgetGroup> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (item.pinned == 1)
-            const Icon(
-              Icons.push_pin_outlined,
-              size: 12,
-            ),
         ],
       ),
       subtitle: widget.showLastItemSummary
