@@ -45,29 +45,34 @@ class _ItemWidgetDateState extends State<ItemWidgetDate> {
   }
 }
 
-class WidgetTimeStamp extends StatefulWidget {
+class WidgetTimeStampPinnedStarred extends StatefulWidget {
   final ModelItem item;
+  final bool showTimestamp;
 
-  const WidgetTimeStamp({super.key, required this.item});
+  const WidgetTimeStampPinnedStarred(
+      {super.key, required this.item, required this.showTimestamp});
 
   @override
-  State<WidgetTimeStamp> createState() => _WidgetTimeStampState();
+  State<WidgetTimeStampPinnedStarred> createState() =>
+      _WidgetTimeStampPinnedStarredState();
 }
 
-class _WidgetTimeStampState extends State<WidgetTimeStamp> {
+class _WidgetTimeStampPinnedStarredState
+    extends State<WidgetTimeStampPinnedStarred> {
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Opacity(
-          opacity: 0.6,
-          child: Text(
-            getFormattedTime(widget.item.at!),
-            style: const TextStyle(fontSize: 10),
+        if (widget.showTimestamp)
+          Opacity(
+            opacity: 0.6,
+            child: Text(
+              getFormattedTime(widget.item.at!),
+              style: const TextStyle(fontSize: 10),
+            ),
           ),
-        ),
         const SizedBox(width: 4),
         widget.item.pinned == 1
             ? Icon(Icons.push_pin,
@@ -85,8 +90,10 @@ class _WidgetTimeStampState extends State<WidgetTimeStamp> {
 
 class ItemWidgetText extends StatefulWidget {
   final ModelItem item;
+  final bool showTimestamp;
 
-  const ItemWidgetText({super.key, required this.item});
+  const ItemWidgetText(
+      {super.key, required this.item, required this.showTimestamp});
 
   @override
   State<ItemWidgetText> createState() => _ItemWidgetTextState();
@@ -103,8 +110,10 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
           isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         WidgetTextWithLinks(text: item.text),
-        const SizedBox(height: 5),
-        WidgetTimeStamp(item: item),
+        WidgetTimeStampPinnedStarred(
+          item: item,
+          showTimestamp: widget.showTimestamp,
+        ),
       ],
     );
   }
@@ -113,8 +122,13 @@ class _ItemWidgetTextState extends State<ItemWidgetText> {
 class ItemWidgetImage extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
+  final bool showTimestamp;
 
-  const ItemWidgetImage({super.key, required this.item, required this.onTap});
+  const ItemWidgetImage(
+      {super.key,
+      required this.item,
+      required this.onTap,
+      required this.showTimestamp});
 
   @override
   State<ItemWidgetImage> createState() => _ItemWidgetImageState();
@@ -158,7 +172,10 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
                   ],
                 ),
               ),
-              child: WidgetTimeStamp(item: item),
+              child: WidgetTimeStampPinnedStarred(
+                item: item,
+                showTimestamp: widget.showTimestamp,
+              ),
             ),
           ),
         ],
@@ -170,8 +187,13 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
 class ItemWidgetVideo extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
+  final bool showTimestamp;
 
-  const ItemWidgetVideo({super.key, required this.item, required this.onTap});
+  const ItemWidgetVideo(
+      {super.key,
+      required this.item,
+      required this.onTap,
+      required this.showTimestamp});
 
   @override
   State<ItemWidgetVideo> createState() => _ItemWidgetVideoState();
@@ -246,7 +268,10 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                       ),
                     ],
                   ),
-                  WidgetTimeStamp(item: item),
+                  WidgetTimeStampPinnedStarred(
+                    item: item,
+                    showTimestamp: widget.showTimestamp,
+                  ),
                 ],
               ),
             ),
@@ -259,10 +284,12 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
 
 class ItemWidgetAudio extends StatefulWidget {
   final ModelItem item;
+  final bool showTimestamp;
 
   const ItemWidgetAudio({
     super.key,
     required this.item,
+    required this.showTimestamp,
   });
 
   @override
@@ -277,7 +304,7 @@ class _ItemWidgetAudioState extends State<ItemWidgetAudio> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         WidgetAudio(item: item),
-        widgetAudioDetails(item),
+        widgetAudioDetails(item, widget.showTimestamp),
       ],
     );
   }
@@ -286,9 +313,13 @@ class _ItemWidgetAudioState extends State<ItemWidgetAudio> {
 class ItemWidgetDocument extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
+  final bool showTimestamp;
 
   const ItemWidgetDocument(
-      {super.key, required this.item, required this.onTap});
+      {super.key,
+      required this.item,
+      required this.onTap,
+      required this.showTimestamp});
 
   @override
   State<ItemWidgetDocument> createState() => _ItemWidgetDocumentState();
@@ -335,7 +366,10 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
                 readableBytes(item.data!["size"]),
                 style: const TextStyle(fontSize: 10),
               ),
-              WidgetTimeStamp(item: item),
+              WidgetTimeStampPinnedStarred(
+                item: item,
+                showTimestamp: widget.showTimestamp,
+              ),
             ],
           ),
         ],
@@ -347,9 +381,13 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
 class ItemWidgetLocation extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
+  final bool showTimestamp;
 
   const ItemWidgetLocation(
-      {super.key, required this.item, required this.onTap});
+      {super.key,
+      required this.item,
+      required this.onTap,
+      required this.showTimestamp});
 
   @override
   State<ItemWidgetLocation> createState() => _ItemWidgetLocationState();
@@ -384,7 +422,10 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
               ),
             ],
           ),
-          WidgetTimeStamp(item: item),
+          WidgetTimeStampPinnedStarred(
+            item: item,
+            showTimestamp: widget.showTimestamp,
+          ),
         ],
       ),
     );
@@ -394,8 +435,13 @@ class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
 class ItemWidgetContact extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
+  final bool showTimestamp;
 
-  const ItemWidgetContact({super.key, required this.item, required this.onTap});
+  const ItemWidgetContact(
+      {super.key,
+      required this.item,
+      required this.onTap,
+      required this.showTimestamp});
 
   @override
   State<ItemWidgetContact> createState() => _ItemWidgetContactState();
@@ -510,7 +556,10 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                     ),
                   ],
                 ),
-              WidgetTimeStamp(item: item),
+              WidgetTimeStampPinnedStarred(
+                item: item,
+                showTimestamp: widget.showTimestamp,
+              ),
             ],
           ),
         ),
@@ -653,8 +702,10 @@ class NotePreviewSummary extends StatelessWidget {
 
 class ItemWidgetTask extends StatefulWidget {
   final ModelItem item;
+  final bool showTimestamp;
 
-  const ItemWidgetTask({super.key, required this.item});
+  const ItemWidgetTask(
+      {super.key, required this.item, required this.showTimestamp});
 
   @override
   State<ItemWidgetTask> createState() => _ItemWidgetTaskState();
@@ -685,7 +736,10 @@ class _ItemWidgetTaskState extends State<ItemWidgetTask> {
           ],
         ),
         const SizedBox(height: 5),
-        WidgetTimeStamp(item: item),
+        WidgetTimeStampPinnedStarred(
+          item: item,
+          showTimestamp: widget.showTimestamp,
+        ),
       ],
     );
   }

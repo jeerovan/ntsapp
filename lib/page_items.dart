@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:siri_wave/siri_wave.dart';
+import 'package:vibration/vibration.dart';
 
 import 'common.dart';
 import 'model_item.dart';
@@ -58,7 +59,7 @@ class _PageItemsState extends State<PageItems> {
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
-  ModelGroup? group;
+  ModelGroup? noteGroup;
 
   bool _isLoading = false;
   final int _offset = 0;
@@ -76,6 +77,7 @@ class _PageItemsState extends State<PageItems> {
   bool canScrollToBottom = false;
 
   bool isCreatingTask = false;
+  bool showDateTime = true;
 
   final Map<String, bool> _filters = {
     "pinned": false,
@@ -120,7 +122,7 @@ class _PageItemsState extends State<PageItems> {
     ModelGroup? modelGroup = await ModelGroup.get(widget.groupId);
     if (modelGroup != null) {
       setState(() {
-        group = modelGroup;
+        noteGroup = modelGroup;
       });
     }
   }
@@ -265,8 +267,6 @@ class _PageItemsState extends State<PageItems> {
     if (start != null) {
       final newItems = await ModelItem.getInGroup(
           widget.groupId, start.id!, fetchOlder, 0, _limit, _filters);
-      debugPrint(
-          "${fetchOlder ? "After" : "Before"}:${start.text}|NewItems:${newItems.length}");
       if (newItems.isNotEmpty) {
         await _addItemsToDisplayList(newItems, fetchOlder);
         if (mounted) setState(() {});
@@ -792,8 +792,11 @@ class _PageItemsState extends State<PageItems> {
         _isRecording = true;
         _recordingDuration = 0;
       });
-
       _startRecordingTimer();
+      bool? hasVibrator = await Vibration.hasVibrator();
+      if (hasVibrator != null && hasVibrator) {
+        Vibration.vibrate();
+      }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1098,8 +1101,8 @@ class _PageItemsState extends State<PageItems> {
   void editGroup() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
-        categoryId: group!.categoryId,
-        group: group!,
+        categoryId: noteGroup!.categoryId,
+        group: noteGroup!,
         onUpdate: () {
           setState(() {});
         },
@@ -1115,8 +1118,100 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
+  void setShowDateTime(bool show) {
+    setState(() {
+      showDateTime = show;
+    });
+  }
+
   List<Widget> _buildAppbarDefaultOptions() {
-    return [];
+    return [
+      PopupMenuButton<int>(
+        onSelected: (value) {
+          switch (value) {
+            case 0:
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PageGroupAddEdit(
+                  categoryId: noteGroup!.categoryId,
+                  group: noteGroup,
+                  onUpdate: () {
+                    setState(() {});
+                  },
+                ),
+                settings: const RouteSettings(name: "EditNoteGroup"),
+              ));
+              break;
+            case 1:
+              _openFilterDialog();
+              break;
+            case 2:
+              setState(() {
+                showDateTime = !showDateTime;
+              });
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem<int>(
+            value: 0,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.edit,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                const Text('Edit'),
+              ],
+            ),
+          ),
+          PopupMenuItem<int>(
+            value: 1,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.filter_alt,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                const Text('Filters'),
+              ],
+            ),
+          ),
+          PopupMenuItem<int>(
+            value: 2,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule,
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    const Text('Date/Time'),
+                  ],
+                ),
+                StatefulBuilder(builder: (context, setState) {
+                  return Switch(
+                    value: showDateTime,
+                    onChanged: (bool value) {
+                      setState(() {
+                        setShowDateTime(value);
+                      });
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ];
   }
 
   List<Widget> _buildAppbarSelectionOptions() {
@@ -1196,13 +1291,12 @@ class _PageItemsState extends State<PageItems> {
   Widget build(BuildContext context) {
     double size = 40;
     bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
-    debugPrint("DisplayListLength:${_displayItemList.length}");
     return Scaffold(
       appBar: AppBar(
         actions: _hasNotesSelected
             ? _buildAppbarSelectionOptions()
             : _buildAppbarDefaultOptions(),
-        title: group == null || _hasNotesSelected
+        title: noteGroup == null || _hasNotesSelected
             ? const SizedBox.shrink()
             : GestureDetector(
                 onTap: () {
@@ -1210,12 +1304,12 @@ class _PageItemsState extends State<PageItems> {
                 },
                 child: Row(
                   children: [
-                    group!.thumbnail == null
+                    noteGroup!.thumbnail == null
                         ? Container(
                             width: size,
                             height: size,
                             decoration: BoxDecoration(
-                              color: colorFromHex(group!.color),
+                              color: colorFromHex(noteGroup!.color),
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -1225,14 +1319,15 @@ class _PageItemsState extends State<PageItems> {
                             child: Center(
                               child: CircleAvatar(
                                 radius: 16,
-                                backgroundImage: MemoryImage(group!.thumbnail!),
+                                backgroundImage:
+                                    MemoryImage(noteGroup!.thumbnail!),
                               ),
                             ),
                           ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        group!.title,
+                        noteGroup!.title,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 18,
@@ -1274,7 +1369,11 @@ class _PageItemsState extends State<PageItems> {
                       }
                       final item = _displayItemList[index];
                       if (item.type == ItemType.date) {
-                        return ItemWidgetDate(item: item);
+                        if (showDateTime) {
+                          return ItemWidgetDate(item: item);
+                        } else {
+                          return const SizedBox.shrink();
+                        }
                       } else {
                         return Dismissible(
                           key: ValueKey(item.id),
@@ -1340,7 +1439,7 @@ class _PageItemsState extends State<PageItems> {
                                               expanded: false,
                                             ),
                                           ),
-                                        _buildItem(item),
+                                        _buildItem(item, showDateTime),
                                       ],
                                     )),
                               ),
@@ -1366,20 +1465,18 @@ class _PageItemsState extends State<PageItems> {
                       child: const Icon(Icons.keyboard_double_arrow_down),
                     ),
                   ),
-                Positioned(
-                  right: 0,
-                  child: IconButton(
-                    onPressed: () {
-                      _openFilterDialog();
-                    },
-                    icon: Icon(
-                      Icons.filter_alt,
-                      color: _filtersEnabled
-                          ? null
-                          : Theme.of(context).colorScheme.inversePrimary,
+                if (_filtersEnabled)
+                  Positioned(
+                    right: 0,
+                    child: IconButton(
+                      onPressed: () {
+                        _openFilterDialog();
+                      },
+                      icon: Icon(
+                        Icons.filter_alt,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -1391,29 +1488,57 @@ class _PageItemsState extends State<PageItems> {
   }
 
   // Widget for displaying different item types
-  Widget _buildItem(ModelItem item) {
+  Widget _buildItem(ModelItem item, bool showTimestamp) {
     switch (item.type) {
       case ItemType.text:
-        return ItemWidgetText(item: item);
+        return ItemWidgetText(
+          item: item,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.image:
-        return ItemWidgetImage(item: item, onTap: viewMedia);
+        return ItemWidgetImage(
+          item: item,
+          onTap: viewMedia,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.video:
-        return ItemWidgetVideo(item: item, onTap: viewMedia);
+        return ItemWidgetVideo(
+          item: item,
+          onTap: viewMedia,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.audio:
-        return ItemWidgetAudio(item: item);
+        return ItemWidgetAudio(
+          item: item,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.document:
-        return ItemWidgetDocument(item: item, onTap: openItemMedia);
+        return ItemWidgetDocument(
+          item: item,
+          onTap: openItemMedia,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.location:
-        return ItemWidgetLocation(item: item, onTap: openLocation);
+        return ItemWidgetLocation(
+          item: item,
+          onTap: openLocation,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.contact:
-        return ItemWidgetContact(item: item, onTap: addToContacts);
+        return ItemWidgetContact(
+          item: item,
+          onTap: addToContacts,
+          showTimestamp: showTimestamp,
+        );
       case ItemType.completedTask:
         return ItemWidgetTask(
           item: item,
+          showTimestamp: showDateTime,
         );
       case ItemType.task:
         return ItemWidgetTask(
           item: item,
+          showTimestamp: showDateTime,
         );
       default:
         return const SizedBox.shrink();
@@ -1607,11 +1732,11 @@ class _PageItemsState extends State<PageItems> {
           ),
           GestureDetector(
             onLongPress: () async {
-              if (!_isTyping && !isCreatingTask) {
+              if (!_isTyping && !isCreatingTask && !_isRecording) {
                 await _startRecording();
               }
             },
-            onLongPressUp: () async {
+            onTap: () async {
               if (_isRecording && !isCreatingTask) {
                 await _stopRecording();
               }

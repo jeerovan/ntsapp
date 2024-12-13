@@ -221,19 +221,45 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
       case ItemType.text:
-        return ItemWidgetText(item: item);
+        return ItemWidgetText(
+          item: item,
+          showTimestamp: false,
+        );
       case ItemType.image:
-        return ItemWidgetImage(item: item, onTap: onItemTapped);
+        return ItemWidgetImage(
+          item: item,
+          onTap: onItemTapped,
+          showTimestamp: false,
+        );
       case ItemType.video:
-        return ItemWidgetVideo(item: item, onTap: onItemTapped);
+        return ItemWidgetVideo(
+          item: item,
+          onTap: onItemTapped,
+          showTimestamp: false,
+        );
       case ItemType.audio:
-        return ItemWidgetAudio(item: item);
+        return ItemWidgetAudio(
+          item: item,
+          showTimestamp: false,
+        );
       case ItemType.document:
-        return ItemWidgetDocument(item: item, onTap: onItemTapped);
+        return ItemWidgetDocument(
+          item: item,
+          onTap: onItemTapped,
+          showTimestamp: false,
+        );
       case ItemType.location:
-        return ItemWidgetLocation(item: item, onTap: onItemTapped);
+        return ItemWidgetLocation(
+          item: item,
+          onTap: onItemTapped,
+          showTimestamp: false,
+        );
       case ItemType.contact:
-        return ItemWidgetContact(item: item, onTap: onItemTapped);
+        return ItemWidgetContact(
+          item: item,
+          onTap: onItemTapped,
+          showTimestamp: false,
+        );
       default:
         return const SizedBox.shrink();
     }

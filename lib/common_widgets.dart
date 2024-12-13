@@ -259,7 +259,7 @@ class _WidgetGroupState extends State<WidgetGroup> {
       subtitle: widget.showLastItemSummary
           ? NotePreviewSummary(
               item: item.lastItem,
-              showTimestamp: true,
+              showTimestamp: false,
               showImagePreview: false,
               expanded: true,
             )
@@ -586,7 +586,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
   }
 }
 
-Widget widgetAudioDetails(ModelItem item) {
+Widget widgetAudioDetails(ModelItem item, bool showTimestamp) {
   return Row(
     children: [
       // File size text at the left
@@ -615,7 +615,10 @@ Widget widgetAudioDetails(ModelItem item) {
           ),
         ),
       ),
-      WidgetTimeStamp(item: item),
+      WidgetTimeStampPinnedStarred(
+        item: item,
+        showTimestamp: showTimestamp,
+      ),
     ],
   );
 }
