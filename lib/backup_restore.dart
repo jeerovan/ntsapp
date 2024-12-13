@@ -245,14 +245,17 @@ Future<String> restoreOldDb(String baseDirPath) async {
       if (groupRow.containsKey("uuid") && groupRow.containsKey("title")) {
         final String? groupUuid = groupRow["uuid"];
         final String title = groupRow["title"];
+        int? order = groupRow["order"];
         if (groupUuid == null) continue;
         final int at = groupRow["updatedAt"];
         Color color = getMaterialColor(groupCount);
+        int position = order ?? 0;
         if (groupUuid.isNotEmpty && title.isNotEmpty) {
           ModelGroup newGroup = await ModelGroup.fromMap({
             "id": groupUuid,
             "category_id": categoryId,
             "title": title,
+            "pinned": position,
             "color": colorToHex(color),
             "at": at,
           });

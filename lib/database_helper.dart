@@ -194,6 +194,7 @@ class DatabaseHelper {
         final String? groupUuid = groupRow["uuid"];
         final String title = groupRow["title"];
         final String image = groupRow["image"];
+        final int? order = groupRow["order"];
         if (groupUuid == null) continue;
         final int at = groupRow["updatedAt"];
         String? thumbnail;
@@ -205,13 +206,14 @@ class DatabaseHelper {
             thumbnail = base64Encode(thumbnailBytes!);
           }
         }
+        int position = order ?? 0;
         Color color = getMaterialColor(groupCount);
         if (groupUuid.isNotEmpty && title.isNotEmpty) {
           await db.insert("itemgroup", {
             "id": groupUuid,
             "category_id": categoryId,
             "title": title,
-            "pinned": 0,
+            "pinned": position,
             "archived_at": 0,
             "color": colorToHex(color),
             "thumbnail": thumbnail,
