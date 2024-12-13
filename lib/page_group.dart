@@ -378,7 +378,7 @@ class _PageGroupState extends State<PageGroup> {
                     buildDefaultDragHandles: false,
                     itemBuilder: (context, index) {
                       final item = _noteGroups[index];
-                      return ReorderableDragStartListener(
+                      return ReorderableDelayedDragStartListener(
                         key: ValueKey(item.id),
                         index: index,
                         child: Slidable(
