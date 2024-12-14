@@ -696,7 +696,7 @@ class _PageItemsState extends State<PageItems> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Moved to recycle bin"),
+          content: Text("Moved to trash"),
           duration: Duration(seconds: 1),
         ),
       );

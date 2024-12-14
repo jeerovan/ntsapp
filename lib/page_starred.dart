@@ -113,7 +113,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
-          "Moved to recycle bin",
+          "Moved to trash",
         ),
         duration: Duration(seconds: 1),
       ));

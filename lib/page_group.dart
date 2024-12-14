@@ -209,7 +209,7 @@ class _PageGroupState extends State<PageGroup> {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
-          "Moved to recycle bin",
+          "Moved to trash",
         ),
         duration: Duration(seconds: 1),
       ));

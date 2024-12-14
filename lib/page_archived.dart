@@ -34,7 +34,7 @@ class _PageArchivedState extends State<PageArchived> {
       length: 2, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Recycle bin"),
+          title: const Text("Trash"),
           actions: [
             ValueListenableBuilder<bool>(
               valueListenable: _isAnyItemSelected,
