@@ -29,7 +29,7 @@ class DatabaseHelper {
     final dbPath = join(dbDir, dbFileName);
     //debugPrint("DbPath:$dbPath");
     return await openDatabase(dbPath,
-        version: 8,
+        version: 9,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: _onOpen);
@@ -47,9 +47,8 @@ class DatabaseHelper {
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     await db.execute('PRAGMA foreign_keys = ON');
-    if (oldVersion < 8) {
-      await initTables(db);
-      await dbMigration(db);
+    for (int version = oldVersion; version < newVersion; version++) {
+      await dbMigrations(db, version + 1);
     }
   }
 
@@ -59,6 +58,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         color TEXT,
+        position INTEGER,
         at INTEGER,
         thumbnail TEXT
       )
@@ -69,6 +69,7 @@ class DatabaseHelper {
         category_id TEXT NOT NULL,
         title TEXT NOT NULL,
         pinned INTEGER,
+        position INTEGER,
         archived_at INTEGER,
         color TEXT,
         at INTEGER,
@@ -104,6 +105,17 @@ class DatabaseHelper {
         at INTEGER
       )
     ''');
+  }
+
+  Future<void> dbMigrations(Database db, int version) async {
+    switch (version) {
+      case 8:
+        dbMigration_8(db);
+        break;
+      case 9:
+        dbMigration_9(db);
+        break;
+    }
   }
 
   Future<Uint8List> loadImageAsUint8List(String assetPath) async {
@@ -168,7 +180,10 @@ class DatabaseHelper {
   }
 
   // db migration from 7 to 8
-  Future<void> dbMigration(Database db) async {
+  Future<void> dbMigration_8(Database db) async {
+    // Create new tables
+    await initTables(db);
+
     // Create a category first
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
@@ -213,7 +228,8 @@ class DatabaseHelper {
             "id": groupUuid,
             "category_id": categoryId,
             "title": title,
-            "pinned": position,
+            "pinned": 0,
+            "position": position,
             "archived_at": 0,
             "color": colorToHex(color),
             "thumbnail": thumbnail,
@@ -357,5 +373,10 @@ class DatabaseHelper {
       }
     }
     await db.insert("setting", {"id": "process_media", "value": "yes"});
+  }
+
+  Future<void> dbMigration_9(Database db) async {
+    await db.execute("ALTER TABLE category ADD COLUMN position INTEGER");
+    await db.execute("ALTER TABLE itemgroup ADD COLUMN position INTEGER");
   }
 }

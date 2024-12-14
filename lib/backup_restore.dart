@@ -255,7 +255,8 @@ Future<String> restoreOldDb(String baseDirPath) async {
             "id": groupUuid,
             "category_id": categoryId,
             "title": title,
-            "pinned": position,
+            "pinned": 0,
+            "position": position,
             "color": colorToHex(color),
             "at": at,
           });

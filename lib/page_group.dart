@@ -276,7 +276,12 @@ class _PageGroupState extends State<PageGroup> {
                     final String zipFilePath =
                         path.join(baseDir.path, '${backupDir}_$todayDate.zip');
                     File backupFile = File(zipFilePath);
-                    if (backupFile.existsSync()) backupFile.deleteSync();
+                    try {
+                      if (backupFile.existsSync()) backupFile.deleteSync();
+                    } catch (e) {
+                      debugPrint(e.toString());
+                    }
+                    initialLoad();
                   });
                 },
               ),
@@ -343,7 +348,7 @@ class _PageGroupState extends State<PageGroup> {
 
   Future<void> _saveGroupPositions() async {
     for (ModelGroup group in _noteGroups) {
-      group.pinned = _noteGroups.indexOf(group);
+      group.position = _noteGroups.indexOf(group);
       await group.update();
     }
   }

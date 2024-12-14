@@ -12,6 +12,7 @@ class ModelGroup {
   String title;
   Uint8List? thumbnail;
   int? pinned;
+  int? position;
   int? archivedAt;
   String color;
   int? at;
@@ -24,7 +25,8 @@ class ModelGroup {
     required this.categoryId,
     required this.title,
     this.thumbnail,
-    required this.pinned,
+    this.pinned,
+    this.position,
     required this.archivedAt,
     required this.color,
     this.at,
@@ -40,6 +42,7 @@ class ModelGroup {
       title: "",
       thumbnail: null,
       pinned: 0,
+      position: 0,
       archivedAt: 0,
       color: "#000000",
       at: DateTime.now().toUtc().millisecondsSinceEpoch,
@@ -56,6 +59,7 @@ class ModelGroup {
       'title': title,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'pinned': pinned,
+      'position': position,
       'archived_at': archivedAt,
       'color': color,
       'state': state,
@@ -93,6 +97,7 @@ class ModelGroup {
       categoryId: map.containsKey('category_id') ? map['category_id'] : "",
       title: map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
+      position: map.containsKey('position') ? map['position'] : 0,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
       color: map.containsKey('color') ? map['color'] : "#000000",
@@ -128,7 +133,7 @@ class ModelGroup {
         limit: limit,
         offset: offset,
         whereArgs: [categoryId],
-        orderBy: "pinned ASC, at ASC");
+        orderBy: "position ASC, at ASC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
