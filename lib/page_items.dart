@@ -123,6 +123,10 @@ class _PageItemsState extends State<PageItems> {
     if (modelGroup != null) {
       setState(() {
         noteGroup = modelGroup;
+        Map<String, dynamic>? data = modelGroup.data;
+        if (data != null) {
+          showDateTime = data["date_time"] == 1 ? true : false;
+        }
       });
     }
   }
@@ -1118,10 +1122,22 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void setShowDateTime(bool show) {
+  Future<void> setShowDateTime(bool show) async {
     setState(() {
       showDateTime = show;
     });
+    if (noteGroup != null) {
+      int showTimeStamp = showDateTime ? 1 : 0;
+      Map<String, dynamic>? data = noteGroup!.data;
+      if (data != null) {
+        data["date_time"] = showTimeStamp;
+        noteGroup!.data = data;
+        await noteGroup!.update();
+      } else {
+        noteGroup!.data = {"date_time": showTimeStamp};
+        await noteGroup!.update();
+      }
+    }
   }
 
   List<Widget> _buildAppbarDefaultOptions() {
@@ -1145,9 +1161,7 @@ class _PageItemsState extends State<PageItems> {
               _openFilterDialog();
               break;
             case 2:
-              setState(() {
-                showDateTime = !showDateTime;
-              });
+              setShowDateTime(!showDateTime);
               break;
           }
         },
