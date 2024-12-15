@@ -7,22 +7,27 @@ import 'package:image_picker/image_picker.dart';
 import 'common.dart';
 import 'model_category.dart';
 
-class AddEditCategory extends StatefulWidget {
-  final String? categoryId;
+class PageCategoryAddEdit extends StatefulWidget {
+  final ModelCategory? category;
   final Function() onUpdate;
 
-  const AddEditCategory({super.key, this.categoryId, required this.onUpdate});
+  const PageCategoryAddEdit({
+    super.key,
+    this.category,
+    required this.onUpdate,
+  });
 
   @override
-  State<AddEditCategory> createState() => _AddEditCategoryState();
+  State<PageCategoryAddEdit> createState() => _PageCategoryAddEditState();
 }
 
-class _AddEditCategoryState extends State<AddEditCategory> {
+class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
   final TextEditingController categoryController = TextEditingController();
 
   ModelCategory? category;
-  Uint8List? image;
+  Uint8List? thumbnail;
   String title = "";
+  String? colorCode;
 
   bool processing = false;
   bool itemChanged = false;
@@ -30,21 +35,26 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   @override
   void initState() {
     super.initState();
-    _loadCategory();
+    category = widget.category;
+    init();
   }
 
-  Future<void> _loadCategory() async {
-    if (widget.categoryId != null) {
-      ModelCategory? existingCategory =
-          await ModelCategory.get(widget.categoryId!);
-      if (existingCategory != null) {
-        setState(() {
-          category = existingCategory;
-          image = category!.thumbnail;
-          title = category!.title;
-          categoryController.text = category!.title;
-        });
-      }
+  Future<void> init() async {
+    if (category != null) {
+      setState(() {
+        category = category;
+        thumbnail = category!.thumbnail;
+        title = category!.title;
+        categoryController.text = category!.title;
+        colorCode = category!.color;
+      });
+    } else {
+      int count = await ModelCategory.getCount();
+      Color color = getMaterialColor(count + 1);
+      setState(() {
+        colorCode = colorToHex(color);
+      });
+      itemChanged = true;
     }
   }
 
@@ -55,7 +65,7 @@ class _AddEditCategoryState extends State<AddEditCategory> {
     });
     if (pickedFile != null) {
       Uint8List bytes = await File(pickedFile.path).readAsBytes();
-      image = await compute(getImageThumbnail, bytes);
+      thumbnail = await compute(getImageThumbnail, bytes);
       itemChanged = true;
     }
     setState(() {
@@ -100,16 +110,16 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   }
 
   void saveCategory() async {
-    if (itemChanged && title.isNotEmpty) {
+    if (itemChanged) {
       if (category == null) {
         int count = await ModelCategory.getCount();
         Color color = getMaterialColor(count + 1);
         String hexCode = colorToHex(color);
         ModelCategory newCategory = await ModelCategory.fromMap(
-            {"title": title, "color": hexCode, "thumbnail": image});
+            {"title": title, "color": hexCode, "thumbnail": thumbnail});
         await newCategory.insert();
       } else {
-        category!.thumbnail = image;
+        category!.thumbnail = thumbnail;
         category!.title = title;
         await category!.update();
       }
@@ -119,36 +129,16 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   }
 
   Widget getBoxContent() {
-    double size = 100;
+    double radius = 50;
     if (processing) {
       return const CircularProgressIndicator();
-    } else if (image != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          child: Center(
-            child: CircleAvatar(
-              radius: 50,
-              backgroundImage: MemoryImage(image!),
-            ),
-          ),
-        ),
-      );
-    } else if (title.isNotEmpty) {
-      return Text(
-        title[0].toUpperCase(),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: size / 2, // Adjust font size relative to the circle size
-          fontWeight: FontWeight.bold,
-        ),
+    } else if (thumbnail != null) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundImage: MemoryImage(thumbnail!),
       );
     } else {
-      return const Text(
-        "Tap here.",
-        style: TextStyle(color: Colors.black),
-      );
+      return const SizedBox.shrink();
     }
   }
 
@@ -161,9 +151,6 @@ class _AddEditCategoryState extends State<AddEditCategory> {
   Widget build(BuildContext context) {
     String task = category == null ? "Add" : "Edit";
     double size = 100;
-    Color circleColor = category == null
-        ? const Color.fromARGB(255, 207, 207, 207)
-        : colorFromHex(category!.color);
     return Scaffold(
       appBar: AppBar(
         title: Text("$task Category",
@@ -187,7 +174,7 @@ class _AddEditCategoryState extends State<AddEditCategory> {
                     width: size,
                     height: size,
                     decoration: BoxDecoration(
-                      color: circleColor,
+                      color: colorFromHex(colorCode ?? "#5dade2"),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -212,17 +199,14 @@ class _AddEditCategoryState extends State<AddEditCategory> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: IconButton(
-              color: Theme.of(context).colorScheme.primary,
-              icon: const Icon(Icons.check),
-              onPressed: () {
-                saveCategory();
-              },
-            ),
-          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          saveCategory();
+        },
+        shape: const CircleBorder(),
+        child: const Icon(Icons.check),
       ),
     );
   }

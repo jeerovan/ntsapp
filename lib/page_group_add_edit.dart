@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ntsapp/model_category.dart';
+import 'package:ntsapp/page_category.dart';
 
 import 'common.dart';
 import 'model_item_group.dart';
@@ -73,23 +75,21 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     });
   }
 
-  Future<void> saveNoteGroup() async {
+  Future<void> saveGroup(String categoryId) async {
     ModelGroup? updatedGroup;
     if (itemChanged) {
       if (widget.group == null) {
-        ModelCategory? category = await ModelCategory.getDND();
-        if (category != null) {
-          updatedGroup = await ModelGroup.fromMap({
-            "category_id": category.id,
-            "thumbnail": thumbnail,
-            "title": title,
-            "color": colorCode
-          });
-          await updatedGroup.insert();
-        }
+        updatedGroup = await ModelGroup.fromMap({
+          "category_id": categoryId,
+          "thumbnail": thumbnail,
+          "title": title,
+          "color": colorCode
+        });
+        await updatedGroup.insert();
       } else {
         widget.group!.thumbnail = thumbnail;
         widget.group!.title = title!;
+        widget.group!.categoryId = categoryId;
         await widget.group!.update();
       }
       widget.onUpdate();
@@ -102,17 +102,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     if (processing) {
       return const CircularProgressIndicator();
     } else if (thumbnail != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          child: Center(
-            child: CircleAvatar(
-              radius: radius,
-              backgroundImage: MemoryImage(thumbnail!),
-            ),
-          ),
-        ),
+      return CircleAvatar(
+        radius: radius,
+        backgroundImage: MemoryImage(thumbnail!),
       );
     } else {
       return const SizedBox.shrink();
@@ -155,6 +147,20 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     }
   }
 
+  void addToCategory() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+      builder: (context) => PageCategory(),
+      settings: const RouteSettings(name: "SelectGroupCategory"),
+    ))
+        .then((value) {
+      String? categoryId = value;
+      if (categoryId != null) {
+        saveGroup(categoryId);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double size = 100;
@@ -181,7 +187,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: colorFromHex(colorCode ?? "000000"),
+                color: colorFromHex(colorCode ?? "#5dade2"),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -213,7 +219,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          addToCategory();
+                        },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -221,7 +229,36 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                             Text("Add to category"),
                           ],
                         )),
-                  )
+                  ),
+                if (category != null && category!.title != "DND")
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            addToCategory();
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add),
+                              Text("Change category"),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                            onPressed: null,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.remove),
+                                Text("Remove category"),
+                              ],
+                            ))
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
@@ -245,8 +282,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 ),
                 FloatingActionButton(
                   key: const Key("done_note_group"),
-                  onPressed: () {
-                    saveNoteGroup();
+                  onPressed: () async {
+                    ModelCategory category = await ModelCategory.getDND();
+                    saveGroup(category.id!);
                   },
                   shape: const CircleBorder(),
                   child: Icon(

@@ -113,12 +113,8 @@ class ModelGroup {
   }
 
   static Future<List<ModelGroup>> allInDND() async {
-    ModelCategory? dndCategory = await ModelCategory.getDND();
-    if (dndCategory == null) {
-      return [];
-    } else {
-      return allInCategory(dndCategory.id!);
-    }
+    ModelCategory dndCategory = await ModelCategory.getDND();
+    return allInCategory(dndCategory.id!);
   }
 
   static Future<List<ModelGroup>> getArchived() async {
@@ -139,7 +135,7 @@ class ModelGroup {
     List<Map<String, dynamic>> rows = await db.query("itemgroup",
         where: 'category_id = ? AND archived_at = 0',
         whereArgs: [categoryId],
-        orderBy: "position ASC");
+        orderBy: "position ASC, at DESC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
@@ -156,15 +152,9 @@ class ModelGroup {
   }
 
   static Future<int> getCountInDND() async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    String sql = '''
-      SELECT count(*) as count
-      FROM itemgroup
-      WHERE category_id = (SELECT id FROM category WHERE title = ?)
-    ''';
-    final rows = await db.rawQuery(sql, ["DND"]);
-    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
+    ModelCategory dndCategory = await ModelCategory.getDND();
+    int count = await getCountInCategory(dndCategory.id!);
+    return count;
   }
 
   static Future<int> getAllCount() async {
@@ -191,7 +181,7 @@ class ModelGroup {
   Future<int> insert() async {
     final dbHelper = DatabaseHelper.instance;
     Map<String, dynamic> map = toMap();
-    if (map["title"].isNotEmpty) {
+    if (map["title"].isEmpty) {
       map["title"] = getNoteGroupDateTitle();
     }
     return await dbHelper.insert("itemgroup", map);

@@ -145,8 +145,11 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
                   ? Theme.of(context).colorScheme.inversePrimary
                   : Colors.transparent,
               margin: const EdgeInsets.symmetric(vertical: 1),
-              child:
-                  WidgetCategoryGroup(group: categoryGroup, showSummary: false),
+              child: WidgetCategoryGroup(
+                categoryGroup: categoryGroup,
+                showSummary: false,
+                showCategorySign: false,
+              ),
             ),
           );
         },

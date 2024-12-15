@@ -138,7 +138,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    double size = 240;
+    double size = 150;
     return GestureDetector(
       onTap: () {
         widget.onTap(item);
@@ -203,7 +203,7 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
   @override
   Widget build(BuildContext context) {
     ModelItem item = widget.item;
-    double size = 200;
+    double size = 150;
     return GestureDetector(
       onTap: () {
         widget.onTap(item);

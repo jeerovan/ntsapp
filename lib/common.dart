@@ -273,7 +273,7 @@ Widget rotatedWidget(Widget widget) {
 }
 
 Uint8List? getImageThumbnail(Uint8List bytes) {
-  int maxSize = 200;
+  int maxSize = 150;
   img.Image? src = img.decodeImage(bytes);
   if (src != null) {
     img.Image resized = img.copyResize(src, width: maxSize);

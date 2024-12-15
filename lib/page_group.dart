@@ -17,6 +17,7 @@ import 'model_category_group.dart';
 import 'model_item_group.dart';
 import 'model_setting.dart';
 import 'page_archived.dart';
+import 'page_category_add_edit.dart';
 import 'page_items.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
@@ -174,18 +175,27 @@ class _PageGroupState extends State<PageGroup> {
 
   Future<void> editCategoryGroup(ModelCategoryGroup categoryGroup) async {
     if (categoryGroup.type == "group") {
-      ModelGroup item = categoryGroup.group!;
+      ModelGroup group = categoryGroup.group!;
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageGroupAddEdit(
-          group: item,
+          group: group,
           onUpdate: () {
-            setState(() {});
+            loadCategoriesGroups();
           },
         ),
         settings: const RouteSettings(name: "EditNoteGroup"),
       ));
     } else {
-      // TODO navigate to edit category
+      ModelCategory category = categoryGroup.category!;
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageCategoryAddEdit(
+          category: category,
+          onUpdate: () {
+            loadCategoriesGroups();
+          },
+        ),
+        settings: const RouteSettings(name: "EditCategory"),
+      ));
     }
   }
 
@@ -333,7 +343,10 @@ class _PageGroupState extends State<PageGroup> {
                             navigateToNotesGroups(item);
                           },
                           child: WidgetCategoryGroup(
-                              group: item, showSummary: true),
+                            categoryGroup: item,
+                            showSummary: true,
+                            showCategorySign: true,
+                          ),
                         ),
                       ),
                     );

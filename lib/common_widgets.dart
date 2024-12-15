@@ -204,14 +204,15 @@ class IconButtonWithBadge extends StatelessWidget {
 }
 
 class WidgetCategoryGroup extends StatefulWidget {
-  final ModelCategoryGroup group;
+  final ModelCategoryGroup categoryGroup;
   final bool showSummary;
+  final bool showCategorySign;
 
-  const WidgetCategoryGroup({
-    super.key,
-    required this.group,
-    required this.showSummary,
-  });
+  const WidgetCategoryGroup(
+      {super.key,
+      required this.categoryGroup,
+      required this.showSummary,
+      required this.showCategorySign});
 
   @override
   State<WidgetCategoryGroup> createState() => _WidgetCategoryGroupState();
@@ -221,28 +222,28 @@ class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
   @override
   Widget build(BuildContext context) {
     double size = 20;
-    ModelCategoryGroup categoryGroup = widget.group;
+    ModelCategoryGroup categoryGroup = widget.categoryGroup;
     return ListTile(
       leading: categoryGroup.thumbnail == null
-          ? Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                color: colorFromHex(categoryGroup.color),
-                shape: BoxShape.circle,
+          ? Padding(
+              padding: EdgeInsets.all(size / 2),
+              child: Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: colorFromHex(categoryGroup.color),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
               ),
-              alignment: Alignment.center,
             )
           : SizedBox(
-              width: size,
-              height: size,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundImage: MemoryImage(categoryGroup.thumbnail!),
-                  ),
+              width: size * 2,
+              height: size * 2,
+              child: Center(
+                child: CircleAvatar(
+                  radius: size * 2,
+                  backgroundImage: MemoryImage(categoryGroup.thumbnail!),
                 ),
               ),
             ),
@@ -267,7 +268,7 @@ class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
               : Row(
                   children: [
                     Icon(
-                      Icons.circle,
+                      Icons.workspaces,
                       size: 13,
                     ),
                     const SizedBox(width: 5),
@@ -280,6 +281,13 @@ class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
                     ),
                   ],
                 )
+          : const SizedBox.shrink(),
+      trailing: categoryGroup.type == "category"
+          ? widget.showCategorySign
+              ? Icon(
+                  Icons.navigate_next,
+                )
+              : const SizedBox.shrink()
           : const SizedBox.shrink(),
     );
   }

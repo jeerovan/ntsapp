@@ -193,7 +193,6 @@ Future<String> restoreOldBackup(Map<String, String> data) async {
   if (error.isEmpty) {
     error = await restoreOldDb(baseDirPath);
   }
-
   //clear dir
   await emptyDir(backupDirPath);
 
@@ -221,6 +220,7 @@ Future<String> unZipOldFiles(Map<String, String> data) async {
     }
   } catch (e) {
     error = e.toString();
+    debugPrint("Error Unzipping Old Files: $error");
   }
   return error;
 }
@@ -232,12 +232,11 @@ Future<String> restoreOldDb(String baseDirPath) async {
   Database oldDb = await openDatabase(oldDbPath);
   try {
     // get category id
-    List<ModelCategory> categories = await ModelCategory.all();
-    ModelCategory category = categories.first;
+    ModelCategory category = await ModelCategory.getDND();
     String categoryId = category.id!;
 
     // create note groups
-    int groupCount = await ModelGroup.getCountInCategory(categoryId);
+    int groupCount = await ModelGroup.getCountInDND() + 1;
     List<Map<String, dynamic>> groupRows = await oldDb.query(
       "notegroups",
     );
@@ -261,8 +260,8 @@ Future<String> restoreOldDb(String baseDirPath) async {
             "at": at,
           });
           newGroup.insert();
+          groupCount = groupCount + 1;
         }
-        groupCount = groupCount + 1;
       }
     }
 
@@ -391,6 +390,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
     }
   } catch (e) {
     error = e.toString();
+    debugPrint("Error Loading Old Backup: $error");
   } finally {
     oldDb.close();
   }

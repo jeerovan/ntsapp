@@ -82,7 +82,9 @@ class ModelCategory {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("category",
-        where: "title != ?", whereArgs: ["DND"], orderBy: "position ASC");
+        where: "title != ?",
+        whereArgs: ["DND"],
+        orderBy: "position ASC,at DESC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
@@ -99,7 +101,7 @@ class ModelCategory {
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
 
-  static Future<ModelCategory?> getDND() async {
+  static Future<ModelCategory> getDND() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
@@ -107,12 +109,8 @@ class ModelCategory {
       where: "title = ?",
       whereArgs: ["DND"],
     );
-    if (rows.isNotEmpty) {
-      Map<String, dynamic> map = rows.first;
-      return await fromMap(map);
-    } else {
-      return null;
-    }
+    Map<String, dynamic> map = rows.first;
+    return await fromMap(map);
   }
 
   static Future<ModelCategory?> get(String id) async {
