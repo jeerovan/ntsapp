@@ -1102,10 +1102,9 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  void editGroup() {
+  void navigateToPageGroupEdit() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
-        categoryId: noteGroup!.categoryId,
         group: noteGroup!,
         onUpdate: () {
           setState(() {});
@@ -1146,16 +1145,7 @@ class _PageItemsState extends State<PageItems> {
         onSelected: (value) {
           switch (value) {
             case 0:
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => PageGroupAddEdit(
-                  categoryId: noteGroup!.categoryId,
-                  group: noteGroup,
-                  onUpdate: () {
-                    setState(() {});
-                  },
-                ),
-                settings: const RouteSettings(name: "EditNoteGroup"),
-              ));
+              navigateToPageGroupEdit();
               break;
             case 1:
               _openFilterDialog();
@@ -1314,7 +1304,7 @@ class _PageItemsState extends State<PageItems> {
             ? const SizedBox.shrink()
             : GestureDetector(
                 onTap: () {
-                  editGroup();
+                  navigateToPageGroupEdit();
                 },
                 child: Row(
                   children: [

@@ -10,8 +10,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
 import 'common.dart';
+import 'model_category_group.dart';
 import 'model_item.dart';
-import 'model_item_group.dart';
 
 class MessageInCenter extends StatelessWidget {
   final String text;
@@ -203,32 +203,32 @@ class IconButtonWithBadge extends StatelessWidget {
   }
 }
 
-class WidgetGroup extends StatefulWidget {
-  final ModelGroup group;
-  final bool showLastItemSummary;
+class WidgetCategoryGroup extends StatefulWidget {
+  final ModelCategoryGroup group;
+  final bool showSummary;
 
-  const WidgetGroup({
+  const WidgetCategoryGroup({
     super.key,
     required this.group,
-    required this.showLastItemSummary,
+    required this.showSummary,
   });
 
   @override
-  State<WidgetGroup> createState() => _WidgetGroupState();
+  State<WidgetCategoryGroup> createState() => _WidgetCategoryGroupState();
 }
 
-class _WidgetGroupState extends State<WidgetGroup> {
+class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
   @override
   Widget build(BuildContext context) {
     double size = 20;
-    ModelGroup item = widget.group;
+    ModelCategoryGroup categoryGroup = widget.group;
     return ListTile(
-      leading: item.thumbnail == null
+      leading: categoryGroup.thumbnail == null
           ? Container(
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: colorFromHex(item.color),
+                color: colorFromHex(categoryGroup.color),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -241,7 +241,7 @@ class _WidgetGroupState extends State<WidgetGroup> {
                 child: Center(
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundImage: MemoryImage(item.thumbnail!),
+                    backgroundImage: MemoryImage(categoryGroup.thumbnail!),
                   ),
                 ),
               ),
@@ -250,19 +250,36 @@ class _WidgetGroupState extends State<WidgetGroup> {
         children: [
           Expanded(
             child: Text(
-              item.title,
+              categoryGroup.title,
               overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
       ),
-      subtitle: widget.showLastItemSummary
-          ? NotePreviewSummary(
-              item: item.lastItem,
-              showTimestamp: false,
-              showImagePreview: false,
-              expanded: true,
-            )
+      subtitle: widget.showSummary
+          ? categoryGroup.type == "group"
+              ? NotePreviewSummary(
+                  item: categoryGroup.group!.lastItem,
+                  showTimestamp: false,
+                  showImagePreview: false,
+                  expanded: true,
+                )
+              : Row(
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 13,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      "${categoryGroup.category!.groupCount} Note Groups",
+                      overflow: TextOverflow.ellipsis, // Ellipsis for long text
+                      style: const TextStyle(
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                )
           : const SizedBox.shrink(),
     );
   }

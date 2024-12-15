@@ -5,6 +5,9 @@ import 'model_category.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
 
+// Why we have this:
+// group model fetches model item as last item
+// if we fetch item's group in model item as an attribute, it becomes recursive
 class ModelSearchItem {
   ModelItem item;
   ModelGroup? group;

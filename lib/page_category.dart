@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'common.dart';
 import 'model_category.dart';
-import 'page_category_edit.dart';
+import 'page_category_add_edit.dart';
 
 class PageCategory extends StatefulWidget {
   final Function(String) onSelect;

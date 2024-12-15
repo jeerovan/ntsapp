@@ -3,20 +3,16 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ntsapp/model_category.dart';
 
 import 'common.dart';
 import 'model_item_group.dart';
 
 class PageGroupAddEdit extends StatefulWidget {
-  final String categoryId;
   final ModelGroup? group;
   final Function() onUpdate;
 
-  const PageGroupAddEdit(
-      {super.key,
-      required this.categoryId,
-      this.group,
-      required this.onUpdate});
+  const PageGroupAddEdit({super.key, this.group, required this.onUpdate});
 
   @override
   PageGroupAddEditState createState() => PageGroupAddEditState();
@@ -31,6 +27,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   String? title;
   Uint8List? thumbnail;
   String? colorCode;
+  ModelCategory? category;
   String dateTitle = getNoteGroupDateTitle();
 
   @override
@@ -47,10 +44,12 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   Future<void> init() async {
     if (widget.group == null) {
       itemChanged = true;
-      int count = await ModelGroup.getCount(widget.categoryId);
+      int count = await ModelGroup.getCountInDND();
       Color color = getMaterialColor(count + 1);
       colorCode = colorToHex(color);
+      category = await ModelCategory.getDND();
     } else {
+      category = await ModelCategory.get(widget.group!.categoryId);
       colorCode = widget.group!.color;
     }
     title = widget.group == null ? dateTitle : widget.group!.title;
@@ -74,17 +73,20 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     });
   }
 
-  Future<void> saveCategory() async {
+  Future<void> saveNoteGroup() async {
     ModelGroup? updatedGroup;
     if (itemChanged) {
       if (widget.group == null) {
-        updatedGroup = await ModelGroup.fromMap({
-          "category_id": widget.categoryId,
-          "thumbnail": thumbnail,
-          "title": title,
-          "color": colorCode
-        });
-        await updatedGroup.insert();
+        ModelCategory? category = await ModelCategory.getDND();
+        if (category != null) {
+          updatedGroup = await ModelGroup.fromMap({
+            "category_id": category.id,
+            "thumbnail": thumbnail,
+            "title": title,
+            "color": colorCode
+          });
+          await updatedGroup.insert();
+        }
       } else {
         widget.group!.thumbnail = thumbnail;
         widget.group!.title = title!;
@@ -189,9 +191,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           ),
           Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 48),
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: TextField(
@@ -205,7 +207,21 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                       itemChanged = true;
                     },
                   ),
-                )
+                ),
+                if (widget.group == null ||
+                    (category != null && category!.title == "DND"))
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                        onPressed: () {},
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.add),
+                            Text("Add to category"),
+                          ],
+                        )),
+                  )
               ],
             ),
           ),
@@ -230,7 +246,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 FloatingActionButton(
                   key: const Key("done_note_group"),
                   onPressed: () {
-                    saveCategory();
+                    saveNoteGroup();
                   },
                   shape: const CircleBorder(),
                   child: Icon(

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:ntsapp/common.dart';
+import 'package:ntsapp/model_category.dart';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
@@ -110,7 +112,16 @@ class ModelGroup {
     );
   }
 
-  static Future<List<ModelGroup>> getArchived(int offset, int limit) async {
+  static Future<List<ModelGroup>> allInDND() async {
+    ModelCategory? dndCategory = await ModelCategory.getDND();
+    if (dndCategory == null) {
+      return [];
+    } else {
+      return allInCategory(dndCategory.id!);
+    }
+  }
+
+  static Future<List<ModelGroup>> getArchived() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
@@ -118,26 +129,21 @@ class ModelGroup {
       where: "archived_at > ?",
       whereArgs: [0],
       orderBy: 'at DESC',
-      offset: offset,
-      limit: limit,
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<List<ModelGroup>> all(
-      String categoryId, int offset, int limit) async {
+  static Future<List<ModelGroup>> allInCategory(String categoryId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("itemgroup",
         where: 'category_id = ? AND archived_at = 0',
-        limit: limit,
-        offset: offset,
         whereArgs: [categoryId],
-        orderBy: "position ASC, at ASC");
+        orderBy: "position ASC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<int> getCount(String category) async {
+  static Future<int> getCountInCategory(String categoryId) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     String sql = '''
@@ -145,7 +151,19 @@ class ModelGroup {
       FROM itemgroup
       WHERE category_id = ?
     ''';
-    final rows = await db.rawQuery(sql, [category]);
+    final rows = await db.rawQuery(sql, [categoryId]);
+    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
+  }
+
+  static Future<int> getCountInDND() async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String sql = '''
+      SELECT count(*) as count
+      FROM itemgroup
+      WHERE category_id = (SELECT id FROM category WHERE title = ?)
+    ''';
+    final rows = await db.rawQuery(sql, ["DND"]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
 
@@ -172,7 +190,11 @@ class ModelGroup {
 
   Future<int> insert() async {
     final dbHelper = DatabaseHelper.instance;
-    return await dbHelper.insert("itemgroup", toMap());
+    Map<String, dynamic> map = toMap();
+    if (map["title"].isNotEmpty) {
+      map["title"] = getNoteGroupDateTitle();
+    }
+    return await dbHelper.insert("itemgroup", map);
   }
 
   Future<int> update() async {

@@ -4,12 +4,16 @@ import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
+import 'model_item_group.dart';
 
 class ModelCategory {
   String? id;
   String title;
   Uint8List? thumbnail;
   String color;
+  int? position;
+  int? archivedAt;
+  int? groupCount;
   int? at;
 
   ModelCategory({
@@ -17,6 +21,9 @@ class ModelCategory {
     required this.title,
     this.thumbnail,
     required this.color,
+    this.position,
+    this.archivedAt,
+    this.groupCount,
     this.at,
   });
 
@@ -26,6 +33,9 @@ class ModelCategory {
       title: "",
       thumbnail: null,
       color: "",
+      position: 0,
+      archivedAt: 0,
+      groupCount: 0,
       at: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
   }
@@ -36,6 +46,8 @@ class ModelCategory {
       'title': title,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'color': color,
+      'position': position,
+      'archived_at': archivedAt,
       'at': at,
     };
   }
@@ -51,11 +63,15 @@ class ModelCategory {
         thumbnail = map["thumbnail"];
       }
     }
+    int groupCount = await ModelGroup.getCountInCategory(categoryId);
     return ModelCategory(
       id: categoryId,
       title: map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
       color: map.containsKey('color') ? map['color'] : "",
+      position: map.containsKey('position') ? map['position'] : 0,
+      archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
+      groupCount: groupCount,
       at: map.containsKey('at')
           ? map['at']
           : DateTime.now().toUtc().millisecondsSinceEpoch,
@@ -65,8 +81,8 @@ class ModelCategory {
   static Future<List<ModelCategory>> all() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
-    List<Map<String, dynamic>> rows =
-        await db.query("category", orderBy: "at DESC");
+    List<Map<String, dynamic>> rows = await db.query("category",
+        where: "title != ?", whereArgs: ["DND"], orderBy: "position ASC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
@@ -83,6 +99,22 @@ class ModelCategory {
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
 
+  static Future<ModelCategory?> getDND() async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows = await db.query(
+      "category",
+      where: "title = ?",
+      whereArgs: ["DND"],
+    );
+    if (rows.isNotEmpty) {
+      Map<String, dynamic> map = rows.first;
+      return await fromMap(map);
+    } else {
+      return null;
+    }
+  }
+
   static Future<ModelCategory?> get(String id) async {
     final dbHelper = DatabaseHelper.instance;
     List<Map<String, dynamic>> list = await dbHelper.getWithId("category", id);
@@ -95,14 +127,17 @@ class ModelCategory {
 
   Future<int> insert() async {
     final dbHelper = DatabaseHelper.instance;
-    return await dbHelper.insert("category", toMap());
+    Map<String, dynamic> map = toMap();
+    if (map["title"].isEmpty) {
+      map["title"] = "Category";
+    }
+    return await dbHelper.insert("category", map);
   }
 
   Future<int> update() async {
     final dbHelper = DatabaseHelper.instance;
     String? id = this.id;
     Map<String, dynamic> map = toMap();
-    map['at'] = DateTime.now().toUtc().millisecondsSinceEpoch;
     return await dbHelper.update("category", map, id);
   }
 

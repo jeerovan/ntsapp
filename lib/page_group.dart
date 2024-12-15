@@ -13,11 +13,10 @@ import 'package:path_provider/path_provider.dart';
 import 'app_config.dart';
 import 'common.dart';
 import 'model_category.dart';
+import 'model_category_group.dart';
 import 'model_item_group.dart';
 import 'model_setting.dart';
 import 'page_archived.dart';
-import 'page_category.dart';
-import 'page_db.dart';
 import 'page_items.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
@@ -42,15 +41,9 @@ class PageGroup extends StatefulWidget {
 class _PageGroupState extends State<PageGroup> {
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
-  final List<ModelGroup> _noteGroups = [];
+  final List<ModelCategoryGroup> _categoriesGroups = [];
   bool _isLoading = false;
   bool _hasInitiated = false;
-  bool _hasMore = true;
-  int _offset = 0;
-  final int _limit = 20;
-
-  // hide category
-  bool hideCategory = true;
 
   bool loadedSharedContents = false;
 
@@ -62,62 +55,21 @@ class _PageGroupState extends State<PageGroup> {
 
   void checkAuthAndLoad() {
     if (ModelSetting.getForKey("local_auth", "no") == "no") {
-      _setCategory();
+      loadCategoriesGroups();
     } else {
       _authenticateOnStart();
     }
   }
 
-  Future<void> _setCategory() async {
-    String? lastId = ModelSetting.getForKey("category", null);
-    if (lastId == null) {
-      List<ModelCategory> categories = await ModelCategory.all();
-      if (categories.isNotEmpty) {
-        lastId = categories.first.id!;
-      }
-    }
-    setCategory(lastId!);
-  }
-
-  Future<void> setCategory(String id) async {
-    ModelCategory? dbCategory = await ModelCategory.get(id);
-    setState(() {
-      category = dbCategory!;
-    });
-    initialLoad();
-  }
-
-  Future<void> initialLoad() async {
+  Future<void> loadCategoriesGroups() async {
     setState(() => _isLoading = true);
-    _noteGroups.clear();
-    final topItems = await ModelGroup.all(category!.id!, 0, _limit);
-    if (topItems.length == _limit) {
-      _offset += _limit;
-    } else {
-      _hasMore = false;
-    }
+    _categoriesGroups.clear();
+    final categoriesGroups = await ModelCategoryGroup.all();
     setState(() {
-      _noteGroups.addAll(topItems);
+      _categoriesGroups.addAll(categoriesGroups);
       _isLoading = false;
     });
     _hasInitiated = true;
-  }
-
-  Future<void> _fetchItems() async {
-    if (_isLoading || !_hasMore) return;
-    if (_offset == 0) _noteGroups.clear();
-    setState(() => _isLoading = true);
-
-    final newItems = await ModelGroup.all(category!.id!, _offset, _limit);
-    setState(() {
-      _noteGroups.addAll(newItems);
-      _isLoading = false;
-      if (newItems.length == _limit) {
-        _offset += _limit;
-      } else {
-        _hasMore = false;
-      }
-    });
   }
 
   Future<void> _authenticateOnStart() async {
@@ -134,7 +86,7 @@ class _PageGroupState extends State<PageGroup> {
         _exitApp();
       } else {
         isAuthenticated = true;
-        _setCategory();
+        loadCategoriesGroups();
       }
     } catch (e) {
       debugPrint("Authentication Error: $e");
@@ -156,7 +108,6 @@ class _PageGroupState extends State<PageGroup> {
     Navigator.of(context)
         .push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
-        categoryId: category!.id!,
         onUpdate: () {},
       ),
       settings: const RouteSettings(name: "CreateNoteGroup"),
@@ -164,18 +115,26 @@ class _PageGroupState extends State<PageGroup> {
         .then((noteGroup) {
       ModelGroup? group = noteGroup;
       if (group != null) {
-        navigateToItems(group);
+        navigateToNotes(group.id!, []);
       }
     });
   }
 
-  void navigateToItems(ModelGroup group) {
-    String groupId = group.id!;
+  void navigateToNotesGroups(ModelCategoryGroup categoryGroup) {
     List<String> sharedContents =
         loadedSharedContents || widget.sharedContents.isEmpty
             ? []
             : widget.sharedContents;
     loadedSharedContents = true;
+    if (categoryGroup.type == "group") {
+      String groupId = categoryGroup.id;
+      navigateToNotes(groupId, sharedContents);
+    } else {
+      // TODO navigate to category page
+    }
+  }
+
+  void navigateToNotes(String groupId, List<String> sharedContents) {
     Navigator.of(context)
         .push(MaterialPageRoute(
       builder: (context) => PageItems(
@@ -186,25 +145,22 @@ class _PageGroupState extends State<PageGroup> {
     ))
         .then((_) {
       setState(() {
-        initialLoad();
+        loadCategoriesGroups();
       });
     });
   }
 
-  void selectCategory() {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => PageCategory(onSelect: (id) {
-        ModelSetting.update("category", id);
-        setCategory(id);
-      }),
-      settings: const RouteSettings(name: "SelectCategory"),
-    ));
-  }
-
-  Future<void> archiveGroup(ModelGroup group) async {
-    group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
-    group.update();
-    _noteGroups.remove(group);
+  Future<void> archiveCategoryGroup(ModelCategoryGroup categoryGroup) async {
+    if (categoryGroup.type == "group") {
+      categoryGroup.group!.archivedAt =
+          DateTime.now().toUtc().millisecondsSinceEpoch;
+      await categoryGroup.group!.update();
+    } else {
+      categoryGroup.category!.archivedAt =
+          DateTime.now().toUtc().millisecondsSinceEpoch;
+      await categoryGroup.category!.update();
+    }
+    _categoriesGroups.remove(categoryGroup);
     if (mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -213,6 +169,23 @@ class _PageGroupState extends State<PageGroup> {
         ),
         duration: Duration(seconds: 1),
       ));
+    }
+  }
+
+  Future<void> editCategoryGroup(ModelCategoryGroup categoryGroup) async {
+    if (categoryGroup.type == "group") {
+      ModelGroup item = categoryGroup.group!;
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageGroupAddEdit(
+          group: item,
+          onUpdate: () {
+            setState(() {});
+          },
+        ),
+        settings: const RouteSettings(name: "EditNoteGroup"),
+      ));
+    } else {
+      // TODO navigate to edit category
     }
   }
 
@@ -235,7 +208,7 @@ class _PageGroupState extends State<PageGroup> {
                       settings: const RouteSettings(name: "Trash"),
                     ),
                   ).then((_) {
-                    initialLoad();
+                    loadCategoriesGroups();
                   });
                 },
               ),
@@ -281,7 +254,7 @@ class _PageGroupState extends State<PageGroup> {
                     } catch (e) {
                       debugPrint(e.toString());
                     }
-                    initialLoad();
+                    loadCategoriesGroups();
                   });
                 },
               ),
@@ -292,166 +265,98 @@ class _PageGroupState extends State<PageGroup> {
     );
   }
 
-  List<Widget> _buildDefaultActions(double size) {
-    return [
-      if (!hideCategory)
-        GestureDetector(
-          onTap: () {
-            selectCategory();
-          },
-          child: category == null
-              ? const SizedBox.shrink()
-              : category!.thumbnail == null
-                  ? Container(
-                      width: size,
-                      height: size,
-                      decoration: BoxDecoration(
-                        color: colorFromHex(category!.color),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      // Center the text inside the circle
-                      child: Text(
-                        category!.title[0].toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: size / 2,
-                          // Adjust font size relative to the circle size
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  : SizedBox(
-                      width: size,
-                      height: size,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Center(
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundImage: MemoryImage(category!.thumbnail!),
-                          ),
-                        ),
-                      ),
-                    ),
-        ),
-      if (debug)
-        IconButton(
-            icon: const Icon(Icons.reorder),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const DatabasePage(),
-              ));
-            }),
-    ];
-  }
-
   Future<void> _saveGroupPositions() async {
-    for (ModelGroup group in _noteGroups) {
-      group.position = _noteGroups.indexOf(group);
-      await group.update();
+    for (ModelCategoryGroup categoryGroup in _categoriesGroups) {
+      int position = _categoriesGroups.indexOf(categoryGroup);
+      categoryGroup.position = position;
+      if (categoryGroup.type == "group") {
+        final ModelGroup group = categoryGroup.group!;
+        group.position = position;
+        await group.update();
+      } else {
+        final ModelCategory category = categoryGroup.category!;
+        category.position = position;
+        await category.update();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double size = 40;
     return Scaffold(
       appBar: AppBar(
         title: Text(loadedSharedContents || widget.sharedContents.isEmpty
             ? "Note to self"
-            : "Select a group"),
-        actions: _buildDefaultActions(size),
+            : "Select..."),
       ),
       body: Column(
         children: [
           Expanded(
             child: Stack(
               children: [
-                NotificationListener<ScrollNotification>(
-                  onNotification: (ScrollNotification scrollInfo) {
-                    if (scrollInfo.metrics.pixels ==
-                            scrollInfo.metrics.maxScrollExtent &&
-                        !_isLoading) {
-                      _fetchItems();
-                    }
-                    return false;
-                  },
-                  child: ReorderableListView.builder(
-                    itemCount: _noteGroups.length,
-                    reverse: true,
-                    buildDefaultDragHandles: false,
-                    itemBuilder: (context, index) {
-                      final item = _noteGroups[index];
-                      return ReorderableDelayedDragStartListener(
+                ReorderableListView.builder(
+                  itemCount: _categoriesGroups.length,
+                  reverse: true,
+                  buildDefaultDragHandles: false,
+                  itemBuilder: (context, index) {
+                    final item = _categoriesGroups[index];
+                    return ReorderableDelayedDragStartListener(
+                      key: ValueKey(item.id),
+                      index: index,
+                      child: Slidable(
                         key: ValueKey(item.id),
-                        index: index,
-                        child: Slidable(
-                          key: ValueKey(item.id),
-                          startActionPane: ActionPane(
-                            // A motion is a widget used to control how the pane animates.
-                            motion: const StretchMotion(),
-                            children: [
-                              SlidableAction(
-                                onPressed: (context) {
-                                  archiveGroup(item);
-                                },
-                                backgroundColor: Color(0xFFFE4A49),
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                              ),
-                              SlidableAction(
-                                onPressed: (context) {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => PageGroupAddEdit(
-                                      categoryId: item.categoryId,
-                                      group: item,
-                                      onUpdate: () {
-                                        setState(() {});
-                                      },
-                                    ),
-                                    settings: const RouteSettings(
-                                        name: "EditNoteGroup"),
-                                  ));
-                                },
-                                backgroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .inversePrimary,
-                                foregroundColor: Colors.white,
-                                icon: Icons.edit,
-                              ),
-                            ],
-                          ),
-                          child: GestureDetector(
-                            onTap: () {
-                              navigateToItems(item);
-                            },
-                            child: WidgetGroup(
-                                group: item, showLastItemSummary: true),
-                          ),
+                        startActionPane: ActionPane(
+                          // A motion is a widget used to control how the pane animates.
+                          motion: const StretchMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (context) {
+                                archiveCategoryGroup(item);
+                              },
+                              backgroundColor: Color(0xFFFE4A49),
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete,
+                            ),
+                            SlidableAction(
+                              onPressed: (context) {
+                                editCategoryGroup(item);
+                              },
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.inversePrimary,
+                              foregroundColor: Colors.white,
+                              icon: Icons.edit,
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    onReorder: (int oldIndex, int newIndex) {
-                      setState(() {
-                        // Adjust newIndex if dragging an item down
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
+                        child: GestureDetector(
+                          onTap: () {
+                            navigateToNotesGroups(item);
+                          },
+                          child: WidgetCategoryGroup(
+                              group: item, showSummary: true),
+                        ),
+                      ),
+                    );
+                  },
+                  onReorder: (int oldIndex, int newIndex) {
+                    setState(() {
+                      // Adjust newIndex if dragging an item down
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
 
-                        // Remove the item from the old position
-                        final item = _noteGroups.removeAt(oldIndex);
+                      // Remove the item from the old position
+                      final item = _categoriesGroups.removeAt(oldIndex);
 
-                        // Insert the item at the new position
-                        _noteGroups.insert(newIndex, item);
+                      // Insert the item at the new position
+                      _categoriesGroups.insert(newIndex, item);
 
-                        // Print positions after reordering
-                        _saveGroupPositions();
-                      });
-                    },
-                  ),
+                      // Print positions after reordering
+                      _saveGroupPositions();
+                    });
+                  },
                 ),
-                if (_hasInitiated && _noteGroups.isEmpty && !_isLoading)
+                if (_hasInitiated && _categoriesGroups.isEmpty && !_isLoading)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -498,7 +403,7 @@ class _PageGroupState extends State<PageGroup> {
                       ),
                       label: const Text("Menu"),
                     ),
-                    if (_noteGroups.isNotEmpty)
+                    if (_categoriesGroups.isNotEmpty)
                       TextButton.icon(
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(

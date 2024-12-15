@@ -59,6 +59,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         color TEXT,
         position INTEGER,
+        archived_at INTEGER,
         at INTEGER,
         thumbnail TEXT
       )
@@ -134,6 +135,8 @@ class DatabaseHelper {
       "title": "DND",
       "color": hexCode,
       "thumbnail": null,
+      "position": 0,
+      "archived_at": 0,
       "at": at
     });
   }
@@ -194,6 +197,8 @@ class DatabaseHelper {
       "title": "DND",
       "color": colorToHex(color),
       "thumbnail": null,
+      "position": 0,
+      "archived_at": 0,
       "at": at
     });
 
@@ -377,6 +382,8 @@ class DatabaseHelper {
 
   Future<void> dbMigration_9(Database db) async {
     await db.execute("ALTER TABLE category ADD COLUMN position INTEGER");
+    await db.execute("ALTER TABLE category ADD COLUMN archived_at INTEGER");
+
     await db.execute("ALTER TABLE itemgroup ADD COLUMN position INTEGER");
   }
 }

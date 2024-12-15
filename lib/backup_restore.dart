@@ -122,7 +122,7 @@ Future<String> unZipFiles(Map<String, String> data) async {
 
 Future<String> restoreDbFiles(String baseDirPath) async {
   String error = "";
-  // clean up db
+  // clean up db when restoring on fresh installation
   int groupsCount = await ModelGroup.getAllCount();
   if (groupsCount == 0) {
     final dbHelper = DatabaseHelper.instance;
@@ -237,7 +237,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
     String categoryId = category.id!;
 
     // create note groups
-    int groupCount = await ModelGroup.getCount(categoryId);
+    int groupCount = await ModelGroup.getCountInCategory(categoryId);
     List<Map<String, dynamic>> groupRows = await oldDb.query(
       "notegroups",
     );

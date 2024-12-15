@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
 
 import 'model_item.dart';
@@ -21,13 +22,9 @@ class PageArchivedGroups extends StatefulWidget {
 }
 
 class _PageArchivedGroupsState extends State<PageArchivedGroups> {
-  final List<ModelGroup> _items = [];
+  final List<ModelGroup> _archivedGroups = [];
   final List<ModelGroup> _selection = [];
   bool _isSelecting = false;
-  bool _isLoading = false;
-  bool _hasMore = true;
-  int _offset = 0;
-  final int _limit = 20;
 
   @override
   void initState() {
@@ -54,36 +51,10 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
   }
 
   Future<void> fetchArchivedGroupsOnInit() async {
-    _items.clear();
+    _archivedGroups.clear();
+    final groups = await ModelGroup.getArchived();
     setState(() {
-      _isLoading = true;
-    });
-    final topItems = await ModelGroup.getArchived(0, _limit);
-    if (topItems.length == _limit) {
-      _offset += _limit;
-    } else {
-      _hasMore = false;
-    }
-    setState(() {
-      _items.addAll(topItems);
-      _isLoading = false;
-    });
-  }
-
-  Future<void> fetchArchivedOnScroll() async {
-    if (_isLoading || !_hasMore) return;
-    if (_offset == 0) _items.clear();
-    setState(() => _isLoading = true);
-
-    final newItems = await ModelGroup.getArchived(_offset, _limit);
-    setState(() {
-      _items.addAll(newItems);
-      if (newItems.length == _limit) {
-        _offset += _limit;
-      } else {
-        _hasMore = false;
-      }
-      _isLoading = false;
+      _archivedGroups.addAll(groups);
     });
   }
 
@@ -129,7 +100,7 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
         await item.delete();
       }
       await group.delete();
-      _items.remove(group);
+      _archivedGroups.remove(group);
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -153,32 +124,32 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-            fetchArchivedOnScroll();
-          }
-          return false;
+      body: ListView.builder(
+        itemCount:
+            _archivedGroups.length, // Additional item for the loading indicator
+        itemBuilder: (context, index) {
+          final archivedGroup = _archivedGroups[index];
+          final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
+              id: archivedGroup.id!,
+              type: "group",
+              position: archivedGroup.position!,
+              color: archivedGroup.color,
+              title: archivedGroup.title);
+          return GestureDetector(
+            onTap: () {
+              onItemTapped(archivedGroup);
+            },
+            child: Container(
+              width: double.infinity,
+              color: _selection.contains(archivedGroup)
+                  ? Theme.of(context).colorScheme.inversePrimary
+                  : Colors.transparent,
+              margin: const EdgeInsets.symmetric(vertical: 1),
+              child:
+                  WidgetCategoryGroup(group: categoryGroup, showSummary: false),
+            ),
+          );
         },
-        child: ListView.builder(
-          itemCount: _items.length, // Additional item for the loading indicator
-          itemBuilder: (context, index) {
-            final item = _items[index];
-            return GestureDetector(
-              onTap: () {
-                onItemTapped(item);
-              },
-              child: Container(
-                width: double.infinity,
-                color: _selection.contains(item)
-                    ? Theme.of(context).colorScheme.inversePrimary
-                    : Colors.transparent,
-                margin: const EdgeInsets.symmetric(vertical: 1),
-                child: WidgetGroup(group: item, showLastItemSummary: false),
-              ),
-            );
-          },
-        ),
       ),
     );
   }
