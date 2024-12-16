@@ -36,23 +36,6 @@ class ModelItem {
     this.at,
   });
 
-  factory ModelItem.init() {
-    return ModelItem(
-      id: null,
-      groupId: "",
-      text: "",
-      thumbnail: null,
-      starred: 0,
-      pinned: 0,
-      archivedAt: 0,
-      type: ItemType.text,
-      state: 0,
-      data: {"path": "assets/image.webp"},
-      replyOn: null,
-      at: DateTime.now().toUtc().millisecondsSinceEpoch,
-    );
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,

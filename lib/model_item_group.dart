@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category.dart';
@@ -36,23 +37,6 @@ class ModelGroup {
     this.data,
     this.state,
   });
-
-  factory ModelGroup.init() {
-    return ModelGroup(
-      id: null,
-      categoryId: "",
-      title: "",
-      thumbnail: null,
-      pinned: 0,
-      position: 0,
-      archivedAt: 0,
-      color: "#000000",
-      at: DateTime.now().toUtc().millisecondsSinceEpoch,
-      lastItem: null,
-      data: null,
-      state: 0,
-    );
-  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -93,22 +77,37 @@ class ModelGroup {
         dataMap = map['data'];
       }
     }
-    ModelItem? item = await ModelItem.getLatestInGroup(groupId);
+
+    ModelCategory dndCategory = await ModelCategory.getDND();
+    String categoryId =
+        map.containsKey('category_id') ? map['category_id'] : dndCategory.id;
+    int groupCount = await getCountInCategory(categoryId) + 1;
+
+    String colorCode;
+    if (map.containsKey('color')) {
+      colorCode = map['color'];
+    } else {
+      Color color = getMaterialColor(groupCount + 1);
+      colorCode = colorToHex(color);
+    }
+
+    ModelItem? lastItem = await ModelItem.getLatestInGroup(groupId);
     return ModelGroup(
       id: groupId,
-      categoryId: map.containsKey('category_id') ? map['category_id'] : "",
+      categoryId: categoryId,
       title: map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
-      position: map.containsKey('position') ? map['position'] : 0,
+      position:
+          map.containsKey('position') ? map['position'] : groupCount * 1000,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
-      color: map.containsKey('color') ? map['color'] : "#000000",
+      color: colorCode,
       state: map.containsKey('state') ? map['state'] : 0,
       data: dataMap,
       at: map.containsKey('at')
           ? map['at']
           : DateTime.now().toUtc().millisecondsSinceEpoch,
-      lastItem: item,
+      lastItem: lastItem,
     );
   }
 
@@ -124,7 +123,7 @@ class ModelGroup {
       "itemgroup",
       where: "archived_at > ?",
       whereArgs: [0],
-      orderBy: 'at DESC',
+      orderBy: 'position ASC',
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
@@ -135,7 +134,7 @@ class ModelGroup {
     List<Map<String, dynamic>> rows = await db.query("itemgroup",
         where: 'category_id = ? AND archived_at = 0',
         whereArgs: [categoryId],
-        orderBy: "position ASC, at DESC");
+        orderBy: "position ASC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 

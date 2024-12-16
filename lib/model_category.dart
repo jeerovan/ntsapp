@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:uuid/uuid.dart';
 
+import 'common.dart';
 import 'database_helper.dart';
 import 'model_item_group.dart';
 
@@ -27,19 +29,6 @@ class ModelCategory {
     this.at,
   });
 
-  factory ModelCategory.init() {
-    return ModelCategory(
-      id: null,
-      title: "",
-      thumbnail: null,
-      color: "",
-      position: 0,
-      archivedAt: 0,
-      groupCount: 0,
-      at: DateTime.now().toUtc().millisecondsSinceEpoch,
-    );
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -55,6 +44,7 @@ class ModelCategory {
   static Future<ModelCategory> fromMap(Map<String, dynamic> map) async {
     Uuid uuid = const Uuid();
     String categoryId = map.containsKey("id") ? map['id'] : uuid.v4();
+    int categoryCount = await getCount() + 1;
     Uint8List? thumbnail;
     if (map.containsKey("thumbnail")) {
       if (map["thumbnail"] is String) {
@@ -63,13 +53,21 @@ class ModelCategory {
         thumbnail = map["thumbnail"];
       }
     }
+    String colorCode;
+    if (map.containsKey('color')) {
+      colorCode = map['color'];
+    } else {
+      Color color = getMaterialColor(categoryCount + 1);
+      colorCode = colorToHex(color);
+    }
     int groupCount = await ModelGroup.getCountInCategory(categoryId);
     return ModelCategory(
       id: categoryId,
       title: map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
-      color: map.containsKey('color') ? map['color'] : "",
-      position: map.containsKey('position') ? map['position'] : 0,
+      color: colorCode,
+      position:
+          map.containsKey('position') ? map['position'] : categoryCount * 1000,
       archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
       groupCount: groupCount,
       at: map.containsKey('at')
@@ -82,9 +80,19 @@ class ModelCategory {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("category",
-        where: "title != ?",
-        whereArgs: ["DND"],
-        orderBy: "position ASC,at DESC");
+        where: "title != ?", whereArgs: ["DND"], orderBy: "position ASC");
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
+  static Future<List<ModelCategory>> getArchived() async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows = await db.query(
+      "category",
+      where: "archived_at > ?",
+      whereArgs: [0],
+      orderBy: 'position ASC',
+    );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 

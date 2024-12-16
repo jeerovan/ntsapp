@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/page_archived_category.dart';
 
 import 'page_archived_groups.dart';
 import 'page_archived_items.dart';
@@ -31,7 +32,7 @@ class _PageArchivedState extends State<PageArchived> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Number of tabs
+      length: 3, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Trash"),
@@ -62,6 +63,7 @@ class _PageArchivedState extends State<PageArchived> {
             tabs: const [
               Tab(text: "Notes"), // Tab for Notes
               Tab(text: "Groups"), // Tab for Groups
+              Tab(text: 'Categories'),
             ],
           ),
         ),
@@ -79,6 +81,12 @@ class _PageArchivedState extends State<PageArchived> {
               setDeleteCallback: (callback) => onDelete = callback,
               setRestoreCallback: (callback) => onRestore = callback,
             ), // Content for Groups tab
+            PageArchivedCategories(
+              onSelectionChange: (isSelected) =>
+                  _isAnyItemSelected.value = isSelected,
+              setDeleteCallback: (callback) => onDelete = callback,
+              setRestoreCallback: (callback) => onRestore = callback,
+            ),
           ],
         ),
       ),

@@ -248,10 +248,13 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add),
+                              Icon(Icons.swap_horiz),
                               Text("Change category"),
                             ],
                           ),
+                        ),
+                        const SizedBox(
+                          height: 5,
                         ),
                         TextButton(
                             onPressed: () {
@@ -260,7 +263,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.remove),
+                                Icon(Icons.clear),
                                 Text("Remove category"),
                               ],
                             ))

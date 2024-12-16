@@ -248,7 +248,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
         if (groupUuid == null) continue;
         final int at = groupRow["updatedAt"];
         Color color = getMaterialColor(groupCount);
-        int position = order ?? 0;
+        int position = order ?? groupCount * 1000;
         if (groupUuid.isNotEmpty && title.isNotEmpty) {
           ModelGroup newGroup = await ModelGroup.fromMap({
             "id": groupUuid,

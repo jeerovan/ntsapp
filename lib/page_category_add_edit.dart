@@ -112,11 +112,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
   void saveCategory() async {
     if (itemChanged) {
       if (category == null) {
-        int count = await ModelCategory.getCount();
-        Color color = getMaterialColor(count + 1);
-        String hexCode = colorToHex(color);
         ModelCategory newCategory = await ModelCategory.fromMap(
-            {"title": title, "color": hexCode, "thumbnail": thumbnail});
+            {"title": title, "color": colorCode, "thumbnail": thumbnail});
         await newCategory.insert();
       } else {
         category!.thumbnail = thumbnail;

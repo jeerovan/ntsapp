@@ -226,7 +226,7 @@ class DatabaseHelper {
             thumbnail = base64Encode(thumbnailBytes!);
           }
         }
-        int position = order ?? 0;
+        int position = order ?? groupCount * 1000;
         Color color = getMaterialColor(groupCount);
         if (groupUuid.isNotEmpty && title.isNotEmpty) {
           await db.insert("itemgroup", {
