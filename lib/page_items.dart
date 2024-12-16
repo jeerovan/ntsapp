@@ -78,6 +78,7 @@ class _PageItemsState extends State<PageItems> {
 
   bool isCreatingTask = false;
   bool showDateTime = true;
+  bool showNoteBorder = true;
 
   final Map<String, bool> _filters = {
     "pinned": false,
@@ -103,7 +104,12 @@ class _PageItemsState extends State<PageItems> {
     noteGroup = widget.group;
     Map<String, dynamic>? data = noteGroup.data;
     if (data != null) {
-      showDateTime = data["date_time"] == 1 ? true : false;
+      if (data.containsKey("date_time")) {
+        showDateTime = data["date_time"] == 1 ? true : false;
+      }
+      if (data.containsKey("note_border")) {
+        showNoteBorder = data["note_border"] == 1 ? true : false;
+      }
     }
 
     _audioRecorder = AudioRecorder();
@@ -1266,6 +1272,22 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  Future<void> setShowNoteBorder(bool show) async {
+    setState(() {
+      showNoteBorder = show;
+    });
+    int showBorder = showNoteBorder ? 1 : 0;
+    Map<String, dynamic>? data = noteGroup.data;
+    if (data != null) {
+      data["note_border"] = showBorder;
+      noteGroup.data = data;
+      await noteGroup.update();
+    } else {
+      noteGroup.data = {"note_border": showBorder};
+      await noteGroup.update();
+    }
+  }
+
   List<Widget> _buildAppbarDefaultOptions() {
     return [
       PopupMenuButton<int>(
@@ -1279,6 +1301,9 @@ class _PageItemsState extends State<PageItems> {
               break;
             case 2:
               setShowDateTime(!showDateTime);
+              break;
+            case 3:
+              setShowNoteBorder(!showNoteBorder);
               break;
           }
         },
@@ -1333,6 +1358,35 @@ class _PageItemsState extends State<PageItems> {
                     onChanged: (bool value) {
                       setState(() {
                         setShowDateTime(value);
+                      });
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+          PopupMenuItem<int>(
+            value: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.rectangle_outlined,
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    const Text('Note Border'),
+                  ],
+                ),
+                StatefulBuilder(builder: (context, setState) {
+                  return Switch(
+                    value: showNoteBorder,
+                    onChanged: (bool value) {
+                      setState(() {
+                        setShowNoteBorder(value);
                       });
                     },
                   );
@@ -1492,9 +1546,11 @@ class _PageItemsState extends State<PageItems> {
                                         vertical: 5, horizontal: 10),
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .surfaceContainer,
+                                      color: showNoteBorder
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainer
+                                          : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Column(
@@ -1608,12 +1664,12 @@ class _PageItemsState extends State<PageItems> {
       case ItemType.completedTask:
         return ItemWidgetTask(
           item: item,
-          showTimestamp: showDateTime,
+          showTimestamp: showTimestamp,
         );
       case ItemType.task:
         return ItemWidgetTask(
           item: item,
-          showTimestamp: showDateTime,
+          showTimestamp: showTimestamp,
         );
       default:
         return const SizedBox.shrink();
