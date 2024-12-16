@@ -48,9 +48,9 @@ class _PageItemsState extends State<PageItems> {
   final List<ModelItem> _selectedItems = [];
   bool _hasNotesSelected = false;
   bool selectionHasStarredItems = true;
-  bool selectionHasTaskItems = true;
-  bool selectionHasTextItems = false;
   bool selectionHasPinnedItem = true;
+  bool selectionHasOnlyTaskItems = true;
+  bool selectionHasOnlyTextItems = true;
   bool selectionHasOnlyTextOrTaskItem = true;
 
   final TextEditingController _textController = TextEditingController();
@@ -603,8 +603,8 @@ class _PageItemsState extends State<PageItems> {
 
   void updateSelectionBools() {
     selectionHasStarredItems = true;
-    selectionHasTaskItems = true;
-    selectionHasTextItems = false;
+    selectionHasOnlyTaskItems = true;
+    selectionHasOnlyTextItems = true;
     selectionHasPinnedItem = true;
     selectionHasOnlyTextOrTaskItem = true;
     for (ModelItem item in _selectedItems) {
@@ -613,12 +613,14 @@ class _PageItemsState extends State<PageItems> {
       }
       if (item.type.value < ItemType.task.value ||
           item.type.value > ItemType.task.value + 10000) {
-        selectionHasTaskItems = false;
+        selectionHasOnlyTaskItems = false;
       }
       if (item.type.value > ItemType.text.value &&
           item.type.value < ItemType.task.value) {
-        selectionHasTextItems = true;
         selectionHasOnlyTextOrTaskItem = false;
+      }
+      if (item.type != ItemType.text) {
+        selectionHasOnlyTextItems = false;
       }
       if (item.pinned! == 0) {
         selectionHasPinnedItem = false;
@@ -740,8 +742,62 @@ class _PageItemsState extends State<PageItems> {
     clearSelection();
   }
 
+  Future<void> updateNoteText(ModelItem item, String newText) async {
+    item.text = newText;
+    await item.update();
+  }
+
+  void editNote() {
+    ModelItem item = _selectedItems.first;
+    showEditNotePopup(context, (text) {
+      setState(() {
+        item.text = text;
+        updateNoteText(item, text);
+      });
+    }, item.text);
+    clearSelection();
+  }
+
+  void showEditNotePopup(BuildContext context, Function(String) onSubmit,
+      [String initialText = ""]) {
+    final TextEditingController controller =
+        TextEditingController(text: initialText);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Edit Note"),
+          content: TextField(
+            minLines: 1,
+            maxLines: null,
+            controller: controller,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
+              onPressed: () {
+                onSubmit(controller.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> updateSelectedItemsTaskType() async {
-    ItemType setType = selectionHasTaskItems ? ItemType.text : ItemType.task;
+    ItemType setType =
+        selectionHasOnlyTaskItems ? ItemType.text : ItemType.task;
     setState(() {
       for (ModelItem item in _selectedItems) {
         if (setType == ItemType.text) {
@@ -1201,49 +1257,6 @@ class _PageItemsState extends State<PageItems> {
     ];
   }
 
-  List<Widget> _buildAppbarSelectionOptions() {
-    return [
-      if (selectionHasOnlyTextOrTaskItem)
-        IconButton(
-          onPressed: () {
-            copyToClipboard();
-          },
-          icon: const Icon(Icons.copy),
-        ),
-      if (!selectionHasTextItems)
-        IconButton(
-          onPressed: () {
-            updateSelectedItemsTaskType();
-          },
-          icon: selectionHasTaskItems
-              ? const Icon(Icons.title)
-              : const Icon(Icons.check_circle),
-        ),
-      IconButton(
-        onPressed: () {
-          updateSelectedItemsStarred();
-        },
-        icon: selectionHasStarredItems
-            ? iconStarCrossed()
-            : const Icon(Icons.star_outline),
-      ),
-      IconButton(
-        onPressed: () {
-          archiveSelectedItems();
-        },
-        icon: const Icon(Icons.delete_outline),
-      ),
-      IconButton(
-        onPressed: () {
-          updateSelectedItemsPinned();
-        },
-        icon: selectionHasPinnedItem
-            ? iconPinCrossed()
-            : const Icon(Icons.push_pin_outlined),
-      ),
-    ];
-  }
-
   Future<void> replyOnSwipe(ModelItem item) async {
     setState(() {
       replyOnItem = item;
@@ -1280,41 +1293,37 @@ class _PageItemsState extends State<PageItems> {
     bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
       appBar: AppBar(
-        actions: _hasNotesSelected
-            ? _buildAppbarSelectionOptions()
-            : _buildAppbarDefaultOptions(),
-        title: _hasNotesSelected
-            ? const SizedBox.shrink()
-            : Row(
-                children: [
-                  noteGroup.thumbnail == null
-                      ? Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            color: colorFromHex(noteGroup.color),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                        )
-                      : Center(
-                          child: CircleAvatar(
-                            radius: size / 2,
-                            backgroundImage: MemoryImage(noteGroup.thumbnail!),
-                          ),
-                        ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      noteGroup.title,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
+        actions: _buildAppbarDefaultOptions(),
+        title: Row(
+          children: [
+            noteGroup.thumbnail == null
+                ? Container(
+                    width: size,
+                    height: size,
+                    decoration: BoxDecoration(
+                      color: colorFromHex(noteGroup.color),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                  )
+                : Center(
+                    child: CircleAvatar(
+                      radius: size / 2,
+                      backgroundImage: MemoryImage(noteGroup.thumbnail!),
                     ),
                   ),
-                ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                noteGroup.title,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                ),
               ),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -1459,7 +1468,7 @@ class _PageItemsState extends State<PageItems> {
             ),
           ),
           // Input box with attachments and send button
-          _hasNotesSelected ? _buildSelectionClear() : _buildInputBox(),
+          _hasNotesSelected ? _buildSelectionOptions() : _buildInputBox(),
         ],
       ),
     );
@@ -1586,27 +1595,74 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
-  Widget _buildSelectionClear() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: IconButton(
+  Widget _buildSelectionOptions() {
+    return Padding(
+      padding: const EdgeInsets.all(14.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
               onPressed: () {
                 clearSelection();
               },
               icon: const Icon(
                 Icons.clear,
-                color: Colors.black,
               )),
-        ),
+          Row(
+            children: [
+              if (selectionHasOnlyTextOrTaskItem)
+                IconButton(
+                  onPressed: () {
+                    copyToClipboard();
+                  },
+                  icon: const Icon(Icons.copy),
+                ),
+              if (selectionHasOnlyTextOrTaskItem)
+                IconButton(
+                  onPressed: () {
+                    updateSelectedItemsTaskType();
+                  },
+                  icon: selectionHasOnlyTaskItems
+                      ? const Icon(Icons.title)
+                      : const Icon(Icons.check_circle),
+                ),
+              if (selectionHasOnlyTextOrTaskItem || _selectedItems.length == 1)
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.share),
+                ),
+              if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
+                IconButton(
+                  onPressed: () {
+                    editNote();
+                  },
+                  icon: const Icon(Icons.edit),
+                ),
+              IconButton(
+                onPressed: () {
+                  updateSelectedItemsStarred();
+                },
+                icon: selectionHasStarredItems
+                    ? iconStarCrossed()
+                    : const Icon(Icons.star_outline),
+              ),
+              IconButton(
+                onPressed: () {
+                  archiveSelectedItems();
+                },
+                icon: const Icon(Icons.delete_outline),
+              ),
+              IconButton(
+                onPressed: () {
+                  updateSelectedItemsPinned();
+                },
+                icon: selectionHasPinnedItem
+                    ? iconPinCrossed()
+                    : const Icon(Icons.push_pin_outlined),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
