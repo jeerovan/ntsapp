@@ -524,11 +524,17 @@ class VideoInfoExtractor {
   }
 }
 
-Future<void> openLocationInMap(double latitude, double longitude) async {
-  final googleMapsUri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
-  final appleMapsUri =
-      Uri.parse('https://maps.apple.com/?q=$latitude,$longitude');
+Map<String, String> getMapUrls(double lat, double lng) {
+  return {
+    "google": 'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    "apple": 'https://maps.apple.com/?q=$lat,$lng'
+  };
+}
+
+Future<void> openLocationInMap(double lat, double lng) async {
+  Map<String, String> mapUrls = getMapUrls(lat, lng);
+  final googleMapsUri = Uri.parse(mapUrls["google"]!);
+  final appleMapsUri = Uri.parse(mapUrls["apple"]!);
 
   if (await canLaunchUrl(googleMapsUri)) {
     await launchUrl(googleMapsUri);

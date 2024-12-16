@@ -37,11 +37,12 @@ class ModelSearchItem {
         .where((token) => token.isNotEmpty) // Remove empty tokens
         .toList();
     // Build the WHERE clause with AND logic
-    String whereClause =
+    String conditions =
         tokens.map((token) => "text LIKE '%$token%'").join(" AND ");
+    String whereClause = tokens.isEmpty ? "" : " AND $conditions";
     List<Map<String, dynamic>> rows = await db.rawQuery(
       '''SELECT * FROM item
-         WHERE type != ${ItemType.date.value} AND $whereClause
+         WHERE type != ${ItemType.date.value} $whereClause
          ORDER BY at DESC
          LIMIT $limit
          OFFSET $offset

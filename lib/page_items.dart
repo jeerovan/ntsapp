@@ -15,6 +15,7 @@ import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:siri_wave/siri_wave.dart';
 
 import 'common.dart';
@@ -722,7 +723,7 @@ class _PageItemsState extends State<PageItems> {
     clearSelection();
   }
 
-  Future<void> copyToClipboard() async {
+  String getTextsFromSelectedItems() {
     List<String> texts = [];
     for (ModelItem item in _selectedItems) {
       if (item.type == ItemType.text ||
@@ -731,7 +732,11 @@ class _PageItemsState extends State<PageItems> {
         texts.add(item.text);
       }
     }
-    String textToCopy = texts.reversed.join("\n");
+    return texts.reversed.join("\n");
+  }
+
+  Future<void> copyToClipboard() async {
+    String textToCopy = getTextsFromSelectedItems();
     Clipboard.setData(ClipboardData(text: textToCopy));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -739,6 +744,89 @@ class _PageItemsState extends State<PageItems> {
         duration: Duration(seconds: 1),
       ),
     );
+    clearSelection();
+  }
+
+  void shareNotes() {
+    List<String> texts = [];
+    for (ModelItem item in _selectedItems) {
+      switch (item.type) {
+        case ItemType.text:
+          texts.add(item.text);
+          break;
+        case ItemType.task:
+          texts.add(item.text);
+          break;
+        case ItemType.completedTask:
+          texts.add(item.text);
+          break;
+        case ItemType.location:
+          Map<String, dynamic> locationData = item.data!;
+          double lat = locationData["lat"];
+          double lng = locationData["lng"];
+          Map<String, String> mapUrls = getMapUrls(lat, lng);
+          List<String> locationParts = [
+            "Location:",
+            mapUrls["google"]!,
+            mapUrls["apple"]!
+          ];
+          texts.add(locationParts.join("\n"));
+          break;
+        case ItemType.contact:
+          Map<String, dynamic> contactData = item.data!;
+          String phones =
+              ["Contact:", contactData["phones"].join("\n")].join("\n");
+          String emails =
+              ["Emails:", contactData["emails"].join("\n")].join("\n");
+          String addresses =
+              ["Addresses:", contactData["addresses"].join("\n")].join("\n");
+          texts
+              .add([contactData["name"], phones, emails, addresses].join("\n"));
+          break;
+        default:
+          break;
+      }
+    }
+    List<XFile> medias = [];
+    for (ModelItem item in _selectedItems) {
+      switch (item.type) {
+        case ItemType.image:
+          Map<String, dynamic> imageData = item.data!;
+          String imagePath = imageData["path"];
+          File imageFile = File(imagePath);
+          if (imageFile.existsSync()) {
+            medias.add(XFile(imagePath));
+          }
+          break;
+        case ItemType.audio:
+          Map<String, dynamic> audioData = item.data!;
+          String audioPath = audioData["path"];
+          File audioFile = File(audioPath);
+          if (audioFile.existsSync()) {
+            medias.add(XFile(audioPath));
+          }
+          break;
+        case ItemType.video:
+          Map<String, dynamic> videoData = item.data!;
+          String videoPath = videoData["path"];
+          File videoFile = File(videoPath);
+          if (videoFile.existsSync()) {
+            medias.add(XFile(videoPath));
+          }
+          break;
+        case ItemType.document:
+          Map<String, dynamic> docData = item.data!;
+          String docPath = docData["path"];
+          File docFile = File(docPath);
+          if (docFile.existsSync()) {
+            medias.add(XFile(docPath));
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    Share.shareXFiles(medias, text: texts.join("\n"));
     clearSelection();
   }
 
@@ -1626,11 +1714,12 @@ class _PageItemsState extends State<PageItems> {
                       ? const Icon(Icons.title)
                       : const Icon(Icons.check_circle),
                 ),
-              if (selectionHasOnlyTextOrTaskItem || _selectedItems.length == 1)
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.share),
-                ),
+              IconButton(
+                onPressed: () {
+                  shareNotes();
+                },
+                icon: const Icon(Icons.share),
+              ),
               if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
                 IconButton(
                   onPressed: () {
@@ -1773,6 +1862,16 @@ class _PageItemsState extends State<PageItems> {
             onTap: () async {
               if (_isRecording && !isCreatingTask) {
                 await _stopRecording();
+              }
+              if (!_isTyping && !isCreatingTask && !_isRecording) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Press long to start recording.'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                }
               }
             },
             child: Align(

@@ -259,6 +259,6 @@ class SettingsPageState extends State<SettingsPage> {
   void _share() {
     const String appLink =
         'https://play.google.com/store/apps/details?id=com.makenotetoself';
-    Share.share("Make a note to yourself: $appLink");
+    Share.share("Make a note to self: $appLink");
   }
 }
