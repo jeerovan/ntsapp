@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
@@ -129,6 +130,9 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
         itemCount: categoryGroups.length,
         reverse: true,
         buildDefaultDragHandles: false,
+        onReorderStart: (_) {
+          HapticFeedback.vibrate();
+        },
         itemBuilder: (context, index) {
           final ModelGroup group = categoryGroups[index];
           final ModelCategoryGroup categoryGroup = ModelCategoryGroup(

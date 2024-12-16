@@ -16,7 +16,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:siri_wave/siri_wave.dart';
-import 'package:vibration/vibration.dart';
 
 import 'common.dart';
 import 'model_item.dart';
@@ -790,10 +789,7 @@ class _PageItemsState extends State<PageItems> {
         _recordingDuration = 0;
       });
       _startRecordingTimer();
-      bool? hasVibrator = await Vibration.hasVibrator();
-      if (hasVibrator != null && hasVibrator) {
-        Vibration.vibrate();
-      }
+      HapticFeedback.vibrate();
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

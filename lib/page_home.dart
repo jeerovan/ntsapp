@@ -319,6 +319,9 @@ class _PageGroupState extends State<PageGroup> {
                   itemCount: _categoriesGroups.length,
                   reverse: true,
                   buildDefaultDragHandles: false,
+                  onReorderStart: (_) {
+                    HapticFeedback.vibrate();
+                  },
                   itemBuilder: (context, index) {
                     final item = _categoriesGroups[index];
                     return ReorderableDelayedDragStartListener(
