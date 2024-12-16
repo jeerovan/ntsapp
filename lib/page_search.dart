@@ -117,7 +117,7 @@ class SearchPageState extends State<SearchPage> {
                             item.group!.archivedAt == 0) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => PageItems(
-                                  groupId: item.group!.id!,
+                                  group: item.group!,
                                   sharedContents: const [],
                                   loadItemIdOnInit: item.item.id!),
                               settings: const RouteSettings(name: "Notes")));

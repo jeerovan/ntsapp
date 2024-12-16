@@ -7,7 +7,7 @@ import 'package:ntsapp/enum_item_type.dart';
 import 'common.dart';
 import 'model_item.dart';
 import 'model_setting.dart';
-import 'page_group.dart';
+import 'page_home.dart';
 
 class PageMediaMigration extends StatefulWidget {
   final bool isDarkMode;

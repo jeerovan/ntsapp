@@ -3,6 +3,7 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 
 import 'model_item.dart';
+import 'model_item_group.dart';
 import 'model_setting.dart';
 import 'page_items.dart';
 import 'widgets_item.dart';
@@ -82,7 +83,8 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     });
   }
 
-  void onItemTapped(ModelItem item) {
+  Future<void> onItemTapped(ModelItem item) async {
+    ModelGroup? group = await ModelGroup.get(item.groupId);
     if (_isSelecting) {
       setState(() {
         if (_selection.contains(item)) {
@@ -95,11 +97,10 @@ class _PageStarredItemsState extends State<PageStarredItems> {
         }
       });
     } else {
+      if (!mounted || group == null) return;
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageItems(
-            groupId: item.groupId,
-            sharedContents: const [],
-            loadItemIdOnInit: item.id),
+            group: group, sharedContents: const [], loadItemIdOnInit: item.id),
         settings: const RouteSettings(name: "Notes"),
       ));
     }

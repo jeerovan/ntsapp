@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/page_category.dart';
@@ -76,16 +75,16 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   }
 
   Future<void> saveGroup(String categoryId) async {
-    ModelGroup? updatedGroup;
+    ModelGroup? newGroup;
     if (itemChanged) {
       if (widget.group == null) {
-        updatedGroup = await ModelGroup.fromMap({
+        newGroup = await ModelGroup.fromMap({
           "category_id": categoryId,
           "thumbnail": thumbnail,
           "title": title,
           "color": colorCode
         });
-        await updatedGroup.insert();
+        await newGroup.insert();
       } else {
         widget.group!.thumbnail = thumbnail;
         widget.group!.title = title!;
@@ -94,7 +93,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       }
       widget.onUpdate();
     }
-    if (mounted) Navigator.of(context).pop(updatedGroup);
+    if (mounted) Navigator.of(context).pop(newGroup);
   }
 
   Widget getBoxContent() {
@@ -156,9 +155,16 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         .then((value) {
       String? categoryId = value;
       if (categoryId != null) {
+        itemChanged = true;
         saveGroup(categoryId);
       }
     });
+  }
+
+  Future<void> removeCategory() async {
+    ModelCategory category = await ModelCategory.getDND();
+    itemChanged = true;
+    saveGroup(category.id!);
   }
 
   @override
@@ -248,7 +254,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                           ),
                         ),
                         TextButton(
-                            onPressed: null,
+                            onPressed: () {
+                              removeCategory();
+                            },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -283,8 +291,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 FloatingActionButton(
                   key: const Key("done_note_group"),
                   onPressed: () async {
-                    ModelCategory category = await ModelCategory.getDND();
-                    saveGroup(category.id!);
+                    saveGroup(category!.id!);
                   },
                   shape: const CircleBorder(),
                   child: Icon(

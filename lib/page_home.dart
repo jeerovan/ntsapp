@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path/path.dart' as path;
@@ -109,37 +110,47 @@ class _PageGroupState extends State<PageGroup> {
     Navigator.of(context)
         .push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
-        onUpdate: () {},
+        onUpdate: () {
+          loadCategoriesGroups();
+        },
       ),
       settings: const RouteSettings(name: "CreateNoteGroup"),
     ))
         .then((noteGroup) {
       ModelGroup? group = noteGroup;
       if (group != null) {
-        navigateToNotes(group.id!, []);
+        navigateToNotes(group, []);
       }
     });
   }
 
-  void navigateToNotesGroups(ModelCategoryGroup categoryGroup) {
+  void navigateToNotesOrGroups(ModelCategoryGroup categoryGroup) {
     List<String> sharedContents =
         loadedSharedContents || widget.sharedContents.isEmpty
             ? []
             : widget.sharedContents;
-    loadedSharedContents = true;
+
     if (categoryGroup.type == "group") {
-      String groupId = categoryGroup.id;
-      navigateToNotes(groupId, sharedContents);
+      loadedSharedContents = true;
+      navigateToNotes(categoryGroup.group!, sharedContents);
     } else {
-      // TODO navigate to category page
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageCategoryGroups(
+          category: categoryGroup.category!,
+          onUpdate: () {
+            loadCategoriesGroups();
+          },
+        ),
+        settings: const RouteSettings(name: "CategoryGroups"),
+      ));
     }
   }
 
-  void navigateToNotes(String groupId, List<String> sharedContents) {
+  void navigateToNotes(ModelGroup group, List<String> sharedContents) {
     Navigator.of(context)
         .push(MaterialPageRoute(
       builder: (context) => PageItems(
-        groupId: groupId,
+        group: group,
         sharedContents: sharedContents,
       ),
       settings: const RouteSettings(name: "Notes"),
@@ -340,7 +351,7 @@ class _PageGroupState extends State<PageGroup> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            navigateToNotesGroups(item);
+                            navigateToNotesOrGroups(item);
                           },
                           child: WidgetCategoryGroup(
                             categoryGroup: item,

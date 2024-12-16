@@ -30,13 +30,13 @@ bool isMobile = Platform.isAndroid || Platform.isIOS;
 
 class PageItems extends StatefulWidget {
   final List<String> sharedContents;
-  final String groupId;
+  final ModelGroup group;
   final String? loadItemIdOnInit;
 
   const PageItems(
       {super.key,
       required this.sharedContents,
-      required this.groupId,
+      required this.group,
       this.loadItemIdOnInit});
 
   @override
@@ -59,7 +59,7 @@ class _PageItemsState extends State<PageItems> {
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
-  ModelGroup? noteGroup;
+  late ModelGroup noteGroup;
 
   bool _isLoading = false;
   final int _offset = 0;
@@ -99,9 +99,15 @@ class _PageItemsState extends State<PageItems> {
   @override
   void initState() {
     super.initState();
+
+    noteGroup = widget.group;
+    Map<String, dynamic>? data = noteGroup.data;
+    if (data != null) {
+      showDateTime = data["date_time"] == 1 ? true : false;
+    }
+
     _audioRecorder = AudioRecorder();
     showItemId = widget.loadItemIdOnInit;
-    loadGroup();
     initialFetchItems(showItemId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.sharedContents.isNotEmpty) {
@@ -118,28 +124,15 @@ class _PageItemsState extends State<PageItems> {
     super.dispose();
   }
 
-  Future<void> loadGroup() async {
-    ModelGroup? modelGroup = await ModelGroup.get(widget.groupId);
-    if (modelGroup != null) {
-      setState(() {
-        noteGroup = modelGroup;
-        Map<String, dynamic>? data = modelGroup.data;
-        if (data != null) {
-          showDateTime = data["date_time"] == 1 ? true : false;
-        }
-      });
-    }
-  }
-
   Future<void> initialFetchItems(String? itemId) async {
     List<ModelItem> newItems;
     if (itemId != null) {
       canScrollToBottom = true;
-      newItems = await ModelItem.getForItemIdInGroup(widget.groupId, itemId);
+      newItems = await ModelItem.getForItemIdInGroup(noteGroup.id!, itemId);
     } else {
       canScrollToBottom = false;
       newItems = await ModelItem.getInGroup(
-          widget.groupId, null, true, _offset, _limit, _filters);
+          noteGroup.id!, null, true, _offset, _limit, _filters);
     }
     if (newItems.isEmpty) return;
     _displayItemList.clear();
@@ -196,7 +189,7 @@ class _PageItemsState extends State<PageItems> {
         if (lastDate != null) {
           if (currentDate != lastDate) {
             final ModelItem dateItem = await ModelItem.fromMap({
-              "group_id": widget.groupId,
+              "group_id": noteGroup.id,
               "text": getReadableDate(lastDate),
               "type": 170000,
               "at": lastItemAt! - 1
@@ -210,7 +203,7 @@ class _PageItemsState extends State<PageItems> {
       }
       if (lastDate != null) {
         final ModelItem dateItem = await ModelItem.fromMap({
-          "group_id": widget.groupId,
+          "group_id": noteGroup.id,
           "text": getReadableDate(lastDate),
           "type": 170000,
           "at": lastItemAt! - 1
@@ -226,7 +219,7 @@ class _PageItemsState extends State<PageItems> {
         if (lastDate != null) {
           if (currentDate != lastDate) {
             final ModelItem dateItem = await ModelItem.fromMap({
-              "group_id": widget.groupId,
+              "group_id": noteGroup.id,
               "text": getReadableDate(currentDate),
               "type": 170000,
               "at": item.at! - 1
@@ -235,7 +228,7 @@ class _PageItemsState extends State<PageItems> {
           }
         } else {
           final ModelItem dateItem = await ModelItem.fromMap({
-            "group_id": widget.groupId,
+            "group_id": noteGroup.id,
             "text": getReadableDate(currentDate),
             "type": 170000,
             "at": item.at! - 1
@@ -270,7 +263,7 @@ class _PageItemsState extends State<PageItems> {
         fetchOlder ? getLastItemFromDisplayList() : _displayItemList.first;
     if (start != null) {
       final newItems = await ModelItem.getInGroup(
-          widget.groupId, start.id!, fetchOlder, 0, _limit, _filters);
+          noteGroup.id!, start.id!, fetchOlder, 0, _limit, _filters);
       if (newItems.isNotEmpty) {
         await _addItemsToDisplayList(newItems, fetchOlder);
         if (mounted) setState(() {});
@@ -858,7 +851,7 @@ class _PageItemsState extends State<PageItems> {
 
         final text = "$dateString, $messageCount";
         final ModelItem item = await ModelItem.fromMap({
-          "group_id": widget.groupId,
+          "group_id": noteGroup.id,
           "text": text,
           "type": ItemType.text,
           "at": timestamp
@@ -879,7 +872,6 @@ class _PageItemsState extends State<PageItems> {
     Uint8List? thumbnail,
     Map<String, dynamic>? data,
   ) async {
-    //await checkAddDateItem();
     if (replyOnItem != null) {
       if (data != null) {
         data["reply_on"] = replyOnItem!.id;
@@ -889,7 +881,7 @@ class _PageItemsState extends State<PageItems> {
     }
     int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
     ModelItem item = await ModelItem.fromMap({
-      "group_id": widget.groupId,
+      "group_id": noteGroup.id,
       "text": text,
       "type": type,
       "thumbnail": thumbnail,
@@ -901,9 +893,6 @@ class _PageItemsState extends State<PageItems> {
       _addItemsToDisplayList([item], false);
       replyOnItem = null;
     });
-    // update this group's last accessed at
-    ModelGroup? group = await ModelGroup.get(widget.groupId);
-    if (group != null) await group.update();
   }
 
   void showProcessing() {
@@ -1105,7 +1094,7 @@ class _PageItemsState extends State<PageItems> {
   void navigateToPageGroupEdit() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
-        group: noteGroup!,
+        group: noteGroup,
         onUpdate: () {
           setState(() {});
         },
@@ -1125,17 +1114,15 @@ class _PageItemsState extends State<PageItems> {
     setState(() {
       showDateTime = show;
     });
-    if (noteGroup != null) {
-      int showTimeStamp = showDateTime ? 1 : 0;
-      Map<String, dynamic>? data = noteGroup!.data;
-      if (data != null) {
-        data["date_time"] = showTimeStamp;
-        noteGroup!.data = data;
-        await noteGroup!.update();
-      } else {
-        noteGroup!.data = {"date_time": showTimeStamp};
-        await noteGroup!.update();
-      }
+    int showTimeStamp = showDateTime ? 1 : 0;
+    Map<String, dynamic>? data = noteGroup.data;
+    if (data != null) {
+      data["date_time"] = showTimeStamp;
+      noteGroup.data = data;
+      await noteGroup.update();
+    } else {
+      noteGroup.data = {"date_time": showTimeStamp};
+      await noteGroup.update();
     }
   }
 
@@ -1300,46 +1287,37 @@ class _PageItemsState extends State<PageItems> {
         actions: _hasNotesSelected
             ? _buildAppbarSelectionOptions()
             : _buildAppbarDefaultOptions(),
-        title: noteGroup == null || _hasNotesSelected
+        title: _hasNotesSelected
             ? const SizedBox.shrink()
-            : GestureDetector(
-                onTap: () {
-                  navigateToPageGroupEdit();
-                },
-                child: Row(
-                  children: [
-                    noteGroup!.thumbnail == null
-                        ? Container(
-                            width: size,
-                            height: size,
-                            decoration: BoxDecoration(
-                              color: colorFromHex(noteGroup!.color),
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Center(
-                              child: CircleAvatar(
-                                radius: 16,
-                                backgroundImage:
-                                    MemoryImage(noteGroup!.thumbnail!),
-                              ),
-                            ),
+            : Row(
+                children: [
+                  noteGroup.thumbnail == null
+                      ? Container(
+                          width: size,
+                          height: size,
+                          decoration: BoxDecoration(
+                            color: colorFromHex(noteGroup.color),
+                            shape: BoxShape.circle,
                           ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        noteGroup!.title,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 18,
+                          alignment: Alignment.center,
+                        )
+                      : Center(
+                          child: CircleAvatar(
+                            radius: size / 2,
+                            backgroundImage: MemoryImage(noteGroup.thumbnail!),
+                          ),
                         ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      noteGroup.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
       ),
       body: Column(
