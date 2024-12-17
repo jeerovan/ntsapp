@@ -119,13 +119,14 @@ class _LocationPickerState extends State<LocationPicker> {
     // Get current location
     Position position =
         await Geolocator.getCurrentPosition(locationSettings: locationSettings);
-    setState(() {
-      _selectedLocation = LatLng(position.latitude, position.longitude);
-      serviceEnabled = true;
-    });
-
-    // Move the map to the current location
-    _mapController.move(_selectedLocation, zoomLevel);
+    if (position != null) {
+      setState(() {
+        _selectedLocation = LatLng(position.latitude, position.longitude);
+        serviceEnabled = true;
+      });
+      // Move the map to the current location
+      _mapController.move(_selectedLocation, zoomLevel);
+    }
   }
 
   // Function to handle map tap for location selection
