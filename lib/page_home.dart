@@ -137,6 +137,12 @@ class _PageGroupState extends State<PageGroup> {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageCategoryGroups(
           category: categoryGroup.category!,
+          sharedContents: sharedContents,
+          onSharedContentsLoaded: () {
+            setState(() {
+              loadedSharedContents = true;
+            });
+          },
           onUpdate: () {
             loadCategoriesGroups();
           },

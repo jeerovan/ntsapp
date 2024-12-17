@@ -12,9 +12,16 @@ import 'page_items.dart';
 
 class PageCategoryGroups extends StatefulWidget {
   final ModelCategory category;
+  final List<String> sharedContents;
   final Function() onUpdate;
+  final Function() onSharedContentsLoaded;
+
   const PageCategoryGroups(
-      {super.key, required this.category, required this.onUpdate});
+      {super.key,
+      required this.category,
+      required this.sharedContents,
+      required this.onUpdate,
+      required this.onSharedContentsLoaded});
 
   @override
   State<PageCategoryGroups> createState() => _PageCategoryGroupsState();
@@ -23,6 +30,7 @@ class PageCategoryGroups extends StatefulWidget {
 class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   final List<ModelGroup> categoryGroups = [];
   late ModelCategory category;
+  bool loadedSharedContents = false;
 
   @override
   void initState() {
@@ -46,10 +54,16 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   }
 
   void navigateToNotes(ModelGroup group) {
+    List<String> sharedContents =
+        loadedSharedContents || widget.sharedContents.isEmpty
+            ? []
+            : widget.sharedContents;
+    widget.onSharedContentsLoaded();
+    loadedSharedContents = true;
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => PageItems(
         group: group,
-        sharedContents: [],
+        sharedContents: sharedContents,
       ),
       settings: const RouteSettings(name: "Notes"),
     ));
@@ -95,36 +109,38 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     double size = 40;
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            category.thumbnail == null
-                ? Container(
-                    width: size,
-                    height: size,
-                    decoration: BoxDecoration(
-                      color: colorFromHex(category.color),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                  )
-                : Center(
-                    child: CircleAvatar(
-                      radius: size / 2,
-                      backgroundImage: MemoryImage(category.thumbnail!),
+        title: loadedSharedContents || widget.sharedContents.isEmpty
+            ? Row(
+                children: [
+                  category.thumbnail == null
+                      ? Container(
+                          width: size,
+                          height: size,
+                          decoration: BoxDecoration(
+                            color: colorFromHex(category.color),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                        )
+                      : Center(
+                          child: CircleAvatar(
+                            radius: size / 2,
+                            backgroundImage: MemoryImage(category.thumbnail!),
+                          ),
+                        ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      category.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                category.title,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
+                ],
+              )
+            : Text("Select..."),
       ),
       body: ReorderableListView.builder(
         itemCount: categoryGroups.length,
