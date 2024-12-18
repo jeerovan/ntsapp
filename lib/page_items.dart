@@ -942,6 +942,20 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  Future<void> _pauseResumeRecording() async {
+    if (_recordingState == 1) {
+      await _audioRecorder.pause();
+      setState(() {
+        _recordingState = 2;
+      });
+    } else {
+      await _audioRecorder.resume();
+      setState(() {
+        _recordingState = 1;
+      });
+    }
+  }
+
   Future<void> _stopRecording() async {
     _recordingTimer?.cancel();
     final path = await _audioRecorder.stop();
@@ -1706,24 +1720,34 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Widget _buildWaveform() {
+  Widget _buildRecordingSection() {
     final controller = IOS7SiriWaveformController(
       amplitude: 0.5,
       color: Colors.red,
       frequency: 4,
       speed: 0.10,
     );
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Icon(Icons.mic, color: Colors.red),
-          SiriWaveform.ios7(
-            controller: controller,
-            options: const IOS7SiriWaveformOptions(height: 50, width: 150),
-          ),
           TimerWidget(
-            requiredRunningState: _recordingState,
+            runningState: _recordingState,
+          ),
+          if (_recordingState == 1)
+            Flexible(
+              child: SiriWaveform.ios7(
+                controller: controller,
+                options: const IOS7SiriWaveformOptions(
+                  height: 40,
+                  // width: 150
+                ),
+              ),
+            ),
+          IconButton(
+            onPressed: _pauseResumeRecording,
+            icon: Icon(_recordingState == 1 ? Icons.pause : Icons.play_arrow),
           ),
         ],
       ),
@@ -1833,18 +1857,19 @@ class _PageItemsState extends State<PageItems> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          IconButton(
-            icon: Icon(Icons.check_circle,
-                color: isCreatingTask
-                    ? Theme.of(context).colorScheme.primary
-                    : null),
-            onPressed: () {
-              setTaskMode();
-            },
-          ),
+          if (_recordingState == 0)
+            IconButton(
+              icon: Icon(Icons.check_circle,
+                  color: isCreatingTask
+                      ? Theme.of(context).colorScheme.primary
+                      : null),
+              onPressed: () {
+                setTaskMode();
+              },
+            ),
           Expanded(
             child: _isRecording
-                ? _buildWaveform()
+                ? _buildRecordingSection()
                 : Column(
                     children: [
                       if (replyOnItem != null)

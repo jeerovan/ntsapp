@@ -726,10 +726,10 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
 }
 
 class TimerWidget extends StatefulWidget {
-  final int requiredRunningState;
+  final int runningState;
   const TimerWidget({
     super.key,
-    required this.requiredRunningState,
+    required this.runningState,
   });
 
   @override
@@ -783,9 +783,11 @@ class TimerWidgetState extends State<TimerWidget> {
   }
 
   void setRunningState() {
-    if (widget.requiredRunningState == 1 && runningState == 0) {
+    if (widget.runningState == 2) {
+      stop();
+    } else if (widget.runningState == 1) {
       start();
-    } else if (widget.requiredRunningState == 0 && runningState == 1) {
+    } else if (widget.runningState == 0) {
       reset();
     }
   }
