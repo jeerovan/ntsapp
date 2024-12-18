@@ -119,6 +119,8 @@ class _LocationPickerState extends State<LocationPicker> {
     // Get current location
     Position position =
         await Geolocator.getCurrentPosition(locationSettings: locationSettings);
+    // position is null, shows sentry
+    // ignore: unnecessary_null_comparison
     if (position != null) {
       setState(() {
         _selectedLocation = LatLng(position.latitude, position.longitude);

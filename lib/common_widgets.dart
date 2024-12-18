@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -721,6 +722,84 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
     }
 
     return spans;
+  }
+}
+
+class TimerWidget extends StatefulWidget {
+  final int requiredRunningState;
+  const TimerWidget({
+    super.key,
+    required this.requiredRunningState,
+  });
+
+  @override
+  State<TimerWidget> createState() => TimerWidgetState();
+}
+
+class TimerWidgetState extends State<TimerWidget> {
+  late int _secondsElapsed;
+  Timer? _timer;
+  int runningState = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _secondsElapsed = 0; // Initialize timer duration
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Clean up the timer when the widget is disposed
+    super.dispose();
+  }
+
+  /// Start the timer
+  void start() {
+    if (_timer != null && _timer!.isActive) return; // Prevent multiple timers
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _secondsElapsed++;
+      });
+    });
+  }
+
+  /// Stop the timer
+  void stop() {
+    _timer?.cancel();
+  }
+
+  /// Reset the timer
+  void reset() {
+    stop();
+    setState(() {
+      _secondsElapsed = 0;
+    });
+  }
+
+  String get _formattedTime {
+    final minutes = (_secondsElapsed ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_secondsElapsed % 60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
+  }
+
+  void setRunningState() {
+    if (widget.requiredRunningState == 1 && runningState == 0) {
+      start();
+    } else if (widget.requiredRunningState == 0 && runningState == 1) {
+      reset();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    setRunningState();
+    return Text(
+      _formattedTime,
+      style: TextStyle(
+        color: Colors.red,
+        fontSize: 16.0,
+      ),
+    );
   }
 }
 

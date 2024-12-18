@@ -70,7 +70,7 @@ class _PageItemsState extends State<PageItems> {
   late final AudioRecorder _audioRecorder;
   String? _audioFilePath;
   Timer? _recordingTimer;
-  int _recordingDuration = 0; // In seconds
+  int _recordingState = 0;
 
   ModelItem? replyOnItem;
 
@@ -918,14 +918,6 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  void _startRecordingTimer() {
-    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _recordingDuration++;
-      });
-    });
-  }
-
   Future<void> _startRecording() async {
     if (await _audioRecorder.hasPermission()) {
       final tempDir = await getTemporaryDirectory();
@@ -936,9 +928,8 @@ class _PageItemsState extends State<PageItems> {
 
       setState(() {
         _isRecording = true;
-        _recordingDuration = 0;
+        _recordingState = 1;
       });
-      _startRecordingTimer();
       HapticFeedback.vibrate();
     } else {
       if (mounted) {
@@ -956,6 +947,7 @@ class _PageItemsState extends State<PageItems> {
     final path = await _audioRecorder.stop();
     setState(() {
       _isRecording = false;
+      _recordingState = 0;
     });
     if (path != null) {
       await processFiles([path]);
@@ -1730,9 +1722,8 @@ class _PageItemsState extends State<PageItems> {
             controller: controller,
             options: const IOS7SiriWaveformOptions(height: 50, width: 150),
           ),
-          Text(
-            mediaFileDuration(_recordingDuration),
-            style: const TextStyle(color: Colors.red, fontSize: 16),
+          TimerWidget(
+            requiredRunningState: _recordingState,
           ),
         ],
       ),

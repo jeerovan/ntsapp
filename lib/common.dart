@@ -445,6 +445,7 @@ Future<String?> getAudioDuration(String filePath) async {
 class VideoInfoExtractor {
   final String filePath;
   late Player? _player;
+  // ignore: unused_field
   late VideoController _videoController;
 
   VideoInfoExtractor(this.filePath) {
