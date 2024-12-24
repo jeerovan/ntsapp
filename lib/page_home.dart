@@ -216,82 +216,6 @@ class _PageGroupState extends State<PageGroup> {
     }
   }
 
-  void _showMenuItems() {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.restore),
-                title: const Text("Trash"),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PageArchived(),
-                      settings: const RouteSettings(name: "Trash"),
-                    ),
-                  ).then((_) {
-                    loadCategoriesGroups();
-                  });
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.star_outline),
-                title: const Text("Starred Notes"),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PageStarredItems(),
-                      settings: const RouteSettings(name: "StarredNotes"),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.settings),
-                title: const Text("Settings"),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SettingsPage(
-                        isDarkMode: widget.isDarkMode,
-                        onThemeToggle: widget.onThemeToggle,
-                      ),
-                      settings: const RouteSettings(name: "Settings"),
-                    ),
-                  ).then((_) async {
-                    // remove backup file if exists
-                    String todayDate = getTodayDate();
-                    Directory baseDir =
-                        await getApplicationDocumentsDirectory();
-                    String backupDir = AppConfig.get("backup_dir");
-                    final String zipFilePath =
-                        path.join(baseDir.path, '${backupDir}_$todayDate.zip');
-                    File backupFile = File(zipFilePath);
-                    try {
-                      if (backupFile.existsSync()) backupFile.deleteSync();
-                    } catch (e) {
-                      debugPrint(e.toString());
-                    }
-                    loadCategoriesGroups();
-                  });
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _saveGroupPositions() async {
     for (ModelCategoryGroup categoryGroup in _categoriesGroups) {
       int position = _categoriesGroups.indexOf(categoryGroup);
@@ -308,6 +232,121 @@ class _PageGroupState extends State<PageGroup> {
     }
   }
 
+  List<Widget> _buildDefaultActions() {
+    return [
+      IconButton(
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => const SearchPage(),
+            settings: const RouteSettings(name: "SearchNotes"),
+          ));
+        },
+        icon: const Icon(
+          Icons.search,
+        ),
+      ),
+      const SizedBox(
+        width: 10,
+      ),
+      PopupMenuButton<int>(
+        onSelected: (value) {
+          switch (value) {
+            case 0:
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsPage(
+                    isDarkMode: widget.isDarkMode,
+                    onThemeToggle: widget.onThemeToggle,
+                  ),
+                  settings: const RouteSettings(name: "Settings"),
+                ),
+              ).then((_) async {
+                // remove backup file if exists
+                String todayDate = getTodayDate();
+                Directory baseDir = await getApplicationDocumentsDirectory();
+                String backupDir = AppConfig.get("backup_dir");
+                final String zipFilePath =
+                    path.join(baseDir.path, '${backupDir}_$todayDate.zip');
+                File backupFile = File(zipFilePath);
+                try {
+                  if (backupFile.existsSync()) backupFile.deleteSync();
+                } catch (e) {
+                  debugPrint(e.toString());
+                }
+                loadCategoriesGroups();
+              });
+              break;
+            case 1:
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PageStarredItems(),
+                  settings: const RouteSettings(name: "StarredNotes"),
+                ),
+              );
+              break;
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PageArchived(),
+                  settings: const RouteSettings(name: "Trash"),
+                ),
+              ).then((_) {
+                loadCategoriesGroups();
+              });
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem<int>(
+            value: 2,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.restore,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                const Text('Trash'),
+              ],
+            ),
+          ),
+          PopupMenuItem<int>(
+            value: 1,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.star_outline,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                const Text('Starred notes'),
+              ],
+            ),
+          ),
+          PopupMenuItem<int>(
+            value: 0,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.settings,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                const Text('Settings'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -315,6 +354,7 @@ class _PageGroupState extends State<PageGroup> {
         title: Text(loadedSharedContents || widget.sharedContents.isEmpty
             ? "Note to self"
             : "Select..."),
+        actions: _buildDefaultActions(),
       ),
       body: Column(
         children: [
@@ -323,7 +363,6 @@ class _PageGroupState extends State<PageGroup> {
               children: [
                 ReorderableListView.builder(
                   itemCount: _categoriesGroups.length,
-                  reverse: true,
                   buildDefaultDragHandles: false,
                   onReorderStart: (_) {
                     HapticFeedback.vibrate();
@@ -419,50 +458,15 @@ class _PageGroupState extends State<PageGroup> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        _showMenuItems();
-                      },
-                      icon: const Icon(
-                        Icons.menu,
-                      ),
-                      label: const Text("Menu"),
-                    ),
-                    if (_categoriesGroups.isNotEmpty)
-                      TextButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const SearchPage(),
-                            settings: const RouteSettings(name: "SearchNotes"),
-                          ));
-                        },
-                        icon: const Icon(
-                          Icons.search,
-                        ),
-                        label: const Text("Search"),
-                      ),
-                  ],
-                ),
-                FloatingActionButton(
-                  key: const Key("add_note_group"),
-                  onPressed: () {
-                    createNoteGroup();
-                  },
-                  shape: const CircleBorder(),
-                  child: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        key: const Key("add_note_group"),
+        onPressed: () {
+          createNoteGroup();
+        },
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add),
       ),
     );
   }

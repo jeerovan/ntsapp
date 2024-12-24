@@ -1444,22 +1444,13 @@ class _PageItemsState extends State<PageItems> {
         actions: _buildAppbarDefaultOptions(),
         title: Row(
           children: [
-            noteGroup.thumbnail == null
-                ? Container(
-                    width: size,
-                    height: size,
-                    decoration: BoxDecoration(
-                      color: colorFromHex(noteGroup.color),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                  )
-                : Center(
-                    child: CircleAvatar(
-                      radius: size / 2,
-                      backgroundImage: MemoryImage(noteGroup.thumbnail!),
-                    ),
-                  ),
+            WidgetCategoryGroupAvatar(
+              type: "group",
+              size: size,
+              color: noteGroup.color,
+              title: noteGroup.title,
+              thumbnail: noteGroup.thumbnail,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

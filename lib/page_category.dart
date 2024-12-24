@@ -57,7 +57,6 @@ class PageCategoryState extends State<PageCategory> {
         title: const Text("Select Category"),
       ),
       body: ListView.builder(
-          reverse: true,
           itemCount: categories.length,
           itemBuilder: (context, index) {
             final category = categories[index];
@@ -66,6 +65,7 @@ class PageCategoryState extends State<PageCategory> {
                 type: "category",
                 category: category,
                 position: category.position!,
+                thumbnail: category.thumbnail,
                 color: category.color,
                 title: category.title);
             return GestureDetector(

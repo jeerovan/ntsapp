@@ -4,9 +4,9 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
 
-import 'common.dart';
 import 'common_widgets.dart';
 import 'model_category.dart';
+import 'page_category_add_edit.dart';
 import 'page_group_add_edit.dart';
 import 'page_items.dart';
 
@@ -51,6 +51,15 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       categoryGroups.addAll(groups);
     });
     if (updateHome) widget.onUpdate();
+  }
+
+  Future<void> reloadCategory() async {
+    ModelCategory? updatedCategory = await ModelCategory.get(category.id!);
+    if (updatedCategory != null) {
+      setState(() {
+        category = updatedCategory;
+      });
+    }
   }
 
   void navigateToNotes(ModelGroup group) {
@@ -112,22 +121,13 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
         title: loadedSharedContents || widget.sharedContents.isEmpty
             ? Row(
                 children: [
-                  category.thumbnail == null
-                      ? Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            color: colorFromHex(category.color),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                        )
-                      : Center(
-                          child: CircleAvatar(
-                            radius: size / 2,
-                            backgroundImage: MemoryImage(category.thumbnail!),
-                          ),
-                        ),
+                  WidgetCategoryGroupAvatar(
+                    type: "category",
+                    size: size,
+                    color: category.color,
+                    title: category.title,
+                    thumbnail: category.thumbnail,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -141,10 +141,27 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                 ],
               )
             : Text("Select..."),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => PageCategoryAddEdit(
+                      category: category,
+                      onUpdate: () {
+                        reloadCategory();
+                      },
+                    ),
+                    settings: const RouteSettings(name: "EditCategory"),
+                  ));
+                },
+                icon: Icon(Icons.edit)),
+          )
+        ],
       ),
       body: ReorderableListView.builder(
         itemCount: categoryGroups.length,
-        reverse: true,
         buildDefaultDragHandles: false,
         onReorderStart: (_) {
           HapticFeedback.vibrate();
@@ -217,6 +234,31 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
             _saveGroupPositions();
           });
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        key: const Key("add_category"),
+        onPressed: () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(
+            builder: (context) => PageGroupAddEdit(
+              category: category,
+              onUpdate: () {
+                loadGroups(true);
+              },
+            ),
+            settings: const RouteSettings(name: "CreateNoteGroup"),
+          ))
+              .then((noteGroup) {
+            ModelGroup? group = noteGroup;
+            if (group != null) {
+              navigateToNotes(
+                group,
+              );
+            }
+          });
+        },
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -12,8 +12,10 @@ import 'model_item_group.dart';
 class PageGroupAddEdit extends StatefulWidget {
   final ModelGroup? group;
   final Function() onUpdate;
+  final ModelCategory? category;
 
-  const PageGroupAddEdit({super.key, this.group, required this.onUpdate});
+  const PageGroupAddEdit(
+      {super.key, this.group, required this.onUpdate, this.category});
 
   @override
   PageGroupAddEditState createState() => PageGroupAddEditState();
@@ -46,9 +48,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     if (widget.group == null) {
       itemChanged = true;
       int count = await ModelGroup.getCountInDND();
+      if (widget.category == null) {
+        category = await ModelCategory.getDND();
+      } else {
+        category = widget.category;
+        count = await ModelGroup.getCountInCategory(category!.id!);
+      }
       Color color = getMaterialColor(count + 1);
       colorCode = colorToHex(color);
-      category = await ModelCategory.getDND();
     } else {
       category = await ModelCategory.get(widget.group!.categoryId);
       colorCode = widget.group!.color;
@@ -106,7 +113,16 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         backgroundImage: MemoryImage(thumbnail!),
       );
     } else {
-      return const SizedBox.shrink();
+      return title == null
+          ? const SizedBox.shrink()
+          : Text(
+              title![0].toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize:
+                    radius, // Adjust font size relative to the circle size
+              ),
+            );
     }
   }
 
@@ -180,130 +196,132 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          const SizedBox(
-            height: 48,
-          ),
-          GestureDetector(
-            onTap: () async {
-              _showMediaPickerDialog();
-            },
-            child: Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                color: colorFromHex(colorCode ?? "#5dade2"),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              // Center the text inside the circle
-              child: Center(child: getBoxContent()),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 45,
             ),
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: TextField(
-                    controller: titleController,
-                    autofocus: widget.group == null ? false : true,
-                    decoration: const InputDecoration(
-                      hintText: 'Group title', // Placeholder
+            GestureDetector(
+              onTap: () async {
+                _showMediaPickerDialog();
+              },
+              child: Stack(
+                  alignment: Alignment.bottomRight,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        color: colorFromHex(colorCode ?? "#5dade2"),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      // Center the text inside the circle
+                      child: Center(child: getBoxContent()),
                     ),
-                    onChanged: (value) {
-                      title = value.trim();
-                      itemChanged = true;
-                    },
-                  ),
+                    Positioned(
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.edit),
+                      ),
+                    ),
+                  ]),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                controller: titleController,
+                autofocus: widget.group == null ? false : true,
+                decoration: const InputDecoration(
+                  hintText: 'Group title', // Placeholder
                 ),
-                if (widget.group == null ||
-                    (category != null && category!.title == "DND"))
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          addToCategory();
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add),
-                            Text("Add to category"),
-                          ],
-                        )),
-                  ),
-                if (category != null && category!.title != "DND")
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            addToCategory();
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.swap_horiz),
-                              Text("Change category"),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              removeCategory();
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.clear),
-                                Text("Remove category"),
-                              ],
-                            ))
-                      ],
-                    ),
-                  ),
-              ],
+                onChanged: (value) {
+                  title = value.trim();
+                  itemChanged = true;
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            const SizedBox(
+              height: 5,
+            ),
+            Row(
               children: [
                 Expanded(
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: widget.group != null
-                          ? const SizedBox.shrink()
-                          : Text(
-                              "Title is optional. Tap -> to continue.",
-                            ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        addToCategory();
+                      },
+                      child: category == null
+                          ? Text("Select category")
+                          : category!.title == "DND"
+                              ? Text("Select category")
+                              : Text(category!.title),
                     ),
                   ),
                 ),
-                FloatingActionButton(
-                  key: const Key("done_note_group"),
-                  onPressed: () async {
-                    saveGroup(category!.id!);
-                  },
-                  shape: const CircleBorder(),
-                  child: Icon(
-                      widget.group == null ? Icons.arrow_forward : Icons.check),
+                const SizedBox(
+                  width: 10,
                 ),
+                if (category == null ||
+                    (category != null && category!.title == "DND"))
+                  IconButton(
+                    onPressed: () {
+                      addToCategory();
+                    },
+                    icon: Icon(Icons.navigate_next),
+                  ),
+                if (category != null && category!.title != "DND")
+                  IconButton(
+                    onPressed: () {
+                      removeCategory();
+                    },
+                    icon: Icon(Icons.clear),
+                  ),
               ],
             ),
-          ),
-        ],
+            Expanded(
+              child: const SizedBox.shrink(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: widget.group != null
+                            ? const SizedBox.shrink()
+                            : Text(
+                                "Title is optional. Tap -> to continue.",
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        key: const Key("done_note_group"),
+        onPressed: () async {
+          saveGroup(category!.id!);
+        },
+        shape: const CircleBorder(),
+        child: Icon(widget.group == null ? Icons.arrow_forward : Icons.check),
       ),
     );
   }

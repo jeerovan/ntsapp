@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/gestures.dart';
@@ -151,60 +152,75 @@ class WidgetKeyValueTable extends StatelessWidget {
   }
 }
 
-class IconButtonWithBadge extends StatelessWidget {
-  final int filterCount;
-  final VoidCallback onPressed;
-  final Icon icon;
-
-  const IconButtonWithBadge({
-    super.key,
-    required this.filterCount,
-    required this.onPressed,
-    required this.icon,
-  });
+class WidgetCategoryGroupAvatar extends StatelessWidget {
+  final String type;
+  final Uint8List? thumbnail;
+  final double size;
+  final String color;
+  final String title;
+  const WidgetCategoryGroupAvatar(
+      {super.key,
+      required this.type,
+      required this.size,
+      this.thumbnail,
+      required this.color,
+      required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.topRight,
-      clipBehavior:
-          Clip.none, // Allows the badge to be positioned outside the FAB
-      children: [
-        IconButton(
-          onPressed: onPressed,
-          icon: icon,
-        ),
-        if (filterCount > 0)
-          Positioned(
-            right: -4,
-            top: -4,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white),
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 20,
-                minHeight: 20,
-              ),
-              child: Text(
-                '$filterCount',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                ),
-                textAlign: TextAlign.center,
+    return thumbnail == null
+        ? Container(
+            width: size,
+            height: size,
+            decoration: type == "group"
+                ? BoxDecoration(
+                    color: colorFromHex(color),
+                    shape: BoxShape.circle,
+                  )
+                : BoxDecoration(
+                    color: colorFromHex(color),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+            alignment: Alignment.center,
+            child: Text(
+              title[0].toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize:
+                    size / 2, // Adjust font size relative to the circle size
               ),
             ),
-          ),
-      ],
-    );
+          )
+        : type == "group"
+            ? SizedBox(
+                width: size,
+                height: size,
+                child: CircleAvatar(
+                  radius: size / 2,
+                  backgroundImage: MemoryImage(thumbnail!),
+                ),
+              )
+            : SizedBox(
+                width: size,
+                height: size,
+                child: Container(
+                  width: size, // Set the width of the rectangle
+                  height: size, // Set the height of the rectangle
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    image: thumbnail != null
+                        ? DecorationImage(
+                            image: MemoryImage(thumbnail!),
+                            fit: BoxFit.cover, // Adjust the image scaling
+                          )
+                        : null, // Handle null image gracefully
+                  ),
+                ),
+              );
   }
 }
 
-class WidgetCategoryGroup extends StatefulWidget {
+class WidgetCategoryGroup extends StatelessWidget {
   final ModelCategoryGroup categoryGroup;
   final bool showSummary;
   final bool showCategorySign;
@@ -216,38 +232,16 @@ class WidgetCategoryGroup extends StatefulWidget {
       required this.showCategorySign});
 
   @override
-  State<WidgetCategoryGroup> createState() => _WidgetCategoryGroupState();
-}
-
-class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
-  @override
   Widget build(BuildContext context) {
-    double size = 20;
-    ModelCategoryGroup categoryGroup = widget.categoryGroup;
+    double size = 40;
     return ListTile(
-      leading: categoryGroup.thumbnail == null
-          ? Padding(
-              padding: EdgeInsets.all(size / 2),
-              child: Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  color: colorFromHex(categoryGroup.color),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-              ),
-            )
-          : SizedBox(
-              width: size * 2,
-              height: size * 2,
-              child: Center(
-                child: CircleAvatar(
-                  radius: size * 2,
-                  backgroundImage: MemoryImage(categoryGroup.thumbnail!),
-                ),
-              ),
-            ),
+      leading: WidgetCategoryGroupAvatar(
+        type: categoryGroup.type,
+        size: size,
+        color: categoryGroup.color,
+        title: categoryGroup.title,
+        thumbnail: categoryGroup.thumbnail,
+      ),
       title: Row(
         children: [
           Expanded(
@@ -258,7 +252,7 @@ class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
           ),
         ],
       ),
-      subtitle: widget.showSummary
+      subtitle: showSummary
           ? categoryGroup.type == "group"
               ? NotePreviewSummary(
                   item: categoryGroup.group!.lastItem,
@@ -284,7 +278,7 @@ class _WidgetCategoryGroupState extends State<WidgetCategoryGroup> {
                 )
           : const SizedBox.shrink(),
       trailing: categoryGroup.type == "category"
-          ? widget.showCategorySign
+          ? showCategorySign
               ? Icon(
                   Icons.navigate_next,
                 )

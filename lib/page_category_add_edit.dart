@@ -26,7 +26,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
 
   ModelCategory? category;
   Uint8List? thumbnail;
-  String title = "";
+  String? title;
   String? colorCode;
 
   bool processing = false;
@@ -117,7 +117,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         await newCategory.insert();
       } else {
         category!.thumbnail = thumbnail;
-        category!.title = title;
+        category!.title = title!;
         await category!.update();
       }
       widget.onUpdate();
@@ -126,16 +126,29 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
   }
 
   Widget getBoxContent() {
-    double radius = 50;
+    double size = 50;
     if (processing) {
       return const CircularProgressIndicator();
     } else if (thumbnail != null) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundImage: MemoryImage(thumbnail!),
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8.0), // Rounded corners
+          image: DecorationImage(
+            image: MemoryImage(thumbnail!),
+            fit: BoxFit.cover, // Adjust the image scaling
+          ), // Handle null image gracefully
+        ),
       );
     } else {
-      return const SizedBox.shrink();
+      return title == null
+          ? const SizedBox.shrink()
+          : Text(
+              title![0].toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: size, // Adjust font size relative to the circle size
+              ),
+            );
     }
   }
 
@@ -167,17 +180,34 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                   onTap: () async {
                     _showMediaPickerDialog();
                   },
-                  child: Container(
-                    width: size,
-                    height: size,
-                    decoration: BoxDecoration(
-                      color: colorFromHex(colorCode ?? "#5dade2"),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    // Center the text inside the circle
-                    child: Center(child: getBoxContent()),
-                  ),
+                  child: Stack(
+                      alignment: Alignment.bottomRight,
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: size,
+                          height: size,
+                          decoration: BoxDecoration(
+                            color: colorFromHex(colorCode ?? "#5dade2"),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          alignment: Alignment.center,
+                          // Center the text inside the circle
+                          child: Center(child: getBoxContent()),
+                        ),
+                        Positioned(
+                          right: -8,
+                          bottom: -8,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.edit),
+                          ),
+                        ),
+                      ]),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
