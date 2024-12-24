@@ -47,8 +47,13 @@ class DatabaseHelper {
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     await db.execute('PRAGMA foreign_keys = ON');
-    for (int version = oldVersion; version < newVersion; version++) {
-      await dbMigrations(db, version + 1);
+    switch (oldVersion) {
+      case 7:
+        dbMigration_8(db);
+        break;
+      case 8:
+        dbMigration_9(db);
+        break;
     }
   }
 
@@ -106,17 +111,6 @@ class DatabaseHelper {
         at INTEGER
       )
     ''');
-  }
-
-  Future<void> dbMigrations(Database db, int version) async {
-    switch (version) {
-      case 8:
-        dbMigration_8(db);
-        break;
-      case 9:
-        dbMigration_9(db);
-        break;
-    }
   }
 
   Future<Uint8List> loadImageAsUint8List(String assetPath) async {

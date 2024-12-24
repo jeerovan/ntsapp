@@ -670,6 +670,7 @@ class NotePreviewSummary extends StatelessWidget {
             ? Expanded(
                 child: Text(
                   _getMessageText(),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(
                     fontSize: 12,
@@ -679,6 +680,7 @@ class NotePreviewSummary extends StatelessWidget {
             : Flexible(
                 child: Text(
                   _getMessageText(),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(
                     fontSize: 12,
