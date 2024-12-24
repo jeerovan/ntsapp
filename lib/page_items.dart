@@ -382,7 +382,7 @@ class _PageItemsState extends State<PageItems> {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
-            title: const Text('Filter Notes'),
+            title: const Text('Filter notes'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -860,7 +860,7 @@ class _PageItemsState extends State<PageItems> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Edit Note"),
+          title: Text("Edit note"),
           content: TextField(
             minLines: 1,
             maxLines: null,
@@ -1138,13 +1138,13 @@ class _PageItemsState extends State<PageItems> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Choose Media Type"),
+          title: const Text("Choose media type"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text("Take a Photo"),
+                title: const Text("Take a photo"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia("camera_image");
@@ -1152,7 +1152,7 @@ class _PageItemsState extends State<PageItems> {
               ),
               ListTile(
                 leading: const Icon(Icons.videocam),
-                title: const Text("Record a Video"),
+                title: const Text("Record a video"),
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia("camera_video");
@@ -1384,7 +1384,7 @@ class _PageItemsState extends State<PageItems> {
                     const SizedBox(
                       width: 5,
                     ),
-                    const Text('Note Border'),
+                    const Text('Note border'),
                   ],
                 ),
                 StatefulBuilder(builder: (context, setState) {

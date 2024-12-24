@@ -54,7 +54,7 @@ class PageCategoryState extends State<PageCategory> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select Category"),
+        title: const Text("Select category"),
       ),
       body: ListView.builder(
           itemCount: categories.length,

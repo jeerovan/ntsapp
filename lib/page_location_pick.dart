@@ -142,7 +142,7 @@ class _LocationPickerState extends State<LocationPicker> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select Location"),
+        title: const Text("Select location"),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
@@ -180,7 +180,7 @@ class _LocationPickerState extends State<LocationPicker> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _getCurrentLocation,
-        tooltip: "Use Current Location",
+        tooltip: "Use current location",
         child: const Icon(Icons.my_location),
       ),
     );

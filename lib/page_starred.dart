@@ -172,7 +172,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       appBar: AppBar(
           title: _isSelecting
               ? _buildSelectionOptions()
-              : const Text("Starred Notes")),
+              : const Text("Starred notes")),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {

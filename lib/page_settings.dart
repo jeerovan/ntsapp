@@ -216,7 +216,7 @@ class SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               leading: const Icon(Icons.star),
-              title: const Text('Rate App'),
+              title: const Text('Rate app'),
               onTap: () => _redirectToFeedback(),
             ),
             ListTile(
@@ -234,7 +234,7 @@ class SettingsPageState extends State<SettingsPage> {
                   final buildNumber = snapshot.data?.buildNumber ?? '';
                   return ListTile(
                     leading: const Icon(Icons.info),
-                    title: Text('App Version: $version+$buildNumber'),
+                    title: Text('App version: $version+$buildNumber'),
                     onTap: null,
                   );
                 } else {

@@ -163,7 +163,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
     double size = 100;
     return Scaffold(
       appBar: AppBar(
-        title: Text("$task Category",
+        title: Text("$task category",
             style: const TextStyle(
               fontSize: 20,
             )),
@@ -215,7 +215,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                     controller: categoryController,
                     autofocus: true,
                     decoration: const InputDecoration(
-                      hintText: 'Category Title', // Placeholder
+                      hintText: 'Category title', // Placeholder
                     ),
                     onChanged: (value) {
                       title = value.trim();
