@@ -6,6 +6,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_category_groups.dart';
+import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path/path.dart' as path;
@@ -55,9 +56,9 @@ class _PageGroupState extends State<PageGroup> {
     checkAuthAndLoad();
   }
 
-  void checkAuthAndLoad() {
+  Future<void> checkAuthAndLoad() async {
     if (ModelSetting.getForKey("local_auth", "no") == "no") {
-      loadCategoriesGroups();
+      await loadCategoriesGroups();
     } else {
       _authenticateOnStart();
     }
@@ -67,10 +68,8 @@ class _PageGroupState extends State<PageGroup> {
     setState(() => _isLoading = true);
     _categoriesGroups.clear();
     final categoriesGroups = await ModelCategoryGroup.all();
-    setState(() {
-      _categoriesGroups.addAll(categoriesGroups);
-      _isLoading = false;
-    });
+    _categoriesGroups.addAll(categoriesGroups);
+    setState(() => _isLoading = false);
     _hasInitiated = true;
   }
 
@@ -88,7 +87,7 @@ class _PageGroupState extends State<PageGroup> {
         _exitApp();
       } else {
         isAuthenticated = true;
-        loadCategoriesGroups();
+        await loadCategoriesGroups();
       }
     } catch (e) {
       debugPrint("Authentication Error: $e");
@@ -234,6 +233,18 @@ class _PageGroupState extends State<PageGroup> {
 
   List<Widget> _buildDefaultActions() {
     return [
+      if (debug)
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => DatabasePage(),
+              settings: const RouteSettings(name: "DatabasePage"),
+            ));
+          },
+          icon: const Icon(
+            Icons.storage,
+          ),
+        ),
       IconButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
@@ -274,7 +285,7 @@ class _PageGroupState extends State<PageGroup> {
                 } catch (e) {
                   debugPrint(e.toString());
                 }
-                loadCategoriesGroups();
+                await loadCategoriesGroups();
               });
               break;
             case 1:
@@ -293,8 +304,8 @@ class _PageGroupState extends State<PageGroup> {
                   builder: (context) => const PageArchived(),
                   settings: const RouteSettings(name: "Trash"),
                 ),
-              ).then((_) {
-                loadCategoriesGroups();
+              ).then((_) async {
+                await loadCategoriesGroups();
               });
               break;
           }

@@ -53,13 +53,10 @@ class DatabaseHelper {
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     await db.execute('PRAGMA foreign_keys = ON');
-    switch (oldVersion) {
-      case 7:
-        dbMigration_8(db);
-        break;
-      case 8:
-        dbMigration_9(db);
-        break;
+    if (oldVersion <= 7) {
+      await dbMigration_8(db);
+    } else if (oldVersion == 8) {
+      await dbMigration_9(db);
     }
     debugPrint('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -112,12 +109,13 @@ class DatabaseHelper {
       CREATE INDEX idx_item_text ON item(text)
     ''');
     await db.execute('''
-      CREATE TABLE setting(
+      CREATE TABLE setting (
         id TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         at INTEGER
       )
     ''');
+    debugPrint("Tables Created");
   }
 
   Future<Uint8List> loadImageAsUint8List(String assetPath) async {
