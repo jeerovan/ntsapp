@@ -41,12 +41,14 @@ class DatabaseHelper {
 
   Future _onOpen(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
+    debugPrint('Database opened');
   }
 
   Future _onCreate(Database db, int version) async {
     await db.execute('PRAGMA foreign_keys = ON');
     await initTables(db);
     await createCategoryOnFreshInstall(db);
+    debugPrint('Database created with version: $version');
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -59,6 +61,7 @@ class DatabaseHelper {
         dbMigration_9(db);
         break;
     }
+    debugPrint('Database upgraded from version $oldVersion to $newVersion');
   }
 
   Future<void> initTables(Database db) async {
