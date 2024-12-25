@@ -35,6 +35,10 @@ class DatabaseHelper {
         onOpen: _onOpen);
   }
 
+  Future<void> ensureDatabaseInitialized() async {
+    await database; // Forces lazy initialization if not already done
+  }
+
   Future _onOpen(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
   }

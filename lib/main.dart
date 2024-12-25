@@ -39,6 +39,8 @@ Future<void> main() async {
   }
   // initialize the db
   DatabaseHelper dbHelper = DatabaseHelper.instance;
+  await dbHelper.ensureDatabaseInitialized();
+
   List<Map<String, dynamic>> keyValuePairs = await dbHelper.getAll('setting');
   ModelSetting.appJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
