@@ -76,7 +76,7 @@ class _PageItemsState extends State<PageItems> {
 
   bool canScrollToBottom = false;
 
-  bool isCreatingTask = false;
+  bool _isCreatingTask = false;
   bool showDateTime = true;
   bool showNoteBorder = true;
 
@@ -1168,18 +1168,34 @@ class _PageItemsState extends State<PageItems> {
   // Handle adding a media item
   void _addMedia(String type) async {
     if (type == "files") {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        allowMultiple: true,
-        type: FileType.any, // Restrict to audio files
-      );
-      if (result != null) {
-        List<PlatformFile> pickedFiles = result.files;
-        List<String> filePaths = [];
-        for (var pickedFile in pickedFiles) {
-          final String filePath = pickedFile.path!;
-          filePaths.add(filePath);
+      try {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          allowMultiple: true,
+          type: FileType.any, // Allows picking files of any type
+        );
+
+        if (result != null) {
+          List<PlatformFile> pickedFiles = result.files;
+          List<String> filePaths = [];
+
+          for (var pickedFile in pickedFiles) {
+            final String? filePath = pickedFile.path; // Handle null safety
+            if (filePath != null) {
+              filePaths.add(filePath);
+            }
+          }
+          processFiles(filePaths);
         }
-        processFiles(filePaths);
+      } catch (e) {
+        if (e is PlatformException &&
+            e.code == 'read_external_storage_denied') {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+              'Permission to access external storage was denied.',
+            ),
+            duration: Duration(seconds: 1),
+          ));
+        }
       }
     } else if (type == "camera_image") {
       XFile? pickedFile =
@@ -1257,7 +1273,7 @@ class _PageItemsState extends State<PageItems> {
 
   void setTaskMode() {
     setState(() {
-      isCreatingTask = !isCreatingTask;
+      _isCreatingTask = !_isCreatingTask;
       canScrollToBottom = false;
     });
   }
@@ -1819,26 +1835,36 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildInputSuffix() {
-    return _isTyping
-        ? const SizedBox.shrink()
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.attach_file),
-                onPressed: () {
-                  _showAttachmentOptions();
-                },
-              ),
-              if (ImagePicker().supportsImageSource(ImageSource.camera))
-                IconButton(
-                  icon: const Icon(Icons.camera_alt_outlined),
-                  onPressed: () {
-                    _showCameraImageVideoDialog();
-                  },
-                ),
-            ],
-          );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(Icons.check_circle,
+              color: _isCreatingTask
+                  ? Theme.of(context).colorScheme.primary
+                  : null),
+          onPressed: () {
+            setTaskMode();
+          },
+        ),
+        if (!_isTyping && !_isCreatingTask)
+          IconButton(
+            icon: const Icon(Icons.attach_file),
+            onPressed: () {
+              _showAttachmentOptions();
+            },
+          ),
+        if (ImagePicker().supportsImageSource(ImageSource.camera) &&
+            !_isTyping &&
+            !_isCreatingTask)
+          IconButton(
+            icon: const Icon(Icons.camera_alt_outlined),
+            onPressed: () {
+              _showCameraImageVideoDialog();
+            },
+          ),
+      ],
+    );
   }
 
   // Input box with attachment and send button
@@ -1848,16 +1874,6 @@ class _PageItemsState extends State<PageItems> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (_recordingState == 0)
-            IconButton(
-              icon: Icon(Icons.check_circle,
-                  color: isCreatingTask
-                      ? Theme.of(context).colorScheme.primary
-                      : null),
-              onPressed: () {
-                setTaskMode();
-              },
-            ),
           Expanded(
             child: _isRecording
                 ? _buildRecordingSection()
@@ -1897,7 +1913,7 @@ class _PageItemsState extends State<PageItems> {
                         decoration: InputDecoration(
                           filled: true,
                           hintText:
-                              isCreatingTask ? "Create a task." : "Add a note",
+                              _isCreatingTask ? "Create a task." : "Add a note",
                           fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
@@ -1907,9 +1923,7 @@ class _PageItemsState extends State<PageItems> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
-                          suffixIcon: isCreatingTask
-                              ? const SizedBox.shrink()
-                              : _buildInputSuffix(),
+                          suffixIcon: _buildInputSuffix(),
                         ),
                         onChanged: (value) => _onInputTextChanged(value),
                       ),
@@ -1918,15 +1932,15 @@ class _PageItemsState extends State<PageItems> {
           ),
           GestureDetector(
             onLongPress: () async {
-              if (!_isTyping && !isCreatingTask && !_isRecording) {
+              if (!_isTyping && !_isCreatingTask && !_isRecording) {
                 await _startRecording();
               }
             },
             onTap: () async {
-              if (_isRecording && !isCreatingTask) {
+              if (_isRecording && !_isCreatingTask) {
                 await _stopRecording();
               }
-              if (!_isTyping && !isCreatingTask && !_isRecording) {
+              if (!_isTyping && !_isCreatingTask && !_isRecording) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -1951,7 +1965,7 @@ class _PageItemsState extends State<PageItems> {
                   alignment: Alignment.center,
                   child: IconButton(
                     icon: Icon(
-                      _isTyping || isCreatingTask
+                      _isTyping || _isCreatingTask
                           ? Icons.send
                           : _isRecording
                               ? Icons.stop
@@ -1962,7 +1976,7 @@ class _PageItemsState extends State<PageItems> {
                         ? () {
                             final String text = _textController.text.trim();
                             if (text.isNotEmpty) {
-                              ItemType itemType = isCreatingTask
+                              ItemType itemType = _isCreatingTask
                                   ? ItemType.task
                                   : ItemType.text;
                               _addItemToDbAndDisplayList(

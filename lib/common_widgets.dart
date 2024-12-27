@@ -183,7 +183,7 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
                   ),
             alignment: Alignment.center,
             child: Text(
-              title[0].toUpperCase(),
+              title.isEmpty ? "" : title[0].toUpperCase(),
               style: TextStyle(
                 color: Colors.white,
                 fontSize:

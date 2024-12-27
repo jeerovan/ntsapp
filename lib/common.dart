@@ -355,8 +355,23 @@ Future<void> checkAndCreateDirectory(String filePath) async {
   final directory = Directory(dirPath);
   bool exists = await directory.exists();
   if (!exists) {
-    // Create the directory if it does not exist
     await directory.create(recursive: true);
+  }
+}
+
+Future<void> initializeDirectories() async {
+  final directory = await getApplicationDocumentsDirectory();
+  String mediaDir = AppConfig.get("media_dir");
+  String mediaDirPath = path.join(directory.path, mediaDir);
+  final mediaDirectory = Directory(mediaDirPath);
+  if (!mediaDirectory.existsSync()) {
+    await mediaDirectory.create(recursive: true);
+  }
+  String backupDir = AppConfig.get("backup_dir");
+  String backupDirPath = path.join(directory.path, backupDir);
+  final backupDirectory = Directory(backupDirPath);
+  if (!backupDirectory.existsSync()) {
+    await backupDirectory.create(recursive: true);
   }
 }
 

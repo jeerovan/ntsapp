@@ -116,7 +116,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       return title == null
           ? const SizedBox.shrink()
           : Text(
-              title![0].toUpperCase(),
+              title!.isNotEmpty ? title![0].toUpperCase() : "",
               style: TextStyle(
                 color: Colors.white,
                 fontSize:

@@ -97,8 +97,9 @@ class ModelGroup {
       categoryId: categoryId,
       title: map.containsKey('title') ? map['title'] : "",
       thumbnail: thumbnail,
-      position:
-          map.containsKey('position') ? map['position'] : groupCount * 1000,
+      position: map.containsKey('position')
+          ? map['position'] ?? groupCount * 1000
+          : groupCount * 1000,
       pinned: map.containsKey('pinned') ? map['pinned'] : 0,
       archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
       color: colorCode,

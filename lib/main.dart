@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -45,6 +46,8 @@ Future<void> main() async {
   ModelSetting.appJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
   };
+
+  await initializeDirectories();
 
   await SentryFlutter.init(
     (options) {

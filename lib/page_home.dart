@@ -57,20 +57,29 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   Future<void> checkAuthAndLoad() async {
-    if (ModelSetting.getForKey("local_auth", "no") == "no") {
-      await loadCategoriesGroups();
-    } else {
-      _authenticateOnStart();
+    try {
+      if (ModelSetting.getForKey("local_auth", "no") == "no") {
+        await loadCategoriesGroups();
+      } else {
+        await _authenticateOnStart();
+      }
+    } catch (e) {
+      debugPrint("Error in checkAuthAndLoad: $e");
     }
   }
 
   Future<void> loadCategoriesGroups() async {
-    setState(() => _isLoading = true);
-    _categoriesGroups.clear();
-    final categoriesGroups = await ModelCategoryGroup.all();
-    _categoriesGroups.addAll(categoriesGroups);
-    setState(() => _isLoading = false);
-    _hasInitiated = true;
+    try {
+      setState(() => _isLoading = true);
+      _categoriesGroups.clear();
+      final categoriesGroups = await ModelCategoryGroup.all();
+      _categoriesGroups.addAll(categoriesGroups);
+    } catch (e) {
+      debugPrint("Error loading categories and groups: $e");
+    } finally {
+      setState(() => _isLoading = false);
+      _hasInitiated = true;
+    }
   }
 
   Future<void> _authenticateOnStart() async {

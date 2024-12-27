@@ -54,7 +54,6 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
       setState(() {
         colorCode = colorToHex(color);
       });
-      itemChanged = true;
     }
   }
 
@@ -110,6 +109,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
   }
 
   void saveCategory() async {
+    if (title == null) return;
     if (itemChanged) {
       if (category == null) {
         ModelCategory newCategory = await ModelCategory.fromMap(
