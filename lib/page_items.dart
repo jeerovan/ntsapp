@@ -1188,7 +1188,8 @@ class _PageItemsState extends State<PageItems> {
         }
       } catch (e) {
         if (e is PlatformException &&
-            e.code == 'read_external_storage_denied') {
+            e.code == 'read_external_storage_denied' &&
+            mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
               'Permission to access external storage was denied.',
@@ -1557,7 +1558,7 @@ class _PageItemsState extends State<PageItems> {
                                 child: Container(
                                     margin: const EdgeInsets.symmetric(
                                         vertical: 5, horizontal: 10),
-                                    padding: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
                                       color: showNoteBorder
                                           ? Theme.of(context)
@@ -1763,12 +1764,14 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget _buildSelectionOptions() {
+    double iconSize = 20;
     return Padding(
-      padding: const EdgeInsets.all(14.0),
+      padding: const EdgeInsets.all(5.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
+              iconSize: iconSize,
               onPressed: () {
                 clearSelection();
               },
@@ -1776,16 +1779,21 @@ class _PageItemsState extends State<PageItems> {
                 Icons.clear,
               )),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (selectionHasOnlyTextOrTaskItem)
                 IconButton(
+                  iconSize: iconSize,
                   onPressed: () {
                     copyToClipboard();
                   },
-                  icon: const Icon(Icons.copy),
+                  icon: const Icon(
+                    Icons.copy,
+                  ),
                 ),
               if (selectionHasOnlyTextOrTaskItem)
                 IconButton(
+                  iconSize: iconSize,
                   onPressed: () {
                     updateSelectedItemsTaskType();
                   },
@@ -1794,6 +1802,7 @@ class _PageItemsState extends State<PageItems> {
                       : const Icon(Icons.check_circle),
                 ),
               IconButton(
+                iconSize: iconSize,
                 onPressed: () {
                   shareNotes();
                 },
@@ -1801,12 +1810,14 @@ class _PageItemsState extends State<PageItems> {
               ),
               if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
                 IconButton(
+                  iconSize: iconSize,
                   onPressed: () {
                     editNote();
                   },
                   icon: const Icon(Icons.edit),
                 ),
               IconButton(
+                iconSize: iconSize,
                 onPressed: () {
                   updateSelectedItemsStarred();
                 },
@@ -1815,12 +1826,14 @@ class _PageItemsState extends State<PageItems> {
                     : const Icon(Icons.star_outline),
               ),
               IconButton(
+                iconSize: iconSize,
                 onPressed: () {
                   archiveSelectedItems();
                 },
                 icon: const Icon(Icons.delete_outline),
               ),
               IconButton(
+                iconSize: iconSize,
                 onPressed: () {
                   updateSelectedItemsPinned();
                 },

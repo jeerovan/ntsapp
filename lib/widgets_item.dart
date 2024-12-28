@@ -371,7 +371,6 @@ class ItemWidgetContact extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           width: size,
-          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -468,9 +467,14 @@ class ItemWidgetContact extends StatelessWidget {
                     ),
                   ],
                 ),
-              WidgetTimeStampPinnedStarred(
-                item: item,
-                showTimestamp: showTimestamp,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  WidgetTimeStampPinnedStarred(
+                    item: item,
+                    showTimestamp: showTimestamp,
+                  ),
+                ],
               ),
             ],
           ),
@@ -637,11 +641,10 @@ class ItemWidgetTask extends StatelessWidget {
                   ? Theme.of(context).colorScheme.inversePrimary
                   : Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 5),
             Flexible(child: WidgetTextWithLinks(text: item.text)),
           ],
         ),
-        const SizedBox(height: 5),
         WidgetTimeStampPinnedStarred(
           item: item,
           showTimestamp: showTimestamp,

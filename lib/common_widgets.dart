@@ -535,17 +535,17 @@ class _WidgetAudioState extends State<WidgetAudio> {
       });
     });
 
+    _audioPlayer.onPlayerComplete.listen((_) {
+      setState(() {
+        _isPlaying = !_isPlaying;
+      });
+    });
+
     // Track current position of the audio
     _audioPlayer.onPositionChanged.listen((position) {
       if (mounted) {
         setState(() {
           _currentPosition = position;
-          if (_currentPosition.inSeconds >= _totalDuration.inSeconds) {
-            debugPrint("Ended");
-            if (_isPlaying) {
-              _isPlaying = !_isPlaying;
-            }
-          }
         });
       }
     });
@@ -589,11 +589,11 @@ class _WidgetAudioState extends State<WidgetAudio> {
                 ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
                 : Colors.grey[300],
             min: 0,
-            max: _totalDuration.inSeconds.toDouble(),
-            value: _currentPosition.inSeconds.toDouble(),
+            max: _totalDuration.inMilliseconds.toDouble(),
+            value: _currentPosition.inMilliseconds.toDouble(),
             onChanged: (value) async {
               // Seek to the new position in the audio
-              final newPosition = Duration(seconds: value.toInt() - 1);
+              final newPosition = Duration(milliseconds: value.toInt() - 1);
               await _audioPlayer.seek(newPosition);
             },
           ),
