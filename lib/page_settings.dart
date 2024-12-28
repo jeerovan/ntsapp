@@ -8,6 +8,7 @@ import 'package:ntsapp/model_setting.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'app_config.dart';
@@ -188,6 +189,36 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 onPressed: () => widget.onThemeToggle(),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_fields),
+              title: const Text("Font size"),
+              subtitle: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: () {
+                      Provider.of<FontSizeController>(context, listen: false)
+                          .decreaseFontSize();
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: () {
+                      Provider.of<FontSizeController>(context, listen: false)
+                          .resetFontSize();
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: () {
+                      Provider.of<FontSizeController>(context, listen: false)
+                          .increaseFontSize();
+                    },
+                  ),
+                ],
               ),
             ),
             ListTile(

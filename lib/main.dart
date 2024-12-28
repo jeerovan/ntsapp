@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/page_media_migration.dart';
+import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -157,16 +158,31 @@ class _MainAppState extends State<MainApp> {
         onThemeToggle: _toggleTheme,
       );
     }
-    return MaterialApp(
-      theme: AppThemes.lightTheme,
-      darkTheme: AppThemes.darkTheme,
-      themeMode: _themeMode,
-      // Uses system theme by default
-      home: page,
-      navigatorObservers: [
-        SentryNavigatorObserver(),
-      ],
-      debugShowCheckedModeBanner: false,
+    return ChangeNotifierProvider(
+      create: (_) => FontSizeController(),
+      child: Builder(builder: (context) {
+        return MaterialApp(
+          builder: (context, child) {
+            final textScaler =
+                Provider.of<FontSizeController>(context).textScaler;
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: textScaler,
+              ),
+              child: child!,
+            );
+          },
+          theme: AppThemes.lightTheme,
+          darkTheme: AppThemes.darkTheme,
+          themeMode: _themeMode,
+          // Uses system theme by default
+          home: page,
+          navigatorObservers: [
+            SentryNavigatorObserver(),
+          ],
+          debugShowCheckedModeBanner: false,
+        );
+      }),
     );
   }
 }

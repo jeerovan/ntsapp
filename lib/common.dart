@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart';
@@ -563,5 +564,40 @@ Future<void> openLocationInMap(double lat, double lng) async {
       mode: LaunchMode
           .externalApplication, // Ensures it opens in the external browser
     );
+  }
+}
+
+class FontSizeController extends ChangeNotifier {
+  double _scaleFactor = double.parse(ModelSetting.getForKey("fontScale", 1.0));
+
+  double get scaleFactor => _scaleFactor;
+
+  TextScaler get textScaler => TextScaler.linear(_scaleFactor);
+
+  // Get the scaled size based on base font size
+  double getScaledSize(double fontSize) => fontSize * _scaleFactor;
+
+  // Increase font size by 10%
+  void increaseFontSize() {
+    _scaleFactor += 0.1;
+    ModelSetting.update("fontScale", _scaleFactor);
+    notifyListeners();
+  }
+
+  // Decrease font size by 10%
+  void decreaseFontSize() {
+    if (_scaleFactor > 0.5) {
+      // Prevent text from becoming too small
+      _scaleFactor -= 0.1;
+      ModelSetting.update("fontScale", _scaleFactor);
+      notifyListeners();
+    }
+  }
+
+  // Reset to default size
+  void resetFontSize() {
+    _scaleFactor = 1.0;
+    ModelSetting.update("fontScale", _scaleFactor);
+    notifyListeners();
   }
 }

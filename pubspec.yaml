@@ -34,6 +34,7 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
+  provider: ^6.1.2
   receive_sharing_intent: ^1.8.1
   record: ^5.2.0
   scrollable_positioned_list: ^0.3.8

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:ntsapp/widgets_item.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
@@ -635,20 +636,25 @@ class WidgetTextWithLinks extends StatefulWidget {
 class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        children: _buildTextWithLinks(context, widget.text),
-      ),
-      textAlign: widget.align == null ? TextAlign.left : widget.align!,
-    );
+    return Consumer<FontSizeController>(builder: (context, controller, child) {
+      return RichText(
+        text: TextSpan(
+          children: _buildTextWithLinks(context, controller, widget.text),
+        ),
+        textAlign: widget.align == null ? TextAlign.left : widget.align!,
+      );
+    });
   }
 
-  List<TextSpan> _buildTextWithLinks(BuildContext context, String text) {
+  List<TextSpan> _buildTextWithLinks(
+      BuildContext context, FontSizeController controller, String text) {
     final List<TextSpan> spans = [];
     final RegExp linkRegExp = RegExp(r'(https?://[^\s]+)');
     final matches = linkRegExp.allMatches(text);
 
     int lastMatchEnd = 0;
+
+    double fontSize = 15;
 
     for (final match in matches) {
       final start = match.start;
@@ -658,9 +664,8 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
       if (start > lastMatchEnd) {
         spans.add(
           TextSpan(
-            text: text.substring(lastMatchEnd, start),
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
+              text: text.substring(lastMatchEnd, start),
+              style: TextStyle(fontSize: controller.getScaledSize(fontSize))),
         );
       }
 
@@ -670,9 +675,7 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
       spans.add(TextSpan(
         text: linkText,
         style: TextStyle(
-          color: Colors.blue,
-          fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize,
-        ),
+            color: Colors.blue, fontSize: controller.getScaledSize(fontSize)),
         recognizer: TapGestureRecognizer()
           ..onTap = () async {
             if (await canLaunchUrl(linkUri)) {
@@ -689,9 +692,8 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
     // Add the remaining plain text after the last link
     if (lastMatchEnd < text.length) {
       spans.add(TextSpan(
-        text: text.substring(lastMatchEnd),
-        style: Theme.of(context).textTheme.bodyLarge,
-      ));
+          text: text.substring(lastMatchEnd),
+          style: TextStyle(fontSize: controller.getScaledSize(fontSize))));
     }
 
     return spans;
