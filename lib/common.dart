@@ -589,7 +589,7 @@ class FontSizeController extends ChangeNotifier {
 
   // Decrease font size by 10%
   void decreaseFontSize() {
-    if (_scaleFactor > 0.5) {
+    if (_scaleFactor > 0.7) {
       // Prevent text from becoming too small
       _scaleFactor -= 0.1;
       ModelSetting.update("fontScale", _scaleFactor);
