@@ -159,6 +159,7 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
   final double size;
   final String color;
   final String title;
+
   const WidgetCategoryGroupAvatar(
       {super.key,
       required this.type,
@@ -292,6 +293,7 @@ class WidgetCategoryGroup extends StatelessWidget {
 class WidgetVideoImageThumbnail extends StatefulWidget {
   final ModelItem item;
   final double iconSize;
+
   const WidgetVideoImageThumbnail(
       {super.key, required this.item, required this.iconSize});
 
@@ -352,6 +354,7 @@ class _WidgetVideoPlayerThumbnailState
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _fileAvailable = false;
+
   @override
   void initState() {
     super.initState();
@@ -436,6 +439,7 @@ class WidgetMediaKitThumbnail extends StatefulWidget {
 class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
   // Create a [Player] to control playback.
   late final player = Player();
+
   // Create a [VideoController] to handle video output from [Player].
   late final controller = VideoController(player);
 
@@ -665,7 +669,9 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
         spans.add(
           TextSpan(
               text: text.substring(lastMatchEnd, start),
-              style: TextStyle(fontSize: controller.getScaledSize(fontSize))),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: controller.getScaledSize(fontSize))),
         );
       }
 
@@ -693,7 +699,10 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
     if (lastMatchEnd < text.length) {
       spans.add(TextSpan(
           text: text.substring(lastMatchEnd),
-          style: TextStyle(fontSize: controller.getScaledSize(fontSize))));
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: controller.getScaledSize(fontSize),
+          )));
     }
 
     return spans;
@@ -702,6 +711,7 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
 
 class TimerWidget extends StatefulWidget {
   final int runningState;
+
   const TimerWidget({
     super.key,
     required this.runningState,

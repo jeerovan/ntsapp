@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:mime/mime.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
@@ -17,9 +19,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'app_config.dart';
-
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 
 bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
@@ -461,6 +460,7 @@ Future<String?> getAudioDuration(String filePath) async {
 class VideoInfoExtractor {
   final String filePath;
   late Player? _player;
+
   // ignore: unused_field
   late VideoController _videoController;
 
@@ -568,7 +568,8 @@ Future<void> openLocationInMap(double lat, double lng) async {
 }
 
 class FontSizeController extends ChangeNotifier {
-  double _scaleFactor = double.parse(ModelSetting.getForKey("fontScale", 1.0));
+  double _scaleFactor =
+      double.parse(ModelSetting.getForKey("fontScale", "1.2"));
 
   double get scaleFactor => _scaleFactor;
 
@@ -579,9 +580,11 @@ class FontSizeController extends ChangeNotifier {
 
   // Increase font size by 10%
   void increaseFontSize() {
-    _scaleFactor += 0.1;
-    ModelSetting.update("fontScale", _scaleFactor);
-    notifyListeners();
+    if (_scaleFactor < 1.8) {
+      _scaleFactor += 0.1;
+      ModelSetting.update("fontScale", _scaleFactor);
+      notifyListeners();
+    }
   }
 
   // Decrease font size by 10%
@@ -596,7 +599,7 @@ class FontSizeController extends ChangeNotifier {
 
   // Reset to default size
   void resetFontSize() {
-    _scaleFactor = 1.0;
+    _scaleFactor = 1.2;
     ModelSetting.update("fontScale", _scaleFactor);
     notifyListeners();
   }
