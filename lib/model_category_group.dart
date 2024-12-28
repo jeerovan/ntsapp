@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'database_helper.dart';
 import 'model_category.dart';
 import 'model_item_group.dart';
 
@@ -25,31 +26,59 @@ class ModelCategoryGroup {
   });
 
   static Future<List<ModelCategoryGroup>> all() async {
-    final List<ModelCategory> categories = await ModelCategory.all();
-    final filteredCategories = categories.map((category) => ModelCategoryGroup(
-        id: category.id!,
-        type: "category",
-        category: category,
-        group: null,
-        title: category.title,
-        color: category.color,
-        thumbnail: category.thumbnail,
-        position: category.position!));
-
-    final List<ModelGroup> groups = await ModelGroup.allInDND();
-    final filteredGroups = groups.map((group) => ModelCategoryGroup(
-        id: group.id!,
-        type: "group",
-        group: group,
-        category: null,
-        thumbnail: group.thumbnail,
-        title: group.title,
-        color: group.color,
-        position: group.position!));
-
-    final combinedList = [...filteredCategories, ...filteredGroups];
-    combinedList.sort((a, b) => a.position.compareTo(b.position));
-
-    return combinedList;
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    String sql = '''
+      SELECT 
+          id, 
+          position, 
+          'category' AS type 
+      FROM category where category.title != "DND" and category.archived_at = 0
+      UNION ALL
+      SELECT 
+          id, 
+          position, 
+          'group' AS type 
+      FROM itemgroup where itemgroup.archived_at = 0 and itemgroup.category_id = (SELECT id from category where title = "DND")
+      ORDER BY position ASC
+    ''';
+    List<Map<String, dynamic>> rows = await db.rawQuery(
+      sql,
+    );
+    List<ModelCategoryGroup> categoriesGroups = [];
+    for (Map<String, dynamic> row in rows) {
+      if (row['type'] == "group") {
+        String groupId = row['id'];
+        ModelGroup? group = await ModelGroup.get(groupId);
+        if (group != null) {
+          ModelCategoryGroup cg = ModelCategoryGroup(
+              id: groupId,
+              type: "group",
+              group: group,
+              category: null,
+              thumbnail: group.thumbnail,
+              title: group.title,
+              color: group.color,
+              position: group.position!);
+          categoriesGroups.add(cg);
+        }
+      } else {
+        String categoryId = row['id'];
+        ModelCategory? category = await ModelCategory.get(categoryId);
+        if (category != null) {
+          ModelCategoryGroup cg = ModelCategoryGroup(
+              id: categoryId,
+              type: "category",
+              category: category,
+              group: null,
+              title: category.title,
+              color: category.color,
+              thumbnail: category.thumbnail,
+              position: category.position!);
+          categoriesGroups.add(cg);
+        }
+      }
+    }
+    return categoriesGroups;
   }
 }

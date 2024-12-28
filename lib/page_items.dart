@@ -1583,7 +1583,7 @@ class _PageItemsState extends State<PageItems> {
                                               expanded: false,
                                             ),
                                           ),
-                                        _buildItem(item, showDateTime),
+                                        _buildNoteItem(item, showDateTime),
                                       ],
                                     )),
                               ),
@@ -1602,6 +1602,7 @@ class _PageItemsState extends State<PageItems> {
                       heroTag: "scrollToBottom",
                       mini: true,
                       onPressed: () {
+                        clearSelection();
                         initialFetchItems(null);
                       },
                       shape: const CircleBorder(),
@@ -1625,14 +1626,14 @@ class _PageItemsState extends State<PageItems> {
             ),
           ),
           // Input box with attachments and send button
-          _hasNotesSelected ? _buildSelectionOptions() : _buildInputBox(),
+          _hasNotesSelected ? _buildSelectionOptions() : _buildBottomSection(),
         ],
       ),
     );
   }
 
   // Widget for displaying different item types
-  Widget _buildItem(ModelItem item, bool showTimestamp) {
+  Widget _buildNoteItem(ModelItem item, bool showTimestamp) {
     switch (item.type) {
       case ItemType.text:
         return ItemWidgetText(
@@ -1868,7 +1869,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   // Input box with attachment and send button
-  Widget _buildInputBox() {
+  Widget _buildBottomSection() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(

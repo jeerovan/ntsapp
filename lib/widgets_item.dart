@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enum_item_type.dart';
-import 'package:ntsapp/model_setting.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
 
-class ItemWidgetDate extends StatefulWidget {
+class ItemWidgetDate extends StatelessWidget {
   final ModelItem item;
 
   const ItemWidgetDate({super.key, required this.item});
 
   @override
-  State<ItemWidgetDate> createState() => _ItemWidgetDateState();
-}
-
-class _ItemWidgetDateState extends State<ItemWidgetDate> {
-  @override
   Widget build(BuildContext context) {
     String dateText = getReadableDate(
-        DateTime.fromMillisecondsSinceEpoch(widget.item.at!, isUtc: true));
+        DateTime.fromMillisecondsSinceEpoch(item.at!, isUtc: true));
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min, // Shrinks to fit the text width
@@ -45,7 +39,7 @@ class _ItemWidgetDateState extends State<ItemWidgetDate> {
   }
 }
 
-class WidgetTimeStampPinnedStarred extends StatefulWidget {
+class WidgetTimeStampPinnedStarred extends StatelessWidget {
   final ModelItem item;
   final bool showTimestamp;
 
@@ -53,42 +47,34 @@ class WidgetTimeStampPinnedStarred extends StatefulWidget {
       {super.key, required this.item, required this.showTimestamp});
 
   @override
-  State<WidgetTimeStampPinnedStarred> createState() =>
-      _WidgetTimeStampPinnedStarredState();
-}
-
-class _WidgetTimeStampPinnedStarredState
-    extends State<WidgetTimeStampPinnedStarred> {
-  @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (widget.showTimestamp)
-          Opacity(
-            opacity: 0.6,
-            child: Text(
-              getFormattedTime(widget.item.at!),
-              style: const TextStyle(fontSize: 10),
-            ),
-          ),
-        const SizedBox(width: 4),
-        widget.item.pinned == 1
+        item.pinned == 1
             ? Icon(Icons.push_pin,
                 size: 12, color: Theme.of(context).colorScheme.inversePrimary)
             : const SizedBox.shrink(),
         const SizedBox(width: 2),
-        widget.item.starred == 1
+        item.starred == 1
             ? Icon(Icons.star,
                 size: 12, color: Theme.of(context).colorScheme.inversePrimary)
             : const SizedBox.shrink(),
+        const SizedBox(width: 4),
+        if (showTimestamp)
+          Opacity(
+            opacity: 0.6,
+            child: Text(
+              getFormattedTime(item.at!),
+              style: const TextStyle(fontSize: 10),
+            ),
+          ),
       ],
     );
   }
 }
 
-class ItemWidgetText extends StatefulWidget {
+class ItemWidgetText extends StatelessWidget {
   final ModelItem item;
   final bool showTimestamp;
 
@@ -96,30 +82,21 @@ class ItemWidgetText extends StatefulWidget {
       {super.key, required this.item, required this.showTimestamp});
 
   @override
-  State<ItemWidgetText> createState() => _ItemWidgetTextState();
-}
-
-class _ItemWidgetTextState extends State<ItemWidgetText> {
-  bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
-
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
     return Column(
-      crossAxisAlignment:
-          isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         WidgetTextWithLinks(text: item.text),
         WidgetTimeStampPinnedStarred(
           item: item,
-          showTimestamp: widget.showTimestamp,
+          showTimestamp: showTimestamp,
         ),
       ],
     );
   }
 }
 
-class ItemWidgetImage extends StatefulWidget {
+class ItemWidgetImage extends StatelessWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -131,19 +108,14 @@ class ItemWidgetImage extends StatefulWidget {
       required this.showTimestamp});
 
   @override
-  State<ItemWidgetImage> createState() => _ItemWidgetImageState();
-}
-
-class _ItemWidgetImageState extends State<ItemWidgetImage> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
-    double size = 150;
+    double size = 200;
     return GestureDetector(
       onTap: () {
-        widget.onTap(item);
+        onTap(item);
       },
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
@@ -156,27 +128,12 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
               ),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.1),
-                    // Transparent black at the top
-                    Colors.black.withOpacity(0.3),
-                    // Darker black at the bottom
-                  ],
-                ),
-              ),
-              child: WidgetTimeStampPinnedStarred(
-                item: item,
-                showTimestamp: widget.showTimestamp,
-              ),
-            ),
+          const SizedBox(
+            height: 5,
+          ),
+          WidgetTimeStampPinnedStarred(
+            item: item,
+            showTimestamp: showTimestamp,
           ),
         ],
       ),
@@ -184,7 +141,7 @@ class _ItemWidgetImageState extends State<ItemWidgetImage> {
   }
 }
 
-class ItemWidgetVideo extends StatefulWidget {
+class ItemWidgetVideo extends StatelessWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -196,19 +153,13 @@ class ItemWidgetVideo extends StatefulWidget {
       required this.showTimestamp});
 
   @override
-  State<ItemWidgetVideo> createState() => _ItemWidgetVideoState();
-}
-
-class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
-    double size = 150;
+    double size = 200;
     return GestureDetector(
       onTap: () {
-        widget.onTap(item);
+        onTap(item);
       },
-      child: Stack(
+      child: Column(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
@@ -231,49 +182,30 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                     ),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            right: 0,
+          SizedBox(
             width: size,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.1),
-                    // Transparent black at the top
-                    Colors.black.withOpacity(0.3),
-                    // Darker black at the bottom
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // File size text at the left
+                Row(
+                  children: [
+                    const Icon(Icons.videocam, size: 20),
+                    const SizedBox(
+                      width: 2,
+                    ),
+                    Text(
+                      item.data!["duration"],
+                      style: const TextStyle(color: Colors.white, fontSize: 10),
+                    ),
                   ],
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // File size text at the left
-                  Row(
-                    children: [
-                      const Icon(Icons.videocam, size: 20),
-                      const SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                        item.data!["duration"],
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                  WidgetTimeStampPinnedStarred(
-                    item: item,
-                    showTimestamp: widget.showTimestamp,
-                  ),
-                ],
-              ),
+                WidgetTimeStampPinnedStarred(
+                  item: item,
+                  showTimestamp: showTimestamp,
+                ),
+              ],
             ),
           ),
         ],
@@ -282,7 +214,7 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
   }
 }
 
-class ItemWidgetAudio extends StatefulWidget {
+class ItemWidgetAudio extends StatelessWidget {
   final ModelItem item;
   final bool showTimestamp;
 
@@ -293,24 +225,18 @@ class ItemWidgetAudio extends StatefulWidget {
   });
 
   @override
-  State<ItemWidgetAudio> createState() => _ItemWidgetAudioState();
-}
-
-class _ItemWidgetAudioState extends State<ItemWidgetAudio> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         WidgetAudio(item: item),
-        widgetAudioDetails(item, widget.showTimestamp),
+        widgetAudioDetails(item, showTimestamp),
       ],
     );
   }
 }
 
-class ItemWidgetDocument extends StatefulWidget {
+class ItemWidgetDocument extends StatelessWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -322,16 +248,10 @@ class ItemWidgetDocument extends StatefulWidget {
       required this.showTimestamp});
 
   @override
-  State<ItemWidgetDocument> createState() => _ItemWidgetDocumentState();
-}
-
-class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
     return GestureDetector(
       onTap: () {
-        widget.onTap(item);
+        onTap(item);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -349,9 +269,9 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
                   padding: const EdgeInsets.all(4.0),
                   child: Text(
                     item.data!["name"],
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 15),
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ),
@@ -368,7 +288,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
               ),
               WidgetTimeStampPinnedStarred(
                 item: item,
-                showTimestamp: widget.showTimestamp,
+                showTimestamp: showTimestamp,
               ),
             ],
           ),
@@ -378,7 +298,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
   }
 }
 
-class ItemWidgetLocation extends StatefulWidget {
+class ItemWidgetLocation extends StatelessWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -390,49 +310,46 @@ class ItemWidgetLocation extends StatefulWidget {
       required this.showTimestamp});
 
   @override
-  State<ItemWidgetLocation> createState() => _ItemWidgetLocationState();
-}
-
-class _ItemWidgetLocationState extends State<ItemWidgetLocation> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
+    double size = 200;
     return GestureDetector(
       onTap: () {
-        widget.onTap(item);
+        onTap(item);
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Icon(
-                Icons.location_on,
-                color: Colors.blue,
-                size: 40,
-              ),
-              SizedBox(
-                width: 5,
-              ),
-              Text(
-                "Location",
-                style: TextStyle(fontSize: 15),
-              ),
-            ],
-          ),
-          WidgetTimeStampPinnedStarred(
-            item: item,
-            showTimestamp: widget.showTimestamp,
-          ),
-        ],
+      child: SizedBox(
+        width: size,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  Icons.location_on,
+                  color: Colors.blue,
+                  size: 40,
+                ),
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  "Location",
+                  style: TextStyle(fontSize: 15),
+                ),
+              ],
+            ),
+            WidgetTimeStampPinnedStarred(
+              item: item,
+              showTimestamp: showTimestamp,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class ItemWidgetContact extends StatefulWidget {
+class ItemWidgetContact extends StatelessWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -444,21 +361,16 @@ class ItemWidgetContact extends StatefulWidget {
       required this.showTimestamp});
 
   @override
-  State<ItemWidgetContact> createState() => _ItemWidgetContactState();
-}
-
-class _ItemWidgetContactState extends State<ItemWidgetContact> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
+    double size = 200;
     return GestureDetector(
       onTap: () {
-        widget.onTap(item);
+        onTap(item);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          width: 200,
+          width: size,
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,7 +470,7 @@ class _ItemWidgetContactState extends State<ItemWidgetContact> {
                 ),
               WidgetTimeStampPinnedStarred(
                 item: item,
-                showTimestamp: widget.showTimestamp,
+                showTimestamp: showTimestamp,
               ),
             ],
           ),
@@ -702,7 +614,7 @@ class NotePreviewSummary extends StatelessWidget {
   }
 }
 
-class ItemWidgetTask extends StatefulWidget {
+class ItemWidgetTask extends StatelessWidget {
   final ModelItem item;
   final bool showTimestamp;
 
@@ -710,37 +622,29 @@ class ItemWidgetTask extends StatefulWidget {
       {super.key, required this.item, required this.showTimestamp});
 
   @override
-  State<ItemWidgetTask> createState() => _ItemWidgetTaskState();
-}
-
-class _ItemWidgetTaskState extends State<ItemWidgetTask> {
-  @override
   Widget build(BuildContext context) {
-    ModelItem item = widget.item;
-    bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Column(
-      crossAxisAlignment:
-          isRTL ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              widget.item.type == ItemType.completedTask
+              item.type == ItemType.completedTask
                   ? Icons.check_circle
                   : Icons.radio_button_unchecked,
-              color: widget.item.type == ItemType.task
+              color: item.type == ItemType.task
                   ? Theme.of(context).colorScheme.inversePrimary
                   : Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(width: 10),
-            Flexible(child: WidgetTextWithLinks(text: widget.item.text)),
+            Flexible(child: WidgetTextWithLinks(text: item.text)),
           ],
         ),
         const SizedBox(height: 5),
         WidgetTimeStampPinnedStarred(
           item: item,
-          showTimestamp: widget.showTimestamp,
+          showTimestamp: showTimestamp,
         ),
       ],
     );

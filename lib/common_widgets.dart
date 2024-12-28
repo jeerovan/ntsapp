@@ -531,6 +531,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
     _audioPlayer.onDurationChanged.listen((duration) {
       setState(() {
         _totalDuration = duration;
+        debugPrint("TotalDuration:${_totalDuration.inSeconds}");
       });
     });
 
@@ -539,15 +540,15 @@ class _WidgetAudioState extends State<WidgetAudio> {
       if (mounted) {
         setState(() {
           _currentPosition = position;
+          if (_currentPosition.inSeconds >= _totalDuration.inSeconds) {
+            debugPrint("Ended");
+            if (_isPlaying) {
+              _isPlaying = !_isPlaying;
+            }
+          }
         });
       }
     });
-
-    /* _audioPlayer.onPlayerComplete.listen((event){
-      setState(() {
-        _isPlaying = !_isPlaying;
-      });
-    }); */
   }
 
   @override
@@ -598,7 +599,10 @@ class _WidgetAudioState extends State<WidgetAudio> {
           ),
         ),
         Text(
-          mediaFileDuration(_currentPosition.inSeconds),
+          _totalDuration.inSeconds == 0
+              ? widget.item.data!["duration"]
+              : mediaFileDuration(
+                  _totalDuration.inSeconds - _currentPosition.inSeconds),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
@@ -608,33 +612,8 @@ class _WidgetAudioState extends State<WidgetAudio> {
 
 Widget widgetAudioDetails(ModelItem item, bool showTimestamp) {
   return Row(
+    mainAxisAlignment: MainAxisAlignment.end,
     children: [
-      // File size text at the left
-      Row(
-        children: [
-          const Icon(Icons.audiotrack, size: 15),
-          const SizedBox(
-            width: 2,
-          ),
-          Text(
-            item.data!["duration"],
-            style: const TextStyle(fontSize: 10),
-          ),
-        ],
-      ),
-      Expanded(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Text(
-              item.data!["name"],
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 15),
-            ),
-          ),
-        ),
-      ),
       WidgetTimeStampPinnedStarred(
         item: item,
         showTimestamp: showTimestamp,
