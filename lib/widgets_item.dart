@@ -83,10 +83,11 @@ class ItemWidgetText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        WidgetTextWithLinks(text: item.text),
+        Flexible(child: WidgetTextWithLinks(text: item.text)),
         WidgetTimeStampPinnedStarred(
           item: item,
           showTimestamp: showTimestamp,
@@ -627,28 +628,20 @@ class ItemWidgetTask extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              item.type == ItemType.completedTask
-                  ? Icons.check_circle
-                  : Icons.radio_button_unchecked,
-              color: item.type == ItemType.task
-                  ? Theme.of(context).colorScheme.inversePrimary
-                  : Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 5),
-            Flexible(child: WidgetTextWithLinks(text: item.text)),
-          ],
+        Icon(
+          item.type == ItemType.completedTask
+              ? Icons.check_circle
+              : Icons.radio_button_unchecked,
+          color: item.type == ItemType.task
+              ? Theme.of(context).colorScheme.inversePrimary
+              : Theme.of(context).colorScheme.primary,
         ),
-        WidgetTimeStampPinnedStarred(
-          item: item,
-          showTimestamp: showTimestamp,
-        ),
+        const SizedBox(width: 8),
+        Flexible(child: WidgetTextWithLinks(text: item.text)),
+        WidgetTimeStampPinnedStarred(item: item, showTimestamp: showTimestamp)
       ],
     );
   }
