@@ -1606,7 +1606,8 @@ class _PageItemsState extends State<PageItems> {
                         initialFetchItems(null);
                       },
                       shape: const CircleBorder(),
-                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHigh,
                       child: const Icon(Icons.keyboard_double_arrow_down),
                     ),
                   ),
@@ -1896,9 +1897,11 @@ class _PageItemsState extends State<PageItems> {
                         Container(
                           padding: const EdgeInsets.all(4),
                           margin: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 1),
+                              horizontal: 2, vertical: 1),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
@@ -1921,27 +1924,32 @@ class _PageItemsState extends State<PageItems> {
                         ),
                       TextField(
                         controller: _textController,
-                        maxLines: 10,
+                        maxLines: 20,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           filled: true,
-                          hintText:
-                              _isCreatingTask ? "Create a task." : "Add a note",
+                          hintText: _isCreatingTask
+                              ? "Create a task"
+                              : "Add a note...",
+                          hintStyle: TextStyle(
+                              color:
+                                  Theme.of(context).colorScheme.outlineVariant),
                           fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
                             borderSide: BorderSide(
-                              width: 0.5, // Border thickness
-                            ),
+                                width: 0.5, // Border thickness
+                                color:
+                                    Theme.of(context).colorScheme.surfaceDim),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
                           suffixIcon: _buildInputSuffix(),
                         ),
                         onChanged: (value) => _onInputTextChanged(value),
-                        scrollController:
-                            ScrollController(), // Enable scrolling
+                        scrollController: ScrollController(),
+                        // Enable scrolling
                         textAlignVertical:
                             TextAlignVertical.top, // Align text to the top
                       ),

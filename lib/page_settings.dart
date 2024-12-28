@@ -192,10 +192,20 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.lock),
+              title: const Text("Lock"),
+              trailing: Switch(
+                value: isAuthEnabled,
+                onChanged: (bool value) {
+                  _authenticate();
+                },
+              ),
+            ),
+            ListTile(
               leading: const Icon(Icons.text_fields),
               title: const Text("Font size"),
-              subtitle: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: Icon(Icons.remove),
@@ -204,6 +214,7 @@ class SettingsPageState extends State<SettingsPage> {
                           .decreaseFontSize();
                     },
                   ),
+/*
                   IconButton(
                     icon: Icon(Icons.refresh),
                     onPressed: () {
@@ -211,6 +222,7 @@ class SettingsPageState extends State<SettingsPage> {
                           .resetFontSize();
                     },
                   ),
+*/
                   IconButton(
                     icon: Icon(Icons.add),
                     onPressed: () {
@@ -219,16 +231,6 @@ class SettingsPageState extends State<SettingsPage> {
                     },
                   ),
                 ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.lock),
-              title: const Text("Lock"),
-              trailing: Switch(
-                value: isAuthEnabled,
-                onChanged: (bool value) {
-                  _authenticate();
-                },
               ),
             ),
             ListTile(

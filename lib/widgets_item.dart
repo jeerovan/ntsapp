@@ -25,13 +25,15 @@ class ItemWidgetDate extends StatelessWidget {
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Text(
-              dateText,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Opacity(
+                opacity: 0.3,
+                child: Text(
+                  dateText,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )),
           ),
         ],
       ),
