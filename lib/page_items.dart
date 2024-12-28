@@ -1922,7 +1922,8 @@ class _PageItemsState extends State<PageItems> {
                         ),
                       TextField(
                         controller: _textController,
-                        maxLines: null,
+                        maxLines: 15,
+                        minLines: 1,
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           filled: true,
@@ -1940,6 +1941,10 @@ class _PageItemsState extends State<PageItems> {
                           suffixIcon: _buildInputSuffix(),
                         ),
                         onChanged: (value) => _onInputTextChanged(value),
+                        scrollController:
+                            ScrollController(), // Enable scrolling
+                        textAlignVertical:
+                            TextAlignVertical.top, // Align text to the top
                       ),
                     ],
                   ),

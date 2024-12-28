@@ -369,7 +369,7 @@ class ItemWidgetContact extends StatelessWidget {
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: Container(
+        child: SizedBox(
           width: size,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
