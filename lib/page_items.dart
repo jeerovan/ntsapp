@@ -1922,7 +1922,7 @@ class _PageItemsState extends State<PageItems> {
                         ),
                       TextField(
                         controller: _textController,
-                        maxLines: 15,
+                        maxLines: 10,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
