@@ -1550,7 +1550,6 @@ class _PageItemsState extends State<PageItems> {
                                           .colorScheme
                                           .inversePrimary
                                       : Colors.transparent,
-                              margin: const EdgeInsets.symmetric(vertical: 1),
                               child: Align(
                                 alignment: isRTL
                                     ? Alignment.centerRight
@@ -1563,9 +1562,9 @@ class _PageItemsState extends State<PageItems> {
                                       color: showNoteBorder
                                           ? Theme.of(context)
                                               .colorScheme
-                                              .surfaceContainer
+                                              .surfaceContainerLow
                                           : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
@@ -1597,7 +1596,7 @@ class _PageItemsState extends State<PageItems> {
                 ),
                 if (canScrollToBottom)
                   Positioned(
-                    bottom: 20, // Adjust for FAB height and margin
+                    bottom: 10, // Adjust for FAB height and margin
                     right: 20,
                     child: FloatingActionButton(
                       heroTag: "scrollToBottom",
@@ -1607,7 +1606,7 @@ class _PageItemsState extends State<PageItems> {
                         initialFetchItems(null);
                       },
                       shape: const CircleBorder(),
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
                       child: const Icon(Icons.keyboard_double_arrow_down),
                     ),
                   ),

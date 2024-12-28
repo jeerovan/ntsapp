@@ -23,7 +23,7 @@ class ItemWidgetDate extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: Text(
               dateText,
@@ -119,7 +119,7 @@ class ItemWidgetImage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(10),
             child: SizedBox(
               width: size,
               child: Image.memory(
@@ -163,7 +163,7 @@ class ItemWidgetVideo extends StatelessWidget {
       child: Column(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(18),
             child: SizedBox(
               width: size,
               height: size / item.data!["aspect"],
@@ -369,7 +369,7 @@ class ItemWidgetContact extends StatelessWidget {
         onTap(item);
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(18),
         child: SizedBox(
           width: size,
           child: Column(
@@ -559,7 +559,7 @@ class NotePreviewSummary extends StatelessWidget {
         return item.thumbnail == null
             ? const SizedBox.shrink()
             : ClipRRect(
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
                   width: 40,
                   child: Image.memory(
