@@ -1918,9 +1918,20 @@ class _PageItemsState extends State<PageItems> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
                             borderSide: BorderSide(
-                                width: 0.5, // Border thickness
-                                color:
-                                    Theme.of(context).colorScheme.surfaceDim),
+                                width: 0.5,
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                            borderSide: BorderSide(
+                                width: 0.5,
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                            borderSide: BorderSide(
+                                width: 0.5,
+                                color: Theme.of(context).colorScheme.primary),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
@@ -1944,15 +1955,15 @@ class _PageItemsState extends State<PageItems> {
           ),
           GestureDetector(
             onLongPress: () async {
-              if (!_isTyping && !_isCreatingTask && !_isRecording) {
+              if (!_isTyping && !_isRecording) {
                 await _startRecording();
               }
             },
             onTap: () async {
-              if (_isRecording && !_isCreatingTask) {
+              if (_isRecording) {
                 await _stopRecording();
               }
-              if (!_isTyping && !_isCreatingTask && !_isRecording) {
+              if (!_isTyping && !_isRecording) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -1977,30 +1988,30 @@ class _PageItemsState extends State<PageItems> {
                   alignment: Alignment.center,
                   child: IconButton(
                     icon: Icon(
-                      _isCreatingTask
-                          ? Icons.check
+                      _isRecording
+                          ? Icons.stop
                           : _isTyping
-                              ? Icons.send
-                              : _isRecording
-                                  ? Icons.stop
-                                  : Icons.mic,
+                              ? _isCreatingTask
+                                  ? Icons.check
+                                  : Icons.send
+                              : Icons.mic,
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    onPressed: _isTyping
-                        ? () {
-                            final String text = _textController.text.trim();
-                            if (text.isNotEmpty) {
-                              ItemType itemType = _isCreatingTask
-                                  ? ItemType.task
-                                  : ItemType.text;
-                              _addItemToDbAndDisplayList(
-                                  text, itemType, null, null);
-                              _textController.clear();
-                              _onInputTextChanged("");
-                            }
-                          }
-                        : _isRecording
-                            ? _stopRecording
+                    onPressed: _isRecording
+                        ? _stopRecording
+                        : _isTyping
+                            ? () {
+                                final String text = _textController.text.trim();
+                                if (text.isNotEmpty) {
+                                  ItemType itemType = _isCreatingTask
+                                      ? ItemType.task
+                                      : ItemType.text;
+                                  _addItemToDbAndDisplayList(
+                                      text, itemType, null, null);
+                                  _textController.clear();
+                                  _onInputTextChanged("");
+                                }
+                              }
                             : null,
                   ),
                 ),

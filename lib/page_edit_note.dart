@@ -42,6 +42,7 @@ class _PageEditNoteState extends State<PageEditNote> {
           Expanded(
             child: TextField(
               controller: controller,
+              autofocus: true,
               maxLines: null,
               decoration: InputDecoration(
                 border: InputBorder.none,
