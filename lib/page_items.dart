@@ -11,6 +11,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
+import 'package:ntsapp/page_edit_note.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -843,12 +844,23 @@ class _PageItemsState extends State<PageItems> {
 
   void editNote() {
     ModelItem item = _selectedItems.first;
-    showEditNotePopup(context, (text) {
-      setState(() {
-        item.text = text;
-        updateNoteText(item, text);
-      });
-    }, item.text);
+
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+      builder: (context) => PageEditNote(
+        noteText: item.text,
+      ),
+      settings: const RouteSettings(name: "EditNote"),
+    ))
+        .then((noteText) {
+      if (noteText != null) {
+        setState(() {
+          item.text = noteText;
+          updateNoteText(item, noteText);
+        });
+      }
+    });
+
     clearSelection();
   }
 
@@ -1848,39 +1860,6 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
-  Widget _buildInputSuffix() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(Icons.check_circle,
-              color: _isCreatingTask
-                  ? Theme.of(context).colorScheme.primary
-                  : null),
-          onPressed: () {
-            setTaskMode();
-          },
-        ),
-        if (!_isTyping && !_isCreatingTask)
-          IconButton(
-            icon: const Icon(Icons.attach_file),
-            onPressed: () {
-              _showAttachmentOptions();
-            },
-          ),
-        if (ImagePicker().supportsImageSource(ImageSource.camera) &&
-            !_isTyping &&
-            !_isCreatingTask)
-          IconButton(
-            icon: const Icon(Icons.camera_alt_outlined),
-            onPressed: () {
-              _showCameraImageVideoDialog();
-            },
-          ),
-      ],
-    );
-  }
-
   // Input box with attachment and send button
   Widget _buildBottomSection() {
     return Padding(
@@ -1945,7 +1924,14 @@ class _PageItemsState extends State<PageItems> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
-                          suffixIcon: _buildInputSuffix(),
+                          suffixIcon: _isTyping
+                              ? null
+                              : IconButton(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: () {
+                                    _showAttachmentOptions();
+                                  },
+                                ),
                         ),
                         onChanged: (value) => _onInputTextChanged(value),
                         scrollController: ScrollController(),
@@ -1991,11 +1977,13 @@ class _PageItemsState extends State<PageItems> {
                   alignment: Alignment.center,
                   child: IconButton(
                     icon: Icon(
-                      _isTyping || _isCreatingTask
-                          ? Icons.send
-                          : _isRecording
-                              ? Icons.stop
-                              : Icons.mic,
+                      _isCreatingTask
+                          ? Icons.check
+                          : _isTyping
+                              ? Icons.send
+                              : _isRecording
+                                  ? Icons.stop
+                                  : Icons.mic,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     onPressed: _isTyping
@@ -2049,6 +2037,15 @@ class _PageItemsState extends State<PageItems> {
                   _addMedia('location');
                 },
               ),
+              if (ImagePicker().supportsImageSource(ImageSource.camera))
+                ListTile(
+                  leading: const Icon(Icons.camera_alt_outlined),
+                  title: const Text("Camera"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _addMedia("camera_image");
+                  },
+                ),
               ListTile(
                 leading: const Icon(Icons.insert_drive_file),
                 title: const Text("Files"),
@@ -2056,6 +2053,20 @@ class _PageItemsState extends State<PageItems> {
                   Navigator.pop(context);
                   _addMedia('files');
                 },
+              ),
+              ListTile(
+                leading: const Icon(Icons.check_circle_outline),
+                title: const Text("Checklist"),
+                onTap: () {
+                  Navigator.pop(context);
+                  setTaskMode();
+                },
+                trailing: _isCreatingTask
+                    ? Icon(
+                        Icons.check_circle,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
+                    : const SizedBox.shrink(),
               ),
             ],
           ),
