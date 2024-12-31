@@ -412,6 +412,8 @@ void addEditTitlePopup(
           maxLines: 1,
           decoration: const InputDecoration(
             hintText: 'Enter text here...',
+            hintStyle: TextStyle(
+                color: Colors.grey, fontWeight: FontWeight.w400),
           ),
         ),
         actions: <Widget>[

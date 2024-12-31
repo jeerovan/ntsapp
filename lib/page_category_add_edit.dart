@@ -216,6 +216,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                     autofocus: true,
                     decoration: const InputDecoration(
                       hintText: 'Category title', // Placeholder
+                      hintStyle: TextStyle(
+                          color: Colors.grey, fontWeight: FontWeight.w400),
                     ),
                     onChanged: (value) {
                       title = value.trim();

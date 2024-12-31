@@ -153,8 +153,9 @@ class SearchPageState extends State<SearchPage> {
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search),
         hintText: "query, #document etc..",
+        hintStyle: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(25.0),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       ),

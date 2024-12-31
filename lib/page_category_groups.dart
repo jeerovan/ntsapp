@@ -160,80 +160,83 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
           )
         ],
       ),
-      body: ReorderableListView.builder(
-        itemCount: categoryGroups.length,
-        buildDefaultDragHandles: false,
-        onReorderStart: (_) {
-          HapticFeedback.vibrate();
-        },
-        itemBuilder: (context, index) {
-          final ModelGroup group = categoryGroups[index];
-          final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
-              id: group.id!,
-              type: "group",
-              group: group,
-              position: group.position!,
-              thumbnail: group.thumbnail,
-              color: group.color,
-              title: group.title);
-          return ReorderableDelayedDragStartListener(
-            key: ValueKey(group.id),
-            index: index,
-            child: Slidable(
+      body: Padding(
+        padding: const EdgeInsets.only(top: 12.0),
+        child: ReorderableListView.builder(
+          itemCount: categoryGroups.length,
+          buildDefaultDragHandles: false,
+          onReorderStart: (_) {
+            HapticFeedback.vibrate();
+          },
+          itemBuilder: (context, index) {
+            final ModelGroup group = categoryGroups[index];
+            final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
+                id: group.id!,
+                type: "group",
+                group: group,
+                position: group.position!,
+                thumbnail: group.thumbnail,
+                color: group.color,
+                title: group.title);
+            return ReorderableDelayedDragStartListener(
               key: ValueKey(group.id),
-              startActionPane: ActionPane(
-                // A motion is a widget used to control how the pane animates.
-                motion: const StretchMotion(),
-                children: [
-                  SlidableAction(
-                    onPressed: (context) {
-                      archiveGroup(group);
-                    },
-                    backgroundColor: Color(0xFFFE4A49),
-                    foregroundColor: Colors.white,
-                    icon: Icons.delete,
+              index: index,
+              child: Slidable(
+                key: ValueKey(group.id),
+                startActionPane: ActionPane(
+                  // A motion is a widget used to control how the pane animates.
+                  motion: const StretchMotion(),
+                  children: [
+                    SlidableAction(
+                      onPressed: (context) {
+                        archiveGroup(group);
+                      },
+                      backgroundColor: Color(0xFFFE4A49),
+                      foregroundColor: Colors.white,
+                      icon: Icons.delete,
+                    ),
+                    SlidableAction(
+                      onPressed: (context) {
+                        editGroup(group);
+                      },
+                      backgroundColor:
+                          Theme.of(context).colorScheme.inversePrimary,
+                      foregroundColor: Colors.white,
+                      icon: Icons.edit,
+                    ),
+                  ],
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    navigateToNotes(group);
+                  },
+                  child: WidgetCategoryGroup(
+                    categoryGroup: categoryGroup,
+                    showSummary: true,
+                    showCategorySign: true,
                   ),
-                  SlidableAction(
-                    onPressed: (context) {
-                      editGroup(group);
-                    },
-                    backgroundColor:
-                        Theme.of(context).colorScheme.inversePrimary,
-                    foregroundColor: Colors.white,
-                    icon: Icons.edit,
-                  ),
-                ],
-              ),
-              child: GestureDetector(
-                onTap: () {
-                  navigateToNotes(group);
-                },
-                child: WidgetCategoryGroup(
-                  categoryGroup: categoryGroup,
-                  showSummary: true,
-                  showCategorySign: true,
                 ),
               ),
-            ),
-          );
-        },
-        onReorder: (int oldIndex, int newIndex) {
-          setState(() {
-            // Adjust newIndex if dragging an item down
-            if (oldIndex < newIndex) {
-              newIndex -= 1;
-            }
+            );
+          },
+          onReorder: (int oldIndex, int newIndex) {
+            setState(() {
+              // Adjust newIndex if dragging an item down
+              if (oldIndex < newIndex) {
+                newIndex -= 1;
+              }
 
-            // Remove the item from the old position
-            final item = categoryGroups.removeAt(oldIndex);
+              // Remove the item from the old position
+              final item = categoryGroups.removeAt(oldIndex);
 
-            // Insert the item at the new position
-            categoryGroups.insert(newIndex, item);
+              // Insert the item at the new position
+              categoryGroups.insert(newIndex, item);
 
-            // Print positions after reordering
-            _saveGroupPositions();
-          });
-        },
+              // Print positions after reordering
+              _saveGroupPositions();
+            });
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         key: const Key("add_category"),

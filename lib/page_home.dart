@@ -378,6 +378,7 @@ class _PageGroupState extends State<PageGroup> {
       ),
       body: Column(
         children: [
+          Container(height: 12),
           Expanded(
             child: Stack(
               children: [
@@ -461,7 +462,7 @@ class _PageGroupState extends State<PageGroup> {
                             child: Text(
                               "Hi there!\n\n"
                               "It's kind of looking empty in here.\n\n"
-                              "Go ahead and tap the + button to create a new note group and write your heart out. :)",
+                              "Go ahead and tap the + button and create some notes to self. :)",
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge

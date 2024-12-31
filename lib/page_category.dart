@@ -56,29 +56,32 @@ class PageCategoryState extends State<PageCategory> {
       appBar: AppBar(
         title: const Text("Select category"),
       ),
-      body: ListView.builder(
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
-                id: category.id!,
-                type: "category",
-                category: category,
-                position: category.position!,
-                thumbnail: category.thumbnail,
-                color: category.color,
-                title: category.title);
-            return GestureDetector(
-              onTap: () {
-                selectCategory(category.id!);
-              },
-              child: WidgetCategoryGroup(
-                categoryGroup: categoryGroup,
-                showSummary: true,
-                showCategorySign: false,
-              ),
-            );
-          }),
+      body: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: ListView.builder(
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
+                  id: category.id!,
+                  type: "category",
+                  category: category,
+                  position: category.position!,
+                  thumbnail: category.thumbnail,
+                  color: category.color,
+                  title: category.title);
+              return GestureDetector(
+                onTap: () {
+                  selectCategory(category.id!);
+                },
+                child: WidgetCategoryGroup(
+                  categoryGroup: categoryGroup,
+                  showSummary: true,
+                  showCategorySign: false,
+                ),
+              );
+            }),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           addCategory();

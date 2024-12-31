@@ -1926,25 +1926,32 @@ class _PageItemsState extends State<PageItems> {
                               : "Add a note...",
                           hintStyle: TextStyle(
                               color:
-                                  Theme.of(context).colorScheme.outlineVariant),
+                                  Theme.of(context).colorScheme.outlineVariant,
+                              fontWeight: FontWeight.w400),
                           fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
                             borderSide: BorderSide(
-                                width: 0.5,
-                                color: Theme.of(context).colorScheme.primary),
+                                width: 1.0,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
                             borderSide: BorderSide(
                                 width: 0.5,
-                                color: Theme.of(context).colorScheme.primary),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25.0),
                             borderSide: BorderSide(
                                 width: 0.5,
-                                color: Theme.of(context).colorScheme.primary),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10),
@@ -1952,6 +1959,7 @@ class _PageItemsState extends State<PageItems> {
                               ? null
                               : IconButton(
                                   icon: const Icon(Icons.add),
+                                  color: Theme.of(context).colorScheme.outline,
                                   onPressed: () {
                                     _showAttachmentOptions();
                                   },

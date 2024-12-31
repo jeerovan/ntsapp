@@ -241,6 +241,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 autofocus: widget.group == null ? false : true,
                 decoration: const InputDecoration(
                   hintText: 'Group title', // Placeholder
+                  hintStyle: TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.w400),
                 ),
                 onChanged: (value) {
                   title = value.trim();

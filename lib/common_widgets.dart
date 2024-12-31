@@ -172,24 +172,24 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return thumbnail == null
         ? Container(
-            width: size,
-            height: size,
+            width: size * 0.9,
+            height: size  * 0.9,
             decoration: type == "group"
                 ? BoxDecoration(
-                    color: colorFromHex(color),
+                    color: colorFromHex(color).withOpacity(0.9),
                     shape: BoxShape.circle,
                   )
                 : BoxDecoration(
-                    color: colorFromHex(color),
-                    borderRadius: BorderRadius.circular(8.0),
+                    color: colorFromHex(color).withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(4.0),
                   ),
             alignment: Alignment.center,
             child: Text(
               title.isEmpty ? "" : title[0].toUpperCase(),
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.white.withOpacity(0.9),
                 fontSize:
-                    size / 2, // Adjust font size relative to the circle size
+                    size / 3, // Adjust font size relative to the circle size
               ),
             ),
           )
@@ -267,14 +267,13 @@ class WidgetCategoryGroup extends StatelessWidget {
                     Icon(
                       Icons.workspaces,
                       size: 13,
+                      color: Colors.grey,
                     ),
                     const SizedBox(width: 5),
                     Text(
                       "${categoryGroup.category!.groupCount} Note Groups",
                       overflow: TextOverflow.ellipsis, // Ellipsis for long text
-                      style: const TextStyle(
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 )

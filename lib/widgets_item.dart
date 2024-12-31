@@ -583,6 +583,7 @@ class NotePreviewSummary extends StatelessWidget {
         Icon(
           _getIcon(),
           size: 13,
+          color: Colors.grey,
         ),
         const SizedBox(width: 5),
         expanded == true
@@ -593,6 +594,7 @@ class NotePreviewSummary extends StatelessWidget {
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(
                     fontSize: 12,
+                    color: Colors.grey,
                   ),
                 ),
               )
