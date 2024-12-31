@@ -111,6 +111,9 @@ class _PageItemsState extends State<PageItems> {
       if (data.containsKey("note_border")) {
         showNoteBorder = data["note_border"] == 1 ? true : false;
       }
+      if (data.containsKey("task_mode")) {
+        _isCreatingTask = data["task_mode"] == 1 ? true : false;
+      }
     }
 
     _audioRecorder = AudioRecorder();
@@ -1284,11 +1287,21 @@ class _PageItemsState extends State<PageItems> {
     ));
   }
 
-  void setTaskMode() {
+  Future<void> setTaskMode() async {
     setState(() {
       _isCreatingTask = !_isCreatingTask;
       canScrollToBottom = false;
     });
+    int taskMode = _isCreatingTask ? 1 : 0;
+    Map<String, dynamic>? data = noteGroup.data;
+    if (data != null) {
+      data["task_mode"] = taskMode;
+      noteGroup.data = data;
+      await noteGroup.update();
+    } else {
+      noteGroup.data = {"task_mode": taskMode};
+      await noteGroup.update();
+    }
   }
 
   Future<void> setShowDateTime(bool show) async {

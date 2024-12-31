@@ -632,17 +632,26 @@ class ItemWidgetTask extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Icon(
-          item.type == ItemType.completedTask
-              ? Icons.check_circle
-              : Icons.radio_button_unchecked,
-          color: item.type == ItemType.task
-              ? Theme.of(context).colorScheme.inversePrimary
-              : Theme.of(context).colorScheme.primary,
+        Flexible(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                item.type == ItemType.completedTask
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color: item.type == ItemType.task
+                    ? Theme.of(context).colorScheme.inversePrimary
+                    : Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Flexible(child: WidgetTextWithLinks(text: item.text)),
+            ],
+          ),
         ),
-        const SizedBox(width: 8),
-        Flexible(child: WidgetTextWithLinks(text: item.text)),
         WidgetTimeStampPinnedStarred(item: item, showTimestamp: showTimestamp)
       ],
     );
