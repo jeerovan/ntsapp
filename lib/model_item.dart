@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:uuid/uuid.dart';
 
@@ -403,6 +404,13 @@ class ModelItem {
         File file = File(path);
         if (file.existsSync()) {
           file.deleteSync();
+        }
+      }
+      if (dataMap.containsKey("url_info")) {
+        String fileName = '$id-urlimage.png';
+        File? imageFile = await getFile("image", fileName);
+        if (imageFile != null && imageFile.existsSync()) {
+          imageFile.deleteSync();
         }
       }
     }

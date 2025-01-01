@@ -9,6 +9,7 @@ import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
@@ -19,7 +20,8 @@ import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:siri_wave/siri_wave.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:path/path.dart' as path;
 import 'common.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -82,6 +84,8 @@ class _PageItemsState extends State<PageItems> {
   bool showDateTime = true;
   bool showNoteBorder = true;
 
+  String imageDirPath = "";
+
   final Map<String, bool> _filters = {
     "pinned": false,
     "starred": false,
@@ -124,6 +128,7 @@ class _PageItemsState extends State<PageItems> {
       if (widget.sharedContents.isNotEmpty) {
         loadSharedContents();
       }
+      loadImageDirectoryPath();
     });
   }
 
@@ -176,6 +181,13 @@ class _PageItemsState extends State<PageItems> {
           });
         });
       }
+    });
+  }
+
+  Future<void> loadImageDirectoryPath() async {
+    String filePath = await getFilePath("image", "dummy.png");
+    setState(() {
+      imageDirPath = path.dirname(filePath);
     });
   }
 
@@ -844,6 +856,7 @@ class _PageItemsState extends State<PageItems> {
   Future<void> updateNoteText(ModelItem item, String newText) async {
     item.text = newText;
     await item.update();
+    checkFetchUrlMetadata(item);
   }
 
   void editNote() {
@@ -1061,6 +1074,60 @@ class _PageItemsState extends State<PageItems> {
       _addItemsToDisplayList([item], false);
       replyOnItem = null;
     });
+    if (type == ItemType.task || type == ItemType.text) {
+      checkFetchUrlMetadata(item);
+    }
+  }
+
+  Future<void> checkFetchUrlMetadata(ModelItem item) async {
+    final RegExp linkRegExp = RegExp(r'(https?://[^\s]+)');
+    final matches = linkRegExp.allMatches(item.text);
+    String link = "";
+    // get only first link
+    for (final match in matches) {
+      final start = match.start;
+      final end = match.end;
+      link = item.text.substring(start, end);
+      break;
+    }
+    if (link.isNotEmpty) {
+      final Metadata? metaData = await MetadataFetch.extract(link);
+      if (metaData != null) {
+        Map<String, dynamic> urlInfo = {
+          "url": link,
+          "title": metaData.title,
+          "desc": metaData.description,
+          "image": metaData.image
+        };
+        Map<String, dynamic>? data = item.data;
+        if (data != null) {
+          data["url_info"] = urlInfo;
+          item.data = data;
+          await item.update();
+        } else {
+          item.data = {"url_info": urlInfo};
+          await item.update();
+        }
+        // download the url image if available
+        if (metaData.image != null) {
+          await checkDownloadNetworkImage(item.id!, metaData.image!);
+        }
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    } else {
+      // may happen after editing note
+      Map<String, dynamic>? data = item.data;
+      if (data != null && data.containsKey("url_info")) {
+        data.remove("url_info");
+        item.data = data;
+        await item.update();
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    }
   }
 
   void showProcessing() {
@@ -1504,7 +1571,7 @@ class _PageItemsState extends State<PageItems> {
                       if (index < 0 || index >= _displayItemList.length) {
                         return const SizedBox.shrink();
                       }
-                      final item = _displayItemList[index];
+                      final ModelItem item = _displayItemList[index];
                       if (item.type == ItemType.date) {
                         if (showDateTime) {
                           return ItemWidgetDate(item: item);
@@ -1512,6 +1579,10 @@ class _PageItemsState extends State<PageItems> {
                           return const SizedBox.shrink();
                         }
                       } else {
+                        Map<String, dynamic>? urlInfo = item.data != null &&
+                                item.data!.containsKey("url_info")
+                            ? item.data!["url_info"]
+                            : null;
                         return Dismissible(
                           key: ValueKey(item.id),
                           direction: DismissDirection.startToEnd,
@@ -1576,6 +1647,33 @@ class _PageItemsState extends State<PageItems> {
                                               showTimestamp: false,
                                               expanded: false,
                                             ),
+                                          ),
+                                        if (urlInfo != null)
+                                          GestureDetector(
+                                            onTap: () async {
+                                              if (_hasNotesSelected) {
+                                                onItemTapped(item);
+                                              } else {
+                                                final String linkText =
+                                                    urlInfo["url"];
+                                                final linkUri =
+                                                    Uri.parse(linkText);
+                                                if (await canLaunchUrl(
+                                                    linkUri)) {
+                                                  await launchUrl(linkUri);
+                                                } else {
+                                                  debugPrint(
+                                                      "Could not launch $linkText");
+                                                }
+                                              }
+                                            },
+                                            child: imageDirPath.isEmpty
+                                                ? const SizedBox.shrink()
+                                                : NoteUrlPreview(
+                                                    urlInfo: urlInfo,
+                                                    imageDirectory:
+                                                        imageDirPath,
+                                                    itemId: item.id!),
                                           ),
                                         _buildNoteItem(item, showDateTime),
                                       ],

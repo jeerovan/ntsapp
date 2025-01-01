@@ -13,6 +13,7 @@ import 'package:mime/mime.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -282,31 +283,6 @@ Uint8List? getImageThumbnail(Uint8List bytes) {
   return null;
 }
 
-String getImageDimension(Uint8List bytes) {
-  img.Image? src = img.decodeImage(bytes);
-  if (src != null) {
-    int srcWidth = src.width;
-    int srcHeight = src.height;
-    return '${srcWidth}x$srcHeight';
-  }
-  return '0x0';
-}
-
-Uint8List getBlankImage(int size) {
-  int width = size;
-  int height = size;
-  final img.Image blankImage = img.Image(width: width, height: height);
-  int r = getRandomInt(256);
-  int g = getRandomInt(256);
-  int b = getRandomInt(256);
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      blankImage.setPixel(x, y, img.ColorUint8.rgb(r, g, b));
-    }
-  }
-  return Uint8List.fromList(img.encodePng(blankImage));
-}
-
 String readableBytes(int bytes, [int decimals = 2]) {
   if (bytes <= 0) return "0 B";
   const suffixes = ["B", "KB", "MB", "GB", "TB"];
@@ -330,7 +306,7 @@ String colorToHex(Color color) {
 }
 
 Future<File?> getFile(String fileType, String fileName) async {
-  String filePath = await getMediaPath(fileType, fileName);
+  String filePath = await getFilePath(fileType, fileName);
   File file = File(filePath);
   if (file.existsSync()) {
     return file;
@@ -338,7 +314,7 @@ Future<File?> getFile(String fileType, String fileName) async {
   return null;
 }
 
-Future<String> getMediaPath(String fileType, String fileName) async {
+Future<String> getFilePath(String fileType, String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
   String mediaDir = AppConfig.get("media_dir");
   return path.join(directory.path, mediaDir, fileType, fileName);
@@ -387,7 +363,7 @@ Future<Map<String, dynamic>> processAndGetFileAttributes(
   }
   String directory = mime.split("/").first;
   File? existing = await getFile(directory, fileName);
-  String newPath = await getMediaPath(directory, fileName);
+  String newPath = await getFilePath(directory, fileName);
   await checkAndCreateDirectory(newPath);
   if (existing == null) {
     Map<String, String> mediaData = {"oldPath": filePath, "newPath": newPath};
@@ -395,6 +371,29 @@ Future<Map<String, dynamic>> processAndGetFileAttributes(
     await compute(copyFile, mediaData);
   }
   return {"path": newPath, "name": fileName, "size": fileSize, "mime": mime};
+}
+
+Future<void> checkDownloadNetworkImage(String itemId, String imageUrl) async {
+  String fileName = '$itemId-urlimage.png';
+  String directory = "image";
+  File? existing = await getFile(directory, fileName);
+  String newPath = await getFilePath(directory, fileName);
+  await checkAndCreateDirectory(newPath);
+  if (existing == null) {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode == 200) {
+        Uint8List imageBytes = response.bodyBytes;
+        Uint8List? thumbnail = getImageThumbnail(imageBytes);
+        if (thumbnail != null) {
+          final file = File(newPath);
+          await file.writeAsBytes(thumbnail);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error downloading url image: $e');
+    }
+  }
 }
 
 void addEditTitlePopup(
@@ -636,6 +635,7 @@ class AnimatedWidgetSwap extends StatefulWidget {
   final Duration duration;
 
   const AnimatedWidgetSwap({
+    super.key,
     required this.firstWidget,
     required this.secondWidget,
     required this.showFirst,

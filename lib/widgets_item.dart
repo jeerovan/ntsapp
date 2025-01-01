@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enum_item_type.dart';
-
+import 'package:path/path.dart' as path;
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
@@ -95,6 +97,43 @@ class ItemWidgetText extends StatelessWidget {
           item: item,
           showTimestamp: showTimestamp,
         ),
+      ],
+    );
+  }
+}
+
+class ItemWidgetTask extends StatelessWidget {
+  final ModelItem item;
+  final bool showTimestamp;
+
+  const ItemWidgetTask(
+      {super.key, required this.item, required this.showTimestamp});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Flexible(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                item.type == ItemType.completedTask
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color: item.type == ItemType.task
+                    ? Theme.of(context).colorScheme.inversePrimary
+                    : Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Flexible(child: WidgetTextWithLinks(text: item.text)),
+            ],
+          ),
+        ),
+        WidgetTimeStampPinnedStarred(item: item, showTimestamp: showTimestamp)
       ],
     );
   }
@@ -624,39 +663,44 @@ class NotePreviewSummary extends StatelessWidget {
   }
 }
 
-class ItemWidgetTask extends StatelessWidget {
-  final ModelItem item;
-  final bool showTimestamp;
-
-  const ItemWidgetTask(
-      {super.key, required this.item, required this.showTimestamp});
+class NoteUrlPreview extends StatelessWidget {
+  final String itemId;
+  final String imageDirectory;
+  final Map<String, dynamic> urlInfo;
+  const NoteUrlPreview(
+      {super.key,
+      required this.urlInfo,
+      required this.itemId,
+      required this.imageDirectory});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Flexible(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                item.type == ItemType.completedTask
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                color: item.type == ItemType.task
-                    ? Theme.of(context).colorScheme.inversePrimary
-                    : Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              Flexible(child: WidgetTextWithLinks(text: item.text)),
-            ],
-          ),
-        ),
-        WidgetTimeStampPinnedStarred(item: item, showTimestamp: showTimestamp)
-      ],
+    String fileName = '$itemId-urlimage.png';
+    String filePath = path.join(imageDirectory, fileName);
+    File imageFile = File(filePath);
+    bool imageAvailable = imageFile.existsSync();
+    return ListTile(
+      leading: imageAvailable
+          ? Image.file(
+              imageFile,
+              width: 100,
+              fit: BoxFit.contain,
+            )
+          : null,
+      title: urlInfo["title"] == null
+          ? null
+          : Text(
+              urlInfo["title"],
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+      subtitle: urlInfo["desc"] == null
+          ? null
+          : Text(
+              urlInfo["desc"],
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
     );
   }
 }
