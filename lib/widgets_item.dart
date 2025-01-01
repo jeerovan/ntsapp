@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enum_item_type.dart';
 
 import 'common.dart';
@@ -54,12 +55,12 @@ class WidgetTimeStampPinnedStarred extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         item.pinned == 1
-            ? Icon(Icons.push_pin,
+            ? Icon(LucideIcons.pin,
                 size: 12, color: Theme.of(context).colorScheme.inversePrimary)
             : const SizedBox.shrink(),
         const SizedBox(width: 2),
         item.starred == 1
-            ? Icon(Icons.star,
+            ? Icon(LucideIcons.star,
                 size: 12, color: Theme.of(context).colorScheme.inversePrimary)
             : const SizedBox.shrink(),
         const SizedBox(width: 4),
@@ -194,7 +195,7 @@ class ItemWidgetVideo extends StatelessWidget {
                 // File size text at the left
                 Row(
                   children: [
-                    const Icon(Icons.videocam, size: 20),
+                    const Icon(LucideIcons.video, size: 20),
                     const SizedBox(
                       width: 2,
                     ),
@@ -264,7 +265,7 @@ class ItemWidgetDocument extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.insert_drive_file,
+                LucideIcons.file,
                 size: 40,
               ),
               Expanded(
@@ -328,7 +329,7 @@ class ItemWidgetLocation extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
-                  Icons.location_on,
+                  LucideIcons.mapPin,
                   color: Colors.blue,
                   size: 40,
                 ),
@@ -385,7 +386,7 @@ class ItemWidgetContact extends StatelessWidget {
                       )
                     : const CircleAvatar(
                         radius: 50,
-                        child: Icon(Icons.person, size: 50),
+                        child: Icon(LucideIcons.user, size: 50),
                       ),
               ),
               // Name Row
@@ -406,7 +407,7 @@ class ItemWidgetContact extends StatelessWidget {
               // Phones Row
               Row(
                 children: [
-                  const Icon(Icons.phone, size: 16, color: Colors.blue),
+                  const Icon(LucideIcons.phone, size: 16, color: Colors.blue),
                   const SizedBox(width: 5),
                   Expanded(
                     child: Column(
@@ -429,7 +430,7 @@ class ItemWidgetContact extends StatelessWidget {
               if (item.data!["emails"].isNotEmpty)
                 Row(
                   children: [
-                    const Icon(Icons.email, size: 16, color: Colors.red),
+                    Icon(LucideIcons.mail, size: 16, color: Colors.red),
                     const SizedBox(width: 5),
                     Expanded(
                       child: Column(
@@ -452,7 +453,7 @@ class ItemWidgetContact extends StatelessWidget {
               if (item.data!["addresses"].isNotEmpty)
                 Row(
                   children: [
-                    const Icon(Icons.home, size: 16, color: Colors.green),
+                    Icon(LucideIcons.home, size: 16, color: Colors.green),
                     const SizedBox(width: 5),
                     Expanded(
                       child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/page_archived_category.dart';
 
 import 'page_archived_groups.dart';
@@ -44,11 +45,11 @@ class _PageArchivedState extends State<PageArchived> {
                   return Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.restore),
+                        icon: const Icon(LucideIcons.archiveRestore),
                         onPressed: _restoreSelectedItems,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_forever_outlined),
+                        icon: const Icon(LucideIcons.trash2),
                         onPressed: _deleteSelectedItems,
                       ),
                     ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_db.dart';
@@ -251,7 +252,7 @@ class _PageGroupState extends State<PageGroup> {
             ));
           },
           icon: const Icon(
-            Icons.storage,
+            LucideIcons.database,
           ),
         ),
       IconButton(
@@ -262,7 +263,7 @@ class _PageGroupState extends State<PageGroup> {
           ));
         },
         icon: const Icon(
-          Icons.search,
+          LucideIcons.search,
         ),
       ),
       const SizedBox(
@@ -325,7 +326,7 @@ class _PageGroupState extends State<PageGroup> {
             child: Row(
               children: [
                 Icon(
-                  Icons.restore,
+                  LucideIcons.archiveRestore,
                 ),
                 const SizedBox(
                   width: 5,
@@ -339,7 +340,7 @@ class _PageGroupState extends State<PageGroup> {
             child: Row(
               children: [
                 Icon(
-                  Icons.star_outline,
+                  LucideIcons.star,
                 ),
                 const SizedBox(
                   width: 5,
@@ -353,7 +354,7 @@ class _PageGroupState extends State<PageGroup> {
             child: Row(
               children: [
                 Icon(
-                  Icons.settings,
+                  LucideIcons.settings,
                 ),
                 const SizedBox(
                   width: 5,
@@ -405,7 +406,7 @@ class _PageGroupState extends State<PageGroup> {
                               },
                               backgroundColor: Color(0xFFFE4A49),
                               foregroundColor: Colors.white,
-                              icon: Icons.delete,
+                              icon: LucideIcons.trash,
                             ),
                             SlidableAction(
                               onPressed: (context) {
@@ -414,7 +415,7 @@ class _PageGroupState extends State<PageGroup> {
                               backgroundColor:
                                   Theme.of(context).colorScheme.inversePrimary,
                               foregroundColor: Colors.white,
-                              icon: Icons.edit,
+                              icon: LucideIcons.edit2,
                             ),
                           ],
                         ),
@@ -487,7 +488,7 @@ class _PageGroupState extends State<PageGroup> {
           createNoteGroup();
         },
         shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        child: const Icon(LucideIcons.plus),
       ),
     );
   }

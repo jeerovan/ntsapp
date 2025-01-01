@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
@@ -401,7 +402,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.push_pin,
+                        LucideIcons.pin,
                         color: pinned
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -415,7 +416,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.star,
+                        LucideIcons.star,
                         color: starred
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -437,7 +438,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.notes,
+                        LucideIcons.text,
                         color: notes
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -451,7 +452,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.check_circle,
+                        LucideIcons.checkCircle,
                         color: tasks
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -473,7 +474,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.link,
+                        LucideIcons.link,
                         color: links
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -487,7 +488,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.image,
+                        LucideIcons.image,
                         color: images
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -509,7 +510,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.audiotrack,
+                        LucideIcons.music2,
                         color: audio
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -523,7 +524,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.videocam,
+                        LucideIcons.video,
                         color: video
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -545,7 +546,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.insert_drive_file,
+                        LucideIcons.file,
                         color: documents
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -559,7 +560,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.contact_phone,
+                        LucideIcons.contact,
                         color: contacts
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -581,7 +582,7 @@ class _PageItemsState extends State<PageItems> {
                         });
                       },
                       icon: Icon(
-                        Icons.location_on,
+                        LucideIcons.mapPin,
                         color: locations
                             ? null
                             : Theme.of(context).colorScheme.inversePrimary,
@@ -1148,38 +1149,6 @@ class _PageItemsState extends State<PageItems> {
     hideProcessing();
   }
 
-  void _showCameraImageVideoDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Choose media type"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text("Take a photo"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia("camera_image");
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.videocam),
-                title: const Text("Record a video"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _addMedia("camera_video");
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   // Handle adding a media item
   void _addMedia(String type) async {
     if (type == "files") {
@@ -1361,10 +1330,10 @@ class _PageItemsState extends State<PageItems> {
             child: Row(
               children: [
                 Icon(
-                  Icons.edit,
+                  LucideIcons.edit2,
                 ),
                 const SizedBox(
-                  width: 5,
+                  width: 8,
                 ),
                 const Text('Edit'),
               ],
@@ -1375,10 +1344,10 @@ class _PageItemsState extends State<PageItems> {
             child: Row(
               children: [
                 Icon(
-                  Icons.filter_alt,
+                  LucideIcons.filter,
                 ),
                 const SizedBox(
-                  width: 5,
+                  width: 8,
                 ),
                 const Text('Filters'),
               ],
@@ -1392,10 +1361,10 @@ class _PageItemsState extends State<PageItems> {
                 Row(
                   children: [
                     Icon(
-                      Icons.schedule,
+                      LucideIcons.clock9,
                     ),
                     const SizedBox(
-                      width: 5,
+                      width: 8,
                     ),
                     const Text('Date/Time'),
                   ],
@@ -1421,10 +1390,10 @@ class _PageItemsState extends State<PageItems> {
                 Row(
                   children: [
                     Icon(
-                      Icons.rectangle_outlined,
+                      LucideIcons.rectangleHorizontal,
                     ),
                     const SizedBox(
-                      width: 5,
+                      width: 8,
                     ),
                     const Text('Note border'),
                   ],
@@ -1554,7 +1523,7 @@ class _PageItemsState extends State<PageItems> {
                             alignment: Alignment.centerLeft,
                             padding: const EdgeInsets.only(left: 20),
                             child: const Icon(
-                              Icons.reply,
+                              LucideIcons.reply,
                             ),
                           ),
                           child: GestureDetector(
@@ -1633,7 +1602,7 @@ class _PageItemsState extends State<PageItems> {
                       shape: const CircleBorder(),
                       backgroundColor:
                           Theme.of(context).colorScheme.surfaceContainerHigh,
-                      child: const Icon(Icons.keyboard_double_arrow_down),
+                      child: const Icon(LucideIcons.chevronsDown),
                     ),
                   ),
                 if (_filtersEnabled)
@@ -1644,14 +1613,14 @@ class _PageItemsState extends State<PageItems> {
                         _openFilterDialog();
                       },
                       icon: Icon(
-                        Icons.filter_alt,
+                        LucideIcons.filter,
                       ),
                     ),
                   ),
               ],
             ),
           ),
-          // Input box with attachments and send button
+
           _hasNotesSelected ? _buildSelectionOptions() : _buildBottomSection(),
         ],
       ),
@@ -1791,7 +1760,7 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildSelectionOptions() {
     double iconSize = 20;
     return Padding(
-      padding: const EdgeInsets.all(5.0),
+      padding: const EdgeInsets.only(top: 14.0, bottom: 14.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1801,7 +1770,7 @@ class _PageItemsState extends State<PageItems> {
                 clearSelection();
               },
               icon: const Icon(
-                Icons.clear,
+                LucideIcons.x,
               )),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -1813,7 +1782,7 @@ class _PageItemsState extends State<PageItems> {
                     copyToClipboard();
                   },
                   icon: const Icon(
-                    Icons.copy,
+                    LucideIcons.copy,
                   ),
                 ),
               if (selectionHasOnlyTextOrTaskItem)
@@ -1823,15 +1792,15 @@ class _PageItemsState extends State<PageItems> {
                     updateSelectedItemsTaskType();
                   },
                   icon: selectionHasOnlyTaskItems
-                      ? const Icon(Icons.title)
-                      : const Icon(Icons.check_circle),
+                      ? const Icon(LucideIcons.text)
+                      : const Icon(LucideIcons.checkCircle),
                 ),
               IconButton(
                 iconSize: iconSize,
                 onPressed: () {
                   shareNotes();
                 },
-                icon: const Icon(Icons.share),
+                icon: const Icon(LucideIcons.share2),
               ),
               if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
                 IconButton(
@@ -1839,7 +1808,7 @@ class _PageItemsState extends State<PageItems> {
                   onPressed: () {
                     editNote();
                   },
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(LucideIcons.edit2),
                 ),
               IconButton(
                 iconSize: iconSize,
@@ -1847,15 +1816,15 @@ class _PageItemsState extends State<PageItems> {
                   updateSelectedItemsStarred();
                 },
                 icon: selectionHasStarredItems
-                    ? iconStarCrossed()
-                    : const Icon(Icons.star_outline),
+                    ? const Icon(LucideIcons.starOff)
+                    : const Icon(LucideIcons.star),
               ),
               IconButton(
                 iconSize: iconSize,
                 onPressed: () {
                   archiveSelectedItems();
                 },
-                icon: const Icon(Icons.delete_outline),
+                icon: const Icon(LucideIcons.trash),
               ),
               IconButton(
                 iconSize: iconSize,
@@ -1863,8 +1832,8 @@ class _PageItemsState extends State<PageItems> {
                   updateSelectedItemsPinned();
                 },
                 icon: selectionHasPinnedItem
-                    ? iconPinCrossed()
-                    : const Icon(Icons.push_pin_outlined),
+                    ? const Icon(LucideIcons.pinOff)
+                    : const Icon(LucideIcons.pin),
               ),
             ],
           ),
@@ -1907,7 +1876,7 @@ class _PageItemsState extends State<PageItems> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.close),
+                                icon: const Icon(LucideIcons.x),
                                 onPressed:
                                     cancelReplyItem, // Cancel reply action
                               ),
@@ -1958,7 +1927,7 @@ class _PageItemsState extends State<PageItems> {
                           suffixIcon: _isTyping
                               ? null
                               : IconButton(
-                                  icon: const Icon(Icons.add),
+                                  icon: const Icon(LucideIcons.plus),
                                   color: Theme.of(context).colorScheme.outline,
                                   onPressed: () {
                                     _showAttachmentOptions();
@@ -2054,7 +2023,7 @@ class _PageItemsState extends State<PageItems> {
             children: [
               if (Platform.isAndroid || Platform.isIOS)
                 ListTile(
-                  leading: const Icon(Icons.contact_phone),
+                  leading: const Icon(LucideIcons.contact),
                   title: const Text("Contact"),
                   onTap: () {
                     Navigator.pop(context);
@@ -2062,7 +2031,7 @@ class _PageItemsState extends State<PageItems> {
                   },
                 ),
               ListTile(
-                leading: const Icon(Icons.location_on),
+                leading: const Icon(LucideIcons.mapPin),
                 title: const Text("Location"),
                 onTap: () {
                   Navigator.pop(context);
@@ -2071,7 +2040,7 @@ class _PageItemsState extends State<PageItems> {
               ),
               if (ImagePicker().supportsImageSource(ImageSource.camera))
                 ListTile(
-                  leading: const Icon(Icons.camera_alt_outlined),
+                  leading: const Icon(LucideIcons.camera),
                   title: const Text("Camera"),
                   onTap: () {
                     Navigator.pop(context);
@@ -2079,7 +2048,7 @@ class _PageItemsState extends State<PageItems> {
                   },
                 ),
               ListTile(
-                leading: const Icon(Icons.insert_drive_file),
+                leading: const Icon(LucideIcons.file),
                 title: const Text("Files"),
                 onTap: () {
                   Navigator.pop(context);
@@ -2087,7 +2056,7 @@ class _PageItemsState extends State<PageItems> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.check_circle_outline),
+                leading: const Icon(LucideIcons.checkCircle),
                 title: const Text("Checklist"),
                 onTap: () {
                   Navigator.pop(context);
@@ -2095,7 +2064,7 @@ class _PageItemsState extends State<PageItems> {
                 },
                 trailing: _isCreatingTask
                     ? Icon(
-                        Icons.check_circle,
+                        LucideIcons.checkCircle2,
                         color: Theme.of(context).colorScheme.primary,
                       )
                     : const SizedBox.shrink(),

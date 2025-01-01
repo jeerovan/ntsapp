@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category_group.dart';
 
 import 'common_widgets.dart';
@@ -87,7 +88,7 @@ class PageCategoryState extends State<PageCategory> {
           addCategory();
         },
         shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        child: const Icon(LucideIcons.plus),
       ),
     );
   }

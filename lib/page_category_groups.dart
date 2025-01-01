@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
 
@@ -156,7 +157,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                     settings: const RouteSettings(name: "EditCategory"),
                   ));
                 },
-                icon: Icon(Icons.edit)),
+                icon: Icon(LucideIcons.edit2)),
           )
         ],
       ),
@@ -193,7 +194,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                       },
                       backgroundColor: Color(0xFFFE4A49),
                       foregroundColor: Colors.white,
-                      icon: Icons.delete,
+                      icon: LucideIcons.trash,
                     ),
                     SlidableAction(
                       onPressed: (context) {
@@ -202,7 +203,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                       backgroundColor:
                           Theme.of(context).colorScheme.inversePrimary,
                       foregroundColor: Colors.white,
-                      icon: Icons.edit,
+                      icon: LucideIcons.edit2,
                     ),
                   ],
                 ),
@@ -261,7 +262,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
           });
         },
         shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        child: const Icon(LucideIcons.plus),
       ),
     );
   }

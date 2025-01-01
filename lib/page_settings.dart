@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/backup_restore.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -163,7 +164,7 @@ class SettingsPageState extends State<SettingsPage> {
           padding: const EdgeInsets.all(8.0),
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.contrast),
+              leading: const Icon(LucideIcons.sunMoon),
               title: const Text("Theme"),
               onTap: widget.onThemeToggle,
               trailing: IconButton(
@@ -192,7 +193,7 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.lock),
+              leading: const Icon(LucideIcons.lock),
               title: const Text("Lock"),
               trailing: Switch(
                 value: isAuthEnabled,
@@ -234,26 +235,26 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.backup),
+              leading: const Icon(LucideIcons.databaseBackup),
               title: const Text('Backup'),
               onTap: () async {
                 createDownloadBackup();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.replay),
+              leading: const Icon(LucideIcons.rotateCcw),
               title: const Text('Restore'),
               onTap: () async {
                 restoreZipBackup();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.star),
+              leading: const Icon(LucideIcons.star),
               title: const Text('Rate app'),
               onTap: () => _redirectToFeedback(),
             ),
             ListTile(
-              leading: const Icon(Icons.share),
+              leading: const Icon(LucideIcons.share2),
               title: const Text('Share'),
               onTap: () {
                 _share();
@@ -266,13 +267,13 @@ class SettingsPageState extends State<SettingsPage> {
                   final version = snapshot.data?.version ?? '';
                   final buildNumber = snapshot.data?.buildNumber ?? '';
                   return ListTile(
-                    leading: const Icon(Icons.info),
+                    leading: const Icon(LucideIcons.info),
                     title: Text('App version: $version+$buildNumber'),
                     onTap: null,
                   );
                 } else {
                   return const ListTile(
-                    leading: Icon(Icons.info),
+                    leading: Icon(LucideIcons.info),
                     title: Text('Loading...'),
                   );
                 }

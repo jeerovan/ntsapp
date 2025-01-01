@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ntsapp/common_widgets.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enum_item_type.dart';
 
 import 'model_item.dart';
@@ -147,7 +147,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
           onPressed: () {
             markSelectedUnStarred();
           },
-          icon: iconStarCrossed(),
+          icon: Icon(LucideIcons.starOff),
         ),
         const SizedBox(
           width: 5,
@@ -156,7 +156,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
           onPressed: () {
             archiveSelectedItems();
           },
-          icon: const Icon(Icons.delete_outline),
+          icon: const Icon(LucideIcons.trash),
         ),
         const SizedBox(
           width: 5,

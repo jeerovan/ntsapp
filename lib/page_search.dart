@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/widgets_item.dart';
 
@@ -151,7 +152,7 @@ class SearchPageState extends State<SearchPage> {
       controller: _textController,
       autofocus: true,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const Icon(LucideIcons.search),
         hintText: "query, #document etc..",
         hintStyle: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
         border: OutlineInputBorder(
@@ -211,7 +212,7 @@ class SearchPageState extends State<SearchPage> {
         ),
         if (item.archivedAt! > 0 || search.group!.archivedAt! > 0)
           Icon(
-            Icons.delete_outline,
+            LucideIcons.trash,
             size: 15,
             color: Theme.of(context).colorScheme.inversePrimary,
           ),
@@ -289,7 +290,7 @@ class SearchPageState extends State<SearchPage> {
             const SizedBox(height: 5),
             Row(
               children: [
-                const Icon(Icons.videocam, size: 20),
+                const Icon(LucideIcons.video, size: 20),
                 const SizedBox(
                   width: 2,
                 ),
@@ -344,7 +345,7 @@ class SearchPageState extends State<SearchPage> {
           // File size text at the left
           Row(
             children: [
-              const Icon(Icons.audiotrack, size: 15),
+              const Icon(LucideIcons.music2, size: 15),
               const SizedBox(
                 width: 2,
               ),
@@ -387,7 +388,7 @@ class SearchPageState extends State<SearchPage> {
           // File size text at the left
           Row(
             children: [
-              const Icon(Icons.insert_drive_file, size: 15),
+              const Icon(LucideIcons.file, size: 15),
               const SizedBox(
                 width: 2,
               ),
@@ -432,7 +433,7 @@ class SearchPageState extends State<SearchPage> {
           //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Icon(
-              Icons.location_on,
+              LucideIcons.mapPin,
               color: Colors.blue,
               size: 25,
             ),
@@ -468,7 +469,7 @@ class SearchPageState extends State<SearchPage> {
                 )
               : const CircleAvatar(
                   radius: 25,
-                  child: Icon(Icons.person, size: 25),
+                  child: Icon(LucideIcons.userCircle, size: 25),
                 ),
           title: Text(
             '${item.data!["name"]}'.trim(),
@@ -480,7 +481,7 @@ class SearchPageState extends State<SearchPage> {
           ),
           subtitle: Row(
             children: [
-              const Icon(Icons.phone, size: 15, color: Colors.blue),
+              const Icon(LucideIcons.phone, size: 15, color: Colors.blue),
               const SizedBox(width: 5),
               Expanded(
                 child: Column(

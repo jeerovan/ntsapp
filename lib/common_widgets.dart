@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:ntsapp/widgets_item.dart';
@@ -173,7 +174,7 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
     return thumbnail == null
         ? Container(
             width: size * 0.9,
-            height: size  * 0.9,
+            height: size * 0.9,
             decoration: type == "group"
                 ? BoxDecoration(
                     color: colorFromHex(color).withOpacity(0.9),
@@ -281,7 +282,7 @@ class WidgetCategoryGroup extends StatelessWidget {
       trailing: categoryGroup.type == "category"
           ? showCategorySign
               ? Icon(
-                  Icons.navigate_next,
+                  LucideIcons.chevronRight,
                 )
               : const SizedBox.shrink()
           : const SizedBox.shrink(),
@@ -326,7 +327,7 @@ class _WidgetVideoImageThumbnailState extends State<WidgetVideoImageThumbnail> {
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.play_arrow,
+            LucideIcons.play,
             color: Colors.white,
             size: widget.iconSize / 2,
           ),
@@ -405,7 +406,7 @@ class _WidgetVideoPlayerThumbnailState
                       // Semi-transparent grey background
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.play_arrow,
+                    child: Icon(LucideIcons.play,
                         color: Colors.white, size: widget.iconSize / 2),
                   ),
                 ],
@@ -491,7 +492,7 @@ class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.play_arrow,
+                      LucideIcons.play,
                       color: Colors.white,
                       size: widget.iconSize / 2,
                     ),
@@ -787,38 +788,4 @@ class TimerWidgetState extends State<TimerWidget> {
       ),
     );
   }
-}
-
-Widget iconStarCrossed() {
-  return Stack(
-    alignment: Alignment.center, // Align icons at the center
-    children: [
-      const Icon(
-        Icons.star_outline_sharp,
-      ),
-      Transform.rotate(
-        angle: 0.785398, // Angle in radians (e.g., 45 degrees = π/4 ≈ 0.785398)
-        child: const Icon(
-          Icons.horizontal_rule_sharp,
-        ),
-      ),
-    ],
-  );
-}
-
-Widget iconPinCrossed() {
-  return Stack(
-    alignment: Alignment.center, // Align icons at the center
-    children: [
-      const Icon(
-        Icons.push_pin_outlined,
-      ),
-      Transform.rotate(
-        angle: 0.785398, // Angle in radians (e.g., 45 degrees = π/4 ≈ 0.785398)
-        child: const Icon(
-          Icons.horizontal_rule_sharp,
-        ),
-      ),
-    ],
-  );
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import 'common.dart';
 import 'model_category.dart';
@@ -83,7 +84,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.camera_alt),
+                  leading: const Icon(LucideIcons.image),
                   title: const Text("Gallery"),
                   onTap: () async {
                     Navigator.pop(context);
@@ -91,7 +92,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.videocam),
+                  leading: const Icon(LucideIcons.camera),
                   title: const Text("Camera"),
                   onTap: () async {
                     Navigator.pop(context);
@@ -204,7 +205,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                               color: Colors.grey,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.edit),
+                            child: Icon(LucideIcons.edit2),
                           ),
                         ),
                       ]),
@@ -235,7 +236,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
           saveCategory();
         },
         shape: const CircleBorder(),
-        child: const Icon(Icons.check),
+        child: const Icon(LucideIcons.check),
       ),
     );
   }

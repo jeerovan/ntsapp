@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common.dart';
 
 class LocationPicker extends StatefulWidget {
@@ -171,7 +172,7 @@ class _LocationPickerState extends State<LocationPicker> {
               height: 80.0,
               point: _selectedLocation,
               child: const Icon(
-                Icons.location_on,
+                LucideIcons.mapPin,
                 color: Color.fromARGB(255, 255, 7, 7),
               ),
             ),
@@ -181,7 +182,7 @@ class _LocationPickerState extends State<LocationPicker> {
       floatingActionButton: FloatingActionButton(
         onPressed: _getCurrentLocation,
         tooltip: "Use current location",
-        child: const Icon(Icons.my_location),
+        child: const Icon(LucideIcons.locate),
       ),
     );
   }

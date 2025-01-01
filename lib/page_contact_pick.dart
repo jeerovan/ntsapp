@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PageContacts extends StatefulWidget {
@@ -70,7 +71,7 @@ class _PageContactsState extends State<PageContacts> {
                   backgroundImage: MemoryImage(contact.thumbnail!),
                 )
               : const CircleAvatar(
-                  child: Icon(Icons.person),
+                  child: Icon(LucideIcons.userCircle),
                 ),
           title: Text(
             contact.displayName.trim(),

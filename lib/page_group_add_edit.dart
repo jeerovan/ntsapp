@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/page_category.dart';
 
@@ -137,7 +138,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.camera_alt),
+                  leading: const Icon(LucideIcons.image),
                   title: const Text("Gallery"),
                   onTap: () async {
                     Navigator.pop(context);
@@ -145,7 +146,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.videocam),
+                  leading: const Icon(LucideIcons.camera),
                   title: const Text("Camera"),
                   onTap: () async {
                     Navigator.pop(context);
@@ -229,7 +230,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                           color: Colors.grey,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.edit),
+                        child: Icon(LucideIcons.edit2),
                       ),
                     ),
                   ]),
@@ -286,7 +287,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     onPressed: () {
                       removeCategory();
                     },
-                    icon: Icon(Icons.clear),
+                    icon: Icon(LucideIcons.x),
                   ),
               ],
             ),
