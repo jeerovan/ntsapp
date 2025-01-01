@@ -1620,8 +1620,10 @@ class _PageItemsState extends State<PageItems> {
               ],
             ),
           ),
-
-          _hasNotesSelected ? _buildSelectionOptions() : _buildBottomSection(),
+          AnimatedWidgetSwap(
+              firstWidget: widgetBottomSection(),
+              secondWidget: widgetSelectionOptions(),
+              showFirst: !_hasNotesSelected),
         ],
       ),
     );
@@ -1757,10 +1759,10 @@ class _PageItemsState extends State<PageItems> {
     );
   }
 
-  Widget _buildSelectionOptions() {
+  Widget widgetSelectionOptions() {
     double iconSize = 20;
     return Padding(
-      padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
+      padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1843,7 +1845,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   // Input box with attachment and send button
-  Widget _buildBottomSection() {
+  Widget widgetBottomSection() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
