@@ -1760,7 +1760,7 @@ class _PageItemsState extends State<PageItems> {
   Widget _buildSelectionOptions() {
     double iconSize = 20;
     return Padding(
-      padding: const EdgeInsets.only(top: 14.0, bottom: 14.0),
+      padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

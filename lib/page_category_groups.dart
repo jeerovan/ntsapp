@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
 
@@ -70,12 +71,12 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
             : widget.sharedContents;
     widget.onSharedContentsLoaded();
     loadedSharedContents = true;
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => PageItems(
+    Navigator.of(context).push(navigateWithAnimation(
+      PageItems(
         group: group,
         sharedContents: sharedContents,
       ),
-      settings: const RouteSettings(name: "Notes"),
+      true,
     ));
   }
 

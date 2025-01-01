@@ -412,8 +412,8 @@ void addEditTitlePopup(
           maxLines: 1,
           decoration: const InputDecoration(
             hintText: 'Enter text here...',
-            hintStyle: TextStyle(
-                color: Colors.grey, fontWeight: FontWeight.w400),
+            hintStyle:
+                TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
           ),
         ),
         actions: <Widget>[
@@ -605,4 +605,26 @@ class FontSizeController extends ChangeNotifier {
     ModelSetting.update("fontScale", _scaleFactor);
     notifyListeners();
   }
+}
+
+Route navigateWithAnimation(Widget page, bool fromRight) {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionDuration: const Duration(milliseconds: 300),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      // fromRight else fromBottom
+      Offset begin = fromRight ? Offset(1.0, 0.0) : Offset(0.0, 1.0);
+      const end = Offset.zero; // End at the original position
+      const curve = Curves.easeInOut;
+
+      final tween =
+          Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      final offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(
+        position: offsetAnimation,
+        child: child,
+      );
+    },
+  );
 }
