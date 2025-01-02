@@ -1864,84 +1864,88 @@ class _PageItemsState extends State<PageItems> {
   Widget widgetSelectionOptions() {
     double iconSize = 20;
     return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-              iconSize: iconSize,
-              onPressed: () {
-                clearSelection();
-              },
-              icon: const Icon(
-                LucideIcons.x,
-              )),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (selectionHasOnlyTextOrTaskItem)
-                IconButton(
-                  iconSize: iconSize,
-                  onPressed: () {
-                    copyToClipboard();
-                  },
-                  icon: const Icon(
-                    LucideIcons.copy,
+      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: 55.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+                iconSize: iconSize,
+                onPressed: () {
+                  clearSelection();
+                },
+                icon: const Icon(
+                  LucideIcons.x,
+                )),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (selectionHasOnlyTextOrTaskItem)
+                  IconButton(
+                    iconSize: iconSize,
+                    onPressed: () {
+                      copyToClipboard();
+                    },
+                    icon: const Icon(
+                      LucideIcons.copy,
+                    ),
                   ),
-                ),
-              if (selectionHasOnlyTextOrTaskItem)
+                if (selectionHasOnlyTextOrTaskItem)
+                  IconButton(
+                    iconSize: iconSize,
+                    onPressed: () {
+                      updateSelectedItemsTaskType();
+                    },
+                    icon: selectionHasOnlyTaskItems
+                        ? const Icon(LucideIcons.text)
+                        : const Icon(LucideIcons.checkCircle),
+                  ),
                 IconButton(
                   iconSize: iconSize,
                   onPressed: () {
-                    updateSelectedItemsTaskType();
+                    shareNotes();
                   },
-                  icon: selectionHasOnlyTaskItems
-                      ? const Icon(LucideIcons.text)
-                      : const Icon(LucideIcons.checkCircle),
+                  icon: const Icon(LucideIcons.share2),
                 ),
-              IconButton(
-                iconSize: iconSize,
-                onPressed: () {
-                  shareNotes();
-                },
-                icon: const Icon(LucideIcons.share2),
-              ),
-              if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
+                if (selectionHasOnlyTextOrTaskItem &&
+                    _selectedItems.length == 1)
+                  IconButton(
+                    iconSize: iconSize,
+                    onPressed: () {
+                      editNote();
+                    },
+                    icon: const Icon(LucideIcons.edit2),
+                  ),
                 IconButton(
                   iconSize: iconSize,
                   onPressed: () {
-                    editNote();
+                    updateSelectedItemsStarred();
                   },
-                  icon: const Icon(LucideIcons.edit2),
+                  icon: selectionHasStarredItems
+                      ? const Icon(LucideIcons.starOff)
+                      : const Icon(LucideIcons.star),
                 ),
-              IconButton(
-                iconSize: iconSize,
-                onPressed: () {
-                  updateSelectedItemsStarred();
-                },
-                icon: selectionHasStarredItems
-                    ? const Icon(LucideIcons.starOff)
-                    : const Icon(LucideIcons.star),
-              ),
-              IconButton(
-                iconSize: iconSize,
-                onPressed: () {
-                  archiveSelectedItems();
-                },
-                icon: const Icon(LucideIcons.trash),
-              ),
-              IconButton(
-                iconSize: iconSize,
-                onPressed: () {
-                  updateSelectedItemsPinned();
-                },
-                icon: selectionHasPinnedItem
-                    ? const Icon(LucideIcons.pinOff)
-                    : const Icon(LucideIcons.pin),
-              ),
-            ],
-          ),
-        ],
+                IconButton(
+                  iconSize: iconSize,
+                  onPressed: () {
+                    archiveSelectedItems();
+                  },
+                  icon: const Icon(LucideIcons.trash),
+                ),
+                IconButton(
+                  iconSize: iconSize,
+                  onPressed: () {
+                    updateSelectedItemsPinned();
+                  },
+                  icon: selectionHasPinnedItem
+                      ? const Icon(LucideIcons.pinOff)
+                      : const Icon(LucideIcons.pin),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1950,171 +1954,177 @@ class _PageItemsState extends State<PageItems> {
   Widget widgetBottomSection() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(
-            child: _isRecording
-                ? _buildRecordingSection()
-                : Column(
-                    children: [
-                      if (replyOnItem != null)
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 2, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: NotePreviewSummary(
-                                  item: replyOnItem!,
-                                  showTimestamp: false,
-                                  showImagePreview: true,
-                                  expanded: true,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: 55.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: _isRecording
+                  ? _buildRecordingSection()
+                  : Column(
+                      children: [
+                        if (replyOnItem != null)
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 2, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondaryContainer,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: NotePreviewSummary(
+                                    item: replyOnItem!,
+                                    showTimestamp: false,
+                                    showImagePreview: true,
+                                    expanded: true,
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(LucideIcons.x),
-                                onPressed:
-                                    cancelReplyItem, // Cancel reply action
-                              ),
-                            ],
-                          ),
-                        ),
-                      TextField(
-                        controller: _textController,
-                        maxLines: 20,
-                        minLines: 1,
-                        keyboardType: TextInputType.multiline,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface),
-                        decoration: InputDecoration(
-                          filled: true,
-                          hintText: _isCreatingTask
-                              ? "Create a task"
-                              : "Add a note...",
-                          hintStyle: TextStyle(
-                              color:
-                                  Theme.of(context).colorScheme.outlineVariant,
-                              fontWeight: FontWeight.w400),
-                          fillColor: Theme.of(context).colorScheme.surface,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                            borderSide: BorderSide(
-                                width: 1.0,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                            borderSide: BorderSide(
-                                width: 0.5,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                            borderSide: BorderSide(
-                                width: 0.5,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
-                          suffixIcon: _isTyping
-                              ? null
-                              : IconButton(
-                                  icon: const Icon(LucideIcons.plus),
-                                  color: Theme.of(context).colorScheme.outline,
-                                  onPressed: () {
-                                    _showAttachmentOptions();
-                                  },
+                                IconButton(
+                                  icon: const Icon(LucideIcons.x),
+                                  onPressed:
+                                      cancelReplyItem, // Cancel reply action
                                 ),
+                              ],
+                            ),
+                          ),
+                        TextField(
+                          controller: _textController,
+                          maxLines: 20,
+                          minLines: 1,
+                          keyboardType: TextInputType.multiline,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface),
+                          decoration: InputDecoration(
+                            filled: true,
+                            hintText: _isCreatingTask
+                                ? "Create a task"
+                                : "Add a note...",
+                            hintStyle: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant,
+                                fontWeight: FontWeight.w400),
+                            fillColor: Theme.of(context).colorScheme.surface,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                              borderSide: BorderSide(
+                                  width: 1.0,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                              borderSide: BorderSide(
+                                  width: 0.5,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                              borderSide: BorderSide(
+                                  width: 0.5,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 10),
+                            suffixIcon: _isTyping
+                                ? null
+                                : IconButton(
+                                    icon: const Icon(LucideIcons.plus),
+                                    color:
+                                        Theme.of(context).colorScheme.outline,
+                                    onPressed: () {
+                                      _showAttachmentOptions();
+                                    },
+                                  ),
+                          ),
+                          onChanged: (value) => _onInputTextChanged(value),
+                          scrollController: ScrollController(),
+                          // Enable scrolling
+                          textAlignVertical:
+                              TextAlignVertical.top, // Align text to the top
                         ),
-                        onChanged: (value) => _onInputTextChanged(value),
-                        scrollController: ScrollController(),
-                        // Enable scrolling
-                        textAlignVertical:
-                            TextAlignVertical.top, // Align text to the top
-                      ),
-                    ],
-                  ),
-          ),
-          GestureDetector(
-            onLongPress: () async {
-              if (!_isTyping && !_isRecording) {
-                await _startRecording();
-              }
-            },
-            onTap: () async {
-              if (_isRecording) {
-                await _stopRecording();
-              }
-              if (!_isTyping && !_isRecording) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Press long to start recording.'),
-                      duration: Duration(seconds: 1),
+                      ],
                     ),
-                  );
+            ),
+            GestureDetector(
+              onLongPress: () async {
+                if (!_isTyping && !_isRecording) {
+                  await _startRecording();
                 }
-              }
-            },
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: IconButton(
-                    icon: Icon(
-                      _isRecording
-                          ? Icons.stop
-                          : _isTyping
-                              ? _isCreatingTask
-                                  ? Icons.check
-                                  : Icons.send
-                              : Icons.mic,
-                      color: Theme.of(context).colorScheme.primary,
+              },
+              onTap: () async {
+                if (_isRecording) {
+                  await _stopRecording();
+                }
+                if (!_isTyping && !_isRecording) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Press long to start recording.'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
                     ),
-                    onPressed: _isRecording
-                        ? _stopRecording
-                        : _isTyping
-                            ? () {
-                                final String text = _textController.text.trim();
-                                if (text.isNotEmpty) {
-                                  ItemType itemType = _isCreatingTask
-                                      ? ItemType.task
-                                      : ItemType.text;
-                                  _addItemToDbAndDisplayList(
-                                      text, itemType, null, null);
-                                  _textController.clear();
-                                  _onInputTextChanged("");
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      icon: Icon(
+                        _isRecording
+                            ? Icons.stop
+                            : _isTyping
+                                ? _isCreatingTask
+                                    ? Icons.check
+                                    : Icons.send
+                                : Icons.mic,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: _isRecording
+                          ? _stopRecording
+                          : _isTyping
+                              ? () {
+                                  final String text =
+                                      _textController.text.trim();
+                                  if (text.isNotEmpty) {
+                                    ItemType itemType = _isCreatingTask
+                                        ? ItemType.task
+                                        : ItemType.text;
+                                    _addItemToDbAndDisplayList(
+                                        text, itemType, null, null);
+                                    _textController.clear();
+                                    _onInputTextChanged("");
+                                  }
                                 }
-                              }
-                            : null,
+                              : null,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
