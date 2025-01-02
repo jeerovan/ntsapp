@@ -1093,11 +1093,17 @@ class _PageItemsState extends State<PageItems> {
     if (link.isNotEmpty) {
       final Metadata? metaData = await MetadataFetch.extract(link);
       if (metaData != null) {
+        int portrait = 1;
+        // download the url image if available
+        if (metaData.image != null) {
+          portrait = await checkDownloadNetworkImage(item.id!, metaData.image!);
+        }
         Map<String, dynamic> urlInfo = {
           "url": link,
           "title": metaData.title,
           "desc": metaData.description,
-          "image": metaData.image
+          "image": metaData.image,
+          "portrait": portrait
         };
         Map<String, dynamic>? data = item.data;
         if (data != null) {
@@ -1108,10 +1114,7 @@ class _PageItemsState extends State<PageItems> {
           item.data = {"url_info": urlInfo};
           await item.update();
         }
-        // download the url image if available
-        if (metaData.image != null) {
-          await checkDownloadNetworkImage(item.id!, metaData.image!);
-        }
+
         if (mounted) {
           setState(() {});
         }

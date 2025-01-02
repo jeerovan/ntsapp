@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -266,13 +265,6 @@ String mediaFileDuration(int seconds) {
       : "$minutesStr:$secondsStr";
 }
 
-Widget rotatedWidget(Widget widget) {
-  return Transform.rotate(
-    angle: 180 * math.pi / 180,
-    child: widget,
-  );
-}
-
 Uint8List? getImageThumbnail(Uint8List bytes) {
   int maxSize = 150;
   img.Image? src = img.decodeImage(bytes);
@@ -281,6 +273,16 @@ Uint8List? getImageThumbnail(Uint8List bytes) {
     return Uint8List.fromList(img.encodePng(resized));
   }
   return null;
+}
+
+Map<String, int> getImageDimension(Uint8List bytes) {
+  img.Image? src = img.decodeImage(bytes);
+  if (src != null) {
+    int srcWidth = src.width;
+    int srcHeight = src.height;
+    return {"width": srcWidth, "height": srcHeight};
+  }
+  return {"width": 0, "height": 0};
 }
 
 String readableBytes(int bytes, [int decimals = 2]) {
@@ -373,27 +375,34 @@ Future<Map<String, dynamic>> processAndGetFileAttributes(
   return {"path": newPath, "name": fileName, "size": fileSize, "mime": mime};
 }
 
-Future<void> checkDownloadNetworkImage(String itemId, String imageUrl) async {
+Future<int> checkDownloadNetworkImage(String itemId, String imageUrl) async {
   String fileName = '$itemId-urlimage.png';
   String directory = "image";
-  File? existing = await getFile(directory, fileName);
   String newPath = await getFilePath(directory, fileName);
   await checkAndCreateDirectory(newPath);
-  if (existing == null) {
-    try {
-      final response = await http.get(Uri.parse(imageUrl));
-      if (response.statusCode == 200) {
-        Uint8List imageBytes = response.bodyBytes;
-        Uint8List? thumbnail = getImageThumbnail(imageBytes);
-        if (thumbnail != null) {
-          final file = File(newPath);
-          await file.writeAsBytes(thumbnail);
+  int portrait = 1;
+  try {
+    final response = await http.get(Uri.parse(imageUrl));
+    if (response.statusCode == 200) {
+      Uint8List imageBytes = response.bodyBytes;
+      Uint8List? thumbnail = getImageThumbnail(imageBytes);
+      if (thumbnail != null) {
+        final file = File(newPath);
+        await file.writeAsBytes(thumbnail);
+        Map<String, int> imageDimension = getImageDimension(thumbnail);
+        int imageWidth = imageDimension["width"]!;
+        int imageHeight = imageDimension["height"]!;
+        if (imageWidth > 0 && imageHeight > 0) {
+          if (imageWidth > imageHeight) {
+            portrait = 0;
+          }
         }
       }
-    } catch (e) {
-      debugPrint('Error downloading url image: $e');
     }
+  } catch (e) {
+    debugPrint('Error downloading url image: $e');
   }
+  return portrait;
 }
 
 void addEditTitlePopup(

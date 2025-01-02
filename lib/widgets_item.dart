@@ -679,28 +679,40 @@ class NoteUrlPreview extends StatelessWidget {
     String filePath = path.join(imageDirectory, fileName);
     File imageFile = File(filePath);
     bool imageAvailable = imageFile.existsSync();
-    return ListTile(
-      leading: imageAvailable
-          ? Image.file(
-              imageFile,
-              width: 100,
-              fit: BoxFit.contain,
-            )
-          : null,
-      title: urlInfo["title"] == null
-          ? null
-          : Text(
-              urlInfo["title"],
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-      subtitle: urlInfo["desc"] == null
-          ? null
-          : Text(
-              urlInfo["desc"],
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+    bool portrait = urlInfo["portrait"] == 1 ? true : false;
+    if (imageAvailable) {}
+    return Column(
+      children: [
+        if (!portrait)
+          Image.file(
+            imageFile,
+            height: 100,
+            fit: BoxFit.contain,
+          ),
+        ListTile(
+          leading: imageAvailable && portrait
+              ? Image.file(
+                  imageFile,
+                  width: 80,
+                  fit: BoxFit.contain,
+                )
+              : null,
+          title: urlInfo["title"] == null
+              ? null
+              : Text(
+                  urlInfo["title"],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+          subtitle: urlInfo["desc"] == null
+              ? null
+              : Text(
+                  urlInfo["desc"],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+        ),
+      ],
     );
   }
 }
