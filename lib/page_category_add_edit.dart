@@ -141,15 +141,15 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         ),
       );
     } else {
-      return title == null
-          ? const SizedBox.shrink()
-          : Text(
+      return title != null && title!.isNotEmpty
+          ? Text(
               title![0].toUpperCase(),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: size, // Adjust font size relative to the circle size
               ),
-            );
+            )
+          : const SizedBox.shrink();
     }
   }
 
@@ -215,6 +215,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                   child: TextField(
                     controller: categoryController,
                     autofocus: true,
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface),
                     decoration: const InputDecoration(
                       hintText: 'Category title', // Placeholder
                       hintStyle: TextStyle(

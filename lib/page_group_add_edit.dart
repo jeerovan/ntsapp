@@ -114,16 +114,16 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         backgroundImage: MemoryImage(thumbnail!),
       );
     } else {
-      return title == null
-          ? const SizedBox.shrink()
-          : Text(
-              title!.isNotEmpty ? title![0].toUpperCase() : "",
+      return title != null && title!.isNotEmpty
+          ? Text(
+              title![0].toUpperCase(),
               style: TextStyle(
                 color: Colors.white,
                 fontSize:
                     radius, // Adjust font size relative to the circle size
               ),
-            );
+            )
+          : const SizedBox.shrink();
     }
   }
 
@@ -240,6 +240,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               child: TextField(
                 controller: titleController,
                 autofocus: widget.group == null ? false : true,
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: const InputDecoration(
                   hintText: 'Group title', // Placeholder
                   hintStyle: TextStyle(
@@ -264,10 +266,27 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                         addToCategory();
                       },
                       child: category == null
-                          ? Text("Select category")
+                          ? Text(
+                              "Select category",
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
+                            )
                           : category!.title == "DND"
-                              ? Text("Select category")
-                              : Text(category!.title),
+                              ? Text(
+                                  "Select category",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                                )
+                              : Text(
+                                  category!.title,
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                                ),
                     ),
                   ),
                 ),

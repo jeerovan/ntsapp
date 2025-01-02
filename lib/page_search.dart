@@ -151,6 +151,7 @@ class SearchPageState extends State<SearchPage> {
     return TextField(
       controller: _textController,
       autofocus: true,
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         prefixIcon: const Icon(LucideIcons.search),
         hintText: "query, #document etc..",

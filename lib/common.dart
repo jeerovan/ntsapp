@@ -418,6 +418,7 @@ void addEditTitlePopup(
         content: TextField(
           controller: controller,
           maxLines: 1,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: const InputDecoration(
             hintText: 'Enter text here...',
             hintStyle:

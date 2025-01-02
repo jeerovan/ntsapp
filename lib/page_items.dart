@@ -894,6 +894,7 @@ class _PageItemsState extends State<PageItems> {
             minLines: 1,
             maxLines: null,
             controller: controller,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             decoration: InputDecoration(
               border: OutlineInputBorder(),
             ),
@@ -1991,6 +1992,8 @@ class _PageItemsState extends State<PageItems> {
                         maxLines: 20,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           filled: true,
                           hintText: _isCreatingTask

@@ -44,6 +44,7 @@ class _PageEditNoteState extends State<PageEditNote> {
               controller: controller,
               autofocus: true,
               maxLines: null,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding:
