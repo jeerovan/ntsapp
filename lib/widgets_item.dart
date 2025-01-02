@@ -682,6 +682,7 @@ class NoteUrlPreview extends StatelessWidget {
     bool portrait = urlInfo["portrait"] == 1 ? true : false;
     if (imageAvailable) {}
     return Column(
+      //crossAxisAlignment: CrossAxisAlignment.start, // For desktops
       children: [
         if (!portrait)
           Image.file(
