@@ -164,11 +164,17 @@ class ItemWidgetImage extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(
               width: size,
-              child: Image.memory(
-                item.thumbnail!,
-                width: double.infinity, // Full width of container
-                fit: BoxFit.cover,
-              ),
+              child: item.thumbnail == null
+                  ? Image.asset(
+                      "assets/image.webp",
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.memory(
+                      item.thumbnail!,
+                      width: double.infinity, // Full width of container
+                      fit: BoxFit.cover,
+                    ),
             ),
           ),
           const SizedBox(

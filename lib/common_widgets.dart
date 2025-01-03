@@ -411,9 +411,9 @@ class _WidgetVideoPlayerThumbnailState
                   ),
                 ],
               )
-            : Image.file(
+            : Image.asset(
                 // handle downloading with icon
-                File("assets/image.webp"),
+                'assets/image.webp',
                 fit: BoxFit
                     .cover, // Ensures the image covers the available space
               )
@@ -499,9 +499,9 @@ class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
                   ),
                 ],
               )
-            : Image.file(
+            : Image.asset(
                 // handle downloading with icon
-                File("assets/image.webp"),
+                'assets/image.webp',
                 fit: BoxFit
                     .cover, // Ensures the image covers the available space
               )

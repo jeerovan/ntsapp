@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/page_db_fixes.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -147,6 +148,9 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     String processMedia = ModelSetting.getForKey("process_media", "no");
+    String fixVideoThumbnailTask = "fix_video_thumbnail";
+    String fixedVideoThumbnail =
+        ModelSetting.getForKey(fixVideoThumbnailTask, "no");
     Widget page = PageGroup(
       sharedContents: _sharedContents,
       isDarkMode: isDark,
@@ -157,6 +161,11 @@ class _MainAppState extends State<MainApp> {
         isDarkMode: isDark,
         onThemeToggle: _toggleTheme,
       );
+    } else if (fixedVideoThumbnail == "no") {
+      page = PageDbFixes(
+          isDarkMode: isDark,
+          onThemeToggle: _toggleTheme,
+          task: fixVideoThumbnailTask);
     }
     return ChangeNotifierProvider(
       create: (_) => FontSizeController(),

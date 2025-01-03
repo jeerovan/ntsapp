@@ -1176,10 +1176,6 @@ class _PageItemsState extends State<PageItems> {
             Uint8List? thumbnail = await extractor.getThumbnail(
                 seekPosition:
                     Duration(milliseconds: (durationSeconds * 500).toInt()));
-            if (thumbnail != null) {
-              // make sure max size is 150
-              thumbnail = getImageThumbnail(thumbnail);
-            }
             Map<String, dynamic> data = {
               "path": newPath,
               "mime": attrs["mime"],
@@ -1805,7 +1801,7 @@ class _PageItemsState extends State<PageItems> {
       int count = await ModelItem.mediaCountInGroup(groupId);
       if (mounted) {
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => PageMedia(
+          builder: (context) => PageMediaViewer(
             id: id,
             groupId: groupId,
             index: index,

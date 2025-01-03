@@ -266,7 +266,7 @@ String mediaFileDuration(int seconds) {
 }
 
 Uint8List? getImageThumbnail(Uint8List bytes) {
-  int maxSize = 150;
+  int maxSize = 200;
   img.Image? src = img.decodeImage(bytes);
   if (src != null) {
     img.Image resized = img.copyResize(src, width: maxSize);
@@ -537,7 +537,9 @@ class VideoInfoExtractor {
         return null;
       }
 
-      return screenshot;
+      Uint8List? thumbnail = getImageThumbnail(screenshot);
+
+      return thumbnail;
     } catch (e) {
       debugPrint('Error getting thumbnail: $e');
       return null;

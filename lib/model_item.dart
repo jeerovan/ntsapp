@@ -380,6 +380,14 @@ class ModelItem {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
+  static Future<List<ModelItem>> getForType(ItemType ItemType) async {
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows =
+        await db.query("item", where: "type = ?", whereArgs: [ItemType.value]);
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
   Future<int> insert() async {
     final dbHelper = DatabaseHelper.instance;
     Map<String, dynamic> map = toMap();

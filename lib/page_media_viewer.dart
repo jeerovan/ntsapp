@@ -9,13 +9,13 @@ import 'package:ntsapp/enum_item_type.dart';
 import 'package:video_player/video_player.dart';
 import 'model_item.dart';
 
-class PageMedia extends StatefulWidget {
+class PageMediaViewer extends StatefulWidget {
   final String id;
   final String groupId;
   final int index;
   final int count;
 
-  const PageMedia(
+  const PageMediaViewer(
       {super.key,
       required this.id,
       required this.groupId,
@@ -23,10 +23,10 @@ class PageMedia extends StatefulWidget {
       required this.count});
 
   @override
-  State<PageMedia> createState() => _PageMediaState();
+  State<PageMediaViewer> createState() => _PageMediaViewerState();
 }
 
-class _PageMediaState extends State<PageMedia> {
+class _PageMediaViewerState extends State<PageMediaViewer> {
   late PageController _pageController;
   ModelItem? currentItem;
   ModelItem? previousItem;
@@ -131,9 +131,9 @@ class _PageMediaState extends State<PageMedia> {
 
   Widget renderMedia(ModelItem item) {
     bool fileAvailable = false;
-    File file = File("assets/image.webp");
+
     if (item.data != null) {
-      file = File(item.data!["path"]);
+      File file = File(item.data!["path"]);
       fileAvailable = file.existsSync();
     }
     Widget widget = const SizedBox.shrink();
@@ -141,23 +141,26 @@ class _PageMediaState extends State<PageMedia> {
       case ItemType.image: // image
         widget = fileAvailable
             ? Image.file(
-                file,
-                fit: BoxFit
-                    .cover, // Ensures the image covers the available space
-              )
-            : Image.memory(
-                item.thumbnail!,
+                File(item.data!["path"]),
                 fit: BoxFit.cover,
-              );
+              )
+            : item.thumbnail != null
+                ? Image.memory(
+                    item.thumbnail!,
+                    fit: BoxFit.cover,
+                  )
+                : Image.asset(
+                    "assets/image.webp",
+                    fit: BoxFit.cover,
+                  );
       case ItemType.video: // video
         widget = fileAvailable
             ? canUseVideoPlayer
                 ? WidgetVideoPlayer(videoPath: item.data!["path"])
                 : WidgetMediaKitPlayer(videoPath: item.data!["path"])
-            : Image.file(
-                file,
-                fit: BoxFit
-                    .cover, // Ensures the image covers the available space
+            : Image.asset(
+                "assets/image.webp",
+                fit: BoxFit.cover,
               );
       default:
         widget = const SizedBox.shrink();
