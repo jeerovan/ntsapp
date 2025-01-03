@@ -1170,10 +1170,16 @@ class _PageItemsState extends State<PageItems> {
           try {
             String name = attrs['name'];
             final mediaInfo = await extractor.getVideoInfo();
-            String duration = mediaFileDuration(mediaInfo['duration']);
+            int durationSeconds = mediaInfo['duration'];
+            String duration = mediaFileDuration(durationSeconds);
             double aspect = mediaInfo['aspect'];
             Uint8List? thumbnail = await extractor.getThumbnail(
-                seekPosition: Duration(milliseconds: 100));
+                seekPosition:
+                    Duration(milliseconds: (durationSeconds * 500).toInt()));
+            if (thumbnail != null) {
+              // make sure max size is 150
+              thumbnail = getImageThumbnail(thumbnail);
+            }
             Map<String, dynamic> data = {
               "path": newPath,
               "mime": attrs["mime"],
