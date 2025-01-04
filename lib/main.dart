@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/page_db_fixes.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app_config.dart';
 import 'database_helper.dart';
+import 'model_item.dart';
 import 'model_setting.dart';
 import 'page_home.dart';
 import 'themes.dart';
@@ -50,6 +52,12 @@ Future<void> main() async {
   };
 
   await initializeDirectories();
+
+  // check set flags for fixes for fresh installs
+  List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);
+  if (videoItems.isEmpty) {
+    ModelSetting.update("fix_video_thumbnail", "yes");
+  }
 
   await SentryFlutter.init(
     (options) {
