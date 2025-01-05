@@ -156,7 +156,6 @@ class _PageGroupState extends State<PageGroup> {
             loadCategoriesGroups();
           },
         ),
-        true,
       ));
     }
   }
@@ -168,7 +167,6 @@ class _PageGroupState extends State<PageGroup> {
         group: group,
         sharedContents: sharedContents,
       ),
-      true,
     ))
         .then((_) {
       setState(() {

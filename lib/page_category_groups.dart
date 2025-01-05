@@ -71,13 +71,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
             : widget.sharedContents;
     widget.onSharedContentsLoaded();
     loadedSharedContents = true;
-    Navigator.of(context).push(navigateWithAnimation(
-      PageItems(
-        group: group,
-        sharedContents: sharedContents,
-      ),
-      true,
-    ));
+    Navigator.of(context).push(navigateWithAnimation(PageItems(
+      group: group,
+      sharedContents: sharedContents,
+    )));
   }
 
   Future<void> archiveGroup(ModelGroup group) async {

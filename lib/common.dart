@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:media_kit/media_kit.dart';
@@ -12,7 +13,6 @@ import 'package:mime/mime.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -618,23 +618,32 @@ class FontSizeController extends ChangeNotifier {
   }
 }
 
-Route navigateWithAnimation(Widget page, bool fromRight) {
+Route navigateWithAnimation(Widget newScreen) {
   return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (context, animation, secondaryAnimation) => newScreen,
+    transitionDuration: const Duration(milliseconds: 150),
+    reverseTransitionDuration: const Duration(milliseconds: 150),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       // fromRight else fromBottom
-      Offset begin = fromRight ? Offset(1.0, 0.0) : Offset(0.0, 1.0);
+      Offset begin = Offset(0.0, 0.02);
       const end = Offset.zero; // End at the original position
-      const curve = Curves.easeInOut;
+      const curve = Curves.linear;
 
       final tween =
           Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
       final offsetAnimation = animation.drive(tween);
 
-      return SlideTransition(
-        position: offsetAnimation,
-        child: child,
+      // Create a Tween for fade animation (from 0.0 to 1.0)
+      final fadeTween =
+          Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+      final fadeAnimation = animation.drive(fadeTween);
+
+      return FadeTransition(
+        opacity: fadeAnimation,
+        child: SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        ),
       );
     },
   );
