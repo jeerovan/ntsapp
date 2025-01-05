@@ -15,13 +15,14 @@ import 'package:ntsapp/enum_item_type.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_edit_note.dart';
 import 'package:ntsapp/widgets_item.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:siri_wave/siri_wave.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:path/path.dart' as path;
+
 import 'common.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -2039,16 +2040,18 @@ class _PageItemsState extends State<PageItems> {
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 15, vertical: 10),
-                            suffixIcon: _isTyping
-                                ? null
-                                : IconButton(
-                                    icon: const Icon(LucideIcons.plus),
-                                    color:
-                                        Theme.of(context).colorScheme.outline,
-                                    onPressed: () {
-                                      _showAttachmentOptions();
-                                    },
-                                  ),
+                            suffixIcon: AnimatedOpacity(
+                              opacity: _isTyping ? 0.0 : 1.0,
+                              duration: const Duration(milliseconds: 150),
+                              // Set your animation duration
+                              child: IconButton(
+                                icon: const Icon(LucideIcons.plus),
+                                color: Theme.of(context).colorScheme.outline,
+                                onPressed: () {
+                                  _showAttachmentOptions();
+                                },
+                              ),
+                            ),
                           ),
                           onChanged: (value) => _onInputTextChanged(value),
                           scrollController: ScrollController(),
@@ -2092,34 +2095,53 @@ class _PageItemsState extends State<PageItems> {
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
-                    child: IconButton(
-                      icon: Icon(
-                        _isRecording
-                            ? Icons.stop
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                        // Using ScaleTransition to animate the icon change
+                        return ScaleTransition(
+                          scale: animation, // The scale factor of the animation
+                          child:
+                              child, // The widget to be animated (the IconButton)
+                        );
+                      },
+                      child: IconButton(
+                        key: ValueKey<String>(_isRecording
+                            ? 'stop'
                             : _isTyping
                                 ? _isCreatingTask
-                                    ? Icons.check
-                                    : Icons.send
-                                : Icons.mic,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      onPressed: _isRecording
-                          ? _stopRecording
-                          : _isTyping
-                              ? () {
-                                  final String text =
-                                      _textController.text.trim();
-                                  if (text.isNotEmpty) {
-                                    ItemType itemType = _isCreatingTask
-                                        ? ItemType.task
-                                        : ItemType.text;
-                                    _addItemToDbAndDisplayList(
-                                        text, itemType, null, null);
-                                    _textController.clear();
-                                    _onInputTextChanged("");
+                                    ? 'check'
+                                    : 'send'
+                                : 'mic'),
+                        icon: Icon(
+                          _isRecording
+                              ? Icons.stop
+                              : _isTyping
+                                  ? _isCreatingTask
+                                      ? Icons.check
+                                      : Icons.send
+                                  : Icons.mic,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        onPressed: _isRecording
+                            ? _stopRecording
+                            : _isTyping
+                                ? () {
+                                    final String text =
+                                        _textController.text.trim();
+                                    if (text.isNotEmpty) {
+                                      ItemType itemType = _isCreatingTask
+                                          ? ItemType.task
+                                          : ItemType.text;
+                                      _addItemToDbAndDisplayList(
+                                          text, itemType, null, null);
+                                      _textController.clear();
+                                      _onInputTextChanged("");
+                                    }
                                   }
-                                }
-                              : null,
+                                : null,
+                      ),
                     ),
                   ),
                 ),
