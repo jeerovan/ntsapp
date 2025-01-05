@@ -164,7 +164,7 @@ class SettingsPageState extends State<SettingsPage> {
           padding: const EdgeInsets.all(8.0),
           children: <Widget>[
             ListTile(
-              leading: const Icon(LucideIcons.sunMoon),
+              leading: const Icon(LucideIcons.sunMoon, color: Colors.grey),
               title: const Text("Theme"),
               onTap: widget.onThemeToggle,
               trailing: IconButton(
@@ -193,7 +193,7 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(LucideIcons.lock),
+              leading: const Icon(LucideIcons.lock, color: Colors.grey),
               title: const Text("Lock"),
               trailing: Switch(
                 value: isAuthEnabled,
@@ -203,7 +203,7 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.text_fields),
+              leading: const Icon(Icons.text_fields, color: Colors.grey),
               title: const Text("Font size"),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -235,26 +235,27 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(LucideIcons.databaseBackup),
+              leading:
+                  const Icon(LucideIcons.databaseBackup, color: Colors.grey),
               title: const Text('Backup'),
               onTap: () async {
                 createDownloadBackup();
               },
             ),
             ListTile(
-              leading: const Icon(LucideIcons.rotateCcw),
+              leading: const Icon(LucideIcons.rotateCcw, color: Colors.grey),
               title: const Text('Restore'),
               onTap: () async {
                 restoreZipBackup();
               },
             ),
             ListTile(
-              leading: const Icon(LucideIcons.star),
+              leading: const Icon(LucideIcons.star, color: Colors.grey),
               title: const Text('Rate app'),
               onTap: () => _redirectToFeedback(),
             ),
             ListTile(
-              leading: const Icon(LucideIcons.share2),
+              leading: const Icon(LucideIcons.share2, color: Colors.grey),
               title: const Text('Share'),
               onTap: () {
                 _share();
@@ -267,13 +268,13 @@ class SettingsPageState extends State<SettingsPage> {
                   final version = snapshot.data?.version ?? '';
                   final buildNumber = snapshot.data?.buildNumber ?? '';
                   return ListTile(
-                    leading: const Icon(LucideIcons.info),
+                    leading: const Icon(LucideIcons.info, color: Colors.grey),
                     title: Text('App version: $version+$buildNumber'),
                     onTap: null,
                   );
                 } else {
                   return const ListTile(
-                    leading: Icon(LucideIcons.info),
+                    leading: Icon(LucideIcons.info, color: Colors.grey),
                     title: Text('Loading...'),
                   );
                 }
