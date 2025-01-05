@@ -1522,31 +1522,16 @@ class _PageItemsState extends State<PageItems> {
 
   @override
   Widget build(BuildContext context) {
-    double size = 40;
     bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
       appBar: AppBar(
         actions: _buildAppbarDefaultOptions(),
-        title: Row(
-          children: [
-            WidgetCategoryGroupAvatar(
-              type: "group",
-              size: size,
-              color: noteGroup.color,
-              title: noteGroup.title,
-              thumbnail: noteGroup.thumbnail,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                noteGroup.title,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ],
+        title: Text(
+          noteGroup.title,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 18,
+          ),
         ),
       ),
       body: Column(

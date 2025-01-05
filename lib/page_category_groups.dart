@@ -114,30 +114,15 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
 
   @override
   Widget build(BuildContext context) {
-    double size = 40;
     return Scaffold(
       appBar: AppBar(
         title: loadedSharedContents || widget.sharedContents.isEmpty
-            ? Row(
-                children: [
-                  WidgetCategoryGroupAvatar(
-                    type: "category",
-                    size: size,
-                    color: category.color,
-                    title: category.title,
-                    thumbnail: category.thumbnail,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      category.title,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                ],
+            ? Text(
+                category.title,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                ),
               )
             : Text("Select..."),
         actions: [

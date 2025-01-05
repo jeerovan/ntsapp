@@ -582,12 +582,15 @@ class NotePreviewSummary extends StatelessWidget {
         case ItemType.text:
           return item!.text; // Text content
         case ItemType.image:
+          return "Image";
         case ItemType.video:
+          return "Video";
         case ItemType.audio:
+          return "Audio";
         case ItemType.document:
-          return item!.data!["name"]; // File name for media types
+          return "Document";
         case ItemType.contact:
-          return item!.data!["name"]; // Contact name
+          return "Contact";
         case ItemType.location:
           return "Location";
         case ItemType.task:
@@ -607,7 +610,7 @@ class NotePreviewSummary extends StatelessWidget {
         return item.thumbnail == null
             ? const SizedBox.shrink()
             : ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(5),
                 child: SizedBox(
                   width: 40,
                   child: Image.memory(
@@ -626,12 +629,12 @@ class NotePreviewSummary extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
+        /* Icon(
           _getIcon(),
           size: 13,
           color: Colors.grey,
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: 5), */
         expanded == true
             ? Expanded(
                 child: Text(

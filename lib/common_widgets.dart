@@ -172,28 +172,12 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return thumbnail == null
-        ? Container(
-            width: size * 0.9,
-            height: size * 0.9,
-            decoration: type == "group"
-                ? BoxDecoration(
-                    color: colorFromHex(color).withOpacity(0.9),
-                    shape: BoxShape.circle,
-                  )
-                : BoxDecoration(
-                    color: colorFromHex(color).withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-            alignment: Alignment.center,
-            child: Text(
-              title.isEmpty ? "" : title[0].toUpperCase(),
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
-                fontSize:
-                    size / 3, // Adjust font size relative to the circle size
-              ),
-            ),
-          )
+        ? type == "group"
+            ? Icon(Icons.circle, color: colorFromHex(color).withOpacity(0.9))
+            : Icon(
+                Icons.workspaces,
+                color: colorFromHex(color).withOpacity(0.9),
+              )
         : type == "group"
             ? SizedBox(
                 width: size,
@@ -263,20 +247,10 @@ class WidgetCategoryGroup extends StatelessWidget {
                   showImagePreview: false,
                   expanded: true,
                 )
-              : Row(
-                  children: [
-                    Icon(
-                      Icons.workspaces,
-                      size: 13,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      "${categoryGroup.category!.groupCount} Note Groups",
-                      overflow: TextOverflow.ellipsis, // Ellipsis for long text
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
+              : Text(
+                  "${categoryGroup.category!.groupCount} Note Groups",
+                  overflow: TextOverflow.ellipsis, // Ellipsis for long text
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 )
           : const SizedBox.shrink(),
       trailing: categoryGroup.type == "category"
