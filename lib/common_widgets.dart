@@ -767,8 +767,8 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Wrap(
-              spacing: 8.0, // Horizontal spacing between circles
-              runSpacing: 8.0, // Vertical spacing between rows
+              spacing: 15.0, // Horizontal spacing between circles
+              runSpacing: 15.0, // Vertical spacing between rows
               children: predefinedColors.map((color) {
                 return GestureDetector(
                   onTap: () {
@@ -778,7 +778,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                   },
                   child: CircleAvatar(
                     backgroundColor: color,
-                    radius: 20, // Fixed size for the circles
+                    radius: 15, // Fixed size for the circles
                     child: selectedColor == color
                         ? Icon(Icons.check, color: Colors.white, size: 16)
                         : null,
@@ -795,7 +795,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                 // Circle to show the selected color
                 CircleAvatar(
                   backgroundColor: selectedColor,
-                  radius: 25,
+                  radius: 15,
                 ),
                 const SizedBox(width: 10),
 

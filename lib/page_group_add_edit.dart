@@ -111,7 +111,6 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
 
   @override
   Widget build(BuildContext context) {
-    double size = 100;
     String pageTitle = widget.group == null ? "Add group" : "Edit group";
     return Scaffold(
       appBar: AppBar(
