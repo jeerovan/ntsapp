@@ -1,13 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/page_category.dart';
 
 import 'common.dart';
+import 'common_widgets.dart';
 import 'model_item_group.dart';
 
 class PageGroupAddEdit extends StatefulWidget {
@@ -55,7 +53,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         category = widget.category;
         count = await ModelGroup.getCountInCategory(category!.id!);
       }
-      Color color = getMaterialColor(count + 1);
+      Color color = getIndexedColor(count + 1);
       colorCode = colorToHex(color);
     } else {
       category = await ModelCategory.get(widget.group!.categoryId);
@@ -65,21 +63,6 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     titleController.text = title!;
     thumbnail = widget.group?.thumbnail;
     if (mounted) setState(() {});
-  }
-
-  Future<void> _getPicture(ImageSource source) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
-    setState(() {
-      processing = true;
-    });
-    if (pickedFile != null) {
-      Uint8List bytes = await File(pickedFile.path).readAsBytes();
-      thumbnail = await compute(getImageThumbnail, bytes);
-      itemChanged = true;
-    }
-    setState(() {
-      processing = false;
-    });
   }
 
   Future<void> saveGroup(String categoryId) async {
@@ -97,70 +80,12 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         widget.group!.thumbnail = thumbnail;
         widget.group!.title = title!;
         widget.group!.categoryId = categoryId;
+        widget.group!.color = colorCode ?? widget.group!.color;
         await widget.group!.update();
       }
       widget.onUpdate();
     }
     if (mounted) Navigator.of(context).pop(newGroup);
-  }
-
-  Widget getBoxContent() {
-    double radius = 50;
-    if (processing) {
-      return const CircularProgressIndicator();
-    } else if (thumbnail != null) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundImage: MemoryImage(thumbnail!),
-      );
-    } else {
-      return title != null && title!.isNotEmpty
-          ? Text(
-              title![0].toUpperCase(),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize:
-                    radius, // Adjust font size relative to the circle size
-              ),
-            )
-          : const SizedBox.shrink();
-    }
-  }
-
-  Future<void> _showMediaPickerDialog() async {
-    if (ImagePicker().supportsImageSource(ImageSource.camera)) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Choose image source"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(LucideIcons.image),
-                  title: const Text("Gallery"),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _getPicture(ImageSource.gallery);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(LucideIcons.camera),
-                  title: const Text("Camera"),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _getPicture(ImageSource.camera);
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    } else {
-      await _getPicture(ImageSource.gallery);
-    }
   }
 
   void addToCategory() {
@@ -198,109 +123,122 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text("Title"),
+            TextField(
+              controller: titleController,
+              autofocus: widget.group == null ? false : true,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              decoration: InputDecoration(
+                hintText: 'Group title', // Placeholder
+                hintStyle:
+                    TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
+                border: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      width: 1.0,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outlineVariant), // Default line color
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      width: 1.0,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outlineVariant), // Default line color
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      width: 1.0,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outlineVariant), // Focused line color
+                ),
+              ),
+              onChanged: (value) {
+                title = value.trim();
+                itemChanged = true;
+              },
+            ),
             const SizedBox(
-              height: 45,
+              height: 30,
+            ),
+            Text("Color"),
+            const SizedBox(
+              height: 10,
             ),
             GestureDetector(
               onTap: () async {
-                _showMediaPickerDialog();
+                Color? pickedColor = await showDialog<Color>(
+                  context: context,
+                  builder: (context) => ColorPickerDialog(
+                    color: colorCode,
+                  ),
+                );
+
+                if (pickedColor != null) {
+                  setState(() {
+                    itemChanged = true;
+                    colorCode = colorToHex(pickedColor);
+                  });
+                }
               },
-              child: Stack(
-                  alignment: Alignment.bottomRight,
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: size,
-                      height: size,
-                      decoration: BoxDecoration(
-                        color: colorFromHex(colorCode ?? "#5dade2"),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      // Center the text inside the circle
-                      child: Center(child: getBoxContent()),
-                    ),
-                    Positioned(
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.grey,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(LucideIcons.edit2),
-                      ),
-                    ),
-                  ]),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: titleController,
-                autofocus: widget.group == null ? false : true,
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                decoration: const InputDecoration(
-                  hintText: 'Group title', // Placeholder
-                  hintStyle: TextStyle(
-                      color: Colors.grey, fontWeight: FontWeight.w400),
-                ),
-                onChanged: (value) {
-                  title = value.trim();
-                  itemChanged = true;
-                },
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.circle,
+                    color: colorFromHex(colorCode ?? "#5dade2"),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Text("Change color"),
+                ],
               ),
             ),
             const SizedBox(
-              height: 5,
+              height: 30,
+            ),
+            Text("Category"),
+            const SizedBox(
+              height: 10,
             ),
             Row(
               children: [
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        addToCategory();
-                      },
-                      child: category == null
-                          ? Text(
-                              "Select category",
-                              style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface),
-                            )
-                          : category!.title == "DND"
-                              ? Text(
-                                  "Select category",
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface),
-                                )
-                              : Text(
-                                  category!.title,
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface),
-                                ),
-                    ),
+                  child: GestureDetector(
+                    onTap: () {
+                      addToCategory();
+                    },
+                    child: category == null
+                        ? Text(
+                            "Select category",
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface),
+                          )
+                        : category!.title == "DND"
+                            ? Text(
+                                "Select category",
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface),
+                              )
+                            : Text(
+                                category!.title,
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface),
+                              ),
                   ),
                 ),
                 const SizedBox(
                   width: 10,
                 ),
-                if (category == null ||
-                    (category != null && category!.title == "DND"))
-                  IconButton(
-                    onPressed: () {
-                      addToCategory();
-                    },
-                    icon: Icon(Icons.navigate_next),
-                  ),
                 if (category != null && category!.title != "DND")
                   IconButton(
                     onPressed: () {

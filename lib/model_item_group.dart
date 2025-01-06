@@ -87,7 +87,7 @@ class ModelGroup {
     if (map.containsKey('color')) {
       colorCode = map['color'];
     } else {
-      Color color = getMaterialColor(groupCount + 1);
+      Color color = getIndexedColor(groupCount + 1);
       colorCode = colorToHex(color);
     }
 

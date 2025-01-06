@@ -547,33 +547,6 @@ class NotePreviewSummary extends StatelessWidget {
     this.expanded,
   });
 
-  IconData _getIcon() {
-    if (item == null) {
-      return Icons.notes;
-    } else {
-      switch (item!.type) {
-        case ItemType.text:
-          return Icons.notes;
-        case ItemType.image:
-          return Icons.image;
-        case ItemType.video:
-          return Icons.videocam;
-        case ItemType.audio:
-          return Icons.audiotrack;
-        case ItemType.contact:
-          return Icons.contact_phone;
-        case ItemType.location:
-          return Icons.location_on;
-        case ItemType.task:
-          return Icons.radio_button_unchecked;
-        case ItemType.completedTask:
-          return Icons.check_circle;
-        default: // Document
-          return Icons.description;
-      }
-    }
-  }
-
   String _getMessageText() {
     if (item == null) {
       return "So empty...";

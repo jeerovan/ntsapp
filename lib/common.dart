@@ -23,6 +23,26 @@ import 'app_config.dart';
 bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
+final List<Color> predefinedColors = [
+  "#EF4444",
+  "#f97316",
+  "#eab308",
+  "#84cc16",
+  "#10b981",
+  "#06b6d4",
+  "#0ea5e9",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#FFFFFF",
+  "#e5e7eb",
+  "#6b7280",
+  "#636363",
+  "#000000",
+].map((colorText) {
+  return colorFromHex(colorText);
+}).toList();
+
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
     return 'Please enter data';
@@ -293,14 +313,19 @@ String readableBytes(int bytes, [int decimals = 2]) {
   return "${size.toStringAsFixed(decimals)} ${suffixes[i]}";
 }
 
-Color getMaterialColor(int index) {
-  return Colors.primaries[index % Colors.primaries.length];
+Color getIndexedColor(int count) {
+  int predefinedColorsLength = predefinedColors.length;
+  int index = (count - 1) % predefinedColorsLength;
+  return predefinedColors[index];
 }
 
-Color colorFromHex(String hexString) {
-  hexString = hexString.replaceFirst('#', ''); // Remove # if present
-  int colorInt = int.parse(hexString, radix: 16);
-  return Color(colorInt);
+Color colorFromHex(String hex) {
+  final buffer = StringBuffer();
+  if (hex.length == 6 || hex.length == 7) {
+    buffer.write('FF'); // Add opacity if not provided
+  }
+  buffer.write(hex.replaceFirst('#', ''));
+  return Color(int.parse(buffer.toString(), radix: 16));
 }
 
 String colorToHex(Color color) {

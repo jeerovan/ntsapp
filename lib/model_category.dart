@@ -57,7 +57,7 @@ class ModelCategory {
     if (map.containsKey('color')) {
       colorCode = map['color'];
     } else {
-      Color color = getMaterialColor(categoryCount + 1);
+      Color color = getIndexedColor(categoryCount + 1);
       colorCode = colorToHex(color);
     }
     int groupCount = await ModelGroup.getCountInCategory(categoryId);

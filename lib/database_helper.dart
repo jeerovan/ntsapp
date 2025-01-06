@@ -127,7 +127,7 @@ class DatabaseHelper {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
     String id1 = uuid.v4();
-    Color color = getMaterialColor(1);
+    Color color = getIndexedColor(1);
     String hexCode = colorToHex(color);
     await db.insert("category", {
       "id": id1,
@@ -190,7 +190,7 @@ class DatabaseHelper {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
     String categoryId = uuid.v4();
-    Color color = getMaterialColor(1);
+    Color color = getIndexedColor(1);
     await db.insert("category", {
       "id": categoryId,
       "title": "DND",
@@ -226,7 +226,7 @@ class DatabaseHelper {
           }
         }
         int position = order ?? groupCount * 1000;
-        Color color = getMaterialColor(groupCount);
+        Color color = getIndexedColor(groupCount);
         if (groupUuid.isNotEmpty && title.isNotEmpty) {
           await db.insert("itemgroup", {
             "id": groupUuid,

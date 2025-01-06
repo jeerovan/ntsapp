@@ -171,39 +171,12 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return thumbnail == null
-        ? type == "group"
-            ? Icon(Icons.circle, color: colorFromHex(color).withOpacity(0.9))
-            : Icon(
-                Icons.workspaces,
-                color: colorFromHex(color).withOpacity(0.9),
-              )
-        : type == "group"
-            ? SizedBox(
-                width: size,
-                height: size,
-                child: CircleAvatar(
-                  radius: size / 2,
-                  backgroundImage: MemoryImage(thumbnail!),
-                ),
-              )
-            : SizedBox(
-                width: size,
-                height: size,
-                child: Container(
-                  width: size, // Set the width of the rectangle
-                  height: size, // Set the height of the rectangle
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                    image: thumbnail != null
-                        ? DecorationImage(
-                            image: MemoryImage(thumbnail!),
-                            fit: BoxFit.cover, // Adjust the image scaling
-                          )
-                        : null, // Handle null image gracefully
-                  ),
-                ),
-              );
+    return type == "group"
+        ? Icon(Icons.circle, color: colorFromHex(color).withOpacity(0.9))
+        : Icon(
+            Icons.workspaces,
+            color: colorFromHex(color).withOpacity(0.9),
+          );
   }
 }
 
@@ -760,6 +733,139 @@ class TimerWidgetState extends State<TimerWidget> {
         color: Colors.red,
         fontSize: 16.0,
       ),
+    );
+  }
+}
+
+class ColorPickerDialog extends StatefulWidget {
+  final String? color;
+  const ColorPickerDialog({super.key, this.color});
+
+  @override
+  State<ColorPickerDialog> createState() => _ColorPickerDialogState();
+}
+
+class _ColorPickerDialogState extends State<ColorPickerDialog> {
+  Color selectedColor = colorFromHex("#ef4444"); // Default selected color
+  double hue = 0.0; // Default hue for the color bar
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.color != null) {
+      selectedColor = colorFromHex(widget.color!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Wrap(
+              spacing: 8.0, // Horizontal spacing between circles
+              runSpacing: 8.0, // Vertical spacing between rows
+              children: predefinedColors.map((color) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedColor = color;
+                    });
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: color,
+                    radius: 20, // Fixed size for the circles
+                    child: selectedColor == color
+                        ? Icon(Icons.check, color: Colors.white, size: 16)
+                        : null,
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Fourth row with color preview and slider
+            Row(
+              children: [
+                // Circle to show the selected color
+                CircleAvatar(
+                  backgroundColor: selectedColor,
+                  radius: 25,
+                ),
+                const SizedBox(width: 10),
+
+                // Color slider
+                Expanded(
+                  child: Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: [
+                      // HSV gradient as slider background
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15, right: 15),
+                        child: Container(
+                          height: 30,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                for (double i = 0; i <= 1; i += 0.1)
+                                  HSVColor.fromAHSV(1.0, i * 360, 1.0, 1.0)
+                                      .toColor()
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Actual slider overlay
+                      Slider(
+                        value: hue,
+                        onChanged: (newHue) {
+                          setState(() {
+                            hue = newHue;
+                            selectedColor =
+                                HSVColor.fromAHSV(1.0, hue * 360, 1.0, 1.0)
+                                    .toColor();
+                          });
+                        },
+                        min: 0.0,
+                        max: 1.0,
+                        activeColor:
+                            Colors.transparent, // Transparent for gradient
+                        inactiveColor: Colors.transparent,
+                        thumbColor: Colors.transparent,
+                        secondaryActiveColor: Colors.transparent,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(null); // Cancel action
+          },
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(selectedColor); // Return selected color
+          },
+          child: const Text('Ok'),
+        ),
+      ],
     );
   }
 }
