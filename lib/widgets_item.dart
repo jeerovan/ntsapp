@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enum_item_type.dart';
 import 'package:path/path.dart' as path;
+
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
@@ -92,6 +93,7 @@ class ItemWidgetText extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        SizedBox(width: 4),
         Flexible(child: WidgetTextWithLinks(text: item.text)),
         WidgetTimeStampPinnedStarred(
           item: item,
@@ -549,7 +551,7 @@ class NotePreviewSummary extends StatelessWidget {
 
   String _getMessageText() {
     if (item == null) {
-      return "So empty...";
+      return "Empty";
     } else {
       switch (item!.type) {
         case ItemType.text:
@@ -649,6 +651,7 @@ class NoteUrlPreview extends StatelessWidget {
   final String itemId;
   final String imageDirectory;
   final Map<String, dynamic> urlInfo;
+
   const NoteUrlPreview(
       {super.key,
       required this.urlInfo,

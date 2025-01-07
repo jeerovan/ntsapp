@@ -250,27 +250,6 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
             Expanded(
               child: const SizedBox.shrink(),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Opacity(
-                      opacity: 0.5,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: widget.group != null
-                            ? const SizedBox.shrink()
-                            : Text(
-                                "Title is optional. Tap -> to continue.",
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

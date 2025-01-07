@@ -166,6 +166,7 @@ class SettingsPageState extends State<SettingsPage> {
             ListTile(
               leading: const Icon(LucideIcons.sunMoon, color: Colors.grey),
               title: const Text("Theme"),
+              horizontalTitleGap: 24.0,
               onTap: widget.onThemeToggle,
               trailing: IconButton(
                 icon: AnimatedSwitcher(
@@ -195,6 +196,7 @@ class SettingsPageState extends State<SettingsPage> {
             ListTile(
               leading: const Icon(LucideIcons.lock, color: Colors.grey),
               title: const Text("Lock"),
+              horizontalTitleGap: 24.0,
               trailing: Switch(
                 value: isAuthEnabled,
                 onChanged: (bool value) {
@@ -205,6 +207,7 @@ class SettingsPageState extends State<SettingsPage> {
             ListTile(
               leading: const Icon(Icons.text_fields, color: Colors.grey),
               title: const Text("Font size"),
+              horizontalTitleGap: 24.0,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -238,6 +241,7 @@ class SettingsPageState extends State<SettingsPage> {
               leading:
                   const Icon(LucideIcons.databaseBackup, color: Colors.grey),
               title: const Text('Backup'),
+              horizontalTitleGap: 24.0,
               onTap: () async {
                 createDownloadBackup();
               },
@@ -245,6 +249,7 @@ class SettingsPageState extends State<SettingsPage> {
             ListTile(
               leading: const Icon(LucideIcons.rotateCcw, color: Colors.grey),
               title: const Text('Restore'),
+              horizontalTitleGap: 24.0,
               onTap: () async {
                 restoreZipBackup();
               },
@@ -252,11 +257,13 @@ class SettingsPageState extends State<SettingsPage> {
             ListTile(
               leading: const Icon(LucideIcons.star, color: Colors.grey),
               title: const Text('Rate app'),
+              horizontalTitleGap: 24.0,
               onTap: () => _redirectToFeedback(),
             ),
             ListTile(
               leading: const Icon(LucideIcons.share2, color: Colors.grey),
               title: const Text('Share'),
+              horizontalTitleGap: 24.0,
               onTap: () {
                 _share();
               },
@@ -269,13 +276,15 @@ class SettingsPageState extends State<SettingsPage> {
                   final buildNumber = snapshot.data?.buildNumber ?? '';
                   return ListTile(
                     leading: const Icon(LucideIcons.info, color: Colors.grey),
-                    title: Text('App version: $version+$buildNumber'),
+                    horizontalTitleGap: 24.0,
+                    title: Text('Version: $version'),
                     onTap: null,
                   );
                 } else {
                   return const ListTile(
                     leading: Icon(LucideIcons.info, color: Colors.grey),
                     title: Text('Loading...'),
+                    horizontalTitleGap: 24.0,
                   );
                 }
               },

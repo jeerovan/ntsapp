@@ -221,7 +221,7 @@ class WidgetCategoryGroup extends StatelessWidget {
                   expanded: true,
                 )
               : Text(
-                  "${categoryGroup.category!.groupCount} Note Groups",
+                  (categoryGroup.category!.groupCount == 1) ? "${categoryGroup.category!.groupCount} note group" : "${categoryGroup.category!.groupCount} note groups",
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 )
@@ -230,6 +230,7 @@ class WidgetCategoryGroup extends StatelessWidget {
           ? showCategorySign
               ? Icon(
                   LucideIcons.chevronRight,
+                  color: Colors.grey,
                 )
               : const SizedBox.shrink()
           : const SizedBox.shrink(),
@@ -739,6 +740,7 @@ class TimerWidgetState extends State<TimerWidget> {
 
 class ColorPickerDialog extends StatefulWidget {
   final String? color;
+
   const ColorPickerDialog({super.key, this.color});
 
   @override
@@ -836,8 +838,8 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                         },
                         min: 0.0,
                         max: 1.0,
-                        activeColor:
-                            Colors.transparent, // Transparent for gradient
+                        activeColor: Colors.transparent,
+                        // Transparent for gradient
                         inactiveColor: Colors.transparent,
                         thumbColor: Colors.transparent,
                         secondaryActiveColor: Colors.transparent,

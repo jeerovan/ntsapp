@@ -2148,16 +2148,18 @@ class _PageItemsState extends State<PageItems> {
             children: [
               if (Platform.isAndroid || Platform.isIOS)
                 ListTile(
-                  leading: const Icon(LucideIcons.contact),
+                  leading: const Icon(LucideIcons.contact, color: Colors.grey),
                   title: const Text("Contact"),
+                  horizontalTitleGap: 24.0,
                   onTap: () {
                     Navigator.pop(context);
                     _addMedia('contact');
                   },
                 ),
               ListTile(
-                leading: const Icon(LucideIcons.mapPin),
+                leading: const Icon(LucideIcons.mapPin, color: Colors.grey),
                 title: const Text("Location"),
+                horizontalTitleGap: 24.0,
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('location');
@@ -2165,24 +2167,28 @@ class _PageItemsState extends State<PageItems> {
               ),
               if (ImagePicker().supportsImageSource(ImageSource.camera))
                 ListTile(
-                  leading: const Icon(LucideIcons.camera),
+                  leading: const Icon(LucideIcons.camera, color: Colors.grey),
                   title: const Text("Camera"),
+                  horizontalTitleGap: 24.0,
                   onTap: () {
                     Navigator.pop(context);
                     _addMedia("camera_image");
                   },
                 ),
               ListTile(
-                leading: const Icon(LucideIcons.file),
+                leading: const Icon(LucideIcons.file, color: Colors.grey),
                 title: const Text("Files"),
+                horizontalTitleGap: 24.0,
                 onTap: () {
                   Navigator.pop(context);
                   _addMedia('files');
                 },
               ),
               ListTile(
-                leading: const Icon(LucideIcons.checkCircle),
+                leading:
+                    const Icon(LucideIcons.checkCircle, color: Colors.grey),
                 title: const Text("Checklist"),
+                horizontalTitleGap: 24.0,
                 onTap: () {
                   Navigator.pop(context);
                   setTaskMode();
