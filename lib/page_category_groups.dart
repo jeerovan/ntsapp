@@ -90,6 +90,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
         duration: Duration(seconds: 1),
       ));
     }
+    widget.onUpdate();
   }
 
   void editGroup(ModelGroup group) {
