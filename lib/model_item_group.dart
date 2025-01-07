@@ -145,7 +145,7 @@ class ModelGroup {
     String sql = '''
       SELECT count(*) as count
       FROM itemgroup
-      WHERE category_id = ?
+      WHERE category_id = ? AND archived_at = 0
     ''';
     final rows = await db.rawQuery(sql, [categoryId]);
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
