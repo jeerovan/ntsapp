@@ -46,21 +46,30 @@ class _PageDbFixesState extends State<PageDbFixes> {
         List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);
         for (ModelItem videoItem in videoItems) {
           Map<String, dynamic>? data = videoItem.data;
-          if (data != null) {
-            if (videoItem.data!.containsKey("path")) {
-              String videoFilePath = videoItem.data!["path"];
-              VideoInfoExtractor extractor = VideoInfoExtractor(videoFilePath);
-              try {
-                final mediaInfo = await extractor.getVideoInfo();
-                int durationSeconds = mediaInfo['duration'];
-                Uint8List? thumbnail = await extractor.getThumbnail(
-                    seekPosition: Duration(
-                        milliseconds: (durationSeconds * 500).toInt()));
-                videoItem.thumbnail = thumbnail;
-                await videoItem.update();
-              } catch (e) {
-                debugPrint(e.toString());
+          if (videoItem.thumbnail == null) {
+            if (data != null) {
+              if (videoItem.data!.containsKey("path")) {
+                String videoFilePath = videoItem.data!["path"];
+                VideoInfoExtractor extractor =
+                    VideoInfoExtractor(videoFilePath);
+                try {
+                  final mediaInfo = await extractor.getVideoInfo();
+                  int durationSeconds = mediaInfo['duration'];
+                  Uint8List? thumbnail = await extractor.getThumbnail(
+                      seekPosition: Duration(
+                          milliseconds: (durationSeconds * 500).toInt()));
+                  videoItem.thumbnail = thumbnail;
+                  await videoItem.update();
+                } catch (e) {
+                  debugPrint(e.toString());
+                }
               }
+            }
+          } else {
+            Uint8List? thumbnail = getImageThumbnail(videoItem.thumbnail!);
+            if (thumbnail != null) {
+              videoItem.thumbnail = thumbnail;
+              await videoItem.update();
             }
           }
         }
