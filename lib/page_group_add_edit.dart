@@ -26,7 +26,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   bool processing = false;
   bool itemChanged = false;
 
-  String? title;
+  String title = "";
   Uint8List? thumbnail;
   String? colorCode;
   ModelCategory? category;
@@ -60,14 +60,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       colorCode = widget.group!.color;
     }
     title = widget.group == null ? dateTitle : widget.group!.title;
-    titleController.text = title!;
+    titleController.text = title;
     thumbnail = widget.group?.thumbnail;
     if (mounted) setState(() {});
   }
 
   Future<void> saveGroup(String categoryId) async {
     ModelGroup? newGroup;
-    if (itemChanged) {
+    if (itemChanged && title.isNotEmpty) {
       if (widget.group == null) {
         newGroup = await ModelGroup.fromMap({
           "category_id": categoryId,
@@ -78,7 +78,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         await newGroup.insert();
       } else {
         widget.group!.thumbnail = thumbnail;
-        widget.group!.title = title!;
+        widget.group!.title = title;
         widget.group!.categoryId = categoryId;
         widget.group!.color = colorCode ?? widget.group!.color;
         await widget.group!.update();
