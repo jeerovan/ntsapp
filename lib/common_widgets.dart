@@ -172,10 +172,14 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return type == "group"
-        ? Icon(Icons.circle, color: colorFromHex(color).withOpacity(0.9))
+        ? Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Icon(Icons.circle,
+                size: 20, color: colorFromHex(color).withOpacity(0.8)),
+          )
         : Icon(
             Icons.workspaces,
-            color: colorFromHex(color).withOpacity(0.9),
+            color: colorFromHex(color).withOpacity(0.8),
           );
   }
 }

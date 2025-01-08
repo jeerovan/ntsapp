@@ -126,13 +126,17 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Title"),
+            Text(
+              "Title",
+              style: TextStyle(color: Colors.grey),
+            ),
             TextField(
               controller: titleController,
               autofocus: widget.group == null ? false : true,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
-                hintText: 'Group title', // Placeholder
+                hintText: 'Group title',
+                // Placeholder
                 hintStyle:
                     TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
                 border: UnderlineInputBorder(
@@ -163,11 +167,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               },
             ),
             const SizedBox(
-              height: 30,
+              height: 32,
             ),
-            Text("Color"),
+            Text(
+              "Color",
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(
-              height: 10,
+              height: 12,
             ),
             GestureDetector(
               onTap: () async {
@@ -192,18 +199,21 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     color: colorFromHex(colorCode ?? "#5dade2"),
                   ),
                   const SizedBox(
-                    width: 10,
+                    width: 12,
                   ),
                   Text("Change color"),
                 ],
               ),
             ),
             const SizedBox(
-              height: 30,
+              height: 32,
             ),
-            Text("Category"),
+            Text(
+              "Category",
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(
-              height: 10,
+              height: 12,
             ),
             Row(
               children: [
