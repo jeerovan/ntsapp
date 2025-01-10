@@ -221,7 +221,9 @@ class WidgetCategoryGroup extends StatelessWidget {
                   expanded: true,
                 )
               : Text(
-                  (categoryGroup.category!.groupCount == 1) ? "${categoryGroup.category!.groupCount} note group" : "${categoryGroup.category!.groupCount} note groups",
+                  (categoryGroup.category!.groupCount == 1)
+                      ? "${categoryGroup.category!.groupCount} note group"
+                      : "${categoryGroup.category!.groupCount} note groups",
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 )
@@ -625,20 +627,30 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
 
       // Add the link text
       final linkText = text.substring(start, end);
-      final linkUri = Uri.parse(linkText);
-      spans.add(TextSpan(
-        text: linkText,
-        style: TextStyle(
-            color: Colors.blue, fontSize: controller.getScaledSize(fontSize)),
-        recognizer: TapGestureRecognizer()
-          ..onTap = () async {
-            if (await canLaunchUrl(linkUri)) {
-              await launchUrl(linkUri);
-            } else {
-              debugPrint("Could not launch $linkText");
-            }
-          },
-      ));
+      try {
+        final linkUri = Uri.parse(linkText);
+        spans.add(TextSpan(
+          text: linkText,
+          style: TextStyle(
+              color: Colors.blue, fontSize: controller.getScaledSize(fontSize)),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              if (await canLaunchUrl(linkUri)) {
+                await launchUrl(linkUri);
+              } else {
+                debugPrint("Could not launch $linkText");
+              }
+            },
+        ));
+      } catch (e) {
+        spans.add(
+          TextSpan(
+              text: linkText,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: controller.getScaledSize(fontSize))),
+        );
+      }
 
       lastMatchEnd = end;
     }
