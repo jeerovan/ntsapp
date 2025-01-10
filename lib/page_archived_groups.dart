@@ -99,8 +99,8 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
       for (ModelItem item in items) {
         await item.delete();
       }
-      await group.delete();
       _archivedGroups.remove(group);
+      await group.delete();
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

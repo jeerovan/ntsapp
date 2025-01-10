@@ -62,8 +62,8 @@ class _PageArchivedState extends State<PageArchived> {
           ],
           bottom: TabBar(
             tabs: const [
-              Tab(text: "Notes"), // Tab for Notes
-              Tab(text: "Groups"), // Tab for Groups
+              Tab(text: "Notes"),
+              Tab(text: "Groups"),
               Tab(text: 'Categories'),
             ],
           ),

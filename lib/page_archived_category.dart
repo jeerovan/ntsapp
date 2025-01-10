@@ -104,8 +104,8 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
         }
         await group.delete();
       }
-      await category.delete();
       _archivedCategories.remove(category);
+      await category.delete();
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

@@ -125,8 +125,8 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
 
   Future<void> deleteSelectedItems() async {
     for (ModelItem item in _selection) {
-      await item.delete();
       _items.remove(item);
+      await item.delete();
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
