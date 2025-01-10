@@ -143,8 +143,8 @@ class _PageGroupState extends State<PageGroup> {
       loadedSharedContents = true;
       navigateToNotes(categoryGroup.group!, sharedContents);
     } else {
-      Navigator.of(context).push(navigateWithAnimation(
-        PageCategoryGroups(
+      Navigator.of(context).push(AnimatedPageRoute(
+        child: PageCategoryGroups(
           category: categoryGroup.category!,
           sharedContents: sharedContents,
           onSharedContentsLoaded: () {
@@ -162,8 +162,8 @@ class _PageGroupState extends State<PageGroup> {
 
   void navigateToNotes(ModelGroup group, List<String> sharedContents) {
     Navigator.of(context)
-        .push(navigateWithAnimation(
-      PageItems(
+        .push(AnimatedPageRoute(
+      child: PageItems(
         group: group,
         sharedContents: sharedContents,
       ),

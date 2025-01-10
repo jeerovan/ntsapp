@@ -71,7 +71,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
             : widget.sharedContents;
     widget.onSharedContentsLoaded();
     loadedSharedContents = true;
-    Navigator.of(context).push(navigateWithAnimation(PageItems(
+    Navigator.of(context).push(AnimatedPageRoute(
+        child: PageItems(
       group: group,
       sharedContents: sharedContents,
     )));

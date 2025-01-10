@@ -643,35 +643,63 @@ class FontSizeController extends ChangeNotifier {
   }
 }
 
-Route navigateWithAnimation(Widget newScreen) {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => newScreen,
-    transitionDuration: const Duration(milliseconds: 150),
-    reverseTransitionDuration: const Duration(milliseconds: 150),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      // fromRight else fromBottom
-      Offset begin = Offset(0.0, 0.02);
-      const end = Offset.zero; // End at the original position
-      const curve = Curves.linear;
+class AnimatedPageRoute extends PageRouteBuilder {
+  final Widget child;
 
-      final tween =
-          Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-      final offsetAnimation = animation.drive(tween);
+  AnimatedPageRoute({required this.child})
+      : super(
+          pageBuilder: (context, animation, secondaryAnimation) => child,
+          transitionDuration: const Duration(milliseconds: 150),
+          reverseTransitionDuration: const Duration(milliseconds: 150),
+        );
 
-      // Create a Tween for fade animation (from 0.0 to 1.0)
-      final fadeTween =
-          Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
-      final fadeAnimation = animation.drive(fadeTween);
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    // Animation for the new screen (Child)
+    const curve = Curves.linear;
+    final childSlideAnimation = Tween(
+      begin: const Offset(0.0, 0.02),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: curve)).animate(animation);
 
-      return FadeTransition(
-        opacity: fadeAnimation,
-        child: SlideTransition(
-          position: offsetAnimation,
-          child: child,
+    final childFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).chain(CurveTween(curve: curve)).animate(animation);
+
+    // Animation for the previous screen (Parent)
+    final parentScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).chain(CurveTween(curve: curve)).animate(secondaryAnimation);
+
+    final parentFadeAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.8,
+    ).chain(CurveTween(curve: curve)).animate(secondaryAnimation);
+
+    return Stack(
+      children: [
+        // Animate the Parent screen
+        FadeTransition(
+          opacity: parentFadeAnimation,
+          child: ScaleTransition(
+            scale: parentScaleAnimation,
+            child: Container(), // This will be the parent screen
+          ),
         ),
-      );
-    },
-  );
+        // Animate the Child screen
+        FadeTransition(
+          opacity: childFadeAnimation,
+          child: SlideTransition(
+            position: childSlideAnimation,
+            child: child,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class AnimatedWidgetSwap extends StatefulWidget {
