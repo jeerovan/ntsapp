@@ -173,13 +173,16 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return type == "group"
         ? Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(10.0),
             child: Icon(Icons.circle,
-                size: 20, color: colorFromHex(color).withOpacity(0.8)),
+                size: 14, color: colorFromHex(color).withOpacity(0.8)),
           )
-        : Icon(
-            Icons.workspaces,
-            color: colorFromHex(color).withOpacity(0.8),
+        : Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Icon(
+              Icons.workspaces,
+              color: colorFromHex(color).withOpacity(0.8),
+            ),
           );
   }
 }
@@ -206,12 +209,18 @@ class WidgetCategoryGroup extends StatelessWidget {
         title: categoryGroup.title,
         thumbnail: categoryGroup.thumbnail,
       ),
+      horizontalTitleGap: 20.0,
       title: Row(
         children: [
           Expanded(
             child: Text(
               categoryGroup.title,
               overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: 0,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -236,7 +245,7 @@ class WidgetCategoryGroup extends StatelessWidget {
           ? showCategorySign
               ? Icon(
                   LucideIcons.chevronRight,
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 )
               : const SizedBox.shrink()
           : const SizedBox.shrink(),

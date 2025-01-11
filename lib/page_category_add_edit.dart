@@ -100,7 +100,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
               autofocus: true,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
-                hintText: 'Category title', // Placeholder
+                hintText: 'Category title',
+                // Placeholder
                 hintStyle:
                     TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
                 border: UnderlineInputBorder(
@@ -157,10 +158,11 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                 children: [
                   Icon(
                     Icons.workspaces,
+                    size: 18,
                     color: colorFromHex(colorCode ?? "#5dade2"),
                   ),
                   const SizedBox(
-                    width: 10,
+                    width: 12,
                   ),
                   Text("Change color"),
                 ],

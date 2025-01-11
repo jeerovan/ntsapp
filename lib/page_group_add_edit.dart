@@ -196,7 +196,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 children: [
                   Icon(
                     Icons.circle,
-                    color: colorFromHex(colorCode ?? "#5dade2"),
+                    size: 18,
+                    color: colorFromHex(colorCode ?? "#00BCD4"),
                   ),
                   const SizedBox(
                     width: 12,

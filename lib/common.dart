@@ -232,7 +232,15 @@ String getReadableDate(DateTime date) {
 }
 
 String getNoteGroupDateTitle() {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const days = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+  ];
   const months = [
     'Jan',
     'Feb',
@@ -251,9 +259,9 @@ String getNoteGroupDateTitle() {
   final dayOfWeek = days[now.weekday - 1];
   final day = now.day.toString().padLeft(2, '0'); // Ensure 2 digits
   final month = months[now.month - 1];
-  final year = now.year % 100; // Last two digits of the year
+  //final year = now.year % 100; // Last two digits of the year
 
-  return "$dayOfWeek $day $month'$year";
+  return "$month $day, $dayOfWeek";
 }
 
 String getFormattedTime(int utcMilliSeconds) {
