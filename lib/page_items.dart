@@ -1858,79 +1858,89 @@ class _PageItemsState extends State<PageItems> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
+            Flexible(
+              child: IconButton(
+                  iconSize: iconSize,
+                  onPressed: () {
+                    clearSelection();
+                  },
+                  icon: const Icon(
+                    LucideIcons.x,
+                  )),
+            ),
+            if (selectionHasOnlyTextOrTaskItem)
+              Flexible(
+                child: IconButton(
+                  iconSize: iconSize,
+                  onPressed: () {
+                    copyToClipboard();
+                  },
+                  icon: const Icon(
+                    LucideIcons.copy,
+                  ),
+                ),
+              ),
+            if (selectionHasOnlyTextOrTaskItem)
+              Flexible(
+                child: IconButton(
+                  iconSize: iconSize,
+                  onPressed: () {
+                    updateSelectedItemsTaskType();
+                  },
+                  icon: selectionHasOnlyTaskItems
+                      ? const Icon(LucideIcons.text)
+                      : const Icon(LucideIcons.checkCircle),
+                ),
+              ),
+            Flexible(
+              child: IconButton(
                 iconSize: iconSize,
                 onPressed: () {
-                  clearSelection();
+                  shareNotes();
                 },
-                icon: const Icon(
-                  LucideIcons.x,
-                )),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (selectionHasOnlyTextOrTaskItem)
-                  IconButton(
-                    iconSize: iconSize,
-                    onPressed: () {
-                      copyToClipboard();
-                    },
-                    icon: const Icon(
-                      LucideIcons.copy,
-                    ),
-                  ),
-                if (selectionHasOnlyTextOrTaskItem)
-                  IconButton(
-                    iconSize: iconSize,
-                    onPressed: () {
-                      updateSelectedItemsTaskType();
-                    },
-                    icon: selectionHasOnlyTaskItems
-                        ? const Icon(LucideIcons.text)
-                        : const Icon(LucideIcons.checkCircle),
-                  ),
-                IconButton(
+                icon: const Icon(LucideIcons.share2),
+              ),
+            ),
+            if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
+              Flexible(
+                child: IconButton(
                   iconSize: iconSize,
                   onPressed: () {
-                    shareNotes();
+                    editNote();
                   },
-                  icon: const Icon(LucideIcons.share2),
+                  icon: const Icon(LucideIcons.edit2),
                 ),
-                if (selectionHasOnlyTextOrTaskItem &&
-                    _selectedItems.length == 1)
-                  IconButton(
-                    iconSize: iconSize,
-                    onPressed: () {
-                      editNote();
-                    },
-                    icon: const Icon(LucideIcons.edit2),
-                  ),
-                IconButton(
-                  iconSize: iconSize,
-                  onPressed: () {
-                    updateSelectedItemsStarred();
-                  },
-                  icon: selectionHasStarredItems
-                      ? const Icon(LucideIcons.starOff)
-                      : const Icon(LucideIcons.star),
-                ),
-                IconButton(
-                  iconSize: iconSize,
-                  onPressed: () {
-                    archiveSelectedItems();
-                  },
-                  icon: const Icon(LucideIcons.trash),
-                ),
-                IconButton(
-                  iconSize: iconSize,
-                  onPressed: () {
-                    updateSelectedItemsPinned();
-                  },
-                  icon: selectionHasPinnedItem
-                      ? const Icon(LucideIcons.pinOff)
-                      : const Icon(LucideIcons.pin),
-                ),
-              ],
+              ),
+            Flexible(
+              child: IconButton(
+                iconSize: iconSize,
+                onPressed: () {
+                  updateSelectedItemsStarred();
+                },
+                icon: selectionHasStarredItems
+                    ? const Icon(LucideIcons.starOff)
+                    : const Icon(LucideIcons.star),
+              ),
+            ),
+            Flexible(
+              child: IconButton(
+                iconSize: iconSize,
+                onPressed: () {
+                  archiveSelectedItems();
+                },
+                icon: const Icon(LucideIcons.trash),
+              ),
+            ),
+            Flexible(
+              child: IconButton(
+                iconSize: iconSize,
+                onPressed: () {
+                  updateSelectedItemsPinned();
+                },
+                icon: selectionHasPinnedItem
+                    ? const Icon(LucideIcons.pinOff)
+                    : const Icon(LucideIcons.pin),
+              ),
             ),
           ],
         ),
