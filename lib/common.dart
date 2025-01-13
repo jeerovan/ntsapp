@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +14,6 @@ import 'package:mime/mime.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -386,23 +386,32 @@ Future<void> initializeDirectories() async {
   }
 }
 
-Future<Map<String, dynamic>> processAndGetFileAttributes(
+Future<String> fileHash(File file) async {
+  final Stream<List<int>> stream = file.openRead();
+  final sha256hash = await stream.transform(sha256).first;
+  return sha256hash.toString();
+}
+
+Future<Map<String, dynamic>?> processAndGetFileAttributes(
     String filePath) async {
-  File file = File(filePath);
-  String fileName = basename(file.path);
-  int fileSize = file.lengthSync();
   String mime = "application/unknown";
+  final String extension = path.extension(filePath);
   String? fileMime = lookupMimeType(filePath);
-  if (fileMime != null) {
+  if (fileMime == null) {
+    return null;
+  } else {
     mime = fileMime;
   }
+  File file = File(filePath);
+  String hash = await fileHash(file);
+  String fileName = '$hash$extension';
+  int fileSize = file.lengthSync();
   String directory = mime.split("/").first;
   File? existing = await getFile(directory, fileName);
   String newPath = await getFilePath(directory, fileName);
   await checkAndCreateDirectory(newPath);
   if (existing == null) {
     Map<String, String> mediaData = {"oldPath": filePath, "newPath": newPath};
-    // TODO if file is in cache, rename it to move to newPath
     await compute(copyFile, mediaData);
   }
   return {"path": newPath, "name": fileName, "size": fileSize, "mime": mime};

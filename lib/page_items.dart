@@ -1147,7 +1147,8 @@ class _PageItemsState extends State<PageItems> {
     if (filePaths.isEmpty) return;
     showProcessing();
     for (String filePath in filePaths) {
-      Map<String, dynamic> attrs = await processAndGetFileAttributes(filePath);
+      Map<String, dynamic>? attrs = await processAndGetFileAttributes(filePath);
+      if (attrs == null) continue;
       String mime = attrs["mime"];
       String newPath = attrs["path"];
       String type = mime.split("/").first;

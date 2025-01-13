@@ -314,29 +314,31 @@ Future<String> restoreOldDb(String baseDirPath) async {
                 String filePath = path.join(backupDirPath, "images", fileName);
                 File imageFile = File(filePath);
                 if (imageFile.existsSync()) {
-                  Map<String, dynamic> attrs =
+                  Map<String, dynamic>? attrs =
                       await processAndGetFileAttributes(filePath);
-                  String newPath = attrs["path"];
-                  Uint8List fileBytes = await File(newPath).readAsBytes();
-                  Uint8List? thumbnail =
-                      await compute(getImageThumbnail, fileBytes);
-                  String name = attrs["name"];
-                  Map<String, dynamic> data = {
-                    "path": newPath,
-                    "mime": attrs["mime"],
-                    "name": name,
-                    "size": attrs["size"]
-                  };
-                  String text = 'DND|#image|$name';
-                  ModelItem item = await ModelItem.fromMap({
-                    "group_id": groupId,
-                    "text": text,
-                    "type": ItemType.image,
-                    "thumbnail": thumbnail,
-                    "data": data,
-                    "at": at
-                  });
-                  await item.insert();
+                  if (attrs != null) {
+                    String newPath = attrs["path"];
+                    Uint8List fileBytes = await File(newPath).readAsBytes();
+                    Uint8List? thumbnail =
+                        await compute(getImageThumbnail, fileBytes);
+                    String name = attrs["name"];
+                    Map<String, dynamic> data = {
+                      "path": newPath,
+                      "mime": attrs["mime"],
+                      "name": name,
+                      "size": attrs["size"]
+                    };
+                    String text = 'DND|#image|$name';
+                    ModelItem item = await ModelItem.fromMap({
+                      "group_id": groupId,
+                      "text": text,
+                      "type": ItemType.image,
+                      "thumbnail": thumbnail,
+                      "data": data,
+                      "at": at
+                    });
+                    await item.insert();
+                  }
                 }
               }
               break;
@@ -346,27 +348,29 @@ Future<String> restoreOldDb(String baseDirPath) async {
                 String filePath = path.join(backupDirPath, "audio", fileName);
                 File audioFile = File(filePath);
                 if (audioFile.existsSync()) {
-                  Map<String, dynamic> attrs =
+                  Map<String, dynamic>? attrs =
                       await processAndGetFileAttributes(filePath);
-                  String newPath = attrs["path"];
-                  String? duration = await getAudioDuration(newPath);
-                  String name = attrs["name"];
-                  Map<String, dynamic> data = {
-                    "path": newPath,
-                    "mime": attrs["mime"],
-                    "name": name,
-                    "size": attrs["size"],
-                    "duration": duration ?? "0:00"
-                  };
-                  String text = 'DND|#audio|$name';
-                  ModelItem item = await ModelItem.fromMap({
-                    "group_id": groupId,
-                    "text": text,
-                    "type": ItemType.audio,
-                    "data": data,
-                    "at": at
-                  });
-                  await item.insert();
+                  if (attrs != null) {
+                    String newPath = attrs["path"];
+                    String? duration = await getAudioDuration(newPath);
+                    String name = attrs["name"];
+                    Map<String, dynamic> data = {
+                      "path": newPath,
+                      "mime": attrs["mime"],
+                      "name": name,
+                      "size": attrs["size"],
+                      "duration": duration ?? "0:00"
+                    };
+                    String text = 'DND|#audio|$name';
+                    ModelItem item = await ModelItem.fromMap({
+                      "group_id": groupId,
+                      "text": text,
+                      "type": ItemType.audio,
+                      "data": data,
+                      "at": at
+                    });
+                    await item.insert();
+                  }
                 }
               }
               break;

@@ -46,7 +46,9 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
       String oldPath = dataMap["path"];
       File file = File(oldPath);
       if (file.existsSync()) {
-        Map<String, dynamic> attrs = await processAndGetFileAttributes(oldPath);
+        Map<String, dynamic>? attrs =
+            await processAndGetFileAttributes(oldPath);
+        if (attrs == null) continue;
         String newPath = attrs["path"];
         if (item.type == ItemType.image) {
           Uint8List fileBytes = await File(newPath).readAsBytes();

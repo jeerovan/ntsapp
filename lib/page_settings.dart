@@ -273,7 +273,6 @@ class SettingsPageState extends State<SettingsPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   final version = snapshot.data?.version ?? '';
-                  final buildNumber = snapshot.data?.buildNumber ?? '';
                   return ListTile(
                     leading: const Icon(LucideIcons.info, color: Colors.grey),
                     horizontalTitleGap: 24.0,
