@@ -15,31 +15,28 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   final otpController = TextEditingController();
 
   bool otpSent = false;
-  bool signedIn = false;
-  String email = "";
+  bool canResend = false;
+  String email = ModelSetting.getForKey("otp_sent_to", "");
   final SupabaseClient supabase = Supabase.instance.client;
+  bool signedIn = Supabase.instance.client.auth.currentSession != null;
 
   @override
   void initState() {
     super.initState();
     if (supabase.auth.currentSession == null) {
-      String sentTo = ModelSetting.getForKey("otp_sent_to", "");
       String sentAtStr = ModelSetting.getForKey("otp_sent_at", "0");
       int sentAt = int.parse(sentAtStr);
       int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
-      if (nowUtc - sentAt > 120000) {
+      if (nowUtc - sentAt < 900000) {
         otpSent = true;
-        email = sentTo;
       }
-    } else {
-      setState(() {
-        signedIn = true;
-      });
     }
   }
+  // TODO have a resend OTP option with a timer to expire otpSent
+  // OTP can be sent after one minute and they expire after 15min
 
   Future<void> sendOtp() async {
-    final email = emailController.text;
+    email = emailController.text;
 
     try {
       // Sends a magic link/OTP to the user's email
