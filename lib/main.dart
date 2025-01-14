@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_config.dart';
 import 'database_helper.dart';
@@ -24,6 +25,7 @@ import 'themes.dart';
 
 // Set to false if running on Desktop
 bool mobile = Platform.isAndroid || Platform.isIOS;
+bool supabaseInitialized = true;
 bool mediaKitAvailable = false;
 
 Future<void> main() async {
@@ -59,6 +61,14 @@ Future<void> main() async {
     ModelSetting.update("fix_video_thumbnail", "yes");
   }
 
+  final String? supaUrl = AppConfig.get("supabase_url", null);
+  final String? supaKey = AppConfig.get("supabase_key", null);
+  if (supaUrl != null && supaKey != null) {
+    await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+  } else {
+    supabaseInitialized = false;
+  }
+
   await SentryFlutter.init(
     (options) {
       options.dsn = AppConfig.get("sentry_dsn");
@@ -86,6 +96,7 @@ class _MainAppState extends State<MainApp> {
 
   // sharing intent
   late StreamSubscription _intentSub;
+  late StreamSubscription _supaSessionSub;
   final List<String> _sharedContents = [];
 
   @override
@@ -136,11 +147,23 @@ class _MainAppState extends State<MainApp> {
         });
       });
     }
+    if (supabaseInitialized) {
+      SupabaseClient supabase = Supabase.instance.client;
+      _supaSessionSub = supabase.auth.onAuthStateChange.listen((data) {
+        final AuthChangeEvent event = data.event;
+        debugPrint('event: $event');
+        /* final Session? session = data.session;
+        debugPrint('session: $session');
+        final User? user = supabase.auth.currentUser;
+        debugPrint('User:$user'); */
+      });
+    }
   }
 
   @override
   void dispose() {
     _intentSub.cancel();
+    _supaSessionSub.cancel();
     super.dispose();
   }
 

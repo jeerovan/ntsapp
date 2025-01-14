@@ -6,9 +6,11 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/main.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
+import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -251,6 +253,20 @@ class _PageGroupState extends State<PageGroup> {
           },
           icon: const Icon(
             LucideIcons.database,
+          ),
+        ),
+      if (supabaseInitialized)
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => EmailAuthScreen(),
+                settings: const RouteSettings(name: "EmailSignIn"),
+              ),
+            );
+          },
+          icon: const Icon(
+            LucideIcons.user,
           ),
         ),
       IconButton(
