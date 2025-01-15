@@ -47,7 +47,7 @@ class PageGroup extends StatefulWidget {
 class _PageGroupState extends State<PageGroup> {
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
-  final List<ModelCategoryGroup> _categoriesGroups = [];
+  final List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
   bool _isLoading = false;
   bool _hasInitiated = false;
 
@@ -74,9 +74,9 @@ class _PageGroupState extends State<PageGroup> {
   Future<void> loadCategoriesGroups() async {
     try {
       setState(() => _isLoading = true);
-      _categoriesGroups.clear();
+      _categoriesGroupsDisplayList.clear();
       final categoriesGroups = await ModelCategoryGroup.all();
-      _categoriesGroups.addAll(categoriesGroups);
+      _categoriesGroupsDisplayList.addAll(categoriesGroups);
     } catch (e) {
       debugPrint("Error loading categories and groups: $e");
     } finally {
@@ -162,6 +162,19 @@ class _PageGroupState extends State<PageGroup> {
     }
   }
 
+  Future<void> updateGroupInDisplayList(String groupId) async {
+    ModelGroup? group = await ModelGroup.get(groupId);
+    if (group != null) {
+      int index = _categoriesGroupsDisplayList.indexWhere((categoryGroup) =>
+          categoryGroup.type == "group" && categoryGroup.id == groupId);
+      if (index != -1) {
+        setState(() {
+          _categoriesGroupsDisplayList[index].group = group;
+        });
+      }
+    }
+  }
+
   void navigateToNotes(ModelGroup group, List<String> sharedContents) {
     Navigator.of(context)
         .push(AnimatedPageRoute(
@@ -172,7 +185,7 @@ class _PageGroupState extends State<PageGroup> {
     ))
         .then((_) {
       setState(() {
-        loadCategoriesGroups();
+        updateGroupInDisplayList(group.id!);
       });
     });
   }
@@ -187,7 +200,7 @@ class _PageGroupState extends State<PageGroup> {
           DateTime.now().toUtc().millisecondsSinceEpoch;
       await categoryGroup.category!.update();
     }
-    _categoriesGroups.remove(categoryGroup);
+    _categoriesGroupsDisplayList.remove(categoryGroup);
     if (mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -226,8 +239,8 @@ class _PageGroupState extends State<PageGroup> {
   }
 
   Future<void> _saveGroupPositions() async {
-    for (ModelCategoryGroup categoryGroup in _categoriesGroups) {
-      int position = _categoriesGroups.indexOf(categoryGroup);
+    for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
+      int position = _categoriesGroupsDisplayList.indexOf(categoryGroup);
       categoryGroup.position = position;
       if (categoryGroup.type == "group") {
         final ModelGroup group = categoryGroup.group!;
@@ -398,13 +411,13 @@ class _PageGroupState extends State<PageGroup> {
             child: Stack(
               children: [
                 ReorderableListView.builder(
-                  itemCount: _categoriesGroups.length,
+                  itemCount: _categoriesGroupsDisplayList.length,
                   buildDefaultDragHandles: false,
                   onReorderStart: (_) {
                     HapticFeedback.vibrate();
                   },
                   itemBuilder: (context, index) {
-                    final item = _categoriesGroups[index];
+                    final item = _categoriesGroupsDisplayList[index];
                     return ReorderableDelayedDragStartListener(
                       key: ValueKey(item.id),
                       index: index,
@@ -454,17 +467,20 @@ class _PageGroupState extends State<PageGroup> {
                       }
 
                       // Remove the item from the old position
-                      final item = _categoriesGroups.removeAt(oldIndex);
+                      final item =
+                          _categoriesGroupsDisplayList.removeAt(oldIndex);
 
                       // Insert the item at the new position
-                      _categoriesGroups.insert(newIndex, item);
+                      _categoriesGroupsDisplayList.insert(newIndex, item);
 
                       // Print positions after reordering
                       _saveGroupPositions();
                     });
                   },
                 ),
-                if (_hasInitiated && _categoriesGroups.isEmpty && !_isLoading)
+                if (_hasInitiated &&
+                    _categoriesGroupsDisplayList.isEmpty &&
+                    !_isLoading)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),

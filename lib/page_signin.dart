@@ -37,28 +37,29 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
 
   Future<void> sendOtp() async {
     email = emailController.text;
-
-    try {
-      // Sends a magic link/OTP to the user's email
-      await supabase.auth.signInWithOtp(
-        email: email,
-      );
-      debugPrint('OTP sent to $email');
-      int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
-      ModelSetting.update("otp_sent_to", email);
-      ModelSetting.update("otp_sent_at", nowUtc.toString());
-      setState(() {
-        otpSent = true;
-      });
-    } catch (e) {
-      debugPrint('Error sending OTP: $e');
+    if (email.isNotEmpty) {
+      try {
+        // Sends a magic link/OTP to the user's email
+        await supabase.auth.signInWithOtp(
+          email: email,
+        );
+        debugPrint('OTP sent to $email');
+        int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
+        ModelSetting.update("otp_sent_to", email);
+        ModelSetting.update("otp_sent_at", nowUtc.toString());
+        setState(() {
+          otpSent = true;
+        });
+      } catch (e) {
+        debugPrint('Error sending OTP: $e');
+      }
     }
   }
 
   Future<void> verifyOtp() async {
     final otp = otpController.text;
     final String email = ModelSetting.getForKey("otp_sent_to", "");
-    if (email.isNotEmpty) {
+    if (email.isNotEmpty && otp.isNotEmpty) {
       try {
         AuthResponse response = await supabase.auth
             .verifyOTP(email: email, token: otp, type: OtpType.email);
@@ -102,7 +103,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               ),
             SizedBox(height: 20),
             if (!signedIn && !otpSent)
-              ElevatedButton(onPressed: sendOtp, child: Text('Send')),
+              ElevatedButton(onPressed: sendOtp, child: Text('Send OTP')),
             SizedBox(
               height: 40,
             ),
@@ -114,7 +115,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               ),
             SizedBox(height: 20),
             if (!signedIn && otpSent)
-              ElevatedButton(onPressed: verifyOtp, child: Text('Verify')),
+              ElevatedButton(onPressed: verifyOtp, child: Text('Verify OTP')),
             SizedBox(
               height: 20,
             ),

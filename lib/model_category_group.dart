@@ -32,15 +32,17 @@ class ModelCategoryGroup {
       SELECT 
           id, 
           position, 
-          'category' AS type 
+          'category' AS type,
+          at
       FROM category where category.title != 'DND' and category.archived_at = 0
       UNION ALL
       SELECT 
           id, 
           position, 
-          'group' AS type 
+          'group' AS type,
+          at
       FROM itemgroup where itemgroup.archived_at = 0 and itemgroup.category_id = (SELECT id from category where title = 'DND')
-      ORDER BY position ASC
+      ORDER BY position ASC,at ASC
     ''';
     List<Map<String, dynamic>> rows = await db.rawQuery(
       sql,

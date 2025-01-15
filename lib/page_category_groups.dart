@@ -30,7 +30,7 @@ class PageCategoryGroups extends StatefulWidget {
 }
 
 class _PageCategoryGroupsState extends State<PageCategoryGroups> {
-  final List<ModelGroup> categoryGroups = [];
+  final List<ModelGroup> categoryGroupsDisplayList = [];
   late ModelCategory category;
   bool loadedSharedContents = false;
 
@@ -49,8 +49,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   Future<void> loadGroups(bool updateHome) async {
     List<ModelGroup> groups = await ModelGroup.allInCategory(category.id!);
     setState(() {
-      categoryGroups.clear();
-      categoryGroups.addAll(groups);
+      categoryGroupsDisplayList.clear();
+      categoryGroupsDisplayList.addAll(groups);
     });
     if (updateHome) widget.onUpdate();
   }
@@ -64,24 +64,45 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     }
   }
 
-  void navigateToNotes(ModelGroup group) {
+  Future<void> updateGroupInDisplayList(String groupId) async {
+    ModelGroup? group = await ModelGroup.get(groupId);
+    if (group != null) {
+      int index =
+          categoryGroupsDisplayList.indexWhere((group) => group.id == groupId);
+      if (index != -1) {
+        setState(() {
+          categoryGroupsDisplayList[index] = group;
+        });
+      }
+    }
+  }
+
+  void navigateToNotes(ModelGroup group, bool updateGroupList) {
     List<String> sharedContents =
         loadedSharedContents || widget.sharedContents.isEmpty
             ? []
             : widget.sharedContents;
     widget.onSharedContentsLoaded();
     loadedSharedContents = true;
-    Navigator.of(context).push(AnimatedPageRoute(
-        child: PageItems(
+    Navigator.of(context)
+        .push(AnimatedPageRoute(
+            child: PageItems(
       group: group,
       sharedContents: sharedContents,
-    )));
+    )))
+        .then((_) {
+      if (updateGroupList) {
+        loadGroups(false);
+      } else {
+        updateGroupInDisplayList(group.id!);
+      }
+    });
   }
 
   Future<void> archiveGroup(ModelGroup group) async {
     group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
     await group.update();
-    categoryGroups.remove(group);
+    categoryGroupsDisplayList.remove(group);
     if (mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -107,8 +128,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   }
 
   Future<void> _saveGroupPositions() async {
-    for (ModelGroup group in categoryGroups) {
-      int position = categoryGroups.indexOf(group);
+    for (ModelGroup group in categoryGroupsDisplayList) {
+      int position = categoryGroupsDisplayList.indexOf(group);
       group.position = position;
       await group.update();
     }
@@ -149,13 +170,13 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       body: Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: ReorderableListView.builder(
-          itemCount: categoryGroups.length,
+          itemCount: categoryGroupsDisplayList.length,
           buildDefaultDragHandles: false,
           onReorderStart: (_) {
             HapticFeedback.vibrate();
           },
           itemBuilder: (context, index) {
-            final ModelGroup group = categoryGroups[index];
+            final ModelGroup group = categoryGroupsDisplayList[index];
             final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
                 id: group.id!,
                 type: "group",
@@ -194,7 +215,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    navigateToNotes(group);
+                    navigateToNotes(group, false);
                   },
                   child: WidgetCategoryGroup(
                     categoryGroup: categoryGroup,
@@ -213,10 +234,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
               }
 
               // Remove the item from the old position
-              final item = categoryGroups.removeAt(oldIndex);
+              final item = categoryGroupsDisplayList.removeAt(oldIndex);
 
               // Insert the item at the new position
-              categoryGroups.insert(newIndex, item);
+              categoryGroupsDisplayList.insert(newIndex, item);
 
               // Print positions after reordering
               _saveGroupPositions();
@@ -240,9 +261,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
               .then((noteGroup) {
             ModelGroup? group = noteGroup;
             if (group != null) {
-              navigateToNotes(
-                group,
-              );
+              navigateToNotes(group, true);
             }
           });
         },
