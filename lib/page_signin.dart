@@ -121,6 +121,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
             ),
             if (signedIn)
               ElevatedButton(onPressed: signOut, child: Text('Sign Out')),
+            SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(onPressed: null, child: Text('Encryptions')),
           ],
         ),
       ),

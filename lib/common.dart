@@ -24,21 +24,21 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 final List<Color> predefinedColors = [
-  "#EF4444",
-  "#f97316",
-  "#eab308",
-  "#84cc16",
-  "#10b981",
   "#06b6d4",
   "#0ea5e9",
   "#3b82f6",
+  "#10b981",
+  "#84cc16",
   "#8b5cf6",
   "#ec4899",
-  "#FFFFFF",
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#ffffff",
   "#e5e7eb",
   "#6b7280",
-  "#636363",
-  "#000000",
+  "#1f2937",
+  "#000000"
 ].map((colorText) {
   return colorFromHex(colorText);
 }).toList();
@@ -322,7 +322,7 @@ String readableBytes(int bytes, [int decimals = 2]) {
 }
 
 Color getIndexedColor(int count) {
-  int predefinedColorsLength = predefinedColors.length;
+  int predefinedColorsLength = 10;
   int index = (count - 1) % predefinedColorsLength;
   return predefinedColors[index];
 }

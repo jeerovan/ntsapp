@@ -122,6 +122,8 @@ class ItemWidgetTask extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
+              Flexible(child: WidgetTextWithLinks(text: item.text)),
+              const SizedBox(width: 8),
               Icon(
                 item.type == ItemType.completedTask
                     ? Icons.check_circle
@@ -130,8 +132,6 @@ class ItemWidgetTask extends StatelessWidget {
                     ? Theme.of(context).colorScheme.inversePrimary
                     : Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(width: 8),
-              Flexible(child: WidgetTextWithLinks(text: item.text)),
             ],
           ),
         ),

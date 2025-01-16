@@ -12,7 +12,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enum_item_type.dart';
-import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_edit_note.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path/path.dart' as path;
@@ -1523,7 +1522,6 @@ class _PageItemsState extends State<PageItems> {
 
   @override
   Widget build(BuildContext context) {
-    bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
       appBar: AppBar(
         actions: _buildAppbarDefaultOptions(),
@@ -1609,9 +1607,7 @@ class _PageItemsState extends State<PageItems> {
                                           .inversePrimary
                                       : Colors.transparent,
                               child: Align(
-                                alignment: isRTL
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
+                                alignment: Alignment.centerRight,
                                 child: Container(
                                     margin: const EdgeInsets.symmetric(
                                         vertical: 5, horizontal: 10),

@@ -773,7 +773,7 @@ class ColorPickerDialog extends StatefulWidget {
 }
 
 class _ColorPickerDialogState extends State<ColorPickerDialog> {
-  Color selectedColor = colorFromHex("#ef4444"); // Default selected color
+  Color selectedColor = colorFromHex("#06b6d4"); // Default selected color
   double hue = 0.0; // Default hue for the color bar
 
   @override
