@@ -340,7 +340,16 @@ Color colorFromHex(String hex) {
 }
 
 String colorToHex(Color color) {
-  return '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  final red =
+      (color.r * 255).toInt().toRadixString(16).padLeft(2, '0').toUpperCase();
+  final green =
+      (color.g * 255).toInt().toRadixString(16).padLeft(2, '0').toUpperCase();
+  final blue =
+      (color.b * 255).toInt().toRadixString(16).padLeft(2, '0').toUpperCase();
+  final alpha =
+      (color.a * 255).toInt().toRadixString(16).padLeft(2, '0').toUpperCase();
+
+  return '$alpha$red$green$blue';
 }
 
 Future<File?> getFile(String fileType, String fileName) async {

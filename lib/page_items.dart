@@ -1997,15 +1997,16 @@ class _PageItemsState extends State<PageItems> {
                               color: Theme.of(context).colorScheme.onSurface),
                           decoration: InputDecoration(
                             filled: true,
-                            hintText: _isCreatingTask
+                            labelText: _isCreatingTask
                                 ? "Create a task"
                                 : "Add a note...",
-                            hintStyle: TextStyle(
+                            labelStyle: TextStyle(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .outlineVariant,
                                 fontWeight: FontWeight.w400),
-                            fillColor: Theme.of(context).colorScheme.surface,
+                            fillColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25.0),
                               borderSide: BorderSide(

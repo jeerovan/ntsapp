@@ -20,7 +20,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.1
   flutter_map: ^7.0.2
   flutter_native_splash: ^2.4.3
-  flutter_slidable: ^3.1.1
+  flutter_slidable: ^3.1.2
   geolocator: ^13.0.1
   http: ^1.2.2
   image: ^4.3.0
@@ -34,7 +34,7 @@ dependencies:
   media_kit_video: ^1.2.5
   metadata_fetch: ^0.4.2
   mime: ^2.0.0
-  open_filex: ^4.5.0
+  open_filex: ^4.6.0
   package_info_plus: ^8.1.0
   path: ^1.9.0
   path_provider: ^2.1.5

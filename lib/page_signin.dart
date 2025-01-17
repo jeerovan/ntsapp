@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/model_setting.dart';
+import 'package:ntsapp/page_dummy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailAuthScreen extends StatefulWidget {
@@ -86,6 +87,15 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     }
   }
 
+  Future<void> toDummyPage() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AnimatedListPage(),
+        settings: const RouteSettings(name: "DummyPage"),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,7 +134,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
             SizedBox(
               height: 20,
             ),
-            ElevatedButton(onPressed: null, child: Text('Encryptions')),
+            ElevatedButton(onPressed: toDummyPage, child: Text('Encryptions')),
           ],
         ),
       ),

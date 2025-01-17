@@ -175,13 +175,13 @@ class WidgetCategoryGroupAvatar extends StatelessWidget {
         ? Padding(
             padding: const EdgeInsets.all(10.0),
             child: Icon(Icons.circle,
-                size: 14, color: colorFromHex(color).withOpacity(0.8)),
+                size: 14, color: colorFromHex(color).withValues(alpha: 0.8)),
           )
         : Padding(
             padding: const EdgeInsets.all(5.0),
             child: Icon(
               Icons.workspaces,
-              color: colorFromHex(color).withOpacity(0.8),
+              color: colorFromHex(color).withValues(alpha: 0.8),
             ),
           );
   }
@@ -285,7 +285,7 @@ class _WidgetVideoImageThumbnailState extends State<WidgetVideoImageThumbnail> {
           width: widget.iconSize,
           height: widget.iconSize,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             // Semi-transparent grey background
             shape: BoxShape.circle,
           ),
@@ -365,7 +365,7 @@ class _WidgetVideoPlayerThumbnailState
                     width: widget.iconSize,
                     height: widget.iconSize,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       // Semi-transparent grey background
                       shape: BoxShape.circle,
                     ),
@@ -450,7 +450,7 @@ class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
                     width: widget.iconSize,
                     height: widget.iconSize,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       // Semi-transparent grey background
                       shape: BoxShape.circle,
                     ),
@@ -554,7 +554,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
                 ? Theme.of(context).colorScheme.primary
                 : Colors.blue,
             inactiveColor: Theme.of(context).brightness == Brightness.dark
-                ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
+                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)
                 : Colors.grey[300],
             min: 0,
             max: _totalDuration.inMilliseconds.toDouble(),
