@@ -16,12 +16,13 @@ class _PageDummyState extends State<PageDummy> {
   String? masterKeyStr;
   String? saltStr;
   String? deriveKeyStr;
+  bool encryptionDecryptionWorks = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      doEncryptions();
+      testEncryptions();
     });
   }
 
@@ -30,14 +31,14 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
-  Future<void> doEncryptions() async {
+  Future<void> testEncryptions() async {
     final SodiumSumo sodium = await SodiumSumoInit.init();
     final CryptoUtils cryptoUtils = CryptoUtils(sodium);
+
     SecureKey masterKey = cryptoUtils.generateKey();
-    // Access the binary data from the SecureKey
-    final keyBytes = masterKey.extractBytes();
+    final Uint8List masterKeyBytes = masterKey.extractBytes();
     setState(() {
-      masterKeyStr = bytesToHex(keyBytes);
+      masterKeyStr = bytesToHex(masterKeyBytes);
     });
     masterKey.dispose();
 
@@ -46,12 +47,30 @@ class _PageDummyState extends State<PageDummy> {
       saltStr = bytesToHex(salt);
     });
 
-    SecureKey deriveKey = await cryptoUtils.deriveKeyFromPassword(
+    SecureKey derivedKey = await cryptoUtils.deriveKeyFromPassword(
         password: "helloworld", salt: salt);
-    final deriveKeyBytes = deriveKey.extractBytes();
-    deriveKey.dispose();
+    final Uint8List deriveKeyBytes = derivedKey.extractBytes();
+    derivedKey.dispose();
     setState(() {
       deriveKeyStr = bytesToHex(deriveKeyBytes);
+    });
+
+    // encrypt masterKey with derivedKey
+    Map<String, dynamic>? encryptionResult =
+        cryptoUtils.encryptBytes(masterKeyBytes, deriveKeyBytes).getResult();
+    Uint8List encryptedMasterKey = encryptionResult!["encrypted"];
+    Uint8List masterKeyEncryptionNonce = encryptionResult["nonce"];
+
+    // decrypt encryptedMasterKey with derivedKey
+    Map<String, dynamic>? decryptionResult = cryptoUtils
+        .decryptBytes(
+            encryptedMasterKey, masterKeyEncryptionNonce, deriveKeyBytes)
+        .getResult();
+    Uint8List decryptedMasterKey = decryptionResult!["decrypted"];
+
+    setState(() {
+      encryptionDecryptionWorks =
+          bytesToHex(decryptedMasterKey) == bytesToHex(masterKeyBytes);
     });
   }
 
@@ -67,6 +86,7 @@ class _PageDummyState extends State<PageDummy> {
           Text("MasterKey:$masterKeyStr"),
           Text("Salt:$saltStr"),
           Text("DeriveKeyStr:$deriveKeyStr"),
+          Text("Works:$encryptionDecryptionWorks"),
         ],
       ),
     );
