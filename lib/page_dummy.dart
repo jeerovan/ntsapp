@@ -1,74 +1,74 @@
-import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
-class AnimatedListPage extends StatefulWidget {
-  const AnimatedListPage({super.key});
+import 'package:flutter/material.dart';
+import 'package:ntsapp/common.dart';
+import 'package:ntsapp/utils_crypto.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
+
+class PageDummy extends StatefulWidget {
+  const PageDummy({super.key});
 
   @override
-  State<AnimatedListPage> createState() => _AnimatedListPageState();
+  State<PageDummy> createState() => _PageDummyState();
 }
 
-class _AnimatedListPageState extends State<AnimatedListPage> {
-  final TextEditingController _controller = TextEditingController();
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  final List<String> _items = [];
+class _PageDummyState extends State<PageDummy> {
+  String? masterKeyStr;
+  String? saltStr;
+  String? deriveKeyStr;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      doEncryptions();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> doEncryptions() async {
+    final SodiumSumo sodium = await SodiumSumoInit.init();
+    final CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    SecureKey masterKey = cryptoUtils.generateKey();
+    // Access the binary data from the SecureKey
+    final keyBytes = masterKey.extractBytes();
+    setState(() {
+      masterKeyStr = bytesToHex(keyBytes);
+    });
+    masterKey.dispose();
+
+    final Uint8List salt = cryptoUtils.generateSalt();
+    setState(() {
+      saltStr = bytesToHex(salt);
+    });
+
+    SecureKey deriveKey = await cryptoUtils.deriveKeyFromPassword(
+        password: "helloworld", salt: salt);
+    final deriveKeyBytes = deriveKey.extractBytes();
+    deriveKey.dispose();
+    setState(() {
+      deriveKeyStr = bytesToHex(deriveKeyBytes);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Animated List"),
+        title: Text("Page Dummy"),
       ),
       body: Column(
         children: [
-          Expanded(
-            child: AnimatedList(
-              key: _listKey,
-              reverse: true,
-              initialItemCount: _items.length,
-              itemBuilder: (context, index, animation) {
-                return SlideTransition(
-                  position: animation.drive(
-                    Tween(
-                      begin: const Offset(0.0, 1.0),
-                      end: const Offset(0.0, 0.0),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(_items[index]),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _controller,
-              onSubmitted: _addItem,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Enter text',
-              ),
-            ),
-          ),
+          CircularProgressIndicator(),
+          Text("MasterKey:$masterKeyStr"),
+          Text("Salt:$saltStr"),
+          Text("DeriveKeyStr:$deriveKeyStr"),
         ],
       ),
     );
-  }
-
-  void _addItem(String text) {
-    if (text.isEmpty) return;
-
-    _items.insert(0, text);
-    _listKey.currentState
-        ?.insertItem(0, duration: const Duration(milliseconds: 300));
-    _controller.clear();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }

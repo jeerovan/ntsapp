@@ -10,7 +10,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'app_config.dart';
 import 'common.dart';
 import 'database_helper.dart';
-import 'enum_item_type.dart';
+import 'enums.dart';
 import 'model_category.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';

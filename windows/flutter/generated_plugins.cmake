@@ -15,6 +15,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   screen_brightness_windows
   sentry_flutter
   share_plus
+  sodium_libs
   url_launcher_windows
 )
 

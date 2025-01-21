@@ -1,4 +1,4 @@
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 
 import 'database_helper.dart';
 import 'model_category.dart';

@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:mime/mime.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
@@ -46,6 +47,11 @@ final List<Color> predefinedColors = [
   return colorFromHex(colorText);
 }).toList();
 
+int getRandomInt(int range) {
+  return Random().nextInt(range);
+}
+
+/* input validations -- starts */
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
     return 'Please enter data';
@@ -91,6 +97,7 @@ String? validateSelection(String? value) {
   }
   return null;
 }
+/* input validations -- ends */
 
 String capitalize(String text) {
   if (text.isEmpty) return "";
@@ -158,6 +165,7 @@ void showProcessingDialog(BuildContext context) {
   );
 }
 
+/* date/time conversions -- starts */
 String stringFromIntDate(int date) {
   String input = date.toString();
   DateTime dateTime = dateFromStringDate(input);
@@ -185,10 +193,6 @@ int daysDifference(DateTime date1, DateTime date2) {
   DateTime smallDate = bigDate == date1 ? date2 : date1;
   Duration difference = bigDate.difference(smallDate);
   return difference.inDays;
-}
-
-int getRandomInt(int range) {
-  return Random().nextInt(range);
 }
 
 int dateFromDateTime(DateTime datetime) {
@@ -295,6 +299,7 @@ String mediaFileDuration(int seconds) {
       ? "$hoursStr:$minutesStr:$secondsStr"
       : "$minutesStr:$secondsStr";
 }
+/* date/time conversion -- ends */
 
 Uint8List? getImageThumbnail(Uint8List bytes) {
   int maxSize = 200;
@@ -316,7 +321,7 @@ Map<String, int> getImageDimension(Uint8List bytes) {
   return {"width": 0, "height": 0};
 }
 
-String readableBytes(int bytes, [int decimals = 2]) {
+String readableFileSizeFromBytes(int bytes, [int decimals = 2]) {
   if (bytes <= 0) return "0 B";
   const suffixes = ["B", "KB", "MB", "GB", "TB"];
   final i = (log(bytes) / log(1024)).floor();
@@ -398,7 +403,7 @@ Future<void> initializeDirectories() async {
   }
 }
 
-Future<String> fileHash(File file) async {
+Future<String> getHashOfFile(File file) async {
   final Stream<List<int>> stream = file.openRead();
   final sha256hash = await stream.transform(sha256).first;
   return sha256hash.toString();
@@ -415,7 +420,7 @@ Future<Map<String, dynamic>?> processAndGetFileAttributes(
     mime = fileMime;
   }
   File file = File(filePath);
-  String hash = await fileHash(file);
+  String hash = await getHashOfFile(file);
   String fileName = '$hash$extension';
   int fileSize = file.lengthSync();
   String directory = mime.split("/").first;
@@ -457,46 +462,6 @@ Future<int> checkDownloadNetworkImage(String itemId, String imageUrl) async {
     debugPrint('Error downloading url image: $e');
   }
   return portrait;
-}
-
-void addEditTitlePopup(
-    BuildContext context, String title, Function(String) onSubmit,
-    [String initialText = ""]) {
-  final TextEditingController controller =
-      TextEditingController(text: initialText);
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          maxLines: 1,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-          decoration: const InputDecoration(
-            hintText: 'Enter text here...',
-            hintStyle:
-                TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('Save'),
-            onPressed: () {
-              onSubmit(controller.text.trim());
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
 
 Future<String?> getAudioDuration(String filePath) async {
@@ -672,139 +637,97 @@ class FontSizeController extends ChangeNotifier {
   }
 }
 
-class AnimatedPageRoute extends PageRouteBuilder {
-  final Widget child;
+class ExecutionResult<T> {
+  // Status of the execution using enum
+  final ExecutionStatus status;
 
-  AnimatedPageRoute({required this.child})
-      : super(
-          pageBuilder: (context, animation, secondaryAnimation) => child,
-          transitionDuration: const Duration(milliseconds: 150),
-          reverseTransitionDuration: const Duration(milliseconds: 150),
-        );
+  // Holds the success result as a Map
+  final Map<String, dynamic>? successResult;
 
-  @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) {
-    // Animation for the new screen (Child)
-    const curve = Curves.linear;
-    final childSlideAnimation = Tween(
-      begin: const Offset(0.0, 0.02),
-      end: Offset.zero,
-    ).chain(CurveTween(curve: curve)).animate(animation);
+  // Holds the failure reason if execution failed
+  final String? failureReason;
 
-    final childFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).chain(CurveTween(curve: curve)).animate(animation);
+  // Optional failure key for categorizing different types of failures
+  final String? failureKey;
 
-    // Animation for the previous screen (Parent)
-    final parentScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).chain(CurveTween(curve: curve)).animate(secondaryAnimation);
-
-    final parentFadeAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.8,
-    ).chain(CurveTween(curve: curve)).animate(secondaryAnimation);
-
-    return Stack(
-      children: [
-        // Animate the Parent screen
-        FadeTransition(
-          opacity: parentFadeAnimation,
-          child: ScaleTransition(
-            scale: parentScaleAnimation,
-            child: Container(), // This will be the parent screen
-          ),
-        ),
-        // Animate the Child screen
-        FadeTransition(
-          opacity: childFadeAnimation,
-          child: SlideTransition(
-            position: childSlideAnimation,
-            child: child,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class AnimatedWidgetSwap extends StatefulWidget {
-  final Widget firstWidget;
-  final Widget secondWidget;
-  final bool showFirst;
-  final Duration duration;
-
-  const AnimatedWidgetSwap({
-    super.key,
-    required this.firstWidget,
-    required this.secondWidget,
-    required this.showFirst,
-    this.duration = const Duration(milliseconds: 300),
+  ExecutionResult._({
+    required this.status,
+    this.successResult,
+    this.failureReason,
+    this.failureKey,
   });
 
-  @override
-  State<AnimatedWidgetSwap> createState() => _AnimatedWidgetSwapState();
-}
-
-class _AnimatedWidgetSwapState extends State<AnimatedWidgetSwap>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slideOutAnimation;
-  late Animation<Offset> _slideInAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
+  // Factory constructor for successful execution
+  factory ExecutionResult.success(Map<String, dynamic> result) {
+    return ExecutionResult._(
+      status: ExecutionStatus.success,
+      successResult: result,
+      failureReason: null,
+      failureKey: null,
     );
+  }
 
-    _slideOutAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(-1.0, 0.0),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  // Factory constructor for failed execution
+  factory ExecutionResult.failure({
+    required String reason,
+    String? key,
+  }) {
+    return ExecutionResult._(
+      status: ExecutionStatus.failure,
+      successResult: null,
+      failureReason: reason,
+      failureKey: key,
+    );
+  }
 
-    _slideInAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  // Helper method to check if execution was successful
+  bool get isSuccess => status == ExecutionStatus.success;
+
+  // Helper method to check if execution failed
+  bool get isFailure => status == ExecutionStatus.failure;
+
+  // Helper method to safely get success result
+  Map<String, dynamic>? getResult() {
+    return isSuccess ? successResult : null;
+  }
+
+  // Helper method to safely get failure information
+  Map<String, dynamic>? getFailureInfo() {
+    if (!isFailure) return null;
+
+    return {
+      'reason': failureReason,
+      if (failureKey != null) 'key': failureKey,
+    };
   }
 
   @override
-  void didUpdateWidget(AnimatedWidgetSwap oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.showFirst != widget.showFirst) {
-      if (widget.showFirst) {
-        _controller.reverse();
-      } else {
-        _controller.forward();
-      }
+  String toString() {
+    if (isSuccess) {
+      return 'ExecutionResult(${status.name}): $successResult';
+    } else {
+      return 'ExecutionResult(${status.name}): ${failureReason ?? "No reason provided"}${failureKey != null ? " (Key: $failureKey)" : ""}';
     }
   }
+}
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+/* hexadecimal from/to conversions */
+/// Converts a list of bytes to a hex string
+String bytesToHex(List<int> bytes) {
+  return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+}
+
+/// Converts a hex string to a list of bytes
+Uint8List hexToBytes(String hex) {
+  final length = hex.length;
+  if (length % 2 != 0) {
+    throw FormatException('Hex string must have an even length');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        SlideTransition(
-          position: _slideOutAnimation,
-          child: widget.showFirst ? widget.firstWidget : Container(),
-        ),
-        SlideTransition(
-          position: _slideInAnimation,
-          child: widget.showFirst ? Container() : widget.secondWidget,
-        ),
-      ],
-    );
-  }
+  return Uint8List.fromList(
+    List.generate(length ~/ 2, (i) {
+      final byte = hex.substring(i * 2, i * 2 + 2);
+      return int.parse(byte, radix: 16);
+    }),
+  );
 }

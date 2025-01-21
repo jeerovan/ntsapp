@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 
 import 'common.dart';
 import 'model_item.dart';

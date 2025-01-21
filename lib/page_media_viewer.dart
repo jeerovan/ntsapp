@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:ntsapp/common.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:video_player/video_player.dart';
 import 'model_item.dart';
 

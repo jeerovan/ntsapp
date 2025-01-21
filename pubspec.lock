@@ -400,6 +400,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.4"
   functions_client:
     dependency: transitive
     description:
@@ -1293,6 +1301,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  sodium:
+    dependency: transitive
+    description:
+      name: sodium
+      sha256: "93d7c8d9af1f57cbd1ddeeb815902d3e0c1e1c8579a78cf229bcd97e1714f061"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.4"
+  sodium_libs:
+    dependency: "direct main"
+    description:
+      name: sodium_libs
+      sha256: "8d3af5baa9a2d8983febe67df77bd80248753e81d89436ffe023eae92d86f45a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.3"
   source_span:
     dependency: transitive
     description:

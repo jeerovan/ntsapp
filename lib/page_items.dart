@@ -11,7 +11,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/common_widgets.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_edit_note.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path/path.dart' as path;

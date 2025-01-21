@@ -896,3 +896,140 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
     );
   }
 }
+
+class AnimatedWidgetSwap extends StatefulWidget {
+  final Widget firstWidget;
+  final Widget secondWidget;
+  final bool showFirst;
+  final Duration duration;
+
+  const AnimatedWidgetSwap({
+    super.key,
+    required this.firstWidget,
+    required this.secondWidget,
+    required this.showFirst,
+    this.duration = const Duration(milliseconds: 300),
+  });
+
+  @override
+  State<AnimatedWidgetSwap> createState() => _AnimatedWidgetSwapState();
+}
+
+class _AnimatedWidgetSwapState extends State<AnimatedWidgetSwap>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideOutAnimation;
+  late Animation<Offset> _slideInAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    );
+
+    _slideOutAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(-1.0, 0.0),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _slideInAnimation = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void didUpdateWidget(AnimatedWidgetSwap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.showFirst != widget.showFirst) {
+      if (widget.showFirst) {
+        _controller.reverse();
+      } else {
+        _controller.forward();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        SlideTransition(
+          position: _slideOutAnimation,
+          child: widget.showFirst ? widget.firstWidget : Container(),
+        ),
+        SlideTransition(
+          position: _slideInAnimation,
+          child: widget.showFirst ? Container() : widget.secondWidget,
+        ),
+      ],
+    );
+  }
+}
+
+class AnimatedPageRoute extends PageRouteBuilder {
+  final Widget child;
+
+  AnimatedPageRoute({required this.child})
+      : super(
+          pageBuilder: (context, animation, secondaryAnimation) => child,
+          transitionDuration: const Duration(milliseconds: 150),
+          reverseTransitionDuration: const Duration(milliseconds: 150),
+        );
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
+    // Animation for the new screen (Child)
+    const curve = Curves.linear;
+    final childSlideAnimation = Tween(
+      begin: const Offset(0.0, 0.02),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: curve)).animate(animation);
+
+    final childFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).chain(CurveTween(curve: curve)).animate(animation);
+
+    // Animation for the previous screen (Parent)
+    final parentScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).chain(CurveTween(curve: curve)).animate(secondaryAnimation);
+
+    final parentFadeAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.8,
+    ).chain(CurveTween(curve: curve)).animate(secondaryAnimation);
+
+    return Stack(
+      children: [
+        // Animate the Parent screen
+        FadeTransition(
+          opacity: parentFadeAnimation,
+          child: ScaleTransition(
+            scale: parentScaleAnimation,
+            child: Container(), // This will be the parent screen
+          ),
+        ),
+        // Animate the Child screen
+        FadeTransition(
+          opacity: childFadeAnimation,
+          child: SlideTransition(
+            position: childSlideAnimation,
+            child: child,
+          ),
+        ),
+      ],
+    );
+  }
+}

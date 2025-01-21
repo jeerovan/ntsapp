@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/widgets_item.dart';
 
 import 'common.dart';
@@ -394,7 +394,7 @@ class SearchPageState extends State<SearchPage> {
                 width: 2,
               ),
               Text(
-                readableBytes(item.data!["size"]),
+                readableFileSizeFromBytes(item.data!["size"]),
                 style: const TextStyle(fontSize: 10),
               ),
             ],

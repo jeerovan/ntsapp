@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 
 import 'model_item.dart';
 import 'model_setting.dart';

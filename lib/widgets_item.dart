@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:path/path.dart' as path;
 
 import 'common.dart';
@@ -334,7 +334,7 @@ class ItemWidgetDocument extends StatelessWidget {
             children: [
               // File size text at the left
               Text(
-                readableBytes(item.data!["size"]),
+                readableFileSizeFromBytes(item.data!["size"]),
                 style: const TextStyle(fontSize: 10),
               ),
               WidgetTimeStampPinnedStarred(

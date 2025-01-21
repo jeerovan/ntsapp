@@ -47,6 +47,7 @@ dependencies:
   sentry_flutter: ^8.10.1
   share_plus: ^10.1.2
   siri_wave: ^2.1.0
+  sodium_libs: ^3.4.3
   sqflite: ^2.4.0
   sqflite_common_ffi: ^2.3.4
   supabase_flutter: ^2.8.3

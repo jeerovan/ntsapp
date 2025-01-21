@@ -7,9 +7,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
-import 'package:ntsapp/enum_item_type.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_db_fixes.dart';
 import 'package:ntsapp/page_media_migration.dart';
+import 'package:ntsapp/utils_crypto.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -54,6 +55,7 @@ Future<void> main() async {
   };
 
   await initializeDirectories();
+  CryptoUtils.init();
 
   // check set flags for fixes for fresh installs
   List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);

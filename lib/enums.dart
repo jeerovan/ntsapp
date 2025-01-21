@@ -64,3 +64,8 @@ extension ItemTypeExtension on ItemType {
     }
   }
 }
+
+enum ExecutionStatus {
+  failure,
+  success,
+}

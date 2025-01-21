@@ -90,7 +90,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   Future<void> toDummyPage() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => AnimatedListPage(),
+        builder: (context) => PageDummy(),
         settings: const RouteSettings(name: "DummyPage"),
       ),
     );
@@ -134,7 +134,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
             SizedBox(
               height: 20,
             ),
-            ElevatedButton(onPressed: toDummyPage, child: Text('Encryptions')),
+            ElevatedButton(onPressed: toDummyPage, child: Text('Dummy Page')),
           ],
         ),
       ),
