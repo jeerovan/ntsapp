@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
@@ -41,7 +44,8 @@ class CryptoUtils {
         password: password.toCharArray(),
         salt: salt,
         outLen: sodium.crypto.secretBox.keyBytes,
-        opsLimit: sodium.crypto.pwhash.opsLimitSensitive,
+        opsLimit: sodium.crypto.pwhash.opsLimitSensitive *
+            4, // compensation for memlimit
         memLimit: sodium.crypto.pwhash.memLimitModerate,
         alg: CryptoPwhashAlgorithm.argon2id13,
       );
@@ -73,5 +77,38 @@ class CryptoUtils {
         .openEasy(cipherText: message, nonce: nonce, key: key);
     key.dispose();
     return ExecutionResult.success({"decrypted": decryptedData});
+  }
+
+  Future<ExecutionResult> encryptFile(String fileIn, String fileOut) async {
+    SecureKey secretKey = _sodium.crypto.secretStream.keygen();
+    String secretKeyBase64 = base64Encode(secretKey.extractBytes());
+
+    await _sodium.crypto.secretStream
+        .pushChunked(
+          messageStream: File(fileIn).openRead(),
+          key: secretKey,
+          chunkSize: 4096,
+        )
+        .pipe(
+          File(fileOut).openWrite(),
+        );
+    secretKey.dispose();
+    return ExecutionResult.success({"key": secretKeyBase64});
+  }
+
+  Future<void> decryptFile(
+      String fileIn, String fileOut, Uint8List keyBytes) async {
+    SecureKey secretKey = SecureKey.fromList(_sodium, keyBytes);
+
+    await _sodium.crypto.secretStream
+        .pullChunked(
+          cipherStream: File(fileIn).openRead(),
+          key: secretKey,
+          chunkSize: 4096,
+        )
+        .pipe(
+          File(fileOut).openWrite(),
+        );
+    secretKey.dispose();
   }
 }
