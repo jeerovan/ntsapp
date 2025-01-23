@@ -43,6 +43,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-
+mermaid.*.md
 assets/config.txt
 /android/app/google-services.json

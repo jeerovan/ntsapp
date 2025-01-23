@@ -184,7 +184,7 @@ class _MainAppState extends State<MainApp> {
     String fixVideoThumbnailTask = "fix_video_thumbnail";
     String fixedVideoThumbnail =
         ModelSetting.getForKey(fixVideoThumbnailTask, "no");
-    Widget page = PageGroup(
+    Widget page = PageHome(
       sharedContents: _sharedContents,
       isDarkMode: isDark,
       onThemeToggle: _toggleTheme,

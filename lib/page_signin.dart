@@ -1,6 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_setting.dart';
-import 'package:ntsapp/page_dummy.dart';
+import 'package:ntsapp/page_password.dart';
+import 'package:ntsapp/page_recovery_key.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailAuthScreen extends StatefulWidget {
@@ -20,6 +27,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   String email = ModelSetting.getForKey("otp_sent_to", "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = Supabase.instance.client.auth.currentSession != null;
+  final SharedPreferencesAsync preferencesAsync = SharedPreferencesAsync();
+  bool canSync = false;
 
   @override
   void initState() {
@@ -32,7 +41,20 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
         otpSent = true;
       }
     }
+    init();
   }
+
+  Future<void> init() async {
+    bool? hasCanSync = await preferencesAsync.getBool("can_sync");
+    if (hasCanSync != null) {
+      setState(() {
+        canSync = hasCanSync;
+      });
+    } else {
+      debugPrint("can_sync is null");
+    }
+  }
+
   // TODO have a resend OTP option with a timer to expire otpSent
   // OTP can be sent after one minute and they expire after 15min
 
@@ -68,6 +90,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
         if (session != null) {
           setState(() {
             signedIn = true;
+            Navigator.of(context).pop(true);
           });
         }
       } catch (e) {
@@ -87,13 +110,36 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     }
   }
 
-  Future<void> toDummyPage() async {
+  Future<void> toPasswordPage() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PageDummy(),
-        settings: const RouteSettings(name: "DummyPage"),
+        builder: (context) => PagePassword(),
       ),
     );
+  }
+
+  Future<void> toRecoveryPage() async {
+    User? user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    String userId = user.id;
+    String keyForRecoveryKey = '${userId}_rk';
+    AndroidOptions getAndroidOptions() => const AndroidOptions(
+          encryptedSharedPreferences: true,
+        );
+    final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
+    String? recoveryKeyBase64 = await storage.read(key: keyForRecoveryKey);
+    if (recoveryKeyBase64 == null) return;
+    Uint8List recoveryKeyBytes = base64Decode(recoveryKeyBase64);
+    String recoveryKeyHex = bytesToHex(recoveryKeyBytes);
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PageRecoveryKey(
+            recoveryKeyHex: recoveryKeyHex,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -102,40 +148,50 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
       appBar: AppBar(title: Text(otpSent ? 'Verify OTP' : 'Email SignIn')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (!signedIn && !otpSent)
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              if (!signedIn && !otpSent)
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              SizedBox(height: 20),
+              if (!signedIn && !otpSent)
+                ElevatedButton(onPressed: sendOtp, child: Text('Send OTP')),
+              SizedBox(
+                height: 40,
               ),
-            SizedBox(height: 20),
-            if (!signedIn && !otpSent)
-              ElevatedButton(onPressed: sendOtp, child: Text('Send OTP')),
-            SizedBox(
-              height: 40,
-            ),
-            if (!signedIn && otpSent)
-              TextField(
-                controller: otpController,
-                decoration: InputDecoration(labelText: 'OTP'),
-                keyboardType: TextInputType.emailAddress,
+              if (!signedIn && otpSent)
+                TextField(
+                  controller: otpController,
+                  decoration: InputDecoration(labelText: 'OTP'),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              SizedBox(height: 20),
+              if (!signedIn && otpSent)
+                ElevatedButton(onPressed: verifyOtp, child: Text('Verify OTP')),
+              SizedBox(
+                height: 20,
               ),
-            SizedBox(height: 20),
-            if (!signedIn && otpSent)
-              ElevatedButton(onPressed: verifyOtp, child: Text('Verify OTP')),
-            SizedBox(
-              height: 20,
-            ),
-            if (signedIn)
-              ElevatedButton(onPressed: signOut, child: Text('Sign Out')),
-            SizedBox(
-              height: 20,
-            ),
-            ElevatedButton(onPressed: toDummyPage, child: Text('Dummy Page')),
-          ],
+              if (signedIn)
+                ElevatedButton(onPressed: signOut, child: Text('Sign Out')),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                  onPressed: toPasswordPage, child: Text('Password Page')),
+              SizedBox(
+                height: 20,
+              ),
+              if (canSync)
+                ElevatedButton(
+                    onPressed: toRecoveryPage, child: Text('Recovery Key')),
+            ],
+          ),
         ),
       ),
     );

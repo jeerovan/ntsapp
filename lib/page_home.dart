@@ -29,22 +29,22 @@ import 'page_settings.dart';
 
 bool debug = false;
 
-class PageGroup extends StatefulWidget {
+class PageHome extends StatefulWidget {
   final List<String> sharedContents;
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
 
-  const PageGroup(
+  const PageHome(
       {super.key,
       required this.sharedContents,
       required this.isDarkMode,
       required this.onThemeToggle});
 
   @override
-  State<PageGroup> createState() => _PageGroupState();
+  State<PageHome> createState() => _PageHomeState();
 }
 
-class _PageGroupState extends State<PageGroup> {
+class _PageHomeState extends State<PageHome> {
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
@@ -271,12 +271,19 @@ class _PageGroupState extends State<PageGroup> {
       if (supabaseInitialized)
         IconButton(
           onPressed: () {
-            Navigator.of(context).push(
+            Navigator.of(context)
+                .push(
               MaterialPageRoute(
                 builder: (context) => EmailAuthScreen(),
                 settings: const RouteSettings(name: "EmailSignIn"),
               ),
-            );
+            )
+                .then((value) {
+              if (value != null && value == true) {
+                // user signed in
+                // Navigate to password page
+              }
+            });
           },
           icon: const Icon(
             LucideIcons.user,

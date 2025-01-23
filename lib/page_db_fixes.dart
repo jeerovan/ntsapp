@@ -31,7 +31,7 @@ class _PageDbFixesState extends State<PageDbFixes> {
 
   void navigateToPageGroup() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (_) => PageGroup(
+      builder: (_) => PageHome(
         sharedContents: const [],
         isDarkMode: widget.isDarkMode,
         onThemeToggle: widget.onThemeToggle,

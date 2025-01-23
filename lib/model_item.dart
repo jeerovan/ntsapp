@@ -411,6 +411,7 @@ class ModelItem {
         final String path = dataMap["path"];
         File file = File(path);
         if (file.existsSync()) {
+          // TODO should be deleted with last reference
           file.deleteSync();
         }
       }

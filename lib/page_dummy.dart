@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +25,7 @@ class _PageDummyState extends State<PageDummy> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      //testEncryptions();
+      testEncryptions();
     });
   }
 
@@ -47,6 +45,8 @@ class _PageDummyState extends State<PageDummy> {
     });
     masterKey.dispose();
 
+    debugPrint("MasterHex:$masterKeyStr");
+
     final Uint8List salt = cryptoUtils.generateSalt();
     setState(() {
       saltStr = bytesToHex(salt);
@@ -63,15 +63,18 @@ class _PageDummyState extends State<PageDummy> {
     });
 
     // encrypt masterKey with derivedKey
-    Map<String, dynamic>? encryptionResult =
-        cryptoUtils.encryptBytes(masterKeyBytes, deriveKeyBytes).getResult();
+    Map<String, dynamic>? encryptionResult = cryptoUtils
+        .encryptBytes(plainBytes: masterKeyBytes, key: deriveKeyBytes)
+        .getResult();
     Uint8List encryptedMasterKey = encryptionResult!["encrypted"];
     Uint8List masterKeyEncryptionNonce = encryptionResult["nonce"];
 
     // decrypt encryptedMasterKey with derivedKey
     Map<String, dynamic>? decryptionResult = cryptoUtils
         .decryptBytes(
-            encryptedMasterKey, masterKeyEncryptionNonce, deriveKeyBytes)
+            cipherBytes: encryptedMasterKey,
+            nonce: masterKeyEncryptionNonce,
+            key: deriveKeyBytes)
         .getResult();
     Uint8List decryptedMasterKey = decryptionResult!["decrypted"];
 
@@ -112,14 +115,20 @@ class _PageDummyState extends State<PageDummy> {
 
         SodiumSumo sodium = await SodiumSumoInit.init();
         CryptoUtils cryptoUtils = CryptoUtils(sodium);
+        final timer = Stopwatch()..start();
         ExecutionResult encryptionResult =
             await cryptoUtils.encryptFile(fileIn, fileOut);
-
+        timer.stop();
+        timer.reset;
+        debugPrint("EncryptedIn:${timer.elapsed}");
         String base64Key = encryptionResult.getResult()!["key"];
         Uint8List keyBytes = base64Decode(base64Key);
         String decryptOut = path.join(
             directory, '${fileNameWithoutExtension}_decrypted$extension');
+        timer.start();
         await cryptoUtils.decryptFile(fileOut, decryptOut, keyBytes);
+        timer.stop();
+        debugPrint("DecryptedIn:${timer.elapsed}");
       }
     } catch (e) {
       if (e is PlatformException && e.code == 'read_external_storage_denied') {
