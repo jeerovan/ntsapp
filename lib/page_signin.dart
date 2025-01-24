@@ -1,13 +1,8 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_password.dart';
 import 'package:ntsapp/page_recovery_key.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailAuthScreen extends StatefulWidget {
@@ -19,7 +14,6 @@ class EmailAuthScreen extends StatefulWidget {
 
 class _EmailAuthScreenState extends State<EmailAuthScreen> {
   final emailController = TextEditingController();
-
   final otpController = TextEditingController();
 
   bool otpSent = false;
@@ -27,7 +21,6 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   String email = ModelSetting.getForKey("otp_sent_to", "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = Supabase.instance.client.auth.currentSession != null;
-  final SharedPreferencesAsync preferencesAsync = SharedPreferencesAsync();
   bool canSync = false;
 
   @override
@@ -44,14 +37,26 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     init();
   }
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    otpController.dispose();
+    super.dispose();
+  }
+
   Future<void> init() async {
-    bool? hasCanSync = await preferencesAsync.getBool("can_sync");
-    if (hasCanSync != null) {
+    User? user = supabase.auth.currentUser;
+    if (user != null) {
+      String userId = user.id;
+      String keyForMasterKey = '${userId}_mk';
+      AndroidOptions getAndroidOptions() => const AndroidOptions(
+            encryptedSharedPreferences: true,
+          );
+      final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
+      bool hasMasterKeyCipher = await storage.containsKey(key: keyForMasterKey);
       setState(() {
-        canSync = hasCanSync;
+        canSync = hasMasterKeyCipher;
       });
-    } else {
-      debugPrint("can_sync is null");
     }
   }
 
@@ -118,28 +123,12 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     );
   }
 
-  Future<void> toRecoveryPage() async {
-    User? user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-    String userId = user.id;
-    String keyForRecoveryKey = '${userId}_rk';
-    AndroidOptions getAndroidOptions() => const AndroidOptions(
-          encryptedSharedPreferences: true,
-        );
-    final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
-    String? recoveryKeyBase64 = await storage.read(key: keyForRecoveryKey);
-    if (recoveryKeyBase64 == null) return;
-    Uint8List recoveryKeyBytes = base64Decode(recoveryKeyBase64);
-    String recoveryKeyHex = bytesToHex(recoveryKeyBytes);
-    if (mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => PageRecoveryKey(
-            recoveryKeyHex: recoveryKeyHex,
-          ),
-        ),
-      );
-    }
+  void toRecoveryPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PageRecoveryKey(),
+      ),
+    );
   }
 
   @override

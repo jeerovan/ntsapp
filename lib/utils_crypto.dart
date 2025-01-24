@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/common.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CryptoUtils {
   final SodiumSumo _sodium;
@@ -146,8 +145,7 @@ class CryptoUtils {
           nonce: masterKeyPasswordKeyNonce,
           key: passwordKeyBytes);
       if (masterKeyDecryptionResult.isFailure) {
-        result = ExecutionResult.failure(
-            reason: "Decryption Failed: Invalid Password");
+        result = ExecutionResult.failure(reason: "Invalid Password");
       } else {
         Uint8List decryptedMasterKeyBytes =
             masterKeyDecryptionResult.getResult()!["decrypted"];
@@ -232,14 +230,47 @@ class CryptoUtils {
         "pk_salt": passwordSaltBase64,
         "updated_at": DateTime.now().toUtc().millisecondsSinceEpoch
       };
-      // update supabase
-      await Supabase.instance.client
-          .from("profiles")
-          .update(keysBase64)
-          .eq('id', userId);
-      result = ExecutionResult.success(
-          {"generated": true, "recovery_key": recoveryKeyBytes});
+      result = ExecutionResult.success({"generated": true, "keys": keysBase64});
     }
     return result;
+  }
+
+  Future<ExecutionResult> generateKeysForNewPassword(
+      String password, String userId) async {
+    AndroidOptions getAndroidOptions() => const AndroidOptions(
+          encryptedSharedPreferences: true,
+        );
+    final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
+    String keyForMasterKey = '${userId}_mk';
+
+    String? masterKeyBase64 = await storage.read(key: keyForMasterKey);
+    Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+
+    Uint8List passwordSalt = generateSalt();
+    String passwordSaltBase64 = base64Encode(passwordSalt);
+
+    SecureKey passwordKey =
+        await deriveKeyFromPassword(password: password, salt: passwordSalt);
+    Uint8List passwordKeyBytes = passwordKey.extractBytes();
+    passwordKey.dispose();
+
+    ExecutionResult masterKeyEncryptedWithPasswordKeyResult =
+        encryptBytes(plainBytes: masterKeyBytes, key: passwordKeyBytes);
+    Uint8List masterKeyEncryptedWithPasswordKeyBytes =
+        masterKeyEncryptedWithPasswordKeyResult.getResult()!["encrypted"];
+    Uint8List masterKeyPasswordKeyNonceBytes =
+        masterKeyEncryptedWithPasswordKeyResult.getResult()!["nonce"];
+    String masterKeyEncryptedWithPasswordKeyBase64 =
+        base64Encode(masterKeyEncryptedWithPasswordKeyBytes);
+    String masterKeyPasswordKeyNonceBase64 =
+        base64Encode(masterKeyPasswordKeyNonceBytes);
+
+    Map<String, dynamic> keysBase64 = {
+      "mk_ew_pk": masterKeyEncryptedWithPasswordKeyBase64,
+      "mk_pk_nonce": masterKeyPasswordKeyNonceBase64,
+      "pk_salt": passwordSaltBase64,
+      "updated_at": DateTime.now().toUtc().millisecondsSinceEpoch
+    };
+    return ExecutionResult.success({"keys": keysBase64});
   }
 }

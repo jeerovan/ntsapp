@@ -1,31 +1,56 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'common.dart';
 
 class PageRecoveryKey extends StatefulWidget {
-  final String recoveryKeyHex;
-
-  const PageRecoveryKey({super.key, required this.recoveryKeyHex});
+  const PageRecoveryKey({
+    super.key,
+  });
 
   @override
   State<PageRecoveryKey> createState() => _PageRecoveryKeyState();
 }
 
 class _PageRecoveryKeyState extends State<PageRecoveryKey> {
-  late String sentence;
+  String sentence = "";
 
   @override
   void initState() {
     super.initState();
-    sentence = bip39.entropyToMnemonic(widget.recoveryKeyHex);
+    loadRecoveryKey();
   }
 
-  Future<void> _downloadTextFile(BuildContext context, String text) async {
+  Future<void> loadRecoveryKey() async {
+    User? user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    String userId = user.id;
+    String keyForRecoveryKey = '${userId}_rk';
+    AndroidOptions getAndroidOptions() => const AndroidOptions(
+          encryptedSharedPreferences: true,
+        );
+    final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
+    String? recoveryKeyBase64 = await storage.read(key: keyForRecoveryKey);
+    if (recoveryKeyBase64 == null) return;
+    Uint8List recoveryKeyBytes = base64Decode(recoveryKeyBase64);
+    String recoveryKeyHex = bytesToHex(recoveryKeyBytes);
+    if (mounted) {
+      setState(() {
+        sentence = bip39.entropyToMnemonic(recoveryKeyHex);
+      });
+    }
+  }
+
+  Future<void> _downloadTextFile(String text) async {
     try {
       final directory = await getTemporaryDirectory();
       final filePath = path.join(directory.path, 'nts_recovery_key.txt');
@@ -108,7 +133,7 @@ class _PageRecoveryKeyState extends State<PageRecoveryKey> {
             SizedBox(height: 20.0),
             // Button to Download and Save as Text File
             ElevatedButton.icon(
-              onPressed: () => _downloadTextFile(context, sentence),
+              onPressed: () => _downloadTextFile(sentence),
               icon: Icon(LucideIcons.download),
               label: Text("Download as Text File"),
               style: ElevatedButton.styleFrom(
