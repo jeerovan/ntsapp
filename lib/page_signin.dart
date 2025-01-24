@@ -22,6 +22,9 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = Supabase.instance.client.auth.currentSession != null;
   bool canSync = false;
+  AndroidOptions getAndroidOptions() => const AndroidOptions(
+        encryptedSharedPreferences: true,
+      );
 
   @override
   void initState() {
@@ -49,9 +52,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     if (user != null) {
       String userId = user.id;
       String keyForMasterKey = '${userId}_mk';
-      AndroidOptions getAndroidOptions() => const AndroidOptions(
-            encryptedSharedPreferences: true,
-          );
+
       final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
       bool hasMasterKeyCipher = await storage.containsKey(key: keyForMasterKey);
       setState(() {

@@ -27,7 +27,7 @@ class _PagePasswordState extends State<PagePassword> {
   bool processingPassword = false;
   bool hasMasterKeyCipher = false;
   bool showForgotPassword = false;
-  bool isChangingPassword = false;
+  bool changingPassword = false;
   bool errorFetchingProfiles = false;
   bool errorUpdatingProfiles = false;
   bool showRecoveryKeyPageAfterGeneratingKeys = false;
@@ -38,14 +38,14 @@ class _PagePasswordState extends State<PagePassword> {
   @override
   void initState() {
     super.initState();
-    isChangingPassword = widget.isChangingPassword;
-    debugPrint("Changing Password:$isChangingPassword");
-    if (!isChangingPassword) {
-      fetchFromSupabase();
-    }
+    changingPassword = widget.isChangingPassword;
+    debugPrint("Changing Password:$changingPassword");
     User? user = supabase.auth.currentUser;
     if (user != null) {
       userId = user.id;
+    }
+    if (!changingPassword) {
+      fetchFromSupabase();
     }
   }
 
@@ -70,6 +70,7 @@ class _PagePasswordState extends State<PagePassword> {
         });
         hasMasterKeyCipher = profileData!["mk_ew_rk"] != null;
         errorFetchingProfiles = false;
+        debugPrint("Fetched profile from supabase");
       }
     } catch (e) {
       setState(() {
@@ -89,7 +90,7 @@ class _PagePasswordState extends State<PagePassword> {
       String password = _passwordController.text.trim();
       SodiumSumo sodium = await SodiumSumoInit.init();
       CryptoUtils cryptoUtils = CryptoUtils(sodium);
-      if (isChangingPassword) {
+      if (changingPassword) {
         ExecutionResult result =
             await cryptoUtils.generateKeysForNewPassword(password, userId!);
         updatedProfilesData = result.getResult()!["keys"];
@@ -124,6 +125,9 @@ class _PagePasswordState extends State<PagePassword> {
   }
 
   Future<void> pushUpdatesToSupabase() async {
+    setState(() {
+      processingPassword = true;
+    });
     try {
       await supabase
           .from("profiles")
@@ -140,6 +144,9 @@ class _PagePasswordState extends State<PagePassword> {
       debugPrint(e.toString());
       errorUpdatingProfiles = true;
     }
+    setState(() {
+      processingPassword = false;
+    });
   }
 
   void navigateToForgotPassword() {
@@ -166,11 +173,15 @@ class _PagePasswordState extends State<PagePassword> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(!processingPassword ? 'Encryption Password' : 'Synching'),
+        title: Text(processingPassword
+            ? 'Synching'
+            : changingPassword
+                ? 'Change password'
+                : 'Encryption password'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: errorFetchingProfiles
+        child: errorFetchingProfiles && !changingPassword
             ? Center(
                 child: Column(
                   children: [
@@ -183,22 +194,23 @@ class _PagePasswordState extends State<PagePassword> {
                   ],
                 ),
               )
-            : processingPassword
-                ? Center(child: CircularProgressIndicator())
-                : errorUpdatingProfiles
-                    ? Center(
-                        child: Column(
-                          children: [
-                            Text("Could not update"),
-                            SizedBox(
-                              height: 24,
-                            ),
-                            ElevatedButton(
-                                onPressed: pushUpdatesToSupabase,
-                                child: Text("Retry"))
-                          ],
+            : errorUpdatingProfiles
+                ? Center(
+                    child: Column(
+                      children: [
+                        Text("Could not update"),
+                        SizedBox(
+                          height: 24,
                         ),
-                      )
+                        ElevatedButton(
+                            onPressed: pushUpdatesToSupabase,
+                            child: Text("Retry"))
+                      ],
+                    ),
+                  )
+                : processingPassword ||
+                        (!fetchedFromSupabase && !changingPassword)
+                    ? Center(child: CircularProgressIndicator())
                     : Form(
                         key: _formKey,
                         child: Column(
@@ -254,7 +266,7 @@ class _PagePasswordState extends State<PagePassword> {
                                 ),
                               ),
                               child: Text(
-                                isChangingPassword ? 'Change' : 'Submit',
+                                changingPassword ? 'Change' : 'Submit',
                                 style: TextStyle(fontSize: 16.0),
                               ),
                             ),
@@ -263,7 +275,7 @@ class _PagePasswordState extends State<PagePassword> {
                             // Forget Password Button
                             if (hasMasterKeyCipher &&
                                 showForgotPassword &&
-                                !isChangingPassword)
+                                !changingPassword)
                               ElevatedButton(
                                 onPressed: navigateToForgotPassword,
                                 style: ElevatedButton.styleFrom(
@@ -273,7 +285,7 @@ class _PagePasswordState extends State<PagePassword> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Forget Password?',
+                                  'Forgot Password?',
                                   style: TextStyle(fontSize: 16.0),
                                 ),
                               ),
