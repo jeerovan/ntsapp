@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/model_setting.dart';
-import 'package:ntsapp/page_password.dart';
-import 'package:ntsapp/page_recovery_key.dart';
+import 'package:ntsapp/page_access_key.dart';
+import 'package:ntsapp/page_checks.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'enums.dart';
 
 class EmailAuthScreen extends StatefulWidget {
   const EmailAuthScreen({super.key});
@@ -18,6 +20,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
 
   bool otpSent = false;
   bool canResend = false;
+  bool errorSendingOtop = false;
+  bool errorVerifyingOtp = false;
   String email = ModelSetting.getForKey("otp_sent_to", "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = Supabase.instance.client.auth.currentSession != null;
@@ -79,8 +83,18 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
         setState(() {
           otpSent = true;
         });
+        errorSendingOtop = false;
       } catch (e) {
+        errorSendingOtop = true;
         debugPrint('Error sending OTP: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Sending OTP failed. Please try again!'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
     }
   }
@@ -94,13 +108,19 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
             .verifyOTP(email: email, token: otp, type: OtpType.email);
         Session? session = response.session;
         if (session != null) {
-          setState(() {
-            signedIn = true;
-            Navigator.of(context).pop(true);
-          });
+          navigateToChecksPage();
         }
+        errorVerifyingOtp = false;
       } catch (e) {
-        debugPrint(e.toString());
+        errorVerifyingOtp = true;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('OTP verification failed. Please try again!'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
     }
   }
@@ -116,18 +136,20 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     }
   }
 
-  Future<void> toPasswordPage() async {
+  void navigateToChecksPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PagePassword(),
+        builder: (context) => PageChecks(
+          task: Task.checkProfileForKeys,
+        ),
       ),
     );
   }
 
-  void toRecoveryPage() {
+  void navigateToAccessPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PageRecoveryKey(),
+        builder: (context) => PageAccessKey(),
       ),
     );
   }
@@ -151,7 +173,9 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 ),
               SizedBox(height: 20),
               if (!signedIn && !otpSent)
-                ElevatedButton(onPressed: sendOtp, child: Text('Send OTP')),
+                ElevatedButton(
+                    onPressed: sendOtp,
+                    child: Text(errorSendingOtop ? 'Retry' : 'Send OTP')),
               SizedBox(
                 height: 40,
               ),
@@ -163,7 +187,9 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 ),
               SizedBox(height: 20),
               if (!signedIn && otpSent)
-                ElevatedButton(onPressed: verifyOtp, child: Text('Verify OTP')),
+                ElevatedButton(
+                    onPressed: verifyOtp,
+                    child: Text(errorVerifyingOtp ? 'Retry' : 'Verify OTP')),
               SizedBox(
                 height: 20,
               ),
@@ -173,13 +199,13 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 height: 20,
               ),
               ElevatedButton(
-                  onPressed: toPasswordPage, child: Text('Password Page')),
+                  onPressed: navigateToChecksPage, child: Text('Checks Page')),
               SizedBox(
                 height: 20,
               ),
               if (canSync)
                 ElevatedButton(
-                    onPressed: toRecoveryPage, child: Text('Recovery Key')),
+                    onPressed: navigateToAccessPage, child: Text('Access Key')),
             ],
           ),
         ),

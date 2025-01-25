@@ -12,40 +12,41 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'common.dart';
 
-class PageRecoveryKey extends StatefulWidget {
-  const PageRecoveryKey({
+class PageAccessKey extends StatefulWidget {
+  const PageAccessKey({
     super.key,
   });
 
   @override
-  State<PageRecoveryKey> createState() => _PageRecoveryKeyState();
+  State<PageAccessKey> createState() => _PageAccessKeyState();
 }
 
-class _PageRecoveryKeyState extends State<PageRecoveryKey> {
+class _PageAccessKeyState extends State<PageAccessKey> {
+  AndroidOptions getAndroidOptions() => const AndroidOptions(
+        encryptedSharedPreferences: true,
+      );
+  late FlutterSecureStorage storage;
   String sentence = "";
 
   @override
   void initState() {
     super.initState();
-    loadRecoveryKey();
+    storage = FlutterSecureStorage(aOptions: getAndroidOptions());
+    loadAccessKey();
   }
 
-  Future<void> loadRecoveryKey() async {
+  Future<void> loadAccessKey() async {
     User? user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
     String userId = user.id;
-    String keyForRecoveryKey = '${userId}_rk';
-    AndroidOptions getAndroidOptions() => const AndroidOptions(
-          encryptedSharedPreferences: true,
-        );
-    final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
-    String? recoveryKeyBase64 = await storage.read(key: keyForRecoveryKey);
-    if (recoveryKeyBase64 == null) return;
-    Uint8List recoveryKeyBytes = base64Decode(recoveryKeyBase64);
-    String recoveryKeyHex = bytesToHex(recoveryKeyBytes);
+    String keyForAccessKey = '${userId}_ak';
+    String? accessKeyBase64 = await storage.read(key: keyForAccessKey);
+    if (accessKeyBase64 == null) return;
+    Uint8List accessKeyBytes = base64Decode(accessKeyBase64);
+    String accessKeyHex = bytesToHex(accessKeyBytes);
     if (mounted) {
       setState(() {
-        sentence = bip39.entropyToMnemonic(recoveryKeyHex);
+        sentence = bip39.entropyToMnemonic(accessKeyHex);
       });
     }
   }
@@ -53,13 +54,13 @@ class _PageRecoveryKeyState extends State<PageRecoveryKey> {
   Future<void> _downloadTextFile(String text) async {
     try {
       final directory = await getTemporaryDirectory();
-      final filePath = path.join(directory.path, 'nts_recovery_key.txt');
+      final filePath = path.join(directory.path, 'nts_access_key.txt');
       final file = File(filePath);
       await file.writeAsString(text);
 
       await Share.shareXFiles(
         [XFile(filePath)],
-        text: 'Here is your recovery key.',
+        text: 'Here is your access key.',
       );
     } catch (e) {
       if (mounted) {
@@ -87,7 +88,7 @@ class _PageRecoveryKeyState extends State<PageRecoveryKey> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recovery Key'),
+        title: Text('Access Key'),
         centerTitle: true,
       ),
       body: Padding(
@@ -98,7 +99,7 @@ class _PageRecoveryKeyState extends State<PageRecoveryKey> {
           children: [
             // Description Text
             Text(
-              "If you forget your password, you can use this recovery key to reset it.",
+              "Use this to access your data on another device. Keep it safe, keep it secure. Loosing this will loose access to data.",
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
@@ -147,7 +148,9 @@ class _PageRecoveryKeyState extends State<PageRecoveryKey> {
 
             // Button to Continue to Next Page
             OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 side: BorderSide(color: Theme.of(context).primaryColor),

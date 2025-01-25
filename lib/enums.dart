@@ -69,3 +69,7 @@ enum ExecutionStatus {
   failure,
   success,
 }
+
+enum Task {
+  checkProfileForKeys,
+}

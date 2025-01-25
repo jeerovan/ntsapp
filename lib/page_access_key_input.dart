@@ -6,19 +6,18 @@ import 'package:file_picker/file_picker.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/common.dart';
-import 'package:ntsapp/page_password.dart';
 import 'package:ntsapp/utils_crypto.dart';
-import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:sodium_libs/sodium_libs.dart';
 
-class PageForgotPassword extends StatefulWidget {
+class PageAccessKeyInput extends StatefulWidget {
   final Map<String, dynamic> profileData;
-  const PageForgotPassword({super.key, required this.profileData});
+  const PageAccessKeyInput({super.key, required this.profileData});
 
   @override
-  State<PageForgotPassword> createState() => _PageForgotPasswordState();
+  State<PageAccessKeyInput> createState() => _PageAccessKeyInputState();
 }
 
-class _PageForgotPasswordState extends State<PageForgotPassword> {
+class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   String _loadedFileContent = '';
@@ -47,60 +46,47 @@ class _PageForgotPasswordState extends State<PageForgotPassword> {
 
   /// Processes the validated 24 words further
   Future<void> _processWords(String words) async {
-    SodiumSumo sodium = await SodiumSumoInit.init();
+    Sodium sodium = await SodiumInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
-    String recoveryKeyHex = bip39.mnemonicToEntropy(words);
-    Uint8List recoveryKeyBytes = hexToBytes(recoveryKeyHex);
+    String accessKeyHex = bip39.mnemonicToEntropy(words);
+    Uint8List accessKeyBytes = hexToBytes(accessKeyHex);
 
     String userId = widget.profileData["id"];
     String keyForMasterKey = '${userId}_mk';
-    String keyForRecoveryKey = '${userId}_rk';
+    String keyForAccessKey = '${userId}_ak';
 
-    String? masterKeyEncryptedWithRecoveryKeyBase64 =
-        widget.profileData["mk_ew_rk"];
-    String? masterKeyRecoveryKeyNonceBase64 = widget.profileData["mk_rk_nonce"];
+    String masterKeyEncryptedWithAccessKeyBase64 =
+        widget.profileData["mk_ew_ak"];
+    String masterKeyAccessKeyNonceBase64 = widget.profileData["mk_ak_nonce"];
 
-    if (masterKeyEncryptedWithRecoveryKeyBase64 != null &&
-        masterKeyRecoveryKeyNonceBase64 != null) {
-      Uint8List masterKeyEncryptedWithRecoveryKeyBytes =
-          base64Decode(masterKeyEncryptedWithRecoveryKeyBase64);
-      Uint8List masterKeyRecoveryKeyNonce =
-          base64Decode(masterKeyRecoveryKeyNonceBase64);
-      ExecutionResult masterKeyDecryptionResult = cryptoUtils.decryptBytes(
-          cipherBytes: masterKeyEncryptedWithRecoveryKeyBytes,
-          nonce: masterKeyRecoveryKeyNonce,
-          key: recoveryKeyBytes);
-      if (masterKeyDecryptionResult.isFailure) {
-        if (mounted) {
-          showAlertMessage(context, "Failure", "Invalid recovery key");
-        }
-      } else {
-        Uint8List decryptedMasterKeyBytes =
-            masterKeyDecryptionResult.getResult()!["decrypted"];
-        String decryptedMasterKeyBase64 = base64Encode(decryptedMasterKeyBytes);
+    Uint8List masterKeyEncryptedWithAccessKeyBytes =
+        base64Decode(masterKeyEncryptedWithAccessKeyBase64);
+    Uint8List masterKeyAccessKeyNonce =
+        base64Decode(masterKeyAccessKeyNonceBase64);
+    ExecutionResult masterKeyDecryptionResult = cryptoUtils.decryptBytes(
+        cipherBytes: masterKeyEncryptedWithAccessKeyBytes,
+        nonce: masterKeyAccessKeyNonce,
+        key: accessKeyBytes);
+    if (masterKeyDecryptionResult.isFailure) {
+      if (mounted) {
+        showAlertMessage(context, "Failure", "Invalid access key");
+      }
+    } else {
+      Uint8List decryptedMasterKeyBytes =
+          masterKeyDecryptionResult.getResult()!["decrypted"];
+      String decryptedMasterKeyBase64 = base64Encode(decryptedMasterKeyBytes);
 
-        // save keys to secure storage
-        await storage.write(
-            key: keyForMasterKey, value: decryptedMasterKeyBase64);
-        await storage.write(
-            key: keyForRecoveryKey, value: base64Encode(recoveryKeyBytes));
+      // save keys to secure storage
+      await storage.write(
+          key: keyForMasterKey, value: decryptedMasterKeyBase64);
+      await storage.write(
+          key: keyForAccessKey, value: base64Encode(accessKeyBytes));
 
-        // navigate to password change
-        navigateToPasswordReset();
+      if (mounted) {
+        Navigator.of(context).pop();
       }
     }
-  }
-
-  void navigateToPasswordReset() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PagePassword(
-          isChangingPassword: true,
-        ),
-        settings: const RouteSettings(name: "Change Password"),
-      ),
-    );
   }
 
   /// Handles file selection and validation
@@ -120,17 +106,18 @@ class _PageForgotPasswordState extends State<PageForgotPassword> {
           _processWords(_loadedFileContent);
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('The file does not contain exactly 24 words.')),
-            );
+            showAlertMessage(context, "Error",
+                'The file does not contain exactly 24 words.');
           }
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error selecting file: $e')),
+          SnackBar(
+            content: Text('Error reading file: $e'),
+            duration: Duration(seconds: 2),
+          ),
         );
       }
     }
