@@ -356,17 +356,13 @@ class SearchPageState extends State<SearchPage> {
               ),
             ],
           ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Text(
-                  item.data!["name"],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 15),
-                ),
-              ),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Text(
+              "Audio file",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 15),
             ),
           ),
         ],
@@ -381,6 +377,9 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildDocumentItem(ModelSearchItem search) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
+    String title = item.data!.containsKey("title")
+        ? item.data!["title"]
+        : item.data!["name"];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _buildCategoryGroupHeader(search),
       const SizedBox(height: 5),
@@ -404,7 +403,7 @@ class SearchPageState extends State<SearchPage> {
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Text(
-                  item.data!["name"],
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 15),

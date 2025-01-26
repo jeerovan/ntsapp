@@ -1214,7 +1214,8 @@ class _PageItemsState extends State<PageItems> {
             "path": newPath,
             "mime": attrs["mime"],
             "name": name,
-            "size": attrs["size"]
+            "size": attrs["size"],
+            "title": attrs.containsKey("title") ? attrs["title"] : name
           };
           String text = 'DND|#document|$name';
           _addItemToDbAndDisplayList(text, ItemType.document, null, data);

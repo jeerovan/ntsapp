@@ -300,6 +300,9 @@ class ItemWidgetDocument extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String title = item.data!.containsKey("title")
+        ? item.data!["title"]
+        : item.data!["name"];
     return GestureDetector(
       onTap: () {
         onTap(item);
@@ -319,7 +322,7 @@ class ItemWidgetDocument extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: Text(
-                    item.data!["name"],
+                    title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 13),

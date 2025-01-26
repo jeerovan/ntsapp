@@ -421,6 +421,7 @@ Future<Map<String, dynamic>?> processAndGetFileAttributes(
   }
   File file = File(filePath);
   String hash = await getHashOfFile(file);
+  String fileTitle = path.basename(file.path);
   String fileName = '$hash$extension';
   int fileSize = file.lengthSync();
   String directory = mime.split("/").first;
@@ -431,7 +432,13 @@ Future<Map<String, dynamic>?> processAndGetFileAttributes(
     Map<String, String> mediaData = {"oldPath": filePath, "newPath": newPath};
     await compute(copyFile, mediaData);
   }
-  return {"path": newPath, "name": fileName, "size": fileSize, "mime": mime};
+  return {
+    "path": newPath,
+    "name": fileName,
+    "size": fileSize,
+    "mime": mime,
+    "title": fileTitle
+  };
 }
 
 Future<int> checkDownloadNetworkImage(String itemId, String imageUrl) async {
