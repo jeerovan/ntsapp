@@ -108,7 +108,6 @@ class CryptoUtils {
     Map<String, dynamic> serverKeysBase64 = {
       "mk_ew_ak": masterKeyEncryptedWithAccessKeyBase64,
       "mk_ak_nonce": masterKeyAccessKeyNonceBase64,
-      "updated_at": DateTime.now().toUtc().millisecondsSinceEpoch
     };
 
     Map<String, dynamic> privateKeysBase64 = {

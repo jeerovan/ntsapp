@@ -149,7 +149,7 @@ class _MainAppState extends State<MainApp> {
         });
       });
     }
-    if (supabaseInitialized) {
+    /* if (supabaseInitialized) {
       SupabaseClient supabase = Supabase.instance.client;
       _supaSessionSub = supabase.auth.onAuthStateChange.listen((data) {
         final AuthChangeEvent event = data.event;
@@ -159,7 +159,7 @@ class _MainAppState extends State<MainApp> {
         final User? user = supabase.auth.currentUser;
         debugPrint('User:$user'); */
       });
-    }
+    } */
   }
 
   @override

@@ -385,4 +385,22 @@ class DatabaseHelper {
 
     await db.execute("ALTER TABLE itemgroup ADD COLUMN position INTEGER");
   }
+
+  Future<void> dbMigration_10(Database db) async {
+    await db.execute('''
+      CREATE TABLE profile (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        username TEXT,
+        avatar_url TEXT,
+        updated_at INTEGER,
+        website_url TEXT,
+        at INTEGER
+      )
+    ''');
+    await db.execute("ALTER TABLE category ADD COLUMN updated_at INTEGER");
+    await db.execute("ALTER TABLE itemgroup ADD COLUMN updated_at INTEGER");
+    await db.execute("ALTER TABLE item ADD COLUMN updated_at INTEGER");
+    await db.execute("ALTER TABLE item ADD COLUMN position INTEGER");
+  }
 }

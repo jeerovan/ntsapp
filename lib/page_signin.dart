@@ -137,10 +137,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   }
 
   void navigateToChecksPage() {
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => PageChecks(
-          task: Task.checkProfileForKeys,
+          task: Task.checkForKeys,
         ),
       ),
     );

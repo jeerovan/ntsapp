@@ -71,5 +71,5 @@ enum ExecutionStatus {
 }
 
 enum Task {
-  checkProfileForKeys,
+  checkForKeys,
 }

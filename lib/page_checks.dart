@@ -25,13 +25,13 @@ class _PageChecksState extends State<PageChecks> {
       );
   late FlutterSecureStorage storage;
 
-  bool taskIsCheckProfileForKeys = false;
+  bool taskIsCheckForKeys = false;
 
-  // profile checks
+  // keys checks
   bool fetchedFromSupabase = false;
-  bool errorFetchingProfile = false;
-  bool errorUpdatingProfile = false;
-  Map<String, dynamic>? updatedProfileData;
+  bool errorFetchingKeys = false;
+  bool errorUpdatingKeys = false;
+  Map<String, dynamic>? updatedKeysData;
   String? userId;
 
   @override
@@ -43,29 +43,27 @@ class _PageChecksState extends State<PageChecks> {
     }
     storage = FlutterSecureStorage(aOptions: getAndroidOptions());
     switch (widget.task) {
-      case Task.checkProfileForKeys:
-        taskIsCheckProfileForKeys = true;
-        checkProfileForKeys();
+      case Task.checkForKeys:
+        taskIsCheckForKeys = true;
+        checkForKeys();
         break;
     }
   }
 
-  Future<void> checkProfileForKeys() async {
+  Future<void> checkForKeys() async {
     setState(() {
       processing = true;
-      errorFetchingProfile = false;
+      errorFetchingKeys = false;
     });
     try {
       if (userId != null) {
         final List<Map<String, dynamic>> data =
-            await supabase.from("profiles").select().eq('id', userId!);
-        Map<String, dynamic> profileData = data.first;
+            await supabase.from("keys").select();
         setState(() {
           fetchedFromSupabase = true;
         });
 
-        if (profileData["mk_ew_ak"] == null) {
-          String userId = profileData["id"];
+        if (data.isEmpty) {
           String keyForMasterKey = '${userId}_mk';
           String keyForAccessKey = '${userId}_ak';
 
@@ -75,7 +73,8 @@ class _PageChecksState extends State<PageChecks> {
           ExecutionResult result = cryptoUtils.generateKeys();
           Map<String, dynamic> keys = result.getResult()!;
           Map<String, dynamic> privateKeys = keys["private_keys"];
-          updatedProfileData = keys["server_keys"];
+          updatedKeysData = keys["server_keys"];
+          updatedKeysData!['id'] = userId;
 
           String masterKeyBase64 = privateKeys["master_key"];
           String accessKeyBase64 = privateKeys["access_key"];
@@ -83,12 +82,12 @@ class _PageChecksState extends State<PageChecks> {
           await storage.write(key: keyForAccessKey, value: accessKeyBase64);
           pushUpdatedProfileToSupabase();
         } else {
-          navigateToAccessKeyInputPage(profileData);
+          navigateToAccessKeyInputPage(data.first);
         }
       }
     } catch (e) {
       setState(() {
-        errorFetchingProfile = true;
+        errorFetchingKeys = true;
       });
       debugPrint("Error fetching profiles");
     }
@@ -113,14 +112,11 @@ class _PageChecksState extends State<PageChecks> {
       processing = true;
     });
     try {
-      await supabase
-          .from("profiles")
-          .update(updatedProfileData!)
-          .eq('id', userId!);
+      await supabase.from("keys").upsert(updatedKeysData!);
       navigateToAccessKeyPage();
     } catch (e) {
       debugPrint(e.toString());
-      errorUpdatingProfile = true;
+      errorUpdatingKeys = true;
     }
     setState(() {
       processing = false;
@@ -146,8 +142,8 @@ class _PageChecksState extends State<PageChecks> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : taskIsCheckProfileForKeys
-                ? errorFetchingProfile
+            : taskIsCheckForKeys
+                ? errorFetchingKeys
                     ? Center(
                         child: Column(
                           children: [
@@ -156,8 +152,7 @@ class _PageChecksState extends State<PageChecks> {
                               height: 24,
                             ),
                             ElevatedButton(
-                                onPressed: checkProfileForKeys,
-                                child: Text("Retry"))
+                                onPressed: checkForKeys, child: Text("Retry"))
                           ],
                         ),
                       )
