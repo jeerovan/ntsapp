@@ -100,7 +100,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
 
   Future<void> archiveGroup(ModelGroup group) async {
     group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
-    await group.update();
+    await group.update(["archived_at"]);
     categoryGroupsDisplayList.remove(group);
     if (mounted) {
       setState(() {});
@@ -130,7 +130,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     for (ModelGroup group in categoryGroupsDisplayList) {
       int position = categoryGroupsDisplayList.indexOf(group);
       group.position = position;
-      await group.update();
+      await group.update(["position"]);
     }
   }
 

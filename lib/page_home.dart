@@ -194,11 +194,11 @@ class _PageHomeState extends State<PageHome> {
     if (categoryGroup.type == "group") {
       categoryGroup.group!.archivedAt =
           DateTime.now().toUtc().millisecondsSinceEpoch;
-      await categoryGroup.group!.update();
+      await categoryGroup.group!.update(["archived_at"]);
     } else {
       categoryGroup.category!.archivedAt =
           DateTime.now().toUtc().millisecondsSinceEpoch;
-      await categoryGroup.category!.update();
+      await categoryGroup.category!.update(["archived_at"]);
     }
     _categoriesGroupsDisplayList.remove(categoryGroup);
     if (mounted) {
@@ -245,11 +245,11 @@ class _PageHomeState extends State<PageHome> {
       if (categoryGroup.type == "group") {
         final ModelGroup group = categoryGroup.group!;
         group.position = position;
-        await group.update();
+        await group.update(["position"]);
       } else {
         final ModelCategory category = categoryGroup.category!;
         category.position = position;
-        await category.update();
+        await category.update(["position"]);
       }
     }
   }

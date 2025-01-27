@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category.dart';
+import 'package:ntsapp/model_category_group.dart';
 import 'package:uuid/uuid.dart';
 
 import 'database_helper.dart';
@@ -19,6 +20,7 @@ class ModelGroup {
   int? archivedAt;
   String color;
   int? at;
+  int? updatedAt;
   ModelItem? lastItem;
   Map<String, dynamic>? data;
   int? state;
@@ -33,6 +35,7 @@ class ModelGroup {
     required this.archivedAt,
     required this.color,
     this.at,
+    this.updatedAt,
     this.lastItem,
     this.data,
     this.state,
@@ -55,6 +58,7 @@ class ModelGroup {
               ? data
               : jsonEncode(data),
       'at': at,
+      'updated_at': updatedAt,
     };
   }
 
@@ -77,37 +81,45 @@ class ModelGroup {
         dataMap = map['data'];
       }
     }
-
     ModelCategory dndCategory = await ModelCategory.getDND();
-    String categoryId =
-        map.containsKey('category_id') ? map['category_id'] : dndCategory.id;
-    int groupCount = await getCountInCategory(categoryId) + 1;
+    String categoryId = "";
+    int positionCount = 0;
+    if (map.containsKey("category_id")) {
+      categoryId = map["category_id"];
+      if (categoryId == dndCategory.id!) {
+        positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
+      } else {
+        positionCount = await getCountInCategory(categoryId);
+      }
+    } else {
+      categoryId = dndCategory.id!;
+      positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
+    }
 
     String colorCode;
     if (map.containsKey('color')) {
       colorCode = map['color'];
     } else {
-      Color color = getIndexedColor(groupCount + 1);
+      Color color = getIndexedColor(positionCount);
       colorCode = colorToHex(color);
     }
 
     ModelItem? lastItem = await ModelItem.getLatestInGroup(groupId);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
     return ModelGroup(
       id: groupId,
       categoryId: categoryId,
-      title: map.containsKey('title') ? map['title'] : "",
+      title: getValueFromMap(map, "title", defaultValue: ""),
       thumbnail: thumbnail,
-      position: map.containsKey('position')
-          ? map['position'] ?? groupCount * 1000
-          : groupCount * 1000,
-      pinned: map.containsKey('pinned') ? map['pinned'] : 0,
-      archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
+      position:
+          getValueFromMap(map, "position", defaultValue: positionCount * 1000),
+      pinned: getValueFromMap(map, 'pinned', defaultValue: 0),
+      archivedAt: getValueFromMap(map, "archived_at", defaultValue: 0),
       color: colorCode,
-      state: map.containsKey('state') ? map['state'] : 0,
+      state: getValueFromMap(map, "state", defaultValue: 0),
       data: dataMap,
-      at: map.containsKey('at')
-          ? map['at']
-          : DateTime.now().toUtc().millisecondsSinceEpoch,
+      at: getValueFromMap(map, "at", defaultValue: utcNow),
+      updatedAt: getValueFromMap(map, "updated_at", defaultValue: utcNow),
       lastItem: lastItem,
     );
   }
@@ -187,16 +199,19 @@ class ModelGroup {
     return await dbHelper.insert("itemgroup", map);
   }
 
-  Future<int> update() async {
+  Future<int> update(List<String> attrs) async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     Map<String, dynamic> map = toMap();
-    return await dbHelper.update("itemgroup", map, id);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
+    return await dbHelper.update("itemgroup", updatedMap, id);
   }
 
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     return await dbHelper.delete("itemgroup", id);
   }
 }

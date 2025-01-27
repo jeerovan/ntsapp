@@ -258,6 +258,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
             "position": position,
             "color": colorToHex(color),
             "at": at,
+            "updated_at": at,
           });
           newGroup.insert();
           groupCount = groupCount + 1;
@@ -283,19 +284,6 @@ Future<String> restoreOldDb(String baseDirPath) async {
           double? lat = noteRow["latitude"];
           double? lng = noteRow["longitude"];
           int at = noteRow["updatedAt"];
-          // add date if not present
-          String date = getDateFromUtcMilliSeconds(at);
-          List<ModelItem> dateRows =
-              await ModelItem.getDateItemForGroupId(groupId, date);
-          if (dateRows.isEmpty) {
-            ModelItem dateItem = await ModelItem.fromMap({
-              "group_id": groupId,
-              "text": date,
-              "type": ItemType.date,
-              "at": at - 1
-            });
-            await dateItem.insert();
-          }
           // process note
           switch (noteType) {
             case 1:
@@ -304,7 +292,8 @@ Future<String> restoreOldDb(String baseDirPath) async {
                 "group_id": groupId,
                 "text": noteText,
                 "type": ItemType.text,
-                "at": at
+                "at": at,
+                "updated_at": at,
               });
               await textNote.insert();
               break;
@@ -335,7 +324,8 @@ Future<String> restoreOldDb(String baseDirPath) async {
                       "type": ItemType.image,
                       "thumbnail": thumbnail,
                       "data": data,
-                      "at": at
+                      "at": at,
+                      "updated_at": at,
                     });
                     await item.insert();
                   }
@@ -367,7 +357,8 @@ Future<String> restoreOldDb(String baseDirPath) async {
                       "text": text,
                       "type": ItemType.audio,
                       "data": data,
-                      "at": at
+                      "at": at,
+                      "updated_at": at,
                     });
                     await item.insert();
                   }
@@ -383,7 +374,8 @@ Future<String> restoreOldDb(String baseDirPath) async {
                   "text": text,
                   "type": ItemType.location,
                   "data": data,
-                  "at": at
+                  "at": at,
+                  "updated_at": at,
                 });
                 await item.insert();
               }

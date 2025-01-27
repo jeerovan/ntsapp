@@ -51,6 +51,11 @@ int getRandomInt(int range) {
   return Random().nextInt(range);
 }
 
+dynamic getValueFromMap(Map<String, dynamic> map, String key,
+    {dynamic defaultValue}) {
+  return map.containsKey(key) ? map[key] ?? defaultValue : defaultValue;
+}
+
 /* input validations -- starts */
 String? validateString(String? value) {
   if (value == null || value.isEmpty) {
@@ -331,7 +336,7 @@ String readableFileSizeFromBytes(int bytes, [int decimals = 2]) {
 
 Color getIndexedColor(int count) {
   int predefinedColorsLength = 12;
-  int index = (count - 1) % predefinedColorsLength;
+  int index = count % predefinedColorsLength;
   return predefinedColors[index];
 }
 

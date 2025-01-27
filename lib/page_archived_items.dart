@@ -109,7 +109,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
   Future<void> restoreSelectedItems() async {
     for (ModelItem item in _selection) {
       item.archivedAt = 0;
-      await item.update();
+      await item.update(["archived_at"]);
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

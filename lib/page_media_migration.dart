@@ -63,7 +63,7 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
             "size": attrs["size"]
           };
           item.data = newData;
-          item.update();
+          item.update(["thumbnail", "data"]);
         } else if (item.type == ItemType.audio) {
           String? duration = await getAudioDuration(newPath);
           if (duration != null) {
@@ -75,7 +75,7 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
               "duration": duration
             };
             item.data = newData;
-            item.update();
+            item.update(["data"]);
           }
         }
       }

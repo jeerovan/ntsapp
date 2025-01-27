@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/model_category_group.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
@@ -48,8 +49,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         colorCode = category!.color;
       });
     } else {
-      int count = await ModelCategory.getCount();
-      Color color = getIndexedColor(count + 1);
+      int positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
+      Color color = getIndexedColor(positionCount);
       setState(() {
         colorCode = colorToHex(color);
       });
@@ -67,7 +68,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         category!.thumbnail = thumbnail;
         category!.title = title!;
         category!.color = colorCode ?? category!.color;
-        await category!.update();
+        await category!.update(["thumbnail", "title", "color"]);
       }
       widget.onUpdate();
     }

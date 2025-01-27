@@ -27,9 +27,9 @@ class DatabaseHelper {
   Future<Database> _initDB(String dbFileName) async {
     final dbDir = await getDatabasesPath();
     final dbPath = join(dbDir, dbFileName);
-    //debugPrint("DbPath:$dbPath");
+    debugPrint("DbPath:$dbPath");
     return await openDatabase(dbPath,
-        version: 9,
+        version: 10,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: _onOpen);
@@ -57,6 +57,9 @@ class DatabaseHelper {
       await dbMigration_8(db);
     } else if (oldVersion == 8) {
       await dbMigration_9(db);
+      await dbMigration_10(db);
+    } else if (oldVersion == 9) {
+      await dbMigration_10(db);
     }
     debugPrint('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -70,6 +73,7 @@ class DatabaseHelper {
         position INTEGER,
         archived_at INTEGER,
         at INTEGER,
+        updated_at INTEGER,
         thumbnail TEXT
       )
     ''');
@@ -83,6 +87,7 @@ class DatabaseHelper {
         archived_at INTEGER,
         color TEXT,
         at INTEGER,
+        updated_at INTEGER,
         thumbnail TEXT,
         data TEXT,
         state INTEGER,
@@ -100,6 +105,7 @@ class DatabaseHelper {
         type INTEGER,
         data TEXT,
         at INTEGER,
+        updated_at INTEGER,
         thumbnail TEXT,
         state INTEGER,
         FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE
@@ -107,6 +113,16 @@ class DatabaseHelper {
     ''');
     await db.execute('''
       CREATE INDEX idx_item_text ON item(text)
+    ''');
+    await db.execute('''
+      CREATE TABLE itemfile (
+        id TEXT PRIMARY KEY,
+        hash TEXT NOT NULL,
+        FOREIGN KEY (id) REFERENCES item(id) ON DELETE CASCADE
+        )
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_itemfile_hash ON itemfile(hash)
     ''');
     await db.execute('''
       CREATE TABLE setting (
@@ -126,17 +142,18 @@ class DatabaseHelper {
   Future<void> createCategoryOnFreshInstall(Database db) async {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
-    String id1 = uuid.v4();
+    String id = uuid.v4();
     Color color = getIndexedColor(1);
     String hexCode = colorToHex(color);
     await db.insert("category", {
-      "id": id1,
+      "id": id,
       "title": "DND",
       "color": hexCode,
       "thumbnail": null,
       "position": 0,
       "archived_at": 0,
-      "at": at
+      "at": at,
+      "updated_at": at,
     });
   }
 
@@ -198,7 +215,8 @@ class DatabaseHelper {
       "thumbnail": null,
       "position": 0,
       "archived_at": 0,
-      "at": at
+      "at": at,
+      "updated_at": at,
     });
 
     // create note groups
@@ -238,6 +256,7 @@ class DatabaseHelper {
             "color": colorToHex(color),
             "thumbnail": thumbnail,
             "at": at,
+            "updated_at": at
           });
         }
         groupCount = groupCount + 1;
@@ -263,25 +282,6 @@ class DatabaseHelper {
           double? lat = noteRow["latitude"];
           double? lng = noteRow["longitude"];
           int at = noteRow["updatedAt"];
-          String date = getDateFromUtcMilliSeconds(at);
-          List<Map<String, dynamic>> dateRows = await db.query("item",
-              where: "type = 170000 AND text = ? AND group_id = ?",
-              whereArgs: [date, groupId]);
-          if (dateRows.isEmpty) {
-            await db.insert("item", {
-              "id": uuid.v4(),
-              "group_id": groupId,
-              "text": date,
-              "starred": 0,
-              "pinned": 0,
-              "archived_at": 0,
-              "type": 170000,
-              "data": null,
-              "thumbnail": null,
-              "state": 0,
-              "at": at - 1
-            });
-          }
           switch (noteType) {
             case 1:
               await db.insert("item", {
@@ -295,7 +295,8 @@ class DatabaseHelper {
                 "data": null,
                 "thumbnail": null,
                 "state": 0,
-                "at": at
+                "at": at,
+                "updated_at": at
               });
               break;
             case 2:
@@ -320,7 +321,8 @@ class DatabaseHelper {
                     "data": imageData,
                     "thumbnail": null,
                     "state": 0,
-                    "at": at
+                    "at": at,
+                    "updated_at": at
                   });
                 }
               }
@@ -348,7 +350,8 @@ class DatabaseHelper {
                     "data": audioData,
                     "thumbnail": null,
                     "state": 0,
-                    "at": at
+                    "at": at,
+                    "updated_at": at
                   });
                 }
               }
@@ -368,7 +371,8 @@ class DatabaseHelper {
                   "data": locationData,
                   "thumbnail": null,
                   "state": 0,
-                  "at": at
+                  "at": at,
+                  "updated_at": at
                 });
               }
               break;
@@ -388,19 +392,17 @@ class DatabaseHelper {
 
   Future<void> dbMigration_10(Database db) async {
     await db.execute('''
-      CREATE TABLE profile (
+      CREATE TABLE itemfile (
         id TEXT PRIMARY KEY,
-        email TEXT NOT NULL,
-        username TEXT,
-        avatar_url TEXT,
-        updated_at INTEGER,
-        website_url TEXT,
-        at INTEGER
-      )
+        hash TEXT NOT NULL,
+        FOREIGN KEY (id) REFERENCES item(id) ON DELETE CASCADE
+        )
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_itemfile_hash ON itemfile(hash)
     ''');
     await db.execute("ALTER TABLE category ADD COLUMN updated_at INTEGER");
     await db.execute("ALTER TABLE itemgroup ADD COLUMN updated_at INTEGER");
     await db.execute("ALTER TABLE item ADD COLUMN updated_at INTEGER");
-    await db.execute("ALTER TABLE item ADD COLUMN position INTEGER");
   }
 }

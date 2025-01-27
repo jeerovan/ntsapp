@@ -59,7 +59,7 @@ class _PageDbFixesState extends State<PageDbFixes> {
                       seekPosition: Duration(
                           milliseconds: (durationSeconds * 500).toInt()));
                   videoItem.thumbnail = thumbnail;
-                  await videoItem.update();
+                  await videoItem.update(["thumbnail"]);
                 } catch (e) {
                   debugPrint(e.toString());
                 }
@@ -69,7 +69,7 @@ class _PageDbFixesState extends State<PageDbFixes> {
             Uint8List? thumbnail = getImageThumbnail(videoItem.thumbnail!);
             if (thumbnail != null) {
               videoItem.thumbnail = thumbnail;
-              await videoItem.update();
+              await videoItem.update(["thumbnail"]);
             }
           }
         }

@@ -109,7 +109,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   Future<void> archiveSelectedItems() async {
     for (ModelItem item in _selection) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
-      await item.update();
+      await item.update(["archived_at"]);
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -126,7 +126,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   Future<void> markSelectedUnStarred() async {
     for (ModelItem item in _selection) {
       item.starred = 0;
-      item.update();
+      item.update(["starred"]);
     }
     clearSelection();
     fetchStarredItemsOnInit();

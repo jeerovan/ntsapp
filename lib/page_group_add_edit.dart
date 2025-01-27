@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category.dart';
+import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/page_category.dart';
 
 import 'common.dart';
@@ -46,14 +47,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   Future<void> init() async {
     if (widget.group == null) {
       itemChanged = true;
-      int count = await ModelGroup.getCountInDND();
+      int positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
       if (widget.category == null) {
         category = await ModelCategory.getDND();
       } else {
         category = widget.category;
-        count = await ModelGroup.getCountInCategory(category!.id!);
+        positionCount = await ModelGroup.getCountInCategory(category!.id!);
       }
-      Color color = getIndexedColor(count + 1);
+      Color color = getIndexedColor(positionCount);
       colorCode = colorToHex(color);
     } else {
       category = await ModelCategory.get(widget.group!.categoryId);
@@ -73,7 +74,6 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           "category_id": categoryId,
           "thumbnail": thumbnail,
           "title": title,
-          "color": colorCode
         });
         await newGroup.insert();
       } else {
@@ -81,7 +81,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         widget.group!.title = title;
         widget.group!.categoryId = categoryId;
         widget.group!.color = colorCode ?? widget.group!.color;
-        await widget.group!.update();
+        await widget.group!
+            .update(["thumbnail", "title", "category_id", "color"]);
       }
       widget.onUpdate();
     }

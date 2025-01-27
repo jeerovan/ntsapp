@@ -24,7 +24,6 @@ import 'model_setting.dart';
 import 'page_home.dart';
 import 'themes.dart';
 
-// Set to false if running on Desktop
 bool mobile = Platform.isAndroid || Platform.isIOS;
 bool supabaseInitialized = true;
 bool mediaKitAvailable = false;

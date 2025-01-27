@@ -4,8 +4,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_item_file.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:path/path.dart' as path;
 import 'database_helper.dart';
 
 class ModelItem {
@@ -21,6 +22,7 @@ class ModelItem {
   Map<String, dynamic>? data;
   ModelItem? replyOn;
   int? at;
+  int? updatedAt;
 
   ModelItem({
     this.id,
@@ -35,6 +37,7 @@ class ModelItem {
     this.data,
     this.replyOn,
     this.at,
+    this.updatedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -54,6 +57,7 @@ class ModelItem {
               ? data
               : jsonEncode(data),
       'at': at,
+      'updated_at': updatedAt
     };
   }
 
@@ -90,21 +94,21 @@ class ModelItem {
         mediaType = ItemTypeExtension.fromValue(map['type'])!;
       }
     }
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
     return ModelItem(
       id: map.containsKey('id') ? map['id'] : uuid.v4(),
-      groupId: map.containsKey('group_id') ? map['group_id'] : "",
-      text: map.containsKey('text') ? map['text'] : "",
+      groupId: getValueFromMap(map, "group_id", defaultValue: ""),
+      text: getValueFromMap(map, "text", defaultValue: ""),
       thumbnail: thumbnail,
-      starred: map.containsKey('starred') ? map['starred'] : 0,
-      pinned: map.containsKey('pinned') ? map['pinned'] : 0,
-      archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
+      starred: getValueFromMap(map, "starred", defaultValue: 0),
+      pinned: getValueFromMap(map, "pinned", defaultValue: 0),
+      archivedAt: getValueFromMap(map, "archived_at", defaultValue: 0),
       type: mediaType,
-      state: map.containsKey('state') ? map['state'] : 0,
+      state: getValueFromMap(map, "state", defaultValue: 0),
       data: dataMap,
       replyOn: replyOn,
-      at: map.containsKey('at')
-          ? map['at']
-          : DateTime.now().toUtc().millisecondsSinceEpoch,
+      at: getValueFromMap(map, "at", defaultValue: utcNow),
+      updatedAt: getValueFromMap(map, "updated_at", defaultValue: utcNow),
     );
   }
 
@@ -394,28 +398,34 @@ class ModelItem {
     return await dbHelper.insert("item", map);
   }
 
-  Future<int> update() async {
+  Future<int> update(List<String> attrs) async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     Map<String, dynamic> map = toMap();
-    return await dbHelper.update("item", map, id);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
+    return await dbHelper.update("item", updatedMap, id);
   }
 
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
-    Map<String, dynamic> map = toMap();
-    if (map['data'] != null) {
-      Map<String, dynamic> dataMap = jsonDecode(map['data']);
-      if (dataMap.containsKey("path")) {
-        final String path = dataMap["path"];
-        File file = File(path);
-        if (file.existsSync()) {
-          // TODO should be deleted with last reference
+    if (data != null) {
+      if (data!.containsKey("path")) {
+        final String filePath = data!["path"];
+        String fileHash = path.basename(filePath);
+        List<String> fileHashItemIds =
+            await ModelItemFile.getFileHashItemIds(fileHash);
+        debugPrint("Deleting File ItemId:$id,FileItems:$fileHashItemIds");
+        File file = File(filePath);
+        if (file.existsSync() &&
+            fileHashItemIds.length == 1 &&
+            fileHashItemIds[0] == id) {
           file.deleteSync();
         }
       }
-      if (dataMap.containsKey("url_info")) {
+      if (data!.containsKey("url_info")) {
         String fileName = '$id-urlimage.png';
         File? imageFile = await getFile("image", fileName);
         if (imageFile != null && imageFile.existsSync()) {

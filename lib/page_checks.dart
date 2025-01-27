@@ -112,7 +112,7 @@ class _PageChecksState extends State<PageChecks> {
       processing = true;
     });
     try {
-      await supabase.from("keys").upsert(updatedKeysData!);
+      await supabase.from("keys").insert(updatedKeysData!);
       navigateToAccessKeyPage();
     } catch (e) {
       debugPrint(e.toString());

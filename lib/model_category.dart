@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:ntsapp/model_category_group.dart';
 import 'package:uuid/uuid.dart';
 
 import 'common.dart';
@@ -16,6 +17,7 @@ class ModelCategory {
   int? position;
   int? archivedAt;
   int? groupCount;
+  int? updatedAt;
   int? at;
 
   ModelCategory({
@@ -26,6 +28,7 @@ class ModelCategory {
     this.position,
     this.archivedAt,
     this.groupCount,
+    this.updatedAt,
     this.at,
   });
 
@@ -37,14 +40,15 @@ class ModelCategory {
       'color': color,
       'position': position,
       'archived_at': archivedAt,
+      'updated_at': updatedAt,
       'at': at,
     };
   }
 
   static Future<ModelCategory> fromMap(Map<String, dynamic> map) async {
     Uuid uuid = const Uuid();
-    String categoryId = map.containsKey("id") ? map['id'] : uuid.v4();
-    int categoryCount = await getCount() + 1;
+    String categoryId = getValueFromMap(map, "id", defaultValue: uuid.v4());
+    int positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
     Uint8List? thumbnail;
     if (map.containsKey("thumbnail")) {
       if (map["thumbnail"] is String) {
@@ -57,22 +61,22 @@ class ModelCategory {
     if (map.containsKey('color')) {
       colorCode = map['color'];
     } else {
-      Color color = getIndexedColor(categoryCount + 1);
+      Color color = getIndexedColor(positionCount);
       colorCode = colorToHex(color);
     }
     int groupCount = await ModelGroup.getCountInCategory(categoryId);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
     return ModelCategory(
       id: categoryId,
-      title: map.containsKey('title') ? map['title'] : "",
+      title: getValueFromMap(map, 'title', defaultValue: ""),
       thumbnail: thumbnail,
       color: colorCode,
       position:
-          map.containsKey('position') ? map['position'] : categoryCount * 1000,
-      archivedAt: map.containsKey('archived_at') ? map['archived_at'] : 0,
+          getValueFromMap(map, 'position', defaultValue: positionCount * 1000),
+      archivedAt: getValueFromMap(map, 'archived_at', defaultValue: 0),
       groupCount: groupCount,
-      at: map.containsKey('at')
-          ? map['at']
-          : DateTime.now().toUtc().millisecondsSinceEpoch,
+      at: getValueFromMap(map, "at", defaultValue: utcNow),
+      updatedAt: getValueFromMap(map, "updated_at", defaultValue: utcNow),
     );
   }
 
@@ -140,16 +144,19 @@ class ModelCategory {
     return await dbHelper.insert("category", map);
   }
 
-  Future<int> update() async {
+  Future<int> update(List<String> attrs) async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     Map<String, dynamic> map = toMap();
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
     return await dbHelper.update("category", map, id);
   }
 
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     return await dbHelper.delete("category", id);
   }
 }

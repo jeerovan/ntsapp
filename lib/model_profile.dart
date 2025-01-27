@@ -81,14 +81,12 @@ class ModelProfile {
 
   Future<int> update() async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     Map<String, dynamic> map = toMap();
     return await dbHelper.update("profile", map, id);
   }
 
   Future<int> delete() async {
     final dbHelper = DatabaseHelper.instance;
-    String? id = this.id;
     return await dbHelper.delete("profile", id);
   }
 }

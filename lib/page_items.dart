@@ -12,6 +12,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_item_file.dart';
 import 'package:ntsapp/page_edit_note.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path/path.dart' as path;
@@ -682,10 +683,10 @@ class _PageItemsState extends State<PageItems> {
       updateSelectionBools();
     } else if (item.type == ItemType.task) {
       item.type = ItemType.completedTask;
-      await item.update();
+      await item.update(["type"]);
     } else if (item.type == ItemType.completedTask) {
       item.type = ItemType.task;
-      await item.update();
+      await item.update(["type"]);
     }
     setState(() {});
   }
@@ -693,7 +694,7 @@ class _PageItemsState extends State<PageItems> {
   Future<void> archiveSelectedItems() async {
     for (ModelItem item in _selectedItems) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
-      await item.update();
+      await item.update(["archived_at"]);
     }
     setState(() {
       for (ModelItem item in _selectedItems) {
@@ -730,7 +731,7 @@ class _PageItemsState extends State<PageItems> {
     setState(() {
       for (ModelItem item in _selectedItems) {
         item.pinned = selectionHasPinnedItem ? 0 : 1;
-        item.update();
+        item.update(["pinned"]);
       }
     });
     clearSelection();
@@ -740,7 +741,7 @@ class _PageItemsState extends State<PageItems> {
     setState(() {
       for (ModelItem item in _selectedItems) {
         item.starred = selectionHasStarredItems ? 0 : 1;
-        item.update();
+        item.update(["starred"]);
       }
     });
     clearSelection();
@@ -855,7 +856,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> updateNoteText(ModelItem item, String newText) async {
     item.text = newText;
-    await item.update();
+    await item.update(["text"]);
     checkFetchUrlMetadata(item);
   }
 
@@ -929,7 +930,7 @@ class _PageItemsState extends State<PageItems> {
         } else if (setType == ItemType.task) {
           if (item.type == ItemType.text) item.type = setType;
         }
-        item.update();
+        item.update(["type"]);
       }
     });
     clearSelection();
@@ -1061,22 +1062,34 @@ class _PageItemsState extends State<PageItems> {
         data = {"reply_on": replyOnItem!.id};
       }
     }
-    int utcMilliSeconds = DateTime.now().toUtc().millisecondsSinceEpoch;
     ModelItem item = await ModelItem.fromMap({
       "group_id": noteGroup.id,
       "text": text,
       "type": type,
       "thumbnail": thumbnail,
       "data": data,
-      "at": utcMilliSeconds
     });
     await item.insert();
+    await checkAddItemFileHash(item);
     setState(() {
       _addItemsToDisplayList([item], false);
       replyOnItem = null;
     });
     if (type == ItemType.task || type == ItemType.text) {
       checkFetchUrlMetadata(item);
+    }
+  }
+
+  Future<void> checkAddItemFileHash(ModelItem item) async {
+    if (item.data != null) {
+      String? fileHashName =
+          getValueFromMap(item.data!, "name", defaultValue: null);
+      if (fileHashName != null) {
+        String itemId = item.id!;
+        ModelItemFile itemFile =
+            ModelItemFile(id: itemId, fileHash: fileHashName);
+        await itemFile.insert();
+      }
     }
   }
 
@@ -1110,10 +1123,10 @@ class _PageItemsState extends State<PageItems> {
         if (data != null) {
           data["url_info"] = urlInfo;
           item.data = data;
-          await item.update();
+          await item.update(["data"]);
         } else {
           item.data = {"url_info": urlInfo};
-          await item.update();
+          await item.update(["data"]);
         }
 
         if (mounted) {
@@ -1126,7 +1139,7 @@ class _PageItemsState extends State<PageItems> {
       if (data != null && data.containsKey("url_info")) {
         data.remove("url_info");
         item.data = data;
-        await item.update();
+        await item.update(["data"]);
         if (mounted) {
           setState(() {});
         }
@@ -1151,25 +1164,24 @@ class _PageItemsState extends State<PageItems> {
       String mime = attrs["mime"];
       String newPath = attrs["path"];
       String type = mime.split("/").first;
+      String fileName = attrs["name"];
       switch (type) {
         case "image":
           Uint8List fileBytes = await File(newPath).readAsBytes();
           Uint8List? thumbnail = await compute(getImageThumbnail, fileBytes);
           if (thumbnail != null) {
-            String name = attrs["name"];
             Map<String, dynamic> data = {
               "path": newPath,
               "mime": attrs["mime"],
-              "name": name,
+              "name": fileName,
               "size": attrs["size"]
             };
-            String text = 'DND|#image|$name';
+            String text = 'DND|#image|$fileName';
             _addItemToDbAndDisplayList(text, ItemType.image, thumbnail, data);
           }
         case "video":
           VideoInfoExtractor extractor = VideoInfoExtractor(newPath);
           try {
-            String name = attrs['name'];
             final mediaInfo = await extractor.getVideoInfo();
             int durationSeconds = mediaInfo['duration'];
             String duration = mediaFileDuration(durationSeconds);
@@ -1180,12 +1192,12 @@ class _PageItemsState extends State<PageItems> {
             Map<String, dynamic> data = {
               "path": newPath,
               "mime": attrs["mime"],
-              "name": name,
+              "name": fileName,
               "size": attrs["size"],
               "aspect": aspect,
               "duration": duration
             };
-            String text = 'DND|#video|$name';
+            String text = 'DND|#video|$fileName';
             _addItemToDbAndDisplayList(text, ItemType.video, thumbnail, data);
           } catch (e) {
             debugPrint(e.toString());
@@ -1195,29 +1207,27 @@ class _PageItemsState extends State<PageItems> {
         case "audio":
           String? duration = await getAudioDuration(newPath);
           if (duration != null) {
-            String name = attrs["name"];
             Map<String, dynamic> data = {
               "path": newPath,
               "mime": attrs["mime"],
-              "name": name,
+              "name": fileName,
               "size": attrs["size"],
               "duration": duration
             };
-            String text = 'DND|#audio|$name';
+            String text = 'DND|#audio|$fileName';
             _addItemToDbAndDisplayList(text, ItemType.audio, null, data);
           } else {
             debugPrint("Could not get duration");
           }
         default:
-          String name = attrs["name"];
           Map<String, dynamic> data = {
             "path": newPath,
             "mime": attrs["mime"],
-            "name": name,
+            "name": fileName,
             "size": attrs["size"],
-            "title": attrs.containsKey("title") ? attrs["title"] : name
+            "title": attrs.containsKey("title") ? attrs["title"] : fileName
           };
-          String text = 'DND|#document|$name';
+          String text = 'DND|#document|$fileName';
           _addItemToDbAndDisplayList(text, ItemType.document, null, data);
       }
     }
@@ -1341,10 +1351,10 @@ class _PageItemsState extends State<PageItems> {
     if (data != null) {
       data["task_mode"] = taskMode;
       noteGroup.data = data;
-      await noteGroup.update();
+      await noteGroup.update(["data"]);
     } else {
       noteGroup.data = {"task_mode": taskMode};
-      await noteGroup.update();
+      await noteGroup.update(["data"]);
     }
   }
 
@@ -1357,10 +1367,10 @@ class _PageItemsState extends State<PageItems> {
     if (data != null) {
       data["date_time"] = showTimeStamp;
       noteGroup.data = data;
-      await noteGroup.update();
+      await noteGroup.update(["data"]);
     } else {
       noteGroup.data = {"date_time": showTimeStamp};
-      await noteGroup.update();
+      await noteGroup.update(["data"]);
     }
   }
 
@@ -1373,10 +1383,10 @@ class _PageItemsState extends State<PageItems> {
     if (data != null) {
       data["note_border"] = showBorder;
       noteGroup.data = data;
-      await noteGroup.update();
+      await noteGroup.update(["data"]);
     } else {
       noteGroup.data = {"note_border": showBorder};
-      await noteGroup.update();
+      await noteGroup.update(["data"]);
     }
   }
 
