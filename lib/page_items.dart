@@ -109,6 +109,21 @@ class _PageItemsState extends State<PageItems> {
     super.initState();
 
     noteGroup = widget.group;
+
+    loadGroupSettings(noteGroup);
+    _audioRecorder = AudioRecorder();
+    showItemId = widget.loadItemIdOnInit;
+    initialFetchItems(showItemId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadImageDirectoryPath();
+      if (widget.sharedContents.isNotEmpty) {
+        loadSharedContents();
+      }
+    });
+  }
+
+  Future<void> loadGroupSettings(ModelGroup? group) async {
+    group ??= await ModelGroup.get(noteGroup.id!);
     Map<String, dynamic>? data = noteGroup.data;
     if (data != null) {
       if (data.containsKey("date_time")) {
@@ -121,16 +136,6 @@ class _PageItemsState extends State<PageItems> {
         _isCreatingTask = data["task_mode"] == 1 ? true : false;
       }
     }
-
-    _audioRecorder = AudioRecorder();
-    showItemId = widget.loadItemIdOnInit;
-    initialFetchItems(showItemId);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.sharedContents.isNotEmpty) {
-        loadSharedContents();
-      }
-      loadImageDirectoryPath();
-    });
   }
 
   @override
@@ -1333,7 +1338,8 @@ class _PageItemsState extends State<PageItems> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => PageGroupAddEdit(
         group: noteGroup,
-        onUpdate: () {
+        onUpdate: () async {
+          await loadGroupSettings(null);
           setState(() {});
         },
       ),
@@ -1358,38 +1364,6 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Future<void> setShowDateTime(bool show) async {
-    setState(() {
-      showDateTime = show;
-    });
-    int showTimeStamp = showDateTime ? 1 : 0;
-    Map<String, dynamic>? data = noteGroup.data;
-    if (data != null) {
-      data["date_time"] = showTimeStamp;
-      noteGroup.data = data;
-      await noteGroup.update(["data"]);
-    } else {
-      noteGroup.data = {"date_time": showTimeStamp};
-      await noteGroup.update(["data"]);
-    }
-  }
-
-  Future<void> setShowNoteBorder(bool show) async {
-    setState(() {
-      showNoteBorder = show;
-    });
-    int showBorder = showNoteBorder ? 1 : 0;
-    Map<String, dynamic>? data = noteGroup.data;
-    if (data != null) {
-      data["note_border"] = showBorder;
-      noteGroup.data = data;
-      await noteGroup.update(["data"]);
-    } else {
-      noteGroup.data = {"note_border": showBorder};
-      await noteGroup.update(["data"]);
-    }
-  }
-
   List<Widget> _buildAppbarDefaultOptions() {
     return [
       PopupMenuButton<int>(
@@ -1401,12 +1375,6 @@ class _PageItemsState extends State<PageItems> {
             case 1:
               _openFilterDialog();
               break;
-            case 2:
-              setShowDateTime(!showDateTime);
-              break;
-            case 3:
-              setShowNoteBorder(!showNoteBorder);
-              break;
           }
         },
         itemBuilder: (context) => [
@@ -1415,7 +1383,7 @@ class _PageItemsState extends State<PageItems> {
             child: Row(
               children: [
                 Icon(
-                  LucideIcons.edit2,
+                  LucideIcons.edit3,
                 ),
                 const SizedBox(
                   width: 8,
@@ -1435,64 +1403,6 @@ class _PageItemsState extends State<PageItems> {
                   width: 8,
                 ),
                 const Text('Filters'),
-              ],
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 2,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      LucideIcons.clock9,
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    const Text('Date/Time'),
-                  ],
-                ),
-                StatefulBuilder(builder: (context, setState) {
-                  return Switch(
-                    value: showDateTime,
-                    onChanged: (bool value) {
-                      setState(() {
-                        setShowDateTime(value);
-                      });
-                    },
-                  );
-                }),
-              ],
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      LucideIcons.rectangleHorizontal,
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    const Text('Note border'),
-                  ],
-                ),
-                StatefulBuilder(builder: (context, setState) {
-                  return Switch(
-                    value: showNoteBorder,
-                    onChanged: (bool value) {
-                      setState(() {
-                        setShowNoteBorder(value);
-                      });
-                    },
-                  );
-                }),
               ],
             ),
           ),

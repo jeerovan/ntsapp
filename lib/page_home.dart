@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
@@ -50,6 +49,7 @@ class _PageHomeState extends State<PageHome> {
   final List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
   bool _isLoading = false;
   bool _hasInitiated = false;
+  bool _isReordering = false;
 
   bool loadedSharedContents = false;
 
@@ -402,130 +402,172 @@ class _PageHomeState extends State<PageHome> {
     ];
   }
 
+  void _showOptions(BuildContext context, ModelCategoryGroup categoryGroup) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.reorder),
+                title: const Text('Reorder'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _isReordering = true;
+                  });
+                },
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.edit3),
+                title: const Text('Edit'),
+                onTap: () {
+                  Navigator.pop(context);
+                  editCategoryGroup(categoryGroup);
+                },
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.trash),
+                title: const Text('Delete'),
+                onTap: () {
+                  Navigator.pop(context);
+                  archiveCategoryGroup(categoryGroup);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(loadedSharedContents || widget.sharedContents.isEmpty
-            ? "Note to self"
-            : "Select..."),
-        actions: _buildDefaultActions(),
-      ),
-      body: Column(
-        children: [
-          Container(height: 12),
-          Expanded(
-            child: Stack(
-              children: [
-                ReorderableListView.builder(
-                  itemCount: _categoriesGroupsDisplayList.length,
-                  buildDefaultDragHandles: false,
-                  onReorderStart: (_) {
-                    HapticFeedback.vibrate();
-                  },
-                  itemBuilder: (context, index) {
-                    final item = _categoriesGroupsDisplayList[index];
-                    return ReorderableDelayedDragStartListener(
-                      key: ValueKey(item.id),
-                      index: index,
-                      child: Slidable(
-                        key: ValueKey(item.id),
-                        startActionPane: ActionPane(
-                          // A motion is a widget used to control how the pane animates.
-                          motion: const StretchMotion(),
+    return PopScope(
+      canPop: !_isReordering,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          setState(() {
+            _isReordering = false;
+          });
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(loadedSharedContents || widget.sharedContents.isEmpty
+              ? "Note to self"
+              : "Select..."),
+          actions: _buildDefaultActions(),
+        ),
+        body: Column(
+          children: [
+            Container(height: 12),
+            Expanded(
+              child: Stack(
+                children: [
+                  _isReordering
+                      ? ReorderableListView.builder(
+                          itemCount: _categoriesGroupsDisplayList.length,
+                          itemBuilder: (context, index) {
+                            final item = _categoriesGroupsDisplayList[index];
+                            return Container(
+                              key: ValueKey(item.id),
+                              child: WidgetCategoryGroup(
+                                categoryGroup: item,
+                                showSummary: true,
+                                showCategorySign: false,
+                              ),
+                            );
+                          },
+                          onReorder: (int oldIndex, int newIndex) {
+                            setState(() {
+                              // Adjust newIndex if dragging an item down
+                              if (oldIndex < newIndex) {
+                                newIndex -= 1;
+                              }
+
+                              // Remove the item from the old position
+                              final item = _categoriesGroupsDisplayList
+                                  .removeAt(oldIndex);
+
+                              // Insert the item at the new position
+                              _categoriesGroupsDisplayList.insert(
+                                  newIndex, item);
+
+                              // Print positions after reordering
+                              _saveGroupPositions();
+                            });
+                          },
+                        )
+                      : ListView.builder(
+                          itemCount: _categoriesGroupsDisplayList.length,
+                          itemBuilder: (context, index) {
+                            final ModelCategoryGroup item =
+                                _categoriesGroupsDisplayList[index];
+                            return GestureDetector(
+                              onTap: () {
+                                navigateToNotesOrGroups(item);
+                              },
+                              onLongPress: () {
+                                _showOptions(context, item);
+                              },
+                              child: WidgetCategoryGroup(
+                                categoryGroup: item,
+                                showSummary: true,
+                                showCategorySign: true,
+                              ),
+                            );
+                          }),
+                  if (_hasInitiated &&
+                      _categoriesGroupsDisplayList.isEmpty &&
+                      !_isLoading)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SlidableAction(
-                              onPressed: (context) {
-                                archiveCategoryGroup(item);
-                              },
-                              backgroundColor: Color(0xFFFE4A49),
-                              foregroundColor: Colors.white,
-                              icon: LucideIcons.trash,
-                            ),
-                            SlidableAction(
-                              onPressed: (context) {
-                                editCategoryGroup(item);
-                              },
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.inversePrimary,
-                              foregroundColor: Colors.white,
-                              icon: LucideIcons.edit2,
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                "Hi there!\n\n"
+                                "It's kind of looking empty in here.\n\n"
+                                "Go ahead and tap the + button and create some notes to self. :)",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                              ),
                             ),
                           ],
                         ),
-                        child: GestureDetector(
-                          onTap: () {
-                            navigateToNotesOrGroups(item);
-                          },
-                          child: WidgetCategoryGroup(
-                            categoryGroup: item,
-                            showSummary: true,
-                            showCategorySign: true,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  onReorder: (int oldIndex, int newIndex) {
-                    setState(() {
-                      // Adjust newIndex if dragging an item down
-                      if (oldIndex < newIndex) {
-                        newIndex -= 1;
-                      }
-
-                      // Remove the item from the old position
-                      final item =
-                          _categoriesGroupsDisplayList.removeAt(oldIndex);
-
-                      // Insert the item at the new position
-                      _categoriesGroupsDisplayList.insert(newIndex, item);
-
-                      // Print positions after reordering
-                      _saveGroupPositions();
-                    });
-                  },
-                ),
-                if (_hasInitiated &&
-                    _categoriesGroupsDisplayList.isEmpty &&
-                    !_isLoading)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              "Hi there!\n\n"
-                              "It's kind of looking empty in here.\n\n"
-                              "Go ahead and tap the + button and create some notes to self. :)",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        key: const Key("add_note_group"),
-        onPressed: () {
-          createNoteGroup();
-        },
-        shape: const CircleBorder(),
-        child: const Icon(LucideIcons.plus),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          key: const Key("add_note_group"),
+          onPressed: () {
+            if (_isReordering) {
+              setState(() {
+                _isReordering = false;
+              });
+            } else {
+              createNoteGroup();
+            }
+          },
+          shape: const CircleBorder(),
+          child: Icon(_isReordering ? LucideIcons.check : LucideIcons.plus),
+        ),
       ),
     );
   }

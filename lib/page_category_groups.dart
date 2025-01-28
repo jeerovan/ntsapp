@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
@@ -32,6 +30,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   final List<ModelGroup> categoryGroupsDisplayList = [];
   late ModelCategory category;
   bool loadedSharedContents = false;
+  bool _isReordering = false;
 
   @override
   void initState() {
@@ -134,138 +133,191 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     }
   }
 
+  void navigateToGroupAddEdit() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+      builder: (context) => PageGroupAddEdit(
+        category: category,
+        onUpdate: () {
+          loadGroups(true);
+        },
+      ),
+      settings: const RouteSettings(name: "CreateNoteGroup"),
+    ))
+        .then((noteGroup) {
+      ModelGroup? group = noteGroup;
+      if (group != null) {
+        navigateToNotes(group, true);
+      }
+    });
+  }
+
+  void _showOptions(BuildContext context, ModelGroup group) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.reorder),
+                title: const Text('Reorder'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _isReordering = true;
+                  });
+                },
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.edit3),
+                title: const Text('Edit'),
+                onTap: () {
+                  Navigator.pop(context);
+                  editGroup(group);
+                },
+              ),
+              ListTile(
+                leading: const Icon(LucideIcons.trash),
+                title: const Text('Delete'),
+                onTap: () {
+                  Navigator.pop(context);
+                  archiveGroup(group);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: loadedSharedContents || widget.sharedContents.isEmpty
-            ? Text(
-                category.title,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                ),
-              )
-            : Text("Select..."),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => PageCategoryAddEdit(
-                      category: category,
-                      onUpdate: () {
-                        reloadCategory();
-                      },
-                    ),
-                    settings: const RouteSettings(name: "EditCategory"),
-                  ));
-                },
-                icon: Icon(LucideIcons.edit2)),
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 12.0),
-        child: ReorderableListView.builder(
-          itemCount: categoryGroupsDisplayList.length,
-          buildDefaultDragHandles: false,
-          onReorderStart: (_) {
-            HapticFeedback.vibrate();
-          },
-          itemBuilder: (context, index) {
-            final ModelGroup group = categoryGroupsDisplayList[index];
-            final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
-                id: group.id!,
-                type: "group",
-                group: group,
-                position: group.position!,
-                thumbnail: group.thumbnail,
-                color: group.color,
-                title: group.title);
-            return ReorderableDelayedDragStartListener(
-              key: ValueKey(group.id),
-              index: index,
-              child: Slidable(
-                key: ValueKey(group.id),
-                startActionPane: ActionPane(
-                  // A motion is a widget used to control how the pane animates.
-                  motion: const StretchMotion(),
-                  children: [
-                    SlidableAction(
-                      onPressed: (context) {
-                        archiveGroup(group);
-                      },
-                      backgroundColor: Color(0xFFFE4A49),
-                      foregroundColor: Colors.white,
-                      icon: LucideIcons.trash,
-                    ),
-                    SlidableAction(
-                      onPressed: (context) {
-                        editGroup(group);
-                      },
-                      backgroundColor:
-                          Theme.of(context).colorScheme.inversePrimary,
-                      foregroundColor: Colors.white,
-                      icon: LucideIcons.edit2,
-                    ),
-                  ],
-                ),
-                child: GestureDetector(
-                  onTap: () {
-                    navigateToNotes(group, false);
-                  },
-                  child: WidgetCategoryGroup(
-                    categoryGroup: categoryGroup,
-                    showSummary: true,
-                    showCategorySign: true,
-                  ),
-                ),
-              ),
-            );
-          },
-          onReorder: (int oldIndex, int newIndex) {
-            setState(() {
-              // Adjust newIndex if dragging an item down
-              if (oldIndex < newIndex) {
-                newIndex -= 1;
-              }
-
-              // Remove the item from the old position
-              final item = categoryGroupsDisplayList.removeAt(oldIndex);
-
-              // Insert the item at the new position
-              categoryGroupsDisplayList.insert(newIndex, item);
-
-              // Print positions after reordering
-              _saveGroupPositions();
-            });
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        key: const Key("add_category"),
-        onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(
-            builder: (context) => PageGroupAddEdit(
-              category: category,
-              onUpdate: () {
-                loadGroups(true);
-              },
-            ),
-            settings: const RouteSettings(name: "CreateNoteGroup"),
-          ))
-              .then((noteGroup) {
-            ModelGroup? group = noteGroup;
-            if (group != null) {
-              navigateToNotes(group, true);
-            }
+    return PopScope(
+      canPop: !_isReordering,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          setState(() {
+            _isReordering = false;
           });
-        },
-        shape: const CircleBorder(),
-        child: const Icon(LucideIcons.plus),
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: loadedSharedContents || widget.sharedContents.isEmpty
+              ? Text(
+                  category.title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                )
+              : Text("Select..."),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PageCategoryAddEdit(
+                        category: category,
+                        onUpdate: () {
+                          reloadCategory();
+                        },
+                      ),
+                      settings: const RouteSettings(name: "EditCategory"),
+                    ));
+                  },
+                  icon: Icon(LucideIcons.edit2)),
+            )
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: _isReordering
+              ? ReorderableListView.builder(
+                  itemCount: categoryGroupsDisplayList.length,
+                  itemBuilder: (context, index) {
+                    final ModelGroup group = categoryGroupsDisplayList[index];
+                    final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
+                        id: group.id!,
+                        type: "group",
+                        group: group,
+                        position: group.position!,
+                        thumbnail: group.thumbnail,
+                        color: group.color,
+                        title: group.title);
+                    return Container(
+                      key: ValueKey(group.id),
+                      child: WidgetCategoryGroup(
+                        categoryGroup: categoryGroup,
+                        showSummary: true,
+                        showCategorySign: false,
+                      ),
+                    );
+                  },
+                  onReorder: (int oldIndex, int newIndex) {
+                    setState(() {
+                      // Adjust newIndex if dragging an item down
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+
+                      // Remove the item from the old position
+                      final item = categoryGroupsDisplayList.removeAt(oldIndex);
+
+                      // Insert the item at the new position
+                      categoryGroupsDisplayList.insert(newIndex, item);
+
+                      // Print positions after reordering
+                      _saveGroupPositions();
+                    });
+                  },
+                )
+              : ListView.builder(
+                  itemCount: categoryGroupsDisplayList.length,
+                  itemBuilder: (context, index) {
+                    final ModelGroup group = categoryGroupsDisplayList[index];
+                    final ModelCategoryGroup categoryGroup = ModelCategoryGroup(
+                        id: group.id!,
+                        type: "group",
+                        group: group,
+                        position: group.position!,
+                        thumbnail: group.thumbnail,
+                        color: group.color,
+                        title: group.title);
+                    return GestureDetector(
+                      onTap: () {
+                        navigateToNotes(group, false);
+                      },
+                      onLongPress: () {
+                        _showOptions(context, group);
+                      },
+                      child: WidgetCategoryGroup(
+                        categoryGroup: categoryGroup,
+                        showSummary: true,
+                        showCategorySign: false,
+                      ),
+                    );
+                  },
+                ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          key: const Key("add_category"),
+          onPressed: () {
+            if (_isReordering) {
+              setState(() {
+                _isReordering = false;
+              });
+            } else {
+              navigateToGroupAddEdit();
+            }
+          },
+          shape: const CircleBorder(),
+          child: Icon(_isReordering ? LucideIcons.check : LucideIcons.plus),
+        ),
       ),
     );
   }

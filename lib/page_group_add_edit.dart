@@ -27,11 +27,15 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   bool processing = false;
   bool itemChanged = false;
 
+  bool showDateTime = true;
+  bool showNoteBorder = true;
+
   String title = "";
   Uint8List? thumbnail;
   String? colorCode;
   ModelCategory? category;
   String dateTitle = getNoteGroupDateTitle();
+  Map<String, dynamic>? groupData;
 
   @override
   void initState() {
@@ -59,6 +63,17 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     } else {
       category = await ModelCategory.get(widget.group!.categoryId);
       colorCode = widget.group!.color;
+      groupData = widget.group!.data;
+      if (groupData != null) {
+        if (groupData!.containsKey("date_time")) {
+          int dateTimeInt = groupData!["date_time"];
+          showDateTime = dateTimeInt == 1;
+        }
+        if (groupData!.containsKey("note_border")) {
+          int noteBorderInt = groupData!["note_border"];
+          showNoteBorder = noteBorderInt == 1;
+        }
+      }
     }
     title = widget.group == null ? dateTitle : widget.group!.title;
     titleController.text = title;
@@ -66,7 +81,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     if (mounted) setState(() {});
   }
 
-  Future<void> saveGroup(String categoryId) async {
+  Future<void> saveGroup() async {
+    if (category == null) return;
+    String categoryId = category!.id!;
     ModelGroup? newGroup;
     if (itemChanged && title.isNotEmpty) {
       if (widget.group == null) {
@@ -74,6 +91,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           "category_id": categoryId,
           "thumbnail": thumbnail,
           "title": title,
+          "data": groupData,
         });
         await newGroup.insert();
       } else {
@@ -81,8 +99,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         widget.group!.title = title;
         widget.group!.categoryId = categoryId;
         widget.group!.color = colorCode ?? widget.group!.color;
+        widget.group!.data = groupData;
         await widget.group!
-            .update(["thumbnail", "title", "category_id", "color"]);
+            .update(["thumbnail", "title", "category_id", "color", "data"]);
       }
       widget.onUpdate();
     }
@@ -95,19 +114,46 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       builder: (context) => PageCategory(),
       settings: const RouteSettings(name: "SelectGroupCategory"),
     ))
-        .then((value) {
+        .then((value) async {
       String? categoryId = value;
       if (categoryId != null) {
+        category = await ModelCategory.get(categoryId);
         itemChanged = true;
-        saveGroup(categoryId);
+        if (mounted) setState(() {});
       }
     });
   }
 
   Future<void> removeCategory() async {
-    ModelCategory category = await ModelCategory.getDND();
+    category = await ModelCategory.getDND();
     itemChanged = true;
-    saveGroup(category.id!);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> setShowDateTime(bool show) async {
+    itemChanged = true;
+    setState(() {
+      showDateTime = show;
+    });
+    int showTimeStamp = showDateTime ? 1 : 0;
+    if (groupData != null) {
+      groupData!["date_time"] = showTimeStamp;
+    } else {
+      groupData = {"date_time": showTimeStamp};
+    }
+  }
+
+  Future<void> setShowNoteBorder(bool show) async {
+    itemChanged = true;
+    setState(() {
+      showNoteBorder = show;
+    });
+    int showBorder = showNoteBorder ? 1 : 0;
+    if (groupData != null) {
+      groupData!["note_border"] = showBorder;
+    } else {
+      groupData = {"note_border": showBorder};
+    }
   }
 
   @override
@@ -259,6 +305,57 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                   ),
               ],
             ),
+            const SizedBox(
+              height: 32,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      LucideIcons.clock9,
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    const Text('Date/Time'),
+                  ],
+                ),
+                Switch(
+                  value: showDateTime,
+                  onChanged: (bool value) {
+                    setState(() {
+                      setShowDateTime(value);
+                    });
+                  },
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      LucideIcons.rectangleHorizontal,
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    const Text('Note border'),
+                  ],
+                ),
+                Switch(
+                  value: showNoteBorder,
+                  onChanged: (bool value) {
+                    setState(() {
+                      setShowNoteBorder(value);
+                    });
+                  },
+                ),
+              ],
+            ),
             Expanded(
               child: const SizedBox.shrink(),
             ),
@@ -268,7 +365,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
       floatingActionButton: FloatingActionButton(
         key: const Key("done_note_group"),
         onPressed: () async {
-          saveGroup(category!.id!);
+          saveGroup();
         },
         shape: const CircleBorder(),
         child: Icon(widget.group == null ? Icons.arrow_forward : Icons.check),
