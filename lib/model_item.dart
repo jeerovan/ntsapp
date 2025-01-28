@@ -249,8 +249,8 @@ class ModelItem {
       filterParams.add("type = ${ItemType.text.value}");
     }
     if (filters["tasks"]!) {
-      filterParams.add(
-          "type = ${ItemType.task.value} OR type = ${ItemType.completedTask.value}");
+      filterParams.add("type = ${ItemType.task.value}");
+      filterParams.add("type = ${ItemType.completedTask.value}");
     }
     if (filters["links"]!) {
       filterParams.add("text LIKE '%http%'");
