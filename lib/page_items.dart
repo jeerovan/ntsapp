@@ -37,12 +37,14 @@ class PageItems extends StatefulWidget {
   final List<String> sharedContents;
   final ModelGroup group;
   final String? loadItemIdOnInit;
+  final Function() onGroupDeleted;
 
   const PageItems(
       {super.key,
       required this.sharedContents,
       required this.group,
-      this.loadItemIdOnInit});
+      this.loadItemIdOnInit,
+      required this.onGroupDeleted});
 
   @override
   State<PageItems> createState() => _PageItemsState();
@@ -722,12 +724,7 @@ class _PageItemsState extends State<PageItems> {
       }
     });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Moved to trash"),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      displaySnackBar(context, message: "Moved to trash", seconds: 1);
     }
     clearSelection();
   }
@@ -767,12 +764,9 @@ class _PageItemsState extends State<PageItems> {
   Future<void> copyToClipboard() async {
     String textToCopy = getTextsFromSelectedItems();
     Clipboard.setData(ClipboardData(text: textToCopy));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Copied to clipboard'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      displaySnackBar(context, message: 'Copied to clipboard', seconds: 1);
+    }
     clearSelection();
   }
 
@@ -969,11 +963,9 @@ class _PageItemsState extends State<PageItems> {
       HapticFeedback.vibrate();
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content:
-                  Text("Microphone permission is required to record audio.")),
-        );
+        displaySnackBar(context,
+            message: "Microphone permission is required to record audio.",
+            seconds: 1);
       }
     }
   }
@@ -1264,12 +1256,9 @@ class _PageItemsState extends State<PageItems> {
         if (e is PlatformException &&
             e.code == 'read_external_storage_denied' &&
             mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-              'Permission to access external storage was denied.',
-            ),
-            duration: Duration(seconds: 1),
-          ));
+          displaySnackBar(context,
+              message: 'Permission to access external storage was denied.',
+              seconds: 1);
         }
       }
     } else if (type == "camera_image") {
@@ -1341,6 +1330,10 @@ class _PageItemsState extends State<PageItems> {
         onUpdate: () async {
           await loadGroupSettings(null);
           setState(() {});
+        },
+        onDelete: () {
+          widget.onGroupDeleted();
+          Navigator.of(context).pop(false);
         },
       ),
       settings: const RouteSettings(name: "EditNoteGroup"),
@@ -1988,12 +1981,8 @@ class _PageItemsState extends State<PageItems> {
                 }
                 if (!_isTyping && !_isRecording) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Press long to start recording.'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
+                    displaySnackBar(context,
+                        message: 'Press long to start recording.', seconds: 1);
                   }
                 }
               },

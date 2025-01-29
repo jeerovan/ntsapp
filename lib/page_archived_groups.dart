@@ -82,12 +82,7 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Restored.",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Restored.", seconds: 1);
     }
     clearSelection();
     fetchArchivedGroupsOnInit();
@@ -103,12 +98,7 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
       await group.delete();
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Deleted permanently.",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
     clearSelection();
     fetchArchivedGroupsOnInit();

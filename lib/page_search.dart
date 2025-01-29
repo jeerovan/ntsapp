@@ -12,8 +12,10 @@ import 'model_search_item.dart';
 import 'page_items.dart';
 
 class SearchPage extends StatefulWidget {
+  final Function() onChanges;
   const SearchPage({
     super.key,
+    required this.onChanges,
   });
 
   @override
@@ -33,10 +35,10 @@ class SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _textController.addListener(_onSearchInputChanged);
+    _textController.addListener(_checkPerformSearch);
   }
 
-  void _onSearchInputChanged() {
+  void _checkPerformSearch() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
       final query = _textController.text.trim();
@@ -79,9 +81,21 @@ class SearchPageState extends State<SearchPage> {
     });
   }
 
+  Future<void> showMovedToTrash() async {
+    if (mounted) {
+      setState(() {});
+      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+    }
+  }
+
+  Future<void> onNoteGroupDeleted() async {
+    widget.onChanges();
+    showMovedToTrash();
+  }
+
   @override
   void dispose() {
-    _textController.removeListener(_onSearchInputChanged);
+    _textController.removeListener(_checkPerformSearch);
     _textController.dispose();
     _debounce?.cancel();
     super.dispose();
@@ -118,9 +132,11 @@ class SearchPageState extends State<SearchPage> {
                             item.group!.archivedAt == 0) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => PageItems(
-                                  group: item.group!,
-                                  sharedContents: const [],
-                                  loadItemIdOnInit: item.item.id!),
+                                    group: item.group!,
+                                    sharedContents: const [],
+                                    loadItemIdOnInit: item.item.id!,
+                                    onGroupDeleted: onNoteGroupDeleted,
+                                  ),
                               settings: const RouteSettings(name: "Notes")));
                         }
                       },

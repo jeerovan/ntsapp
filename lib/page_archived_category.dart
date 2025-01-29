@@ -83,12 +83,7 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
       await category.update(["archived_at"]);
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Restored.",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Restored.", seconds: 1);
     }
     clearSelection();
     fetchArchivedCategoriesOnInit();
@@ -108,12 +103,7 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
       await category.delete();
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Deleted permanently.",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
     clearSelection();
     fetchArchivedCategoriesOnInit();

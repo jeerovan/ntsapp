@@ -124,13 +124,13 @@ class _PageHomeState extends State<PageHome> {
         onUpdate: () {
           loadCategoriesGroups();
         },
+        onDelete: () {},
       ),
       settings: const RouteSettings(name: "CreateNoteGroup"),
     ))
-        .then((noteGroup) {
-      ModelGroup? group = noteGroup;
-      if (group != null) {
-        navigateToNotes(group, []);
+        .then((value) {
+      if (value is ModelGroup) {
+        navigateToNotes(value, []);
       }
     });
   }
@@ -175,18 +175,28 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
+  Future<void> updateOnGroupDelete() async {
+    loadCategoriesGroups();
+    if (mounted) {
+      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+    }
+  }
+
   void navigateToNotes(ModelGroup group, List<String> sharedContents) {
     Navigator.of(context)
         .push(AnimatedPageRoute(
       child: PageItems(
         group: group,
         sharedContents: sharedContents,
+        onGroupDeleted: updateOnGroupDelete,
       ),
     ))
-        .then((_) {
-      setState(() {
-        updateGroupInDisplayList(group.id!);
-      });
+        .then((value) {
+      if (value != false) {
+        setState(() {
+          updateGroupInDisplayList(group.id!);
+        });
+      }
     });
   }
 
@@ -203,12 +213,9 @@ class _PageHomeState extends State<PageHome> {
     _categoriesGroupsDisplayList.remove(categoryGroup);
     if (mounted) {
       setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Moved to trash",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      if (mounted) {
+        displaySnackBar(context, message: "Moved to trash", seconds: 1);
+      }
     }
   }
 
@@ -218,9 +225,8 @@ class _PageHomeState extends State<PageHome> {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageGroupAddEdit(
           group: group,
-          onUpdate: () {
-            loadCategoriesGroups();
-          },
+          onUpdate: loadCategoriesGroups,
+          onDelete: updateOnGroupDelete,
         ),
         settings: const RouteSettings(name: "EditNoteGroup"),
       ));
@@ -292,7 +298,9 @@ class _PageHomeState extends State<PageHome> {
       IconButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const SearchPage(),
+            builder: (context) => SearchPage(
+              onChanges: loadCategoriesGroups,
+            ),
             settings: const RouteSettings(name: "SearchNotes"),
           ));
         },
@@ -336,7 +344,9 @@ class _PageHomeState extends State<PageHome> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const PageStarredItems(),
+                  builder: (context) => PageStarredItems(
+                    onChanges: updateOnGroupDelete,
+                  ),
                   settings: const RouteSettings(name: "StarredNotes"),
                 ),
               );

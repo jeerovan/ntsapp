@@ -763,6 +763,16 @@ class TimerWidgetState extends State<TimerWidget> {
   }
 }
 
+Future<void> displaySnackBar(BuildContext context,
+    {required String message, required int seconds}) async {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(
+      message,
+    ),
+    duration: Duration(seconds: seconds),
+  ));
+}
+
 class ColorPickerDialog extends StatefulWidget {
   final String? color;
 

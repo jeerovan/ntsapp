@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 
 import 'model_item.dart';
@@ -112,12 +113,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Restored.",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Restored.", seconds: 1);
     }
     clearSelection();
     fetchArchivedItemsOnInit();
@@ -129,12 +125,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
       await item.delete();
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Deleted permanently.",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
     clearSelection();
     fetchArchivedItemsOnInit();

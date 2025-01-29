@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs.dart';
 
@@ -113,12 +114,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error reading file: $e'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        displaySnackBar(context, message: "Error reading file", seconds: 2);
       }
     }
   }

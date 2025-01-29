@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
@@ -64,24 +65,16 @@ class _PageAccessKeyState extends State<PageAccessKey> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please try again.'),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        displaySnackBar(context, message: "Please try again.", seconds: 1);
       }
     }
   }
 
   void copyToClipboard() {
     Clipboard.setData(ClipboardData(text: sentence));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Copied to clipboard'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      displaySnackBar(context, message: "Copied to clipboard", seconds: 1);
+    }
   }
 
   @override

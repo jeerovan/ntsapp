@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 
 import 'model_item.dart';
@@ -9,7 +10,8 @@ import 'page_items.dart';
 import 'widgets_item.dart';
 
 class PageStarredItems extends StatefulWidget {
-  const PageStarredItems({super.key});
+  final Function() onChanges;
+  const PageStarredItems({super.key, required this.onChanges});
 
   @override
   State<PageStarredItems> createState() => _PageStarredItemsState();
@@ -83,6 +85,11 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     });
   }
 
+  Future<void> onNoteGroupDeleted() async {
+    fetchStarredItemsOnInit();
+    widget.onChanges();
+  }
+
   Future<void> onItemTapped(ModelItem item) async {
     ModelGroup? group = await ModelGroup.get(item.groupId);
     if (_isSelecting) {
@@ -100,7 +107,11 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       if (!mounted || group == null) return;
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PageItems(
-            group: group, sharedContents: const [], loadItemIdOnInit: item.id),
+          group: group,
+          sharedContents: const [],
+          loadItemIdOnInit: item.id,
+          onGroupDeleted: onNoteGroupDeleted,
+        ),
         settings: const RouteSettings(name: "Notes"),
       ));
     }
@@ -112,12 +123,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Moved to trash",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Moved to trash", seconds: 1);
     }
     clearSelection();
     fetchStarredItemsOnInit();

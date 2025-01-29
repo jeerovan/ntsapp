@@ -87,12 +87,15 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
             child: PageItems(
       group: group,
       sharedContents: sharedContents,
+      onGroupDeleted: onNoteGroupDeleted,
     )))
-        .then((_) {
-      if (updateGroupList) {
-        loadGroups(false);
-      } else {
-        updateGroupInDisplayList(group.id!);
+        .then((value) {
+      if (value != false) {
+        if (updateGroupList) {
+          loadGroups(false);
+        } else {
+          updateGroupInDisplayList(group.id!);
+        }
       }
     });
   }
@@ -102,13 +105,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     await group.update(["archived_at"]);
     categoryGroupsDisplayList.remove(group);
     if (mounted) {
-      setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Moved to trash",
-        ),
-        duration: Duration(seconds: 1),
-      ));
+      displaySnackBar(context, message: "Moved to trash", seconds: 1);
     }
     widget.onUpdate();
   }
@@ -120,6 +117,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
         onUpdate: () {
           loadGroups(true);
         },
+        onDelete: onNoteGroupDeleted,
       ),
       settings: const RouteSettings(name: "EditNoteGroup"),
     ));
@@ -133,6 +131,13 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     }
   }
 
+  Future<void> onNoteGroupDeleted() async {
+    loadGroups(true);
+    if (mounted) {
+      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+    }
+  }
+
   void navigateToGroupAddEdit() {
     Navigator.of(context)
         .push(MaterialPageRoute(
@@ -141,13 +146,13 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
         onUpdate: () {
           loadGroups(true);
         },
+        onDelete: onNoteGroupDeleted,
       ),
       settings: const RouteSettings(name: "CreateNoteGroup"),
     ))
-        .then((noteGroup) {
-      ModelGroup? group = noteGroup;
-      if (group != null) {
-        navigateToNotes(group, true);
+        .then((value) {
+      if (value is ModelGroup) {
+        navigateToNotes(value, true);
       }
     });
   }

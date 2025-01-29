@@ -12,10 +12,15 @@ import 'model_item_group.dart';
 class PageGroupAddEdit extends StatefulWidget {
   final ModelGroup? group;
   final Function() onUpdate;
+  final Function() onDelete;
   final ModelCategory? category;
 
   const PageGroupAddEdit(
-      {super.key, this.group, required this.onUpdate, this.category});
+      {super.key,
+      this.group,
+      required this.onUpdate,
+      this.category,
+      required this.onDelete});
 
   @override
   PageGroupAddEditState createState() => PageGroupAddEditState();
@@ -128,6 +133,13 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
     category = await ModelCategory.getDND();
     itemChanged = true;
     if (mounted) setState(() {});
+  }
+
+  Future<void> archiveGroup(ModelGroup group) async {
+    group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+    await group.update(["archived_at"]);
+    widget.onDelete();
+    if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> setShowDateTime(bool show) async {
@@ -356,6 +368,31 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                 ),
               ],
             ),
+            const SizedBox(
+              height: 10,
+            ),
+            if (widget.group != null)
+              GestureDetector(
+                onTap: () {
+                  archiveGroup(widget.group!);
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      LucideIcons.trash,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    Text(
+                      'Delete',
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  ],
+                ),
+              ),
             Expanded(
               child: const SizedBox.shrink(),
             ),

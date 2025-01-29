@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_checks.dart';
@@ -88,12 +89,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
         errorSendingOtop = true;
         debugPrint('Error sending OTP: $e');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Sending OTP failed. Please try again!'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          displaySnackBar(context,
+              message: 'Sending OTP failed. Please try again!', seconds: 2);
         }
       }
     }
@@ -114,12 +111,9 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
       } catch (e) {
         errorVerifyingOtp = true;
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('OTP verification failed. Please try again!'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          displaySnackBar(context,
+              message: 'OTP verification failed. Please try again!',
+              seconds: 2);
         }
       }
     }
