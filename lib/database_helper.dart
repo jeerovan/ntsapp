@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/app_config.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -47,7 +48,7 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('PRAGMA foreign_keys = ON');
     await initTables(db);
-    await createCategoryOnFreshInstall(db);
+    await createCategoryAndGroupsWithNotesOnFreshInstall(db);
     debugPrint('Database created with version: $version');
   }
 
@@ -139,21 +140,223 @@ class DatabaseHelper {
     return data.buffer.asUint8List();
   }
 
-  Future<void> createCategoryOnFreshInstall(Database db) async {
+  Future<void> createCategoryAndGroupsWithNotesOnFreshInstall(
+      Database db) async {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
-    String id = uuid.v4();
-    Color color = getIndexedColor(1);
-    String hexCode = colorToHex(color);
+    String dndCategoryId = uuid.v4();
     await db.insert("category", {
-      "id": id,
+      "id": dndCategoryId,
       "title": "DND",
-      "color": hexCode,
+      "color": colorToHex(getIndexedColor(0)),
       "thumbnail": null,
       "position": 0,
       "archived_at": 0,
       "at": at,
       "updated_at": at,
+    });
+    String notesGroupId = uuid.v4();
+    await db.insert("itemgroup", {
+      "id": notesGroupId,
+      "category_id": dndCategoryId,
+      "title": "Notes",
+      "pinned": 0,
+      "position": 0,
+      "archived_at": 0,
+      "color": colorToHex(getIndexedColor(0)),
+      "at": at,
+      "updated_at": at,
+      "thumbnail": null,
+      "data": null,
+      "state": 0,
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': notesGroupId,
+      'text':
+          """Welcome to Note to Self!\nIdeas, lists or anything on your mind, put it all in here.\n\nLong press on this note for delete, edit and other options.""",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.text.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+    String readWatchGroupId = uuid.v4();
+    await db.insert("itemgroup", {
+      "id": readWatchGroupId,
+      "category_id": dndCategoryId,
+      "title": "To read/watch",
+      "pinned": 0,
+      "position": 1,
+      "archived_at": 0,
+      "color": colorToHex(getIndexedColor(1)),
+      "at": at,
+      "updated_at": at,
+      "thumbnail": null,
+      "data": null,
+      "state": 0,
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': readWatchGroupId,
+      'text':
+          """Books, shows, articles or rare videos, put all their names and links here and get back to them whenever you're feeling bored.\n\nHere are 2 of our favourites:\n1. Blog: https://blog.samaltman.com/how-to-be-successful\n2. Short film: https://www.youtube.com/watch?v=gYlV0AnUcJE""",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.text.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+    String bucketListGroupId = uuid.v4();
+    await db.insert("itemgroup", {
+      "id": bucketListGroupId,
+      "category_id": dndCategoryId,
+      "title": "Bucket list",
+      "pinned": 0,
+      "position": 2,
+      "archived_at": 0,
+      "color": colorToHex(getIndexedColor(2)),
+      "at": at,
+      "updated_at": at,
+      "thumbnail": null,
+      "data": null,
+      "state": 0,
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': bucketListGroupId,
+      'text':
+          """Remember, if it doesn't scare you, it shouldn't be in the list. I'll start with skydiving. What about you?""",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.text.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+    String journalGroupId = uuid.v4();
+    await db.insert("itemgroup", {
+      "id": journalGroupId,
+      "category_id": dndCategoryId,
+      "title": "Daily journal",
+      "pinned": 0,
+      "position": 3,
+      "archived_at": 0,
+      "color": colorToHex(getIndexedColor(3)),
+      "at": at,
+      "updated_at": at,
+      "thumbnail": null,
+      "data": null,
+      "state": 0,
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': journalGroupId,
+      'text':
+          """Researchers have found that keeping a daily journal helps you in achieving goals, improves confidence and reduces stress.\nIf writing every day feels too hard, use the voice note feature and record your life, in your own voice.""",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.text.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+
+    String tasksCategoryId = uuid.v4();
+    await db.insert("category", {
+      "id": tasksCategoryId,
+      "title": "Tasks",
+      "color": colorToHex(getIndexedColor(4)),
+      "thumbnail": null,
+      "position": 4,
+      "archived_at": 0,
+      "at": at,
+      "updated_at": at,
+    });
+    String fitnessGroupId = uuid.v4();
+    await db.insert("itemgroup", {
+      "id": fitnessGroupId,
+      "category_id": tasksCategoryId,
+      "title": "Fitness",
+      "pinned": 0,
+      "position": 0,
+      "archived_at": 0,
+      "color": colorToHex(getIndexedColor(0)),
+      "at": at,
+      "updated_at": at,
+      "thumbnail": null,
+      "data": null,
+      "state": 0,
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': fitnessGroupId,
+      'text': "Morning workout",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.task.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': fitnessGroupId,
+      'text': "10 minutes meditation",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.task.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': fitnessGroupId,
+      'text': "2L of water a day",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.task.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
+    });
+    await db.insert("item", {
+      'id': uuid.v4(),
+      'group_id': fitnessGroupId,
+      'text': "Walk 10,000 steps",
+      'thumbnail': null,
+      'starred': 0,
+      'pinned': 0,
+      'archived_at': 0,
+      'type': ItemType.task.value,
+      'state': 0,
+      'data': null,
+      'at': at,
+      'updated_at': at
     });
   }
 
