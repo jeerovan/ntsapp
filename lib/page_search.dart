@@ -62,10 +62,11 @@ class SearchPageState extends State<SearchPage> {
     final newItems = await ModelSearchItem.all(query, _offset, _limit);
     _hasMore = newItems.length == _limit;
     if (_hasMore) _offset += _limit;
-    setState(() {
-      _items.clear();
-      _items.addAll(newItems);
-    });
+    _items.clear();
+    _items.addAll(newItems);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _searchAfterScroll() async {

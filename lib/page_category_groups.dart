@@ -68,9 +68,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       int index =
           categoryGroupsDisplayList.indexWhere((group) => group.id == groupId);
       if (index != -1) {
-        setState(() {
-          categoryGroupsDisplayList[index] = group;
-        });
+        categoryGroupsDisplayList[index] = group;
+        if (mounted) {
+          setState(() {});
+        }
       }
     }
   }

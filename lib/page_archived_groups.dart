@@ -53,9 +53,10 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
   Future<void> fetchArchivedGroupsOnInit() async {
     _archivedGroups.clear();
     final groups = await ModelGroup.getArchived();
-    setState(() {
-      _archivedGroups.addAll(groups);
-    });
+    _archivedGroups.addAll(groups);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void onItemTapped(ModelGroup item) {

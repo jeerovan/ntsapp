@@ -200,42 +200,8 @@ class ModelItem {
     return null;
   }
 
-  static Future<List<ModelItem>> getForItemIdInGroup(
-      String groupId, String itemId) async {
-    final dbHelper = DatabaseHelper.instance;
-    final db = await dbHelper.database;
-    ModelItem? item = await get(itemId);
-    List<ModelItem> items = [];
-    if (item == null) {
-      items.addAll(await getInGroup(groupId, null, true, 0, 20, {}));
-    } else {
-      List<Map<String, dynamic>> rows = await db.query(
-        "item",
-        where: "type != ? AND group_id = ? AND archived_at = 0 AND at > ?",
-        whereArgs: [ItemType.date.value, groupId, item.at],
-        orderBy: 'at ASC',
-        limit: 7,
-      );
-      List<ModelItem> beforeItems =
-          await Future.wait(rows.map((map) => fromMap(map)));
-      items.addAll(beforeItems.reversed);
-      items.add(item);
-      rows = await db.query(
-        "item",
-        where: "type != ? AND group_id = ? AND archived_at = 0 AND at < ?",
-        whereArgs: [ItemType.date.value, groupId, item.at],
-        orderBy: 'at DESC',
-        limit: 7,
-      );
-      List<ModelItem> afterItems =
-          await Future.wait(rows.map((map) => fromMap(map)));
-      items.addAll(afterItems);
-    }
-    return items;
-  }
-
-  static Future<List<ModelItem>> getInGroup(String groupId, String? itemId,
-      bool fetchOlder, int offset, int limit, Map<String, bool> filters) async {
+  static Future<List<ModelItem>> getInGroup(
+      String groupId, Map<String, bool> filters) async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<String> filterParams = [];
@@ -281,20 +247,10 @@ class ModelItem {
         filterQuery = " AND (${filterParams.join(" OR ")})";
       }
     }
-    String orderBy = fetchOlder ? 'DESC' : 'ASC';
-    String comparison = fetchOlder ? '<' : '>';
-    String scrollQuery = "";
-    if (itemId != null) {
-      scrollQuery =
-          "AND at $comparison (SELECT at from item WHERE id = '$itemId')";
-    }
-    String offsetIfRequired = offset > 0 ? "OFFSET $offset" : "";
     List<Map<String, dynamic>> rows = await db.rawQuery('''
         SELECT * FROM item
-        WHERE type != ${ItemType.date.value} AND group_id = '$groupId' AND archived_at = 0 $scrollQuery $filterQuery
-        ORDER BY at $orderBy
-        LIMIT $limit
-        $offsetIfRequired
+        WHERE type != ${ItemType.date.value} AND group_id = '$groupId' AND archived_at = 0 $filterQuery
+        ORDER BY at DESC
       ''');
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

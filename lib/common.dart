@@ -416,6 +416,10 @@ Future<String> getHashOfFile(File file) async {
 
 Future<Map<String, dynamic>?> processAndGetFileAttributes(
     String filePath) async {
+  File file = File(filePath);
+  if (!file.existsSync()) {
+    return null;
+  }
   String mime = "application/unknown";
   final String extension = path.extension(filePath);
   String? fileMime = lookupMimeType(filePath);
@@ -424,7 +428,6 @@ Future<Map<String, dynamic>?> processAndGetFileAttributes(
   } else {
     mime = fileMime;
   }
-  File file = File(filePath);
   String hash = await getHashOfFile(file);
   String fileTitle = path.basename(file.path);
   String fileName = '$hash$extension';

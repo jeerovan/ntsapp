@@ -68,10 +68,6 @@ class _PageItemsState extends State<PageItems> {
 
   late ModelGroup noteGroup;
 
-  bool _isLoading = false;
-  final int _offset = 0;
-  final int _limit = 20;
-
   bool _isTyping = false;
   bool _isRecording = false;
   late final AudioRecorder _audioRecorder;
@@ -115,7 +111,7 @@ class _PageItemsState extends State<PageItems> {
     loadGroupSettings(noteGroup);
     _audioRecorder = AudioRecorder();
     showItemId = widget.loadItemIdOnInit;
-    initialFetchItems(showItemId);
+    fetchItems(showItemId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadImageDirectoryPath();
       if (widget.sharedContents.isNotEmpty) {
@@ -148,19 +144,16 @@ class _PageItemsState extends State<PageItems> {
     super.dispose();
   }
 
-  Future<void> initialFetchItems(String? itemId) async {
-    List<ModelItem> newItems;
+  Future<void> fetchItems(String? itemId) async {
+    List<ModelItem> newItems =
+        await ModelItem.getInGroup(noteGroup.id!, _filters);
     if (itemId != null) {
       canScrollToBottom = true;
-      newItems = await ModelItem.getForItemIdInGroup(noteGroup.id!, itemId);
     } else {
       canScrollToBottom = false;
-      newItems = await ModelItem.getInGroup(
-          noteGroup.id!, null, true, _offset, _limit, _filters);
     }
     if (newItems.isEmpty) return;
     _displayItemList.clear();
-    _isLoading = true;
     await _addItemsToDisplayList(newItems, true);
     setState(() {
       if (itemId != null) {
@@ -176,17 +169,13 @@ class _PageItemsState extends State<PageItems> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _itemScrollController.jumpTo(index: indexOfItem);
             triggerItemBlink();
-            Future.delayed(Duration(seconds: 1), () {
-              _isLoading = false;
-            });
+            Future.delayed(Duration(seconds: 1), () {});
           });
         }
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _itemScrollController.jumpTo(index: 0);
-          Future.delayed(Duration(seconds: 1), () {
-            _isLoading = false;
-          });
+          Future.delayed(Duration(seconds: 1), () {});
         });
       }
     });
@@ -287,22 +276,6 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Future<void> scrollFetchItems(bool fetchOlder) async {
-    if (_isLoading) return;
-    _isLoading = true;
-    final ModelItem? start =
-        fetchOlder ? getLastItemFromDisplayList() : _displayItemList.first;
-    if (start != null) {
-      final newItems = await ModelItem.getInGroup(
-          noteGroup.id!, start.id!, fetchOlder, 0, _limit, _filters);
-      if (newItems.isNotEmpty) {
-        await _addItemsToDisplayList(newItems, fetchOlder);
-        if (mounted) setState(() {});
-      }
-    }
-    _isLoading = false;
-  }
-
   Future<void> loadSharedContents() async {
     List<String> sharedFiles = [];
     List<String> sharedTexts = [];
@@ -324,24 +297,32 @@ class _PageItemsState extends State<PageItems> {
 
   void triggerItemBlink() {
     int milliseconds = 250;
-    setState(() {
-      _shouldBlinkItem = true;
-    });
+    if (mounted) {
+      setState(() {
+        _shouldBlinkItem = true;
+      });
+    }
 
     Future.delayed(Duration(milliseconds: milliseconds), () {
-      setState(() {
-        _shouldBlinkItem = false;
-      });
+      if (mounted) {
+        setState(() {
+          _shouldBlinkItem = false;
+        });
+      }
 
       Future.delayed(Duration(milliseconds: milliseconds), () {
-        setState(() {
-          _shouldBlinkItem = true;
-        });
+        if (mounted) {
+          setState(() {
+            _shouldBlinkItem = true;
+          });
+        }
 
         Future.delayed(Duration(milliseconds: milliseconds), () {
-          setState(() {
-            _shouldBlinkItem = false; // Final state
-          });
+          if (mounted) {
+            setState(() {
+              _shouldBlinkItem = false; // Final state
+            });
+          }
         });
       });
     });
@@ -361,7 +342,7 @@ class _PageItemsState extends State<PageItems> {
           _filters["documents"] == true ||
           _filters["contacts"] == true ||
           _filters["locations"] == true;
-      initialFetchItems(null);
+      fetchItems(null);
     });
   }
 
@@ -1429,7 +1410,9 @@ class _PageItemsState extends State<PageItems> {
     }
     if (requiresUpdate) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
     }
   }
@@ -1455,16 +1438,7 @@ class _PageItemsState extends State<PageItems> {
               children: [
                 NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
-                    if (scrollInfo.metrics.pixels >
-                        scrollInfo.metrics.maxScrollExtent - 200) {
-                      scrollFetchItems(true);
-                    } else if (scrollInfo.metrics.pixels ==
-                        scrollInfo.metrics.minScrollExtent) {
-                      scrollFetchItems(false);
-                    }
-                    if (!_isLoading) {
-                      showHideScrollToBottomButton(scrollInfo.metrics.pixels);
-                    }
+                    showHideScrollToBottomButton(scrollInfo.metrics.pixels);
                     return false;
                   },
                   child: ScrollablePositionedList.builder(
@@ -1541,8 +1515,7 @@ class _PageItemsState extends State<PageItems> {
                                         if (item.replyOn != null)
                                           GestureDetector(
                                             onTap: () {
-                                              initialFetchItems(
-                                                  item.replyOn!.id);
+                                              fetchItems(item.replyOn!.id);
                                             },
                                             child: NotePreviewSummary(
                                               item: item.replyOn!,
@@ -1598,7 +1571,7 @@ class _PageItemsState extends State<PageItems> {
                       mini: true,
                       onPressed: () {
                         clearSelection();
-                        initialFetchItems(null);
+                        fetchItems(null);
                       },
                       shape: const CircleBorder(),
                       backgroundColor:
