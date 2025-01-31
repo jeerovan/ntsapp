@@ -40,6 +40,11 @@ class DatabaseHelper {
     await database; // Forces lazy initialization if not already done
   }
 
+  Future close() async {
+    final db = await instance.database;
+    db.close();
+  }
+
   Future _onOpen(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
     debugPrint('Database opened');
@@ -394,11 +399,6 @@ class DatabaseHelper {
   Future<void> clear(String tableName) async {
     final db = await instance.database;
     await db.execute('DELETE FROM $tableName');
-  }
-
-  Future close() async {
-    final db = await instance.database;
-    db.close();
   }
 
   // db migration from 7 to 8

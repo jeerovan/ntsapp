@@ -326,7 +326,7 @@ class ModelItem {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<List<ModelItem>> getArchived(int offset, int limit) async {
+  static Future<List<ModelItem>> getArchived() async {
     final dbHelper = DatabaseHelper.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
@@ -334,8 +334,6 @@ class ModelItem {
       where: "archived_at > ?",
       whereArgs: [0],
       orderBy: 'at DESC',
-      offset: offset,
-      limit: limit,
     );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

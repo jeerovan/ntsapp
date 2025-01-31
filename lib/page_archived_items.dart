@@ -3,7 +3,6 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 
 import 'model_item.dart';
-import 'model_setting.dart';
 import 'widgets_item.dart';
 
 class PageArchivedItems extends StatefulWidget {
@@ -26,10 +25,6 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
   final List<ModelItem> _items = [];
   final List<ModelItem> _selection = [];
   bool _isSelecting = false;
-  bool _isLoading = false;
-  bool _hasMore = true;
-  int _offset = 0;
-  final int _limit = 20;
 
   @override
   void initState() {
@@ -57,35 +52,9 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
 
   Future<void> fetchArchivedItemsOnInit() async {
     _items.clear();
-    setState(() {
-      _isLoading = true;
-    });
-    final topItems = await ModelItem.getArchived(0, _limit);
-    if (topItems.length == _limit) {
-      _offset += _limit;
-    } else {
-      _hasMore = false;
-    }
+    final topItems = await ModelItem.getArchived();
     setState(() {
       _items.addAll(topItems);
-      _isLoading = false;
-    });
-  }
-
-  Future<void> fetchArchivedOnScroll() async {
-    if (_isLoading || !_hasMore) return;
-    if (_offset == 0) _items.clear();
-    setState(() => _isLoading = true);
-
-    final newItems = await ModelItem.getArchived(_offset, _limit);
-    setState(() {
-      _items.addAll(newItems);
-      if (newItems.length == _limit) {
-        _offset += _limit;
-      } else {
-        _hasMore = false;
-      }
-      _isLoading = false;
     });
   }
 
@@ -104,6 +73,14 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
           widget.onSelectionChange(true);
         }
       }
+    });
+  }
+
+  void selectAllItems() {
+    _selection.clear();
+    _selection.addAll(_items);
+    setState(() {
+      _isSelecting = true;
     });
   }
 
@@ -140,46 +117,42 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
 
   @override
   Widget build(BuildContext context) {
-    bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-            fetchArchivedOnScroll();
-          }
-          return false;
-        },
-        child: ListView.builder(
-          itemCount: _items.length, // Additional item for the loading indicator
-          itemBuilder: (context, index) {
-            final item = _items[index];
-            return GestureDetector(
-              onTap: () {
-                onItemTapped(item);
-              },
-              child: Container(
-                width: double.infinity,
-                color: _selection.contains(item)
-                    ? Theme.of(context).colorScheme.inversePrimary
-                    : Colors.transparent,
-                margin: const EdgeInsets.symmetric(vertical: 1),
-                child: Align(
-                  alignment:
-                      isRTL ? Alignment.centerRight : Alignment.centerLeft,
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _items.length,
+              itemBuilder: (context, index) {
+                final item = _items[index];
+                return GestureDetector(
+                  onTap: () {
+                    onItemTapped(item);
+                  },
                   child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 5, horizontal: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: _buildItem(item)),
-                ),
-              ),
-            );
-          },
-        ),
+                    width: double.infinity,
+                    color: _selection.contains(item)
+                        ? Theme.of(context).colorScheme.inversePrimary
+                        : Colors.transparent,
+                    margin: const EdgeInsets.symmetric(vertical: 1),
+                    child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: _buildItem(item)),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (_isSelecting)
+            ElevatedButton(
+                onPressed: selectAllItems, child: Text("Select all")),
+        ],
       ),
     );
   }
@@ -187,6 +160,16 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
   // Widget for displaying different item types
   Widget _buildItem(ModelItem item) {
     switch (item.type) {
+      case ItemType.task:
+        return ItemWidgetTask(
+          item: item,
+          showTimestamp: false,
+        );
+      case ItemType.completedTask:
+        return ItemWidgetTask(
+          item: item,
+          showTimestamp: false,
+        );
       case ItemType.text:
         return ItemWidgetText(
           item: item,
