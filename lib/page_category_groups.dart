@@ -166,8 +166,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              Container(height: 12),
               ListTile(
-                leading: const Icon(Icons.reorder),
+                leading: const Icon(Icons.reorder, color: Colors.grey),
+                horizontalTitleGap: 24,
                 title: const Text('Reorder'),
                 onTap: () {
                   Navigator.pop(context);
@@ -177,7 +179,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                 },
               ),
               ListTile(
-                leading: const Icon(LucideIcons.edit3),
+                leading: const Icon(LucideIcons.edit3, color: Colors.grey),
+                horizontalTitleGap: 24,
                 title: const Text('Edit'),
                 onTap: () {
                   Navigator.pop(context);
@@ -185,13 +188,15 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                 },
               ),
               ListTile(
-                leading: const Icon(LucideIcons.trash),
+                leading: const Icon(LucideIcons.trash, color: Colors.grey),
+                horizontalTitleGap: 24,
                 title: const Text('Delete'),
                 onTap: () {
                   Navigator.pop(context);
                   archiveGroup(group);
                 },
               ),
+              Container(height: 8),
             ],
           ),
         );
