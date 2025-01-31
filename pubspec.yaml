@@ -1,7 +1,7 @@
 name: ntsapp
 description: "Note to Self v2.0"
 publish_to: 'none'
-version: 2.0.8+54
+version: 2.0.9+55
 
 environment:
   sdk: ^3.5.1
