@@ -369,12 +369,9 @@ class _PageHomeState extends State<PageHome> {
             value: 2,
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.archiveRestore,
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
+                Icon(LucideIcons.archiveRestore, color: Colors.grey),
+                Container(width: 8),
+                const SizedBox(width: 5),
                 const Text('Trash'),
               ],
             ),
@@ -383,12 +380,9 @@ class _PageHomeState extends State<PageHome> {
             value: 1,
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.star,
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
+                Icon(LucideIcons.star, color: Colors.grey),
+                Container(width: 8),
+                const SizedBox(width: 5),
                 const Text('Starred notes'),
               ],
             ),
@@ -397,12 +391,9 @@ class _PageHomeState extends State<PageHome> {
             value: 0,
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.settings,
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
+                Icon(LucideIcons.settings, color: Colors.grey),
+                Container(width: 8),
+                const SizedBox(width: 5),
                 const Text('Settings'),
               ],
             ),

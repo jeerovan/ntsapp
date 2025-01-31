@@ -1357,12 +1357,9 @@ class _PageItemsState extends State<PageItems> {
             value: 0,
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.edit3,
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
+                Icon(LucideIcons.edit3, color: Colors.grey),
+                Container(width: 8),
+                const SizedBox(width: 8),
                 const Text('Edit'),
               ],
             ),
@@ -1371,12 +1368,9 @@ class _PageItemsState extends State<PageItems> {
             value: 1,
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.filter,
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
+                Icon(LucideIcons.filter, color: Colors.grey),
+                Container(width: 8),
+                const SizedBox(width: 8),
                 const Text('Filters'),
               ],
             ),
