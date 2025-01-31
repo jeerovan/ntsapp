@@ -97,6 +97,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           "thumbnail": thumbnail,
           "title": title,
           "data": groupData,
+          "color": colorCode,
         });
         await newGroup.insert();
       } else {
