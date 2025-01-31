@@ -335,13 +335,16 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     const Text('Date/Time'),
                   ],
                 ),
-                Switch(
-                  value: showDateTime,
-                  onChanged: (bool value) {
-                    setState(() {
-                      setShowDateTime(value);
-                    });
-                  },
+                Transform.scale(
+                  scale: 0.7,
+                  child: Switch(
+                    value: showDateTime,
+                    onChanged: (bool value) {
+                      setState(() {
+                        setShowDateTime(value);
+                      });
+                    },
+                  ),
                 ),
               ],
             ),
@@ -359,13 +362,16 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     const Text('Note border'),
                   ],
                 ),
-                Switch(
-                  value: showNoteBorder,
-                  onChanged: (bool value) {
-                    setState(() {
-                      setShowNoteBorder(value);
-                    });
-                  },
+                Transform.scale(
+                  scale: 0.7,
+                  child: Switch(
+                    value: showNoteBorder,
+                    onChanged: (bool value) {
+                      setState(() {
+                        setShowNoteBorder(value);
+                      });
+                    },
+                  ),
                 ),
               ],
             ),
