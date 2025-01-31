@@ -466,9 +466,13 @@ class _PageHomeState extends State<PageHome> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(loadedSharedContents || widget.sharedContents.isEmpty
-              ? "Note to self"
-              : "Select..."),
+          title: Text(
+              _isReordering
+                  ? "Reorder"
+                  : loadedSharedContents || widget.sharedContents.isEmpty
+                      ? "Note to self"
+                      : "Select...",
+              style: TextStyle(fontSize: 18)),
           actions: _buildDefaultActions(),
         ),
         body: Column(
@@ -482,13 +486,17 @@ class _PageHomeState extends State<PageHome> {
                           itemCount: _categoriesGroupsDisplayList.length,
                           itemBuilder: (context, index) {
                             final item = _categoriesGroupsDisplayList[index];
-                            return Container(
+                            return GestureDetector(
                               key: ValueKey(item.id),
                               child: WidgetCategoryGroup(
                                 categoryGroup: item,
                                 showSummary: true,
                                 showCategorySign: false,
                               ),
+                              onTap: () {
+                                displaySnackBar(context,
+                                    message: 'Long press to reorder', seconds: 1);
+                              },
                             );
                           },
                           onReorder: (int oldIndex, int newIndex) {
@@ -545,7 +553,7 @@ class _PageHomeState extends State<PageHome> {
                               child: Text(
                                 "Hi there!\n\n"
                                 "It's kind of looking empty in here.\n\n"
-                                "Go ahead and tap the + button and create some notes to self. :)",
+                                "Tap the + button and create some notes to self. :)",
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge
