@@ -192,6 +192,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
             ),
             TextField(
               controller: titleController,
+              textCapitalization: TextCapitalization.sentences,
               autofocus: widget.group == null ? false : true,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class PageEditNote extends StatefulWidget {
   final String noteText;
+
   const PageEditNote({super.key, required this.noteText});
 
   @override
@@ -42,6 +43,8 @@ class _PageEditNoteState extends State<PageEditNote> {
           Expanded(
             child: TextField(
               controller: controller,
+              keyboardType: TextInputType.multiline,
+              textCapitalization: TextCapitalization.sentences,
               autofocus: true,
               maxLines: null,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),

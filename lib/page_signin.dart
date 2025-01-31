@@ -177,7 +177,6 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 TextField(
                   controller: otpController,
                   decoration: InputDecoration(labelText: 'OTP'),
-                  keyboardType: TextInputType.emailAddress,
                 ),
               SizedBox(height: 20),
               if (!signedIn && otpSent)

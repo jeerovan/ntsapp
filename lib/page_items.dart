@@ -874,6 +874,7 @@ class _PageItemsState extends State<PageItems> {
           content: TextField(
             minLines: 1,
             maxLines: null,
+            textCapitalization: TextCapitalization.sentences,
             controller: controller,
             style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             decoration: InputDecoration(
@@ -1880,14 +1881,15 @@ class _PageItemsState extends State<PageItems> {
                           maxLines: 10,
                           minLines: 1,
                           keyboardType: TextInputType.multiline,
+                          textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.onSurface),
                           decoration: InputDecoration(
                             filled: true,
-                            labelText: _isCreatingTask
+                            hintText: _isCreatingTask
                                 ? "Create a task"
                                 : "Add a note...",
-                            labelStyle: TextStyle(
+                            hintStyle: TextStyle(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .outlineVariant,

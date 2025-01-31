@@ -98,6 +98,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
             Text("Title"),
             TextField(
               controller: categoryController,
+              textCapitalization: TextCapitalization.sentences,
               autofocus: true,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(

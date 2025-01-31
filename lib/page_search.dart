@@ -167,6 +167,7 @@ class SearchPageState extends State<SearchPage> {
   Widget _buildSearchInputBox() {
     return TextField(
       controller: _textController,
+      textCapitalization: TextCapitalization.sentences,
       autofocus: true,
       style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
