@@ -42,8 +42,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
     String userId = user.id;
     String keyForAccessKey = '${userId}_ak';
     String? accessKeyBase64 = await storage.read(key: keyForAccessKey);
-    if (accessKeyBase64 == null) return;
-    Uint8List accessKeyBytes = base64Decode(accessKeyBase64);
+    Uint8List accessKeyBytes = base64Decode(accessKeyBase64!);
     String accessKeyHex = bytesToHex(accessKeyBytes);
     if (mounted) {
       setState(() {
