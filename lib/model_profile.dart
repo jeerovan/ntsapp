@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 
 class ModelProfile {
   String id;
@@ -55,7 +55,7 @@ class ModelProfile {
   }
 
   static Future<List<ModelProfile>> all() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "profile",
@@ -64,7 +64,7 @@ class ModelProfile {
   }
 
   static Future<ModelProfile?> get(String id) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     List<Map<String, dynamic>> list = await dbHelper.getWithId("profile", id);
     if (list.isNotEmpty) {
       Map<String, dynamic> map = list.first;
@@ -74,19 +74,19 @@ class ModelProfile {
   }
 
   Future<int> insert() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     return await dbHelper.insert("profile", map);
   }
 
   Future<int> update() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     return await dbHelper.update("profile", map, id);
   }
 
   Future<int> delete() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     return await dbHelper.delete("profile", id);
   }
 }

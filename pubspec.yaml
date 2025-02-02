@@ -23,6 +23,7 @@ dependencies:
   flutter_native_splash: ^2.4.3
   flutter_secure_storage: ^9.2.4
   geolocator: ^13.0.1
+  hive_flutter: ^1.1.0
   http: ^1.2.2
   image: ^4.3.0
   image_picker: ^1.1.2

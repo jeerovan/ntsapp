@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:bip39/bip39.dart' as bip39;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs.dart';
 
@@ -22,15 +22,12 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   String _loadedFileContent = '';
-  AndroidOptions getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: true,
-      );
-  late FlutterSecureStorage storage;
+
+  SecureStorage storage = SecureStorage();
 
   @override
   void initState() {
     super.initState();
-    storage = FlutterSecureStorage(aOptions: getAndroidOptions());
   }
 
   @override

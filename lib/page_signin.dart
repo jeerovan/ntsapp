@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_checks.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
@@ -27,9 +27,6 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = Supabase.instance.client.auth.currentSession != null;
   bool canSync = false;
-  AndroidOptions getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: true,
-      );
 
   @override
   void initState() {
@@ -58,7 +55,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
       String userId = user.id;
       String keyForMasterKey = '${userId}_mk';
 
-      final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
+      SecureStorage storage = SecureStorage();
       bool hasMasterKeyCipher = await storage.containsKey(key: keyForMasterKey);
       setState(() {
         canSync = hasMasterKeyCipher;
@@ -67,7 +64,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   }
 
   // TODO have a resend OTP option with a timer to expire otpSent
-  // OTP can be sent after one minute and they expire after 15min
+  // New OTP should be sent after five minute. they expire after 15min
 
   Future<void> sendOtp() async {
     email = emailController.text;

@@ -7,7 +7,7 @@ import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:uuid/uuid.dart';
 
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 import 'model_item.dart';
 
 class ModelGroup {
@@ -130,7 +130,7 @@ class ModelGroup {
   }
 
   static Future<List<ModelGroup>> getArchived() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "itemgroup",
@@ -142,7 +142,7 @@ class ModelGroup {
   }
 
   static Future<List<ModelGroup>> allInCategory(String categoryId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("itemgroup",
         where: 'category_id = ? AND archived_at = 0',
@@ -152,7 +152,7 @@ class ModelGroup {
   }
 
   static Future<int> getCountInCategory(String categoryId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
@@ -170,7 +170,7 @@ class ModelGroup {
   }
 
   static Future<int> getAllCount() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
@@ -181,7 +181,7 @@ class ModelGroup {
   }
 
   static Future<ModelGroup?> get(String id) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     List<Map<String, dynamic>> list = await dbHelper.getWithId("itemgroup", id);
     if (list.isNotEmpty) {
       Map<String, dynamic> map = list.first;
@@ -191,7 +191,7 @@ class ModelGroup {
   }
 
   Future<int> insert() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     if (map["title"].isEmpty) {
       map["title"] = getNoteGroupDateTitle();
@@ -200,7 +200,7 @@ class ModelGroup {
   }
 
   Future<int> update(List<String> attrs) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
     Map<String, dynamic> updatedMap = {"updated_at": utcNow};
@@ -211,7 +211,7 @@ class ModelGroup {
   }
 
   Future<int> delete() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     return await dbHelper.delete("itemgroup", id);
   }
 }

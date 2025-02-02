@@ -7,7 +7,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item_file.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 
 class ModelItem {
   String? id;
@@ -113,7 +113,7 @@ class ModelItem {
   }
 
   static Future<int> mediaCountInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
@@ -126,7 +126,7 @@ class ModelItem {
   }
 
   static Future<int> mediaIndexInGroup(String groupId, String currentId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
@@ -142,7 +142,7 @@ class ModelItem {
 
   static Future<ModelItem?> getPreviousMediaItemInGroup(
       String groupId, String currentId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
@@ -161,7 +161,7 @@ class ModelItem {
 
   static Future<ModelItem?> getNextMediaItemInGroup(
       String groupId, String currentId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT * FROM item
@@ -179,7 +179,7 @@ class ModelItem {
   }
 
   static Future<ModelItem?> getLatestInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "item",
@@ -202,7 +202,7 @@ class ModelItem {
 
   static Future<List<ModelItem>> getInGroup(
       String groupId, Map<String, bool> filters) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<String> filterParams = [];
     if (filters["pinned"]!) {
@@ -256,7 +256,7 @@ class ModelItem {
   }
 
   static Future<List<ModelItem>> getAllInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "item",
@@ -269,7 +269,7 @@ class ModelItem {
   }
 
   static Future<List<ModelItem>> getStarred(int offset, int limit) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "item",
@@ -283,7 +283,7 @@ class ModelItem {
   }
 
   static Future<List<ModelItem>> getArchived() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "item",
@@ -295,7 +295,7 @@ class ModelItem {
   }
 
   static Future<int> pinnedCountInGroup(String groupId) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT count(*) as count
@@ -308,7 +308,7 @@ class ModelItem {
   }
 
   static Future<ModelItem?> get(String id) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     List<Map<String, dynamic>> rows = await dbHelper.getWithId("item", id);
     if (rows.isNotEmpty) {
       Map<String, dynamic> map = rows.first;
@@ -319,7 +319,7 @@ class ModelItem {
 
   static Future<List<ModelItem>> getDateItemForGroupId(
       String groupId, String date) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "item",
@@ -330,7 +330,7 @@ class ModelItem {
   }
 
   static Future<List<ModelItem>> getImageAudio() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("item",
         where: "type = ? OR type = ?",
@@ -339,7 +339,7 @@ class ModelItem {
   }
 
   static Future<List<ModelItem>> getForType(ItemType itemType) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows =
         await db.query("item", where: "type = ?", whereArgs: [itemType.value]);
@@ -347,13 +347,13 @@ class ModelItem {
   }
 
   Future<int> insert() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     return await dbHelper.insert("item", map);
   }
 
   Future<int> update(List<String> attrs) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
     Map<String, dynamic> updatedMap = {"updated_at": utcNow};
@@ -364,7 +364,7 @@ class ModelItem {
   }
 
   Future<int> delete() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     if (data != null) {
       if (data!.containsKey("path")) {
         final String filePath = data!["path"];

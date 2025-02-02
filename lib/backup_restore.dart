@@ -9,7 +9,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app_config.dart';
 import 'common.dart';
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 import 'enums.dart';
 import 'model_category.dart';
 import 'model_item.dart';
@@ -25,7 +25,7 @@ Future<String> createBackup(String baseDirPath) async {
   await emptyDir(dbFilesDirPath);
 
   // create db backup files
-  final dbHelper = DatabaseHelper.instance;
+  final dbHelper = StorageSqlite.instance;
   final db = await dbHelper.database;
   List<String> tables = ["category", "itemgroup", "item", "setting"];
   for (String table in tables) {
@@ -125,7 +125,7 @@ Future<String> restoreDbFiles(String baseDirPath) async {
   // clean up db when restoring on fresh installation
   int groupsCount = await ModelGroup.getAllCount();
   if (groupsCount == 0) {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     await dbHelper.clear("category");
   }
 

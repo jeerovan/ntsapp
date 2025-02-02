@@ -491,7 +491,7 @@ class _PageHomeState extends State<PageHome> {
                               ),
                               onTap: () {
                                 displaySnackBar(context,
-                                    message: 'Long press to reorder',
+                                    message: 'Drag handle to re-order',
                                     seconds: 1);
                               },
                             );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_access_key_input.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,10 +20,8 @@ class PageChecks extends StatefulWidget {
 class _PageChecksState extends State<PageChecks> {
   bool processing = false;
   final SupabaseClient supabase = Supabase.instance.client;
-  AndroidOptions getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: true,
-      );
-  late FlutterSecureStorage storage;
+
+  SecureStorage storage = SecureStorage();
 
   bool taskIsCheckForKeys = false;
 
@@ -41,7 +39,6 @@ class _PageChecksState extends State<PageChecks> {
     if (user != null) {
       userId = user.id;
     }
-    storage = FlutterSecureStorage(aOptions: getAndroidOptions());
     switch (widget.task) {
       case Task.checkForKeys:
         taskIsCheckForKeys = true;

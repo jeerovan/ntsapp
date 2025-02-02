@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 
 class DatabasePage extends StatefulWidget {
   const DatabasePage({super.key});
@@ -11,7 +11,7 @@ class DatabasePage extends StatefulWidget {
 }
 
 class _DatabasePageState extends State<DatabasePage> {
-  DatabaseHelper dbHelper = DatabaseHelper.instance;
+  StorageSqlite dbHelper = StorageSqlite.instance;
   Database? _database;
   List<String> _tables = [];
   List<String> _columns = [];

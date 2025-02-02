@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 import 'model_category.dart';
 import 'model_item_group.dart';
 
@@ -26,7 +26,7 @@ class ModelCategoryGroup {
   });
 
   static Future<List<ModelCategoryGroup>> all() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sql = '''
       SELECT 
@@ -83,7 +83,7 @@ class ModelCategoryGroup {
   }
 
   static Future<int> getCategoriesGroupsCount() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     String sqlCategoryCount = '''
       SELECT count(*) as count

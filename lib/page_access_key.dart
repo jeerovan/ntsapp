@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
@@ -23,16 +23,12 @@ class PageAccessKey extends StatefulWidget {
 }
 
 class _PageAccessKeyState extends State<PageAccessKey> {
-  AndroidOptions getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: true,
-      );
-  late FlutterSecureStorage storage;
+  SecureStorage storage = SecureStorage();
   String sentence = "";
 
   @override
   void initState() {
     super.initState();
-    storage = FlutterSecureStorage(aOptions: getAndroidOptions());
     loadAccessKey();
   }
 

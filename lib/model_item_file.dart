@@ -1,4 +1,4 @@
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 
 class ModelItemFile {
   String id;
@@ -24,7 +24,7 @@ class ModelItemFile {
   }
 
   static Future<List<String>> getFileHashItemIds(String fileHash) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows =
         await db.query("itemfile", where: 'hash = ?', whereArgs: [fileHash]);
@@ -36,7 +36,7 @@ class ModelItemFile {
   }
 
   static Future<List<ModelItemFile>> all() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query(
       "itemfile",
@@ -45,7 +45,7 @@ class ModelItemFile {
   }
 
   static Future<ModelItemFile?> get(String id) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     List<Map<String, dynamic>> list = await dbHelper.getWithId("itemfile", id);
     if (list.isNotEmpty) {
       Map<String, dynamic> map = list.first;
@@ -55,19 +55,19 @@ class ModelItemFile {
   }
 
   Future<int> insert() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     return await dbHelper.insert("itemfile", map);
   }
 
   Future<int> update() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     return await dbHelper.update("itemfile", map, id);
   }
 
   Future<int> delete() async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     return await dbHelper.delete("itemfile", id);
   }
 }

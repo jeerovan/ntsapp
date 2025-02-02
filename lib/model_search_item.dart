@@ -1,6 +1,6 @@
 import 'package:ntsapp/enums.dart';
 
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 import 'model_category.dart';
 import 'model_item.dart';
 import 'model_item_group.dart';
@@ -27,7 +27,7 @@ class ModelSearchItem {
 
   static Future<List<ModelSearchItem>> all(
       String query, int offset, int limit) async {
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     // Tokenize input
     List<String> tokens = query

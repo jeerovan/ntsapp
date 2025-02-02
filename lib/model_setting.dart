@@ -1,4 +1,4 @@
-import 'database_helper.dart';
+import 'storage_sqlite.dart';
 
 class ModelSetting {
   static Map<String, dynamic> appJson = {};
@@ -7,7 +7,7 @@ class ModelSetting {
     appJson[key] = value;
 
     // Optional: Update the value in the database if needed
-    final dbHelper = DatabaseHelper.instance;
+    final dbHelper = StorageSqlite.instance;
     await dbHelper.insert('setting', {'id': key, 'value': value});
   }
 
