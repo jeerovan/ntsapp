@@ -196,7 +196,8 @@ class ModelGroup {
     if (map["title"].isEmpty) {
       map["title"] = getNoteGroupDateTitle();
     }
-    return await dbHelper.insert("itemgroup", map);
+    int inserted = await dbHelper.insert("itemgroup", map);
+    return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
@@ -207,11 +208,13 @@ class ModelGroup {
     for (String attr in attrs) {
       updatedMap[attr] = map[attr];
     }
-    return await dbHelper.update("itemgroup", updatedMap, id);
+    int updated = await dbHelper.update("itemgroup", updatedMap, id);
+    return updated;
   }
 
   Future<int> delete() async {
     final dbHelper = StorageSqlite.instance;
-    return await dbHelper.delete("itemgroup", id);
+    int deleted = await dbHelper.delete("itemgroup", id);
+    return deleted;
   }
 }

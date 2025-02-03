@@ -22,8 +22,11 @@ Future<String> createBackup(String baseDirPath) async {
   // empty db backup directory
   String backupDir = AppConfig.get("backup_dir");
   final String dbFilesDirPath = path.join(baseDirPath, backupDir);
-  await emptyDir(dbFilesDirPath);
-
+  error = await emptyDir(dbFilesDirPath);
+  if (error.isNotEmpty) {
+    debugPrint("Error in emptyDir(createBackup):$error");
+    return error;
+  }
   // create db backup files
   final dbHelper = StorageSqlite.instance;
   final db = await dbHelper.database;
@@ -79,18 +82,28 @@ Future<String> zipDbFiles(Map<String, String> data) async {
 }
 
 Future<String> restoreBackup(Map<String, String> data) async {
+  String error = "";
   String baseDirPath = data["dir"]!;
   //empty db files dir
   String backupDir = AppConfig.get("backup_dir");
   final String dbFilesDirPath = path.join(baseDirPath, backupDir);
-  await emptyDir(dbFilesDirPath);
-
+  error = await emptyDir(dbFilesDirPath);
+  if (error.isNotEmpty) {
+    debugPrint("Error in emptyDir(restoreBackup):$error");
+    return error;
+  }
   // media files can be overwritten if present
 
   // extract zip file
-  String error = await compute(unZipFiles, data);
-  if (error.isEmpty) {
-    error = await restoreDbFiles(baseDirPath);
+  error = await compute(unZipFiles, data);
+  if (error.isNotEmpty) {
+    debugPrint("Error in compute(restoreBackup):$error");
+    return error;
+  }
+
+  error = await restoreDbFiles(baseDirPath);
+  if (error.isNotEmpty) {
+    debugPrint("Error in restoreDbFiles(restoreBackup):$error");
   }
   return error;
 }
@@ -122,12 +135,6 @@ Future<String> unZipFiles(Map<String, String> data) async {
 
 Future<String> restoreDbFiles(String baseDirPath) async {
   String error = "";
-  // clean up db when restoring on fresh installation
-  int groupsCount = await ModelGroup.getAllCount();
-  if (groupsCount == 0) {
-    final dbHelper = StorageSqlite.instance;
-    await dbHelper.clear("category");
-  }
 
   // load db backup files
   List<String> tables = ["category", "itemgroup", "item", "setting"];
@@ -166,7 +173,8 @@ Future<String> restoreDbFiles(String baseDirPath) async {
   return error;
 }
 
-Future<void> emptyDir(String dirPath) async {
+Future<String> emptyDir(String dirPath) async {
+  String error = "";
   final directory = Directory(dirPath);
   try {
     // Check if the directory exists
@@ -177,25 +185,34 @@ Future<void> emptyDir(String dirPath) async {
     // Recreate the empty directory
     await directory.create();
   } catch (e) {
-    debugPrint(e.toString());
+    error = e.toString();
   }
+  return error;
 }
 
 Future<String> restoreOldBackup(Map<String, String> data) async {
+  String error = "";
   String baseDirPath = data["dir"]!;
   //empty db files dir
   String backupDir = "oldBackup";
   final String backupDirPath = path.join(baseDirPath, backupDir);
-  await emptyDir(backupDirPath);
-
-  // extract zip file
-  String error = await compute(unZipOldFiles, data);
-  if (error.isEmpty) {
-    error = await restoreOldDb(baseDirPath);
+  error = await emptyDir(backupDirPath);
+  if (error.isNotEmpty) {
+    debugPrint("Error in emptyDir(restoreOldBackup):$error");
+    return error;
   }
-  //clear dir
-  await emptyDir(backupDirPath);
+  // extract zip file
+  error = await compute(unZipOldFiles, data);
+  if (error.isNotEmpty) {
+    debugPrint("Error in compute(restoreOldBackup):$error");
+    return error;
+  }
 
+  error = await restoreOldDb(baseDirPath);
+  if (error.isNotEmpty) {
+    debugPrint("Error in restoreOldDb(restoreOldBackup):$error");
+    return error;
+  }
   return error;
 }
 

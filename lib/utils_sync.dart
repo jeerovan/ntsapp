@@ -27,7 +27,8 @@ class SyncUtils {
     return masterKeyBase64;
   }
 
-  static Future<bool> isMasterKeyAvailable() async {
+  // to sync, one must have signed-in with an active plan
+  static Future<bool> canSync() async {
     String? masterKeyBase64 = await getMasterKey();
     return masterKeyBase64 != null;
   }

@@ -120,7 +120,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Forget Password'),
+        title: Text('Enable Sync'),
         centerTitle: true,
       ),
       body: Padding(

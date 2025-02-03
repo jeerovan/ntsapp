@@ -141,7 +141,8 @@ class ModelCategory {
     if (map["title"].isEmpty) {
       map["title"] = "Category";
     }
-    return await dbHelper.insert("category", map);
+    int inserted = await dbHelper.insert("category", map);
+    return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
@@ -152,11 +153,13 @@ class ModelCategory {
     for (String attr in attrs) {
       updatedMap[attr] = map[attr];
     }
-    return await dbHelper.update("category", map, id);
+    int updated = await dbHelper.update("category", map, id);
+    return updated;
   }
 
   Future<int> delete() async {
     final dbHelper = StorageSqlite.instance;
-    return await dbHelper.delete("category", id);
+    int deleted = await dbHelper.delete("category", id);
+    return deleted;
   }
 }

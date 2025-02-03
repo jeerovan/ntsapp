@@ -349,7 +349,8 @@ class ModelItem {
   Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    return await dbHelper.insert("item", map);
+    int inserted = await dbHelper.insert("item", map);
+    return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
@@ -360,7 +361,8 @@ class ModelItem {
     for (String attr in attrs) {
       updatedMap[attr] = map[attr];
     }
-    return await dbHelper.update("item", updatedMap, id);
+    int updated = await dbHelper.update("item", updatedMap, id);
+    return updated;
   }
 
   Future<int> delete() async {
@@ -387,6 +389,7 @@ class ModelItem {
         }
       }
     }
-    return await dbHelper.delete("item", id);
+    int deleted = await dbHelper.delete("item", id);
+    return deleted;
   }
 }

@@ -76,17 +76,20 @@ class ModelProfile {
   Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    return await dbHelper.insert("profile", map);
+    int inserted = await dbHelper.insert("profile", map);
+    return inserted;
   }
 
   Future<int> update() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    return await dbHelper.update("profile", map, id);
+    int updated = await dbHelper.update("profile", map, id);
+    return updated;
   }
 
   Future<int> delete() async {
     final dbHelper = StorageSqlite.instance;
-    return await dbHelper.delete("profile", id);
+    int deleted = await dbHelper.delete("profile", id);
+    return deleted;
   }
 }

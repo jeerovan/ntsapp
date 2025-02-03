@@ -325,8 +325,8 @@ class DataSync {
 }
 
 Future<void> performSync() async {
-  bool masterKeyAvailable = await SyncUtils.isMasterKeyAvailable();
-  if (!masterKeyAvailable) return;
+  bool canSync = await SyncUtils.canSync();
+  if (!canSync) return;
 
   //check if already running
   int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
