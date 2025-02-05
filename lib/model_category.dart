@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:ntsapp/model_category_group.dart';
+import 'package:ntsapp/utils_sync.dart';
 import 'package:uuid/uuid.dart';
 
 import 'common.dart';
@@ -142,6 +143,9 @@ class ModelCategory {
       map["title"] = "Category";
     }
     int inserted = await dbHelper.insert("category", map);
+    // send to sync
+    map["thumbnail"] = null;
+    SyncUtils.pushChange("category", map);
     return inserted;
   }
 

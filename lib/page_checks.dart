@@ -4,7 +4,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_access_key_input.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
-import 'package:sodium_libs/sodium_libs.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'page_access_key.dart';
@@ -64,7 +64,7 @@ class _PageChecksState extends State<PageChecks> {
           String keyForMasterKey = '${userId}_mk';
           String keyForAccessKey = '${userId}_ak';
 
-          Sodium sodium = await SodiumInit.init();
+          SodiumSumo sodium = await SodiumSumoInit.init();
           CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
           ExecutionResult result = cryptoUtils.generateKeys();

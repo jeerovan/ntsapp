@@ -4,6 +4,7 @@ import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_checks.dart';
 import 'package:ntsapp/storage_secure.dart';
+import 'package:ntsapp/supa_db_explorer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
@@ -145,6 +146,14 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     );
   }
 
+  void navigateToSupaDbPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SupaDatabaseExplorer(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,6 +205,12 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               if (canSync)
                 ElevatedButton(
                     onPressed: navigateToAccessPage, child: Text('Access Key')),
+              SizedBox(
+                height: 20,
+              ),
+              if (canSync)
+                ElevatedButton(
+                    onPressed: navigateToSupaDbPage, child: Text('SupaDb')),
             ],
           ),
         ),

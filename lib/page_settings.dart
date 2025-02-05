@@ -197,11 +197,14 @@ class SettingsPageState extends State<SettingsPage> {
               leading: const Icon(LucideIcons.lock, color: Colors.grey),
               title: const Text("Lock"),
               horizontalTitleGap: 24.0,
-              trailing: Switch(
-                value: isAuthEnabled,
-                onChanged: (bool value) {
-                  _authenticate();
-                },
+              trailing: Transform.scale(
+                scale: 0.7,
+                child: Switch(
+                  value: isAuthEnabled,
+                  onChanged: (bool value) {
+                    _authenticate();
+                  },
+                ),
               ),
             ),
             ListTile(

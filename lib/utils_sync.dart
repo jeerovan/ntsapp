@@ -32,4 +32,7 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     return masterKeyBase64 != null;
   }
+
+  static Future<void> pushChange(
+      String table, Map<String, dynamic> map) async {}
 }

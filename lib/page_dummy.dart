@@ -24,11 +24,58 @@ class _PageDummyState extends State<PageDummy> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      testEncryptions();
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> testEncryptions() async {
+    final SodiumSumo sodium = await SodiumSumoInit.init();
+    final CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    SecureKey masterKey = cryptoUtils.generateKey();
+    final Uint8List masterKeyBytes = masterKey.extractBytes();
+    setState(() {
+      masterKeyStr = bytesToHex(masterKeyBytes);
+    });
+    masterKey.dispose();
+    debugPrint("MasterHex:$masterKeyStr");
+    final Uint8List salt = cryptoUtils.generateSalt();
+    setState(() {
+      saltStr = bytesToHex(salt);
+    });
+    final timer = Stopwatch()..start();
+    SecureKey derivedKey = await cryptoUtils.deriveKeyFromPassword(
+        password: "helloworld", salt: salt);
+    timer.stop();
+    debugPrint("DerivedIn:${timer.elapsed}");
+    final Uint8List deriveKeyBytes = derivedKey.extractBytes();
+    derivedKey.dispose();
+    setState(() {
+      deriveKeyStr = bytesToHex(deriveKeyBytes);
+    });
+    // encrypt masterKey with derivedKey
+    Map<String, dynamic>? encryptionResult = cryptoUtils
+        .encryptBytes(plainBytes: masterKeyBytes, key: deriveKeyBytes)
+        .getResult();
+    Uint8List encryptedMasterKey = encryptionResult!["encrypted"];
+    Uint8List masterKeyEncryptionNonce = encryptionResult["nonce"];
+    // decrypt encryptedMasterKey with derivedKey
+    Map<String, dynamic>? decryptionResult = cryptoUtils
+        .decryptBytes(
+            cipherBytes: encryptedMasterKey,
+            nonce: masterKeyEncryptionNonce,
+            key: deriveKeyBytes)
+        .getResult();
+    Uint8List decryptedMasterKey = decryptionResult!["decrypted"];
+    setState(() {
+      encryptionDecryptionWorks =
+          bytesToHex(decryptedMasterKey) == bytesToHex(masterKeyBytes);
+    });
   }
 
   Future<void> selectFileToEncrypt() async {

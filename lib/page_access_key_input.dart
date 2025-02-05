@@ -8,7 +8,7 @@ import 'package:ntsapp/common.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
-import 'package:sodium_libs/sodium_libs.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 
 class PageAccessKeyInput extends StatefulWidget {
   final Map<String, dynamic> profileData;
@@ -44,7 +44,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
 
   /// Processes the validated 24 words further
   Future<void> _processWords(String words) async {
-    Sodium sodium = await SodiumInit.init();
+    SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
     String accessKeyHex = bip39.mnemonicToEntropy(words);
