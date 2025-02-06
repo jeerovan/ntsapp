@@ -3,6 +3,7 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_checks.dart';
+import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/supa_db_explorer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -146,6 +147,14 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     );
   }
 
+  void navigateToDummyPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PageDummy(),
+      ),
+    );
+  }
+
   void navigateToSupaDbPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -199,6 +208,11 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               ),
               ElevatedButton(
                   onPressed: navigateToChecksPage, child: Text('Checks Page')),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                  onPressed: navigateToDummyPage, child: Text('Dummy Page')),
               SizedBox(
                 height: 20,
               ),

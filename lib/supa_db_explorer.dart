@@ -12,7 +12,9 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
   final SupabaseClient supabase = Supabase.instance.client;
 
   List<String> tables = [];
+  List<String> columns = [];
   String? selectedTable;
+  Map<String, List<String>> tableColumns = {};
   List<Map<String, dynamic>> tableData = [];
   List<Map<String, dynamic>> filters = [];
   int page = 1;
@@ -27,12 +29,35 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
   Future<void> fetchTables() async {
     final response =
         await supabase.rpc('get_table_names'); // Requires custom function
-    debugPrint(response.toString());
+
     setState(() {
       for (Map<String, dynamic> map in response) {
         String tableName = map['table_name'] as String;
         tables.add(tableName);
       }
+    });
+  }
+
+  Future<void> fetchTableColumns(String table) async {
+    if (tableColumns.containsKey(table)) {
+      columns.clear();
+      setState(() {
+        columns.addAll(tableColumns[table]!);
+      });
+      return;
+    }
+    final response =
+        await supabase.rpc('get_table_columns', params: {"title": table});
+
+    List<String> columnNames = [];
+    for (Map<String, dynamic> map in response) {
+      String tableName = map['column_name'] as String;
+      columnNames.add(tableName);
+    }
+    tableColumns[table] = columnNames;
+    setState(() {
+      columns.clear();
+      columns.addAll(columnNames);
     });
   }
 
@@ -59,7 +84,7 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
       context: context,
       builder: (context) {
         return SupaFilterDialog(
-          selectedTable: selectedTable!,
+          tableColumns: columns,
           onApply: (newFilter) {
             setState(() {
               filters.add(newFilter);
@@ -71,8 +96,18 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
     );
   }
 
+  void onTableSelected(String table) {
+    setState(() {
+      selectedTable = table;
+      resetTable();
+    });
+    fetchData();
+    fetchTableColumns(table);
+  }
+
   void resetTable() {
     setState(() {
+      columns.clear();
       filters.clear();
       tableData.clear();
       page = 1;
@@ -82,7 +117,7 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Supabase Database Explorer")),
+      appBar: AppBar(title: Text("SupaDb Explorer")),
       body: Column(
         children: [
           // Table Selection Dropdown
@@ -90,11 +125,7 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
             hint: Text("Select Table"),
             value: selectedTable,
             onChanged: (value) {
-              setState(() {
-                selectedTable = value;
-                resetTable();
-              });
-              fetchData();
+              onTableSelected(value!);
             },
             items: tables
                 .map((table) =>
@@ -112,7 +143,7 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
                   .toList(),
             ),
 
-          TextButton(onPressed: openFilterDialog, child: Text("Apply Filters")),
+          TextButton(onPressed: openFilterDialog, child: Text("Filters")),
 
           // Table Data
           Expanded(
@@ -161,11 +192,11 @@ class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
 }
 
 class SupaFilterDialog extends StatefulWidget {
-  final String selectedTable;
+  final List<String> tableColumns;
   final Function(Map<String, dynamic>) onApply;
 
   const SupaFilterDialog(
-      {super.key, required this.selectedTable, required this.onApply});
+      {super.key, required this.onApply, required this.tableColumns});
 
   @override
   State<SupaFilterDialog> createState() => _SupaFilterDialogState();
@@ -175,7 +206,14 @@ class _SupaFilterDialogState extends State<SupaFilterDialog> {
   String? selectedColumn;
   String? selectedCondition;
   String? inputValue;
-  List<String> conditions = ['=', '>', '<', 'LIKE', '!='];
+  final Map<String, String> operators = {
+    'Equals': 'eq',
+    'Not Equals': 'neq',
+    'Greater Than': 'gt',
+    'Less Than': 'lt',
+    'Contains': 'cs',
+    'In': 'in',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -189,11 +227,7 @@ class _SupaFilterDialogState extends State<SupaFilterDialog> {
             hint: Text("Select Column"),
             value: selectedColumn,
             onChanged: (value) => setState(() => selectedColumn = value),
-            items: [
-              "id",
-              "name",
-              "created_at"
-            ] // Replace with dynamic table columns
+            items: widget.tableColumns
                 .map((col) => DropdownMenuItem(value: col, child: Text(col)))
                 .toList(),
           ),
@@ -203,9 +237,12 @@ class _SupaFilterDialogState extends State<SupaFilterDialog> {
             hint: Text("Select Condition"),
             value: selectedCondition,
             onChanged: (value) => setState(() => selectedCondition = value),
-            items: conditions
-                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                .toList(),
+            items: operators.entries.map((entry) {
+              return DropdownMenuItem(
+                value: entry.value,
+                child: Text(entry.key),
+              );
+            }).toList(),
           ),
 
           // Input Value
