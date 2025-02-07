@@ -57,7 +57,7 @@ class ModelItem {
               ? data
               : jsonEncode(data),
       'at': at,
-      'updated_at': updatedAt
+      'updated_at': DateTime.now().toUtc().millisecondsSinceEpoch
     };
   }
 
@@ -356,12 +356,7 @@ class ModelItem {
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
-    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
-    for (String attr in attrs) {
-      updatedMap[attr] = map[attr];
-    }
-    int updated = await dbHelper.update("item", updatedMap, id);
+    int updated = await dbHelper.update("item", map, id);
     return updated;
   }
 

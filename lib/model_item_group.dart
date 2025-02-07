@@ -45,7 +45,7 @@ class ModelGroup {
     return {
       'id': id,
       'category_id': categoryId,
-      'title': title,
+      'title': title.isEmpty ? getNoteGroupDateTitle() : title,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'pinned': pinned,
       'position': position,
@@ -58,7 +58,7 @@ class ModelGroup {
               ? data
               : jsonEncode(data),
       'at': at,
-      'updated_at': updatedAt,
+      'updated_at': DateTime.now().toUtc().millisecondsSinceEpoch,
     };
   }
 
@@ -193,9 +193,6 @@ class ModelGroup {
   Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    if (map["title"].isEmpty) {
-      map["title"] = getNoteGroupDateTitle();
-    }
     int inserted = await dbHelper.insert("itemgroup", map);
     return inserted;
   }
@@ -203,12 +200,7 @@ class ModelGroup {
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
-    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
-    for (String attr in attrs) {
-      updatedMap[attr] = map[attr];
-    }
-    int updated = await dbHelper.update("itemgroup", updatedMap, id);
+    int updated = await dbHelper.update("itemgroup", map, id);
     return updated;
   }
 

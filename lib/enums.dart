@@ -70,6 +70,26 @@ enum ExecutionStatus {
   success,
 }
 
-enum Task {
+enum AppTask {
   checkForKeys,
+}
+
+enum AppString {
+  // Supabase
+  supabaseKey,
+  supabaseUrl,
+  supabaseInitialzed,
+}
+
+extension AppStringExtension on AppString {
+  String get value {
+    switch (this) {
+      case AppString.supabaseKey:
+        return "supabase_key";
+      case AppString.supabaseUrl:
+        return "supabase_url";
+      case AppString.supabaseInitialzed:
+        return "supabase_initialized";
+    }
+  }
 }

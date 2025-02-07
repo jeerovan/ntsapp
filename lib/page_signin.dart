@@ -133,7 +133,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => PageChecks(
-          task: Task.checkForKeys,
+          task: AppTask.checkForKeys,
         ),
       ),
     );

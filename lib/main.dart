@@ -30,19 +30,19 @@ import 'package:workmanager/workmanager.dart';
 import 'package:http/http.dart' as http;
 
 bool mobile = Platform.isAndroid || Platform.isIOS;
-bool supabaseInitialized = true;
-bool mediaKitAvailable = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     MediaKit.ensureInitialized();
-    mediaKitAvailable = true;
   } catch (e) {
     debugPrint(e.toString());
   }
   // Load the configuration before running the app
   await AppConfig.load();
+
+  // initialize hive
+  await StorageHive().init();
 
   if (!mobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
@@ -67,16 +67,14 @@ Future<void> main() async {
     ModelSetting.update("fix_video_thumbnail", "yes");
   }
 
-  final String? supaUrl = AppConfig.get("supabase_url", null);
-  final String? supaKey = AppConfig.get("supabase_key", null);
+  final String? supaUrl = AppConfig.get(AppString.supabaseUrl.value, null);
+  final String? supaKey = AppConfig.get(AppString.supabaseKey.value, null);
   if (supaUrl != null && supaKey != null) {
     await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+    await StorageHive().put(AppString.supabaseInitialzed.value, true);
   } else {
-    supabaseInitialized = false;
+    await StorageHive().put(AppString.supabaseInitialzed.value, false);
   }
-
-  // initialize hive
-  await StorageHive().init();
 
   //initialize sync
   await DataSync.initialize();

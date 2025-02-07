@@ -10,7 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'page_access_key.dart';
 
 class PageChecks extends StatefulWidget {
-  final Task task;
+  final AppTask task;
   const PageChecks({super.key, required this.task});
 
   @override
@@ -40,7 +40,7 @@ class _PageChecksState extends State<PageChecks> {
       userId = user.id;
     }
     switch (widget.task) {
-      case Task.checkForKeys:
+      case AppTask.checkForKeys:
         taskIsCheckForKeys = true;
         checkForKeys();
         break;

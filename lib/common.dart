@@ -171,6 +171,18 @@ void showProcessingDialog(BuildContext context) {
 }
 
 /* date/time conversions -- starts */
+String nowUtcInISO() {
+  DateTime nowUtc = DateTime.now().toUtc();
+  String formattedTimestamp = nowUtc.toIso8601String();
+
+  // Adjusting format to match "YYYY-MM-DD HH:MM:SS.ssssss+00"
+  formattedTimestamp = formattedTimestamp
+      .replaceFirst("T", " ") // Replace 'T' with space
+      .replaceFirst("Z", "+00"); // Replace 'Z' with '+00'
+
+  return formattedTimestamp;
+}
+
 String stringFromIntDate(int date) {
   String input = date.toString();
   DateTime dateTime = dateFromStringDate(input);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -36,12 +37,12 @@ class ModelCategory {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'title': title,
+      'title': title.isEmpty ? "Category" : title,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'color': color,
       'position': position,
       'archived_at': archivedAt,
-      'updated_at': updatedAt,
+      'updated_at': DateTime.now().toUtc().millisecondsSinceEpoch,
       'at': at,
     };
   }
@@ -139,25 +140,22 @@ class ModelCategory {
   Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    if (map["title"].isEmpty) {
-      map["title"] = "Category";
-    }
     int inserted = await dbHelper.insert("category", map);
     // send to sync
     map["thumbnail"] = null;
-    SyncUtils.pushChange("category", map);
+    map["table"] = "category";
+    SyncUtils.pushChange(map);
     return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
-    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
-    for (String attr in attrs) {
-      updatedMap[attr] = map[attr];
-    }
     int updated = await dbHelper.update("category", map, id);
+    // send to sync
+    map["thumbnail"] = null;
+    map["table"] = "category";
+    SyncUtils.pushChange(map);
     return updated;
   }
 

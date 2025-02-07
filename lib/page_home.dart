@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
-import 'package:ntsapp/main.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
@@ -25,6 +25,7 @@ import 'page_category_add_edit.dart';
 import 'page_items.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
+import 'storage_hive.dart';
 
 bool debug = false;
 
@@ -274,7 +275,7 @@ class _PageHomeState extends State<PageHome> {
             LucideIcons.database,
           ),
         ),
-      if (supabaseInitialized)
+      if (StorageHive().get(AppString.supabaseInitialzed.value))
         IconButton(
           onPressed: () {
             Navigator.of(context)
