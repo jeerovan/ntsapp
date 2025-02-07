@@ -42,7 +42,7 @@ class ModelCategory {
       'color': color,
       'position': position,
       'archived_at': archivedAt,
-      'updated_at': DateTime.now().toUtc().millisecondsSinceEpoch,
+      'updated_at': updatedAt,
       'at': at,
     };
   }
@@ -151,6 +151,7 @@ class ModelCategory {
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
+    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
     int updated = await dbHelper.update("category", map, id);
     // send to sync
     map["thumbnail"] = null;

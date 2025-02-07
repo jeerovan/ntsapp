@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 
 import 'storage_sqlite.dart';
 import 'model_item.dart';
+import 'utils_sync.dart';
 
 class ModelGroup {
   String? id;
@@ -58,7 +59,7 @@ class ModelGroup {
               ? data
               : jsonEncode(data),
       'at': at,
-      'updated_at': DateTime.now().toUtc().millisecondsSinceEpoch,
+      'updated_at': updatedAt,
     };
   }
 
@@ -194,13 +195,20 @@ class ModelGroup {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("itemgroup", map);
+    map["thumbnail"] = null;
+    map["table"] = "itemgroup";
+    SyncUtils.pushChange(map);
     return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
+    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
     int updated = await dbHelper.update("itemgroup", map, id);
+    map["thumbnail"] = null;
+    map["table"] = "itemgroup";
+    SyncUtils.pushChange(map);
     return updated;
   }
 

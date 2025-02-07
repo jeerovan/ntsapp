@@ -8,6 +8,7 @@ import 'package:ntsapp/model_item_file.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'storage_sqlite.dart';
+import 'utils_sync.dart';
 
 class ModelItem {
   String? id;
@@ -57,7 +58,7 @@ class ModelItem {
               ? data
               : jsonEncode(data),
       'at': at,
-      'updated_at': DateTime.now().toUtc().millisecondsSinceEpoch
+      'updated_at': updatedAt
     };
   }
 
@@ -350,13 +351,20 @@ class ModelItem {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
+    map["thumbnail"] = null;
+    map["table"] = "item";
+    SyncUtils.pushChange(map);
     return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
+    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
     int updated = await dbHelper.update("item", map, id);
+    map["thumbnail"] = null;
+    map["table"] = "item";
+    SyncUtils.pushChange(map);
     return updated;
   }
 

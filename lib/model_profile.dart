@@ -83,6 +83,7 @@ class ModelProfile {
   Future<int> update() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
+    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
     int updated = await dbHelper.update("profile", map, id);
     return updated;
   }

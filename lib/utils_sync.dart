@@ -54,37 +54,26 @@ class SyncUtils {
       SodiumSumo sodium = await SodiumSumoInit.init();
       CryptoUtils cryptoUtils = CryptoUtils(sodium);
       try {
-        List<Map<String, dynamic>> rows = await supabaseClient
+        String jsonString = jsonEncode(map);
+        Uint8List jsonBytes = Uint8List.fromList(utf8.encode(jsonString));
+        Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
+        ExecutionResult encryptionResult = cryptoUtils.encryptBytes(
+            plainBytes: jsonBytes, key: masterKeyBytes);
+        Uint8List cipherBytes = encryptionResult.getResult()!["encrypted"];
+        Uint8List nonceBytes = encryptionResult.getResult()!["nonce"];
+        String cipherBase64 = base64Encode(cipherBytes);
+        String nonceBase64 = base64Encode(nonceBytes);
+        Map<String, dynamic> changeMap = {
+          "id": messageId,
+          "updated_at": updatedAt,
+          "cipher_text": cipherBase64,
+          "cipher_nonce": nonceBase64,
+        }; // user_id is not required for insert/update. Also doesn't take different user_id than auth_user_id
+        await supabaseClient
             .from(table)
-            .select('updated_at')
-            .eq('id', messageId);
-        if (rows.isEmpty || rows[0]["updated_at"] < updatedAt) {
-          String jsonString = jsonEncode(map);
-          Uint8List jsonBytes = Uint8List.fromList(utf8.encode(jsonString));
-          Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
-          ExecutionResult encryptionResult = cryptoUtils.encryptBytes(
-              plainBytes: jsonBytes, key: masterKeyBytes);
-          if (encryptionResult.isSuccess) {
-            Uint8List cipherBytes = encryptionResult.getResult()!["encrypted"];
-            Uint8List nonceBytes = encryptionResult.getResult()!["nonce"];
-            String cipherBase64 = base64Encode(cipherBytes);
-            String nonceBase64 = base64Encode(nonceBytes);
-            Map<String, dynamic> changeMap = {
-              "id": messageId,
-              "updated_at": updatedAt,
-              "cipher_text": cipherBase64,
-              "cipher_nonce": nonceBase64,
-            }; // user_id is not required for insert/update. Also doesn't take different user_id than auth_user_id
-            if (rows.isEmpty) {
-              await supabaseClient.from(table).insert(changeMap);
-            } else {
-              await supabaseClient
-                  .from(table)
-                  .update(changeMap)
-                  .eq('id', messageId);
-            }
-          }
-        }
+            .upsert(changeMap, onConflict: 'id')
+            .eq('id', messageId)
+            .gt('updated_at', updatedAt);
       } catch (e) {
         debugPrint(e.toString());
       }
