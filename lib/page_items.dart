@@ -14,6 +14,7 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item_file.dart';
 import 'package:ntsapp/page_edit_note.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -51,6 +52,7 @@ class PageItems extends StatefulWidget {
 }
 
 class _PageItemsState extends State<PageItems> {
+  final logger = AppLogger(prefixes: ["page_items"]);
   String? showItemId;
   final List<ModelItem> _displayItemList = []; // Store items
   final List<ModelItem> _selectedItems = [];
@@ -1178,8 +1180,8 @@ class _PageItemsState extends State<PageItems> {
             };
             String text = 'DND|#video|$fileName';
             _addItemToDbAndDisplayList(text, ItemType.video, thumbnail, data);
-          } catch (e) {
-            debugPrint(e.toString());
+          } catch (e, s) {
+            logger.error("ExtractingVideoInfo", error: e, stackTrace: s);
           } finally {
             extractor.dispose();
           }
@@ -1196,7 +1198,7 @@ class _PageItemsState extends State<PageItems> {
             String text = 'DND|#audio|$fileName';
             _addItemToDbAndDisplayList(text, ItemType.audio, null, data);
           } else {
-            debugPrint("Could not get duration");
+            logger.warning("Could not get duration");
           }
         default:
           Map<String, dynamic> data = {
@@ -1533,7 +1535,7 @@ class _PageItemsState extends State<PageItems> {
                                                     linkUri)) {
                                                   await launchUrl(linkUri);
                                                 } else {
-                                                  debugPrint(
+                                                  logger.warning(
                                                       "Could not launch $linkText");
                                                 }
                                               }

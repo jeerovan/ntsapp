@@ -197,24 +197,68 @@ class ModelGroup {
     int inserted = await dbHelper.insert("itemgroup", map);
     map["thumbnail"] = null;
     map["table"] = "itemgroup";
-    SyncUtils.pushChange(map);
+    SyncUtils.encryptAndPushChange(map);
     return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
-    int updated = await dbHelper.update("itemgroup", map, id);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
+    int updated = await dbHelper.update("itemgroup", updatedMap, id);
+
+    map["updated_at"] = utcNow;
     map["thumbnail"] = null;
     map["table"] = "itemgroup";
-    SyncUtils.pushChange(map);
+    SyncUtils.encryptAndPushChange(map);
     return updated;
   }
 
-  Future<int> delete() async {
+  Future<int> upcertChangeFromServer() async {
+    int result;
     final dbHelper = StorageSqlite.instance;
+    Map<String, dynamic> map = toMap();
+    List<Map<String, dynamic>> rows = await dbHelper.getWithId("itemgroup", id);
+    if (rows.isEmpty) {
+      result = await dbHelper.insert("itemgroup", map);
+    } else {
+      int existingUpdatedAt = rows[0]["updated_at"];
+      int incomingUpdatedAt = map["updated_at"];
+      if (incomingUpdatedAt > existingUpdatedAt) {
+        result = await dbHelper.update("itemgroup", map, id);
+      } else {
+        result = 0;
+      }
+    }
+    return result;
+  }
+
+  Future<void> deleteCascade({bool withServerSync = false}) async {
+    List<ModelItem> items = await ModelItem.getAllInGroup(id!);
+    for (ModelItem item in items) {
+      await item.delete(withServerSync: withServerSync);
+    }
+    await delete(withServerSync: withServerSync);
+  }
+
+  Future<int> delete({bool withServerSync = false}) async {
+    final dbHelper = StorageSqlite.instance;
+    Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("itemgroup", id);
+    if (withServerSync) {
+      SyncUtils.encryptAndPushChange(map, deleted: true);
+    }
     return deleted;
+  }
+
+  static Future<void> deletedFromServer(String id) async {
+    ModelGroup? group = await ModelGroup.get(id);
+    if (group != null) {
+      await group.deleteCascade();
+    }
   }
 }

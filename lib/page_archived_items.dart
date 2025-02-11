@@ -99,7 +99,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
   Future<void> deleteSelectedItems() async {
     for (ModelItem item in _selection) {
       _items.remove(item);
-      await item.delete();
+      await item.delete(withServerSync: true);
     }
     if (mounted) {
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);

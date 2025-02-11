@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_checks.dart';
 import 'package:ntsapp/page_dummy.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/supa_db_explorer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,6 +20,7 @@ class EmailAuthScreen extends StatefulWidget {
 }
 
 class _EmailAuthScreenState extends State<EmailAuthScreen> {
+  final logger = AppLogger(prefixes: ["page_signing"]);
   final emailController = TextEditingController();
   final otpController = TextEditingController();
 
@@ -76,7 +79,6 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
         await supabase.auth.signInWithOtp(
           email: email,
         );
-        debugPrint('OTP sent to $email');
         int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
         ModelSetting.update("otp_sent_to", email);
         ModelSetting.update("otp_sent_at", nowUtc.toString());
@@ -84,9 +86,9 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
           otpSent = true;
         });
         errorSendingOtop = false;
-      } catch (e) {
+      } catch (e, s) {
+        logger.error("sendOTP", error: e, stackTrace: s);
         errorSendingOtop = true;
-        debugPrint('Error sending OTP: $e');
         if (mounted) {
           displaySnackBar(context,
               message: 'Sending OTP failed. Please try again!', seconds: 2);
@@ -104,10 +106,16 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
             .verifyOTP(email: email, token: otp, type: OtpType.email);
         Session? session = response.session;
         if (session != null) {
+          User user = session.user;
+          ModelProfile profile =
+              await ModelProfile.fromMap({"id": user.id, "email": user.email!});
+          // if exists, update no fields, will happen through sync
+          await profile.upcertChangeFromServer();
           navigateToChecksPage();
         }
         errorVerifyingOtp = false;
-      } catch (e) {
+      } catch (e, s) {
+        logger.error("verifyOtp", error: e, stackTrace: s);
         errorVerifyingOtp = true;
         if (mounted) {
           displaySnackBar(context,
@@ -124,8 +132,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
       setState(() {
         signedIn = false;
       });
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, s) {
+      logger.error("signOut", error: e, stackTrace: s);
     }
   }
 

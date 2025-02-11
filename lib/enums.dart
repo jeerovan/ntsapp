@@ -75,21 +75,30 @@ enum AppTask {
 }
 
 enum AppString {
+  deviceId,
+
   // Supabase
   supabaseKey,
   supabaseUrl,
   supabaseInitialzed,
+
+  // Sync
+  lastChangesFetchedAt,
 }
 
 extension AppStringExtension on AppString {
   String get value {
     switch (this) {
+      case AppString.deviceId:
+        return "device_id";
       case AppString.supabaseKey:
         return "supabase_key";
       case AppString.supabaseUrl:
         return "supabase_url";
       case AppString.supabaseInitialzed:
         return "supabase_initialized";
+      case AppString.lastChangesFetchedAt:
+        return "last_changes_fetched_at";
     }
   }
 }

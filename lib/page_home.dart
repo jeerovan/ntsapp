@@ -11,6 +11,7 @@ import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/page_starred.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -45,6 +46,7 @@ class PageHome extends StatefulWidget {
 }
 
 class _PageHomeState extends State<PageHome> {
+  final logger = AppLogger(prefixes: ["page_home"]);
   final LocalAuthentication _auth = LocalAuthentication();
   ModelCategory? category;
   final List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
@@ -67,8 +69,8 @@ class _PageHomeState extends State<PageHome> {
       } else {
         await _authenticateOnStart();
       }
-    } catch (e) {
-      debugPrint("Error in checkAuthAndLoad: $e");
+    } catch (e, s) {
+      logger.error("checkAuthAndLoad", error: e, stackTrace: s);
     }
   }
 
@@ -78,8 +80,8 @@ class _PageHomeState extends State<PageHome> {
       _categoriesGroupsDisplayList.clear();
       final categoriesGroups = await ModelCategoryGroup.all();
       _categoriesGroupsDisplayList.addAll(categoriesGroups);
-    } catch (e) {
-      debugPrint("Error loading categories and groups: $e");
+    } catch (e, s) {
+      logger.error("loadCategoriesGroups", error: e, stackTrace: s);
     } finally {
       setState(() => _isLoading = false);
       _hasInitiated = true;
@@ -102,8 +104,8 @@ class _PageHomeState extends State<PageHome> {
         isAuthenticated = true;
         await loadCategoriesGroups();
       }
-    } catch (e) {
-      debugPrint("Authentication Error: $e");
+    } catch (e, s) {
+      logger.error("_authenticateOnStart", error: e, stackTrace: s);
       _exitApp();
     }
   }
@@ -335,8 +337,9 @@ class _PageHomeState extends State<PageHome> {
                 File backupFile = File(zipFilePath);
                 try {
                   if (backupFile.existsSync()) backupFile.deleteSync();
-                } catch (e) {
-                  debugPrint(e.toString());
+                } catch (e, s) {
+                  logger.error("DeleteBackupOnExitSettings",
+                      error: e, stackTrace: s);
                 }
                 await loadCategoriesGroups();
               });

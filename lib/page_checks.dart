@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_access_key_input.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
@@ -18,6 +19,7 @@ class PageChecks extends StatefulWidget {
 }
 
 class _PageChecksState extends State<PageChecks> {
+  final logger = AppLogger(prefixes: ["page_checks"]);
   bool processing = false;
   final SupabaseClient supabase = Supabase.instance.client;
 
@@ -77,16 +79,16 @@ class _PageChecksState extends State<PageChecks> {
           String accessKeyBase64 = privateKeys["access_key"];
           await storage.write(key: keyForMasterKey, value: masterKeyBase64);
           await storage.write(key: keyForAccessKey, value: accessKeyBase64);
-          pushUpdatedProfileToSupabase();
+          pushUpdatedKeys();
         } else {
           navigateToAccessKeyInputPage(data.first);
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      logger.error("checkForKeys", error: e, stackTrace: s);
       setState(() {
         errorFetchingKeys = true;
       });
-      debugPrint("Error fetching profiles");
     }
     setState(() {
       processing = false;
@@ -104,15 +106,15 @@ class _PageChecksState extends State<PageChecks> {
     );
   }
 
-  Future<void> pushUpdatedProfileToSupabase() async {
+  Future<void> pushUpdatedKeys() async {
     setState(() {
       processing = true;
     });
     try {
       await supabase.from("keys").insert(updatedKeysData!);
       navigateToAccessKeyPage();
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, s) {
+      logger.error("pushUpdatedKeys", error: e, stackTrace: s);
       errorUpdatingKeys = true;
     }
     setState(() {

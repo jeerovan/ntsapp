@@ -19,6 +19,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_config.dart';
+import 'service_logger.dart';
 import 'storage_sqlite.dart';
 import 'model_item.dart';
 import 'model_setting.dart';
@@ -29,22 +30,40 @@ import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:http/http.dart' as http;
 
-bool mobile = Platform.isAndroid || Platform.isIOS;
+bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    MediaKit.ensureInitialized();
-  } catch (e) {
-    debugPrint(e.toString());
+  MediaKit.ensureInitialized();
+  await initializeDependencies();
+  // check set flags for fixes for fresh installs
+  List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);
+  if (videoItems.isEmpty) {
+    ModelSetting.update("fix_video_thumbnail", "yes");
   }
+  //initialize sync
+  DataSync.initialize();
+
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = AppConfig.get("sentry_dsn");
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+      // The sampling rate for profiling is relative to tracesSampleRate
+      // Setting to 1.0 will profile 100% of sampled transactions:
+      options.profilesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const MainApp()),
+  );
+}
+
+Future<void> initializeDependencies() async {
   // Load the configuration before running the app
   await AppConfig.load();
-
   // initialize hive
   await StorageHive().init();
-
-  if (!mobile) {
+  if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -61,12 +80,6 @@ Future<void> main() async {
   await initializeDirectories();
   CryptoUtils.init();
 
-  // check set flags for fixes for fresh installs
-  List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);
-  if (videoItems.isEmpty) {
-    ModelSetting.update("fix_video_thumbnail", "yes");
-  }
-
   final String? supaUrl = AppConfig.get(AppString.supabaseUrl.value, null);
   final String? supaKey = AppConfig.get(AppString.supabaseKey.value, null);
   if (supaUrl != null && supaKey != null) {
@@ -75,22 +88,6 @@ Future<void> main() async {
   } else {
     await StorageHive().put(AppString.supabaseInitialzed.value, false);
   }
-
-  //initialize sync
-  await DataSync.initialize();
-
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = AppConfig.get("sentry_dsn");
-      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
-      // We recommend adjusting this value in production.
-      options.tracesSampleRate = 1.0;
-      // The sampling rate for profiling is relative to tracesSampleRate
-      // Setting to 1.0 will profile 100% of sampled transactions:
-      options.profilesSampleRate = 1.0;
-    },
-    appRunner: () => runApp(const MainApp()),
-  );
 }
 
 class MainApp extends StatefulWidget {
@@ -108,6 +105,8 @@ class _MainAppState extends State<MainApp> {
   late StreamSubscription _intentSub;
   late StreamSubscription _supaSessionSub;
   final List<String> _sharedContents = [];
+
+  final logger = AppLogger(prefixes: ["main", "MainApp"]);
 
   @override
   void initState() {
@@ -131,7 +130,7 @@ class _MainAppState extends State<MainApp> {
         break;
     }
     //sharing intent
-    if (mobile) {
+    if (runningOnMobile) {
       // Listen to media sharing coming from outside the app while the app is in the memory.
       _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
           (sharedContents) {
@@ -142,7 +141,7 @@ class _MainAppState extends State<MainApp> {
           }
         });
       }, onError: (err) {
-        debugPrint("getIntentDataStream error: $err");
+        logger.error("getIntentDataStream error", error: err);
       });
 
       // Get the media sharing coming from outside the app while the app is closed.
@@ -174,6 +173,7 @@ class _MainAppState extends State<MainApp> {
   void dispose() {
     _intentSub.cancel();
     _supaSessionSub.cancel();
+    DataSync().dispose();
     super.dispose();
   }
 
@@ -240,39 +240,47 @@ class _MainAppState extends State<MainApp> {
 // DATA SYNC
 // Mobile-specific callback - must be top-level function
 @pragma('vm:entry-point')
-void callbackDispatcher() {
+void backgroundTaskDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    await initializeDependencies();
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = AppConfig.get("sentry_dsn");
+        options.tracesSampleRate = 1.0;
+        options.profilesSampleRate = 1.0;
+      },
+    );
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
           await performSync();
           break;
       }
-      return true;
-    } catch (e) {
-      return false;
+      return Future.value(true);
+    } catch (e, s) {
+      // Capture exceptions with Sentry
+      await Sentry.captureException(e, stackTrace: s);
+      return Future.value(false);
     }
   });
 }
 
 class DataSync {
   static const String syncTaskId = 'dataSync';
-  Timer? _desktopSyncTimer;
-
+  Timer? _quickSyncTimer;
+  static final logger = AppLogger(prefixes: ["main", "DataSync"]);
   // Initialize background sync based on platform
   static Future<void> initialize() async {
     if (Platform.isAndroid || Platform.isIOS) {
-      await _initializeMobile();
-    } else {
-      await _initializeDesktop();
+      await _initializeDelayedBackgroundOnMobile();
     }
+    await _initializeQuickForegroundOnAll();
   }
 
   // Mobile-specific initialization using Workmanager
-  static Future<void> _initializeMobile() async {
+  static Future<void> _initializeDelayedBackgroundOnMobile() async {
     await Workmanager()
-        .initialize(callbackDispatcher, isInDebugMode: kDebugMode);
-
+        .initialize(backgroundTaskDispatcher, isInDebugMode: kDebugMode);
     await Workmanager().registerPeriodicTask(
       syncTaskId,
       syncTaskId,
@@ -282,76 +290,89 @@ class DataSync {
         requiresBatteryNotLow: true,
       ),
       existingWorkPolicy: ExistingWorkPolicy.keep,
-      backoffPolicy: BackoffPolicy.exponential,
+      backoffPolicy: BackoffPolicy.linear,
+      backoffPolicyDelay: Duration(minutes: 15),
     );
+    logger.info("Background Task Registered");
   }
 
-  // Desktop-specific initialization using Timer
-  static Future<void> _initializeDesktop() async {
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      final sync = DataSync();
-      await sync._startDesktopSync();
-    }
+  // Foreground initialization using Timer
+  static Future<void> _initializeQuickForegroundOnAll() async {
+    logger.info("Foreground sync started");
+    final sync = DataSync();
+    await sync._startQuickForegroundSync();
   }
 
-  Future<void> _startDesktopSync() async {
+  Future<void> _startQuickForegroundSync() async {
     // Initial sync
     try {
       await performSync();
-    } catch (e) {
-      debugPrint('Desktop sync error: $e');
+    } catch (e, s) {
+      logger.error('Quick sync', error: e, stackTrace: s);
     }
 
     // Setup periodic sync
-    _desktopSyncTimer =
-        Timer.periodic(const Duration(minutes: 1), (_) => _handleDesktopSync());
+    _quickSyncTimer = Timer.periodic(
+        const Duration(minutes: 1), (_) => _handleForegroundSync());
   }
 
-  Future<void> _handleDesktopSync() async {
+  Future<void> _handleForegroundSync() async {
     try {
       await performSync();
-    } catch (e) {
-      debugPrint('Desktop sync error: $e');
+    } catch (e, s) {
+      logger.error('Quick sync', error: e, stackTrace: s);
     }
   }
 
-  // Cleanup method for desktop timer
+  // Cleanup method for timer
   void dispose() {
-    _desktopSyncTimer?.cancel();
-    _desktopSyncTimer = null;
+    _quickSyncTimer?.cancel();
+    _quickSyncTimer = null;
+    logger.info("Foreground sync Stopped");
   }
 }
 
 Future<void> performSync() async {
+  final logger = AppLogger(prefixes: [
+    "main",
+    "performSync",
+  ]);
+  logger.info("Checking Sync");
   bool canSync = await SyncUtils.canSync();
   if (!canSync) return;
 
   //check if already running
   int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
-  int? lastUpdatedAt = StorageHive().get(SyncUtils.keySyncProcess);
+  int? lastUpdatedAt = StorageHive().get(SyncUtils.keySyncProcessRunning);
   if (lastUpdatedAt != null && (utcNow - lastUpdatedAt < 6000)) {
-    debugPrint("Already Syncing");
+    logger.warning("Already Syncing");
     return;
   }
-
-  // set timer to update running state
-  // Save state every 5 seconds
-  final timer = Timer.periodic(Duration(seconds: 5), (timer) async {
-    await StorageHive().put(SyncUtils.keySyncProcess,
-        DateTime.now().toUtc().millisecondsSinceEpoch);
-  });
-
   // Check connectivity first
   bool hasInternet = await hasInternetConnection();
-  if (!hasInternet) {
-    return;
+  if (hasInternet) {
+    // Save state
+    await StorageHive().put(SyncUtils.keySyncProcessRunning,
+        DateTime.now().toUtc().millisecondsSinceEpoch);
+    // set timer to update running state every 5 seconds
+    final timer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      await StorageHive().put(SyncUtils.keySyncProcessRunning,
+          DateTime.now().toUtc().millisecondsSinceEpoch);
+    });
+
+    //1. push local changes
+    //2. upload media files if any
+    //3. pull server changes
+    //4. download media files if any
+    try {
+      await SyncUtils.pushAllChanges();
+      await SyncUtils.fetchAllChanges();
+    } catch (e, s) {
+      logger.error("Sync exception", error: e, stackTrace: s);
+    }
+    logger.info("Executed sync");
+    timer.cancel();
   }
-  debugPrint("Executed sync");
-  //1. push local changes
-  //2. upload media files if any
-  //3. pull server changes
-  //4. download media files if any
-  timer.cancel();
 }
 
 // Helper to check internet connectivity

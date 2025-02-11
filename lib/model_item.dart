@@ -7,6 +7,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item_file.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
+import 'service_logger.dart';
 import 'storage_sqlite.dart';
 import 'utils_sync.dart';
 
@@ -353,22 +354,49 @@ class ModelItem {
     int inserted = await dbHelper.insert("item", map);
     map["thumbnail"] = null;
     map["table"] = "item";
-    SyncUtils.pushChange(map);
+    SyncUtils.encryptAndPushChange(map);
     return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
-    int updated = await dbHelper.update("item", map, id);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
+    int updated = await dbHelper.update("item", updatedMap, id);
+    map["updated_at"] = utcNow;
     map["thumbnail"] = null;
     map["table"] = "item";
-    SyncUtils.pushChange(map);
+    SyncUtils.encryptAndPushChange(
+      map,
+    );
     return updated;
   }
 
-  Future<int> delete() async {
+  Future<int> upcertChangeFromServer() async {
+    int result;
+    final dbHelper = StorageSqlite.instance;
+    Map<String, dynamic> map = toMap();
+    List<Map<String, dynamic>> rows = await dbHelper.getWithId("item", id);
+    if (rows.isEmpty) {
+      result = await dbHelper.insert("item", map);
+    } else {
+      int existingUpdatedAt = rows[0]["updated_at"];
+      int incomingUpdatedAt = map["updated_at"];
+      if (incomingUpdatedAt > existingUpdatedAt) {
+        result = await dbHelper.update("item", map, id);
+      } else {
+        result = 0;
+      }
+    }
+    return result;
+  }
+
+  Future<int> delete({bool withServerSync = false}) async {
+    final logger = AppLogger(prefixes: ["model_item", "delete"]);
     final dbHelper = StorageSqlite.instance;
     if (data != null) {
       if (data!.containsKey("path")) {
@@ -376,7 +404,7 @@ class ModelItem {
         String fileHash = path.basename(filePath);
         List<String> fileHashItemIds =
             await ModelItemFile.getFileHashItemIds(fileHash);
-        debugPrint("Deleting File ItemId:$id,FileItems:$fileHashItemIds");
+        logger.debug("ItemId:$id,FileItems:$fileHashItemIds");
         File file = File(filePath);
         if (file.existsSync() &&
             fileHashItemIds.length == 1 &&
@@ -392,7 +420,18 @@ class ModelItem {
         }
       }
     }
+    Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("item", id);
+    if (withServerSync) {
+      SyncUtils.encryptAndPushChange(map, deleted: true);
+    }
     return deleted;
+  }
+
+  static Future<void> deletedFromServer(String id) async {
+    ModelItem? item = await ModelItem.get(id);
+    if (item != null) {
+      await item.delete();
+    }
   }
 }

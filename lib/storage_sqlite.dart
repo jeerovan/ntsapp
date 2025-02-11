@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -11,29 +12,47 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 
 import 'common.dart';
+import 'service_logger.dart';
 
 class StorageSqlite {
   static final StorageSqlite instance = StorageSqlite._init();
   static Database? _database;
-
+  static Completer<Database>? _databaseCompleter;
+  final logger = AppLogger(prefixes: ["StorageSqlite"]);
   StorageSqlite._init();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    String dbFileName = AppConfig.get("db_file");
-    _database = await _initDB(dbFileName);
+    if (_databaseCompleter != null) return _databaseCompleter!.future;
+    _databaseCompleter = Completer();
+    try {
+      String dbFileName = AppConfig.get("db_file");
+      _database = await _initDB(dbFileName);
+      _databaseCompleter!.complete(_database);
+    } catch (e) {
+      _databaseCompleter!.completeError(e);
+      _databaseCompleter = null;
+      rethrow;
+    }
     return _database!;
   }
 
   Future<Database> _initDB(String dbFileName) async {
-    final dbDir = await getDatabasesPath();
-    final dbPath = join(dbDir, dbFileName);
-    debugPrint("DbPath:$dbPath");
-    return await openDatabase(dbPath,
-        version: 10,
-        onCreate: _onCreate,
-        onUpgrade: _onUpgrade,
-        onOpen: _onOpen);
+    try {
+      final dbDir = await getDatabasesPath();
+      final dbPath = join(dbDir, dbFileName);
+      logger.info("DbPath:$dbPath");
+      return await openDatabase(dbPath,
+          version: 11,
+          onConfigure: _onConfigure,
+          onCreate: _onCreate,
+          onUpgrade: _onUpgrade,
+          onOpen: _onOpen);
+    } catch (e, stackTrace) {
+      logger.error("Failed to initialize database",
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
 
   Future<void> ensureDatabaseInitialized() async {
@@ -42,35 +61,54 @@ class StorageSqlite {
 
   Future close() async {
     final db = await instance.database;
-    db.close();
+    await db.close();
+    _database = null;
+    _databaseCompleter = null;
+  }
+
+  Future _onConfigure(Database db) async {
+    await db.execute('PRAGMA foreign_keys = ON');
+    logger.info("onConfigure:Foreign keys enabled.");
   }
 
   Future _onOpen(Database db) async {
-    await db.execute('PRAGMA foreign_keys = ON');
-    debugPrint('Database opened');
+    logger.info('Database opened');
   }
 
   Future _onCreate(Database db, int version) async {
-    await db.execute('PRAGMA foreign_keys = ON');
     await initTables(db);
     await createCategoryAndGroupsWithNotesOnFreshInstall(db);
-    debugPrint('Database created with version: $version');
+    logger.info('Database created with version: $version');
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    await db.execute('PRAGMA foreign_keys = ON');
     if (oldVersion <= 7) {
       await dbMigration_8(db);
     } else if (oldVersion == 8) {
       await dbMigration_9(db);
       await dbMigration_10(db);
+      await dbMigration_11(db);
     } else if (oldVersion == 9) {
       await dbMigration_10(db);
+      await dbMigration_11(db);
+    } else if (oldVersion == 10) {
+      await dbMigration_11(db);
     }
-    debugPrint('Database upgraded from version $oldVersion to $newVersion');
+    logger.info('Database upgraded from version $oldVersion to $newVersion');
   }
 
   Future<void> initTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE profile (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        username TEXT,
+        thumbnail TEXT,
+        url TEXT,
+        updated_at INTEGER,
+        at INTEGER
+      )
+    ''');
     await db.execute('''
       CREATE TABLE category (
         id TEXT PRIMARY KEY,
@@ -137,7 +175,14 @@ class StorageSqlite {
         at INTEGER
       )
     ''');
-    debugPrint("Tables Created");
+    await db.execute('''
+      CREATE TABLE change (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        data TEXT NOT NULL
+      )
+    ''');
+    logger.info("Tables Created");
   }
 
   Future<Uint8List> loadImageAsUint8List(String assetPath) async {
@@ -607,5 +652,27 @@ class StorageSqlite {
     await db.execute("ALTER TABLE category ADD COLUMN updated_at INTEGER");
     await db.execute("ALTER TABLE itemgroup ADD COLUMN updated_at INTEGER");
     await db.execute("ALTER TABLE item ADD COLUMN updated_at INTEGER");
+  }
+
+  Future<void> dbMigration_11(Database db) async {
+    await db.execute('''
+      CREATE TABLE profile (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        username TEXT,
+        thumbnail TEXT,
+        url TEXT,
+        updated_at INTEGER,
+        at INTEGER
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE change (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        data TEXT NOT NULL
+      )
+    ''');
+    await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
   }
 }

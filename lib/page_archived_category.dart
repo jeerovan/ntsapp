@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
-import 'package:ntsapp/model_item_group.dart';
-
-import 'model_item.dart';
 
 class PageArchivedCategories extends StatefulWidget {
   final Function(bool) onSelectionChange;
@@ -91,16 +88,8 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
 
   Future<void> deleteSelectedItems() async {
     for (ModelCategory category in _selection) {
-      List<ModelGroup> groups = await ModelGroup.allInCategory(category.id!);
-      for (ModelGroup group in groups) {
-        List<ModelItem> items = await ModelItem.getAllInGroup(group.id!);
-        for (ModelItem item in items) {
-          await item.delete();
-        }
-        await group.delete();
-      }
       _archivedCategories.remove(category);
-      await category.delete();
+      await category.delete(withServerSync: true);
     }
     if (mounted) {
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);

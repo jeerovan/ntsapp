@@ -6,6 +6,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/backup_restore.dart';
 import 'package:ntsapp/model_setting.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -27,6 +28,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class SettingsPageState extends State<SettingsPage> {
+  final logger = AppLogger(prefixes: ["page_settings"]);
   final LocalAuthentication _auth = LocalAuthentication();
   bool isAuthSupported = false;
   bool isAuthEnabled = false;
@@ -64,8 +66,8 @@ class SettingsPageState extends State<SettingsPage> {
       if (isAuthenticated) {
         setAuthSetting();
       }
-    } catch (e) {
-      debugPrint("Authentication Error: $e");
+    } catch (e, s) {
+      logger.error("_authenticate", error: e, stackTrace: s);
     }
   }
 

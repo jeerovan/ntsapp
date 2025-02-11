@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -18,13 +19,11 @@ import 'model_setting.dart';
 
 Future<String> createBackup(String baseDirPath) async {
   String error = "";
-
   // empty db backup directory
   String backupDir = AppConfig.get("backup_dir");
   final String dbFilesDirPath = path.join(baseDirPath, backupDir);
   error = await emptyDir(dbFilesDirPath);
   if (error.isNotEmpty) {
-    debugPrint("Error in emptyDir(createBackup):$error");
     return error;
   }
   // create db backup files
@@ -62,6 +61,7 @@ Future<String> createBackup(String baseDirPath) async {
 }
 
 Future<String> zipDbFiles(Map<String, String> data) async {
+  final logger = AppLogger(prefixes: ["backup_restore", "zipDbFiles"]);
   String error = "";
   try {
     String todayDate = getTodayDate();
@@ -75,7 +75,8 @@ Future<String> zipDbFiles(Map<String, String> data) async {
     await encoder.addDirectory(Directory(path.join(baseDirPath, mediaDir)));
     await encoder.addDirectory(Directory(path.join(baseDirPath, backupDir)));
     await encoder.close();
-  } catch (e) {
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
     error = e.toString();
   }
   return error;
@@ -89,7 +90,6 @@ Future<String> restoreBackup(Map<String, String> data) async {
   final String dbFilesDirPath = path.join(baseDirPath, backupDir);
   error = await emptyDir(dbFilesDirPath);
   if (error.isNotEmpty) {
-    debugPrint("Error in emptyDir(restoreBackup):$error");
     return error;
   }
   // media files can be overwritten if present
@@ -97,18 +97,15 @@ Future<String> restoreBackup(Map<String, String> data) async {
   // extract zip file
   error = await compute(unZipFiles, data);
   if (error.isNotEmpty) {
-    debugPrint("Error in compute(restoreBackup):$error");
     return error;
   }
 
   error = await restoreDbFiles(baseDirPath);
-  if (error.isNotEmpty) {
-    debugPrint("Error in restoreDbFiles(restoreBackup):$error");
-  }
   return error;
 }
 
 Future<String> unZipFiles(Map<String, String> data) async {
+  final logger = AppLogger(prefixes: ["backup_restore", "unZipFiles"]);
   String baseDirPath = data["dir"]!;
   String zipPath = data["zip"]!;
   String error = "";
@@ -127,13 +124,15 @@ Future<String> unZipFiles(Map<String, String> data) async {
         Directory(path.join(baseDirPath, fileName)).createSync(recursive: true);
       }
     }
-  } catch (e) {
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
     error = e.toString();
   }
   return error;
 }
 
 Future<String> restoreDbFiles(String baseDirPath) async {
+  final logger = AppLogger(prefixes: ["backup_restore", "restoreDbFiles"]);
   String error = "";
 
   // load db backup files
@@ -165,7 +164,8 @@ Future<String> restoreDbFiles(String baseDirPath) async {
           }
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
       error = e.toString();
       break;
     }
@@ -174,6 +174,7 @@ Future<String> restoreDbFiles(String baseDirPath) async {
 }
 
 Future<String> emptyDir(String dirPath) async {
+  final logger = AppLogger(prefixes: ["backup_restore", "emptyDir"]);
   String error = "";
   final directory = Directory(dirPath);
   try {
@@ -184,7 +185,8 @@ Future<String> emptyDir(String dirPath) async {
     }
     // Recreate the empty directory
     await directory.create();
-  } catch (e) {
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
     error = e.toString();
   }
   return error;
@@ -198,25 +200,23 @@ Future<String> restoreOldBackup(Map<String, String> data) async {
   final String backupDirPath = path.join(baseDirPath, backupDir);
   error = await emptyDir(backupDirPath);
   if (error.isNotEmpty) {
-    debugPrint("Error in emptyDir(restoreOldBackup):$error");
     return error;
   }
   // extract zip file
   error = await compute(unZipOldFiles, data);
   if (error.isNotEmpty) {
-    debugPrint("Error in compute(restoreOldBackup):$error");
     return error;
   }
 
   error = await restoreOldDb(baseDirPath);
   if (error.isNotEmpty) {
-    debugPrint("Error in restoreOldDb(restoreOldBackup):$error");
     return error;
   }
   return error;
 }
 
 Future<String> unZipOldFiles(Map<String, String> data) async {
+  final logger = AppLogger(prefixes: ["backup_restore", "unZipOldFiles"]);
   String baseDirPath = path.join(data["dir"]!, "oldBackup");
   String zipPath = data["zip"]!;
   String error = "";
@@ -235,14 +235,15 @@ Future<String> unZipOldFiles(Map<String, String> data) async {
         Directory(path.join(baseDirPath, fileName)).createSync(recursive: true);
       }
     }
-  } catch (e) {
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
     error = e.toString();
-    debugPrint("Error Unzipping Old Files: $error");
   }
   return error;
 }
 
 Future<String> restoreOldDb(String baseDirPath) async {
+  final logger = AppLogger(prefixes: ["backup_restore", "restoreOldDb"]);
   String error = "";
   String backupDirPath = path.join(baseDirPath, "oldBackup");
   String oldDbPath = path.join(backupDirPath, "notetoself.db");
@@ -401,9 +402,9 @@ Future<String> restoreOldDb(String baseDirPath) async {
         }
       }
     }
-  } catch (e) {
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
     error = e.toString();
-    debugPrint("Error Loading Old Backup: $error");
   } finally {
     oldDb.close();
   }

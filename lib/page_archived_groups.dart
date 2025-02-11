@@ -3,8 +3,6 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
 
-import 'model_item.dart';
-
 class PageArchivedGroups extends StatefulWidget {
   final Function(bool) onSelectionChange;
   final Function(VoidCallback) setDeleteCallback;
@@ -91,12 +89,8 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
 
   Future<void> deleteSelectedItems() async {
     for (ModelGroup group in _selection) {
-      List<ModelItem> items = await ModelItem.getAllInGroup(group.id!);
-      for (ModelItem item in items) {
-        await item.delete();
-      }
       _archivedGroups.remove(group);
-      await group.delete();
+      await group.deleteCascade(withServerSync: true);
     }
     if (mounted) {
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);

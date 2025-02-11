@@ -16,6 +16,7 @@ class ModelCategory {
   String title;
   Uint8List? thumbnail;
   String color;
+  int? state;
   int? position;
   int? archivedAt;
   int? groupCount;
@@ -27,6 +28,7 @@ class ModelCategory {
     required this.title,
     this.thumbnail,
     required this.color,
+    this.state,
     this.position,
     this.archivedAt,
     this.groupCount,
@@ -40,6 +42,7 @@ class ModelCategory {
       'title': title.isEmpty ? "Category" : title,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'color': color,
+      'state': state,
       'position': position,
       'archived_at': archivedAt,
       'updated_at': updatedAt,
@@ -73,6 +76,7 @@ class ModelCategory {
       title: getValueFromMap(map, 'title', defaultValue: ""),
       thumbnail: thumbnail,
       color: colorCode,
+      state: getValueFromMap(map, 'state', defaultValue: 0),
       position:
           getValueFromMap(map, 'position', defaultValue: positionCount * 1000),
       archivedAt: getValueFromMap(map, 'archived_at', defaultValue: 0),
@@ -144,25 +148,68 @@ class ModelCategory {
     // send to sync
     map["thumbnail"] = null;
     map["table"] = "category";
-    SyncUtils.pushChange(map);
+    SyncUtils.encryptAndPushChange(map);
     return inserted;
   }
 
   Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
-    int updated = await dbHelper.update("category", map, id);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
+    int updated = await dbHelper.update("category", updatedMap, id);
     // send to sync
+    map["updated_at"] = utcNow;
     map["thumbnail"] = null;
     map["table"] = "category";
-    SyncUtils.pushChange(map);
+    SyncUtils.encryptAndPushChange(map);
     return updated;
   }
 
-  Future<int> delete() async {
+  Future<int> upcertChangeFromServer() async {
+    int result;
     final dbHelper = StorageSqlite.instance;
+    Map<String, dynamic> map = toMap();
+    List<Map<String, dynamic>> rows = await dbHelper.getWithId("category", id);
+    if (rows.isEmpty) {
+      result = await dbHelper.insert("category", map);
+    } else {
+      int existingUpdatedAt = rows[0]["updated_at"];
+      int incomingUpdatedAt = map["updated_at"];
+      if (incomingUpdatedAt > existingUpdatedAt) {
+        result = await dbHelper.update("category", map, id);
+      } else {
+        result = 0;
+      }
+    }
+    return result;
+  }
+
+  Future<void> deleteCascade({bool withServerSync = false}) async {
+    List<ModelGroup> groups = await ModelGroup.allInCategory(id!);
+    for (ModelGroup group in groups) {
+      await group.deleteCascade(withServerSync: withServerSync);
+    }
+    await delete(withServerSync: withServerSync);
+  }
+
+  Future<int> delete({bool withServerSync = false}) async {
+    final dbHelper = StorageSqlite.instance;
+    Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("category", id);
+    if (withServerSync) {
+      SyncUtils.encryptAndPushChange(map, deleted: true);
+    }
     return deleted;
+  }
+
+  static Future<void> deletedFromServer(String id) async {
+    ModelCategory? category = await ModelCategory.get(id);
+    if (category != null) {
+      await category.deleteCascade();
+    }
   }
 }

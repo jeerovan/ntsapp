@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:ntsapp/common.dart';
+import 'package:ntsapp/utils_sync.dart';
+
 import 'storage_sqlite.dart';
 
 class ModelProfile {
   String id;
-  String email;
+  String? email;
   String? username;
   Uint8List? thumbnail;
   String? url;
@@ -13,7 +16,7 @@ class ModelProfile {
 
   ModelProfile({
     required this.id,
-    required this.email,
+    this.email,
     this.username,
     this.thumbnail,
     this.url,
@@ -45,12 +48,12 @@ class ModelProfile {
     int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
     return ModelProfile(
       id: map['id'],
-      email: map['email'],
+      email: getValueFromMap(map, "email", defaultValue: ""),
       thumbnail: thumbnail,
-      username: map.containsKey('username') ? map['username'] : "",
-      url: map.containsKey('url') ? map['url'] : "",
-      updatedAt: map.containsKey('updated_at') ? map['updated_at'] : nowUtc,
-      at: map.containsKey('at') ? map['at'] : nowUtc,
+      username: getValueFromMap(map, "username", defaultValue: ""),
+      url: getValueFromMap(map, "url", defaultValue: ""),
+      updatedAt: getValueFromMap(map, "updated_at", defaultValue: nowUtc),
+      at: getValueFromMap(map, "at", defaultValue: nowUtc),
     );
   }
 
@@ -80,17 +83,43 @@ class ModelProfile {
     return inserted;
   }
 
-  Future<int> update() async {
+  Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
-    int updated = await dbHelper.update("profile", map, id);
+    int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    Map<String, dynamic> updatedMap = {"updated_at": utcNow};
+    for (String attr in attrs) {
+      updatedMap[attr] = map[attr];
+    }
+    SyncUtils.pushProfileChange(updatedMap);
+    int updated = await dbHelper.update("profile", updatedMap, id);
     return updated;
+  }
+
+  Future<int> upcertChangeFromServer() async {
+    int result;
+    final dbHelper = StorageSqlite.instance;
+    Map<String, dynamic> map = toMap();
+    List<Map<String, dynamic>> rows = await dbHelper.getWithId("profile", id);
+    if (rows.isEmpty) {
+      result = await dbHelper.insert("profile", map);
+    } else {
+      int existingUpdatedAt = rows[0]["updated_at"];
+      int incomingUpdatedAt = map["updated_at"];
+      if (incomingUpdatedAt > existingUpdatedAt) {
+        map.remove("email");
+        result = await dbHelper.update("profile", map, id);
+      } else {
+        result = 0;
+      }
+    }
+    return result;
   }
 
   Future<int> delete() async {
     final dbHelper = StorageSqlite.instance;
     int deleted = await dbHelper.delete("profile", id);
+    // delete related categories
     return deleted;
   }
 }

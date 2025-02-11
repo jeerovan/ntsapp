@@ -13,6 +13,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:mime/mime.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -110,19 +111,20 @@ String capitalize(String text) {
 }
 
 Future<void> openURL(String link) async {
+  final logger = AppLogger(prefixes: ["common", "openURL"]);
   try {
     await launchUrlString(link);
-  } catch (e) {
-    // Handle error if the PDF viewer app is not installed or cannot be launched
-    debugPrint('Error opening: $e');
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
   }
 }
 
 void openMedia(String filePath) async {
+  final logger = AppLogger(prefixes: ["common", "openMedia"]);
   try {
     OpenFilex.open(filePath);
-  } catch (e) {
-    debugPrint(e.toString());
+  } catch (e, s) {
+    logger.error("Exeption", error: e, stackTrace: s);
   }
 }
 
@@ -462,6 +464,7 @@ Future<Map<String, dynamic>?> processAndGetFileAttributes(
 }
 
 Future<int> checkDownloadNetworkImage(String itemId, String imageUrl) async {
+  final logger = AppLogger(prefixes: ["common", "checkDownloadNetworkImage"]);
   String fileName = '$itemId-urlimage.png';
   String directory = "image";
   String newPath = await getFilePath(directory, fileName);
@@ -485,13 +488,14 @@ Future<int> checkDownloadNetworkImage(String itemId, String imageUrl) async {
         }
       }
     }
-  } catch (e) {
-    debugPrint('Error downloading url image: $e');
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
   }
   return portrait;
 }
 
 Future<String?> getAudioDuration(String filePath) async {
+  final logger = AppLogger(prefixes: ["common", "getAudioDuration"]);
   final player = AudioPlayer();
   String? audioDuration;
   try {
@@ -506,8 +510,8 @@ Future<String?> getAudioDuration(String filePath) async {
     // Play briefly to trigger duration loading, then immediately stop
     await player.resume();
     await player.pause();
-  } catch (e) {
-    debugPrint(e.toString());
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
   } finally {
     player.dispose();
   }
@@ -515,6 +519,8 @@ Future<String?> getAudioDuration(String filePath) async {
 }
 
 class VideoInfoExtractor {
+  final logger = AppLogger(prefixes: ["common", "VideoInfoExtractor"]);
+
   final String filePath;
   late Player? _player;
 
@@ -531,8 +537,8 @@ class VideoInfoExtractor {
         ),
       );
       _videoController = VideoController(_player!);
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, s) {
+      logger.error("Player", error: e, stackTrace: s);
     }
   }
 
@@ -553,8 +559,8 @@ class VideoInfoExtractor {
         'duration': duration,
         'aspect': aspectRatio,
       };
-    } catch (e) {
-      debugPrint('Error extracting video info: $e');
+    } catch (e, s) {
+      logger.error("getVideoInfo", error: e, stackTrace: s);
       return {
         'duration': 0,
         'aspect': 1 / 1,
@@ -579,15 +585,15 @@ class VideoInfoExtractor {
 
       // Check if screenshot is valid
       if (screenshot == null) {
-        debugPrint('Failed to capture screenshot');
+        logger.error("getThumbnail", error: 'Failed to capture screenshot');
         return null;
       }
 
       Uint8List? thumbnail = getImageThumbnail(screenshot);
 
       return thumbnail;
-    } catch (e) {
-      debugPrint('Error getting thumbnail: $e');
+    } catch (e, s) {
+      logger.error("getThumbnail", error: e, stackTrace: s);
       return null;
     }
   }

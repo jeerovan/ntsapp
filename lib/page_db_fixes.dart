@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/service_logger.dart';
 
 import 'common.dart';
 import 'model_item.dart';
@@ -41,6 +42,7 @@ class _PageDbFixesState extends State<PageDbFixes> {
   }
 
   Future<void> applyDbFixes(String task) async {
+    final logger = AppLogger(prefixes: ["page_db_fixes", "applyDbFixes"]);
     switch (task) {
       case "fix_video_thumbnail":
         List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);
@@ -60,8 +62,8 @@ class _PageDbFixesState extends State<PageDbFixes> {
                           milliseconds: (durationSeconds * 500).toInt()));
                   videoItem.thumbnail = thumbnail;
                   await videoItem.update(["thumbnail"]);
-                } catch (e) {
-                  debugPrint(e.toString());
+                } catch (e, s) {
+                  logger.error("fix_video_thumbnail", error: e, stackTrace: s);
                 }
               }
             }

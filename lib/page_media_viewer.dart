@@ -41,7 +41,6 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
     currentId = widget.id;
     currentIndex = widget.index;
     loadItems();
-    debugPrint("Initialized:$currentIndex");
   }
 
   @override

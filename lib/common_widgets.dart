@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -499,7 +500,6 @@ class _WidgetAudioState extends State<WidgetAudio> {
     _audioPlayer.onDurationChanged.listen((duration) {
       setState(() {
         _totalDuration = duration;
-        debugPrint("TotalDuration:${_totalDuration.inSeconds}");
       });
     });
 
@@ -651,7 +651,9 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
               if (await canLaunchUrl(linkUri)) {
                 await launchUrl(linkUri);
               } else {
-                debugPrint("Could not launch $linkText");
+                final logger = AppLogger(
+                    prefixes: ["common_widgets", "WidgetTextWithLink"]);
+                logger.error("Could not launch $linkText");
               }
             },
         ));
