@@ -87,6 +87,13 @@ class ModelGroup {
     int positionCount = 0;
     if (map.containsKey("category_id")) {
       categoryId = map["category_id"];
+      // case when group is coming from other device
+      // category_id may not exist, set to dnd category
+      ModelCategory? groupCategory = await ModelCategory.get(categoryId);
+      if (groupCategory == null) {
+        categoryId = dndCategory.id!;
+      }
+      // get positionCount
       if (categoryId == dndCategory.id!) {
         positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
       } else {
