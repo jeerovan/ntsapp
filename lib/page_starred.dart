@@ -5,7 +5,6 @@ import 'package:ntsapp/enums.dart';
 
 import 'model_item.dart';
 import 'model_item_group.dart';
-import 'model_setting.dart';
 import 'page_items.dart';
 import 'widgets_item.dart';
 
@@ -173,7 +172,6 @@ class _PageStarredItemsState extends State<PageStarredItems> {
 
   @override
   Widget build(BuildContext context) {
-    bool isRTL = ModelSetting.getForKey("rtl", "no") == "yes";
     return Scaffold(
       appBar: AppBar(
           title: _isSelecting
@@ -204,8 +202,7 @@ class _PageStarredItemsState extends State<PageStarredItems> {
                     : Colors.transparent,
                 margin: const EdgeInsets.symmetric(vertical: 1),
                 child: Align(
-                  alignment:
-                      isRTL ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: Alignment.centerLeft,
                   child: Container(
                       margin: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),

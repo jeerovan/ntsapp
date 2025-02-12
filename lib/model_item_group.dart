@@ -188,6 +188,12 @@ class ModelGroup {
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
 
+  static Future<List<Map<String, dynamic>>> getAllRawRowsMap() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    return await db.query("itemgroup");
+  }
+
   static Future<ModelGroup?> get(String id) async {
     final dbHelper = StorageSqlite.instance;
     List<Map<String, dynamic>> list = await dbHelper.getWithId("itemgroup", id);

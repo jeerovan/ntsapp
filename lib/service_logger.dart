@@ -1,4 +1,4 @@
-//import 'dart:developer' as dev;
+import 'dart:developer' as dev;
 import 'dart:io';
 
 // Custom Logger Class
@@ -43,16 +43,15 @@ class AppLogger {
     String logMessage =
         "NTSAPP $prefixString [$levelStr] [$timestamp] $message";
 
+    // Use dart:developer for efficient logging
+    dev.log(logMessage, error: error, stackTrace: stackTrace);
+
     if (error != null) {
       logMessage += " $error";
     }
     if (stackTrace != null) {
       logMessage += " $stackTrace";
     }
-
-    // Use dart:developer for efficient logging
-    //dev.log(logMessage, error: error, stackTrace: stackTrace);
-
     // Optionally print in debug mode
     if (!const bool.fromEnvironment('dart.vm.product')) {
       final coloredMessage = "${_getColor(level)}$logMessage$_reset";

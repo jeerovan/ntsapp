@@ -319,6 +319,12 @@ class ModelItem {
     return null;
   }
 
+  static Future<List<Map<String, dynamic>>> getAllRawRowsMap() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    return await db.query("item");
+  }
+
   static Future<List<ModelItem>> getDateItemForGroupId(
       String groupId, String date) async {
     final dbHelper = StorageSqlite.instance;

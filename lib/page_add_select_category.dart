@@ -6,16 +6,16 @@ import 'common_widgets.dart';
 import 'model_category.dart';
 import 'page_category_add_edit.dart';
 
-class PageCategory extends StatefulWidget {
-  const PageCategory({
+class PageAddSelectCategory extends StatefulWidget {
+  const PageAddSelectCategory({
     super.key,
   });
 
   @override
-  PageCategoryState createState() => PageCategoryState();
+  PageAddSelectCategoryState createState() => PageAddSelectCategoryState();
 }
 
-class PageCategoryState extends State<PageCategory> {
+class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
   List<ModelCategory> categories = [];
 
   @override
@@ -30,7 +30,7 @@ class PageCategoryState extends State<PageCategory> {
   }
 
   Future<void> fetchCategories() async {
-    categories = await ModelCategory.all();
+    categories = await ModelCategory.visibleCategories();
     setState(() {});
   }
 

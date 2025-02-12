@@ -13,6 +13,7 @@ import 'model_item_group.dart';
 
 class ModelCategory {
   String? id;
+  String? profileId;
   String title;
   Uint8List? thumbnail;
   String color;
@@ -25,6 +26,7 @@ class ModelCategory {
 
   ModelCategory({
     this.id,
+    this.profileId,
     required this.title,
     this.thumbnail,
     required this.color,
@@ -39,6 +41,7 @@ class ModelCategory {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'profile_id': profileId,
       'title': title.isEmpty ? "Category" : title,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'color': color,
@@ -73,6 +76,7 @@ class ModelCategory {
     int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
     return ModelCategory(
       id: categoryId,
+      profileId: getValueFromMap(map, 'profile_id'),
       title: getValueFromMap(map, 'title', defaultValue: ""),
       thumbnail: thumbnail,
       color: colorCode,
@@ -86,7 +90,7 @@ class ModelCategory {
     );
   }
 
-  static Future<List<ModelCategory>> all() async {
+  static Future<List<ModelCategory>> visibleCategories() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("category",
@@ -139,6 +143,22 @@ class ModelCategory {
       return await fromMap(map);
     }
     return null;
+  }
+
+  static Future<void> associateWithProfile(String id) async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    final _ = await db.rawQuery('''
+      UPDATE category
+      SET profile_id = ?
+      WHERE profile_id = ?
+    ''', [id, null]);
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllRawRowsMap() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    return await db.query("category");
   }
 
   Future<int> insert() async {

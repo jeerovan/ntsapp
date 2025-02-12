@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
-import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_checks.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/supa_db_explorer.dart';
+import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
@@ -28,7 +30,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   bool canResend = false;
   bool errorSendingOtop = false;
   bool errorVerifyingOtp = false;
-  String email = ModelSetting.getForKey("otp_sent_to", "");
+  String email =
+      StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = Supabase.instance.client.auth.currentSession != null;
   bool canSync = false;
@@ -37,10 +40,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   void initState() {
     super.initState();
     if (supabase.auth.currentSession == null) {
-      String sentAtStr = ModelSetting.getForKey("otp_sent_at", "0");
-      int sentAt = int.parse(sentAtStr);
+      int sentOtpAt =
+          StorageHive().get(AppString.otpSentAt.string, defaultValue: 0);
       int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
-      if (nowUtc - sentAt < 900000) {
+      if (nowUtc - sentOtpAt < 900000) {
         otpSent = true;
       }
     }
@@ -80,8 +83,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
           email: email,
         );
         int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
-        ModelSetting.update("otp_sent_to", email);
-        ModelSetting.update("otp_sent_at", nowUtc.toString());
+        await StorageHive().put(AppString.otpSentTo.string, email);
+        await StorageHive().put(AppString.otpSentAt.string, nowUtc);
         setState(() {
           otpSent = true;
         });
@@ -97,20 +100,28 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     }
   }
 
+  // cases: First time, Re-login
   Future<void> verifyOtp() async {
     final otp = otpController.text;
-    final String email = ModelSetting.getForKey("otp_sent_to", "");
+    final String email =
+        StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
     if (email.isNotEmpty && otp.isNotEmpty) {
       try {
         AuthResponse response = await supabase.auth
             .verifyOTP(email: email, token: otp, type: OtpType.email);
         Session? session = response.session;
         if (session != null) {
+          await StorageHive().delete(AppString.otpSentTo.string);
+          await StorageHive().delete(AppString.otpSentAt.string);
           User user = session.user;
           ModelProfile profile =
               await ModelProfile.fromMap({"id": user.id, "email": user.email!});
-          // if exists, update no fields, will happen through sync
+          // if exists, update no fields.
           await profile.upcertChangeFromServer();
+          // associate existing categories with this profile if not already associated
+          await ModelCategory.associateWithProfile(user.id);
+          // If sync is enabled, ready local data to be pushed if not already done
+          SyncUtils.pushLocalChanges(); // no wait
           navigateToChecksPage();
         }
         errorVerifyingOtp = false;

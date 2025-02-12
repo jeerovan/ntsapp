@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
-import 'package:ntsapp/page_category.dart';
+import 'package:ntsapp/page_add_select_category.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
@@ -117,7 +117,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   void addToCategory() {
     Navigator.of(context)
         .push(MaterialPageRoute(
-      builder: (context) => PageCategory(),
+      builder: (context) => PageAddSelectCategory(),
       settings: const RouteSettings(name: "SelectGroupCategory"),
     ))
         .then((value) async {

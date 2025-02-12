@@ -82,12 +82,17 @@ enum AppString {
   supabaseUrl,
   supabaseInitialzed,
 
+  //sign-in
+  otpSentTo,
+  otpSentAt,
+
   // Sync
   lastChangesFetchedAt,
+  localChangesSynced,
 }
 
 extension AppStringExtension on AppString {
-  String get value {
+  String get string {
     switch (this) {
       case AppString.deviceId:
         return "device_id";
@@ -99,6 +104,12 @@ extension AppStringExtension on AppString {
         return "supabase_initialized";
       case AppString.lastChangesFetchedAt:
         return "last_changes_fetched_at";
+      case AppString.localChangesSynced:
+        return "local_changes_synced";
+      case AppString.otpSentTo:
+        return "otp_sent_to";
+      case AppString.otpSentAt:
+        return "otp_sent_at";
     }
   }
 }

@@ -17,7 +17,7 @@ import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SyncUtils {
-  // constatants
+  // constants
   static String keySyncProcessRunning = "sync_process";
 
   static String? getSignedInUserId() {
@@ -39,7 +39,6 @@ class SyncUtils {
     if (signedInUserId == null) {
       return null;
     }
-
     SecureStorage storage = SecureStorage();
     String keyForMasterKey = '${signedInUserId}_mk';
     String? masterKeyBase64 = await storage.read(key: keyForMasterKey);
@@ -52,12 +51,44 @@ class SyncUtils {
     return masterKeyBase64 != null;
   }
 
+  static Future<void> pushLocalChanges() async {
+    if (await canSync()) {
+      bool synced = await StorageHive()
+          .get(AppString.localChangesSynced.string, defaultValue: false);
+      if (!synced) {
+        //push categories
+        List<Map<String, dynamic>> categories =
+            await ModelCategory.getAllRawRowsMap();
+        for (Map<String, dynamic> category in categories) {
+          category["thumbnail"] = null;
+          category["table"] = "category";
+          encryptAndPushChange(category, saveOnly: true);
+        }
+        //push groups
+        List<Map<String, dynamic>> groups = await ModelGroup.getAllRawRowsMap();
+        for (Map<String, dynamic> group in groups) {
+          group["thumbnail"] = null;
+          group["table"] = "itemgroup";
+          encryptAndPushChange(group, saveOnly: true);
+        }
+        //push groups
+        List<Map<String, dynamic>> items = await ModelItem.getAllRawRowsMap();
+        for (Map<String, dynamic> item in items) {
+          item["thumbnail"] = null;
+          item["table"] = "item";
+          encryptAndPushChange(item, saveOnly: true);
+        }
+        await StorageHive().put(AppString.localChangesSynced.string, true);
+      }
+    }
+  }
+
   static Future<void> encryptAndPushChange(Map<String, dynamic> map,
-      {bool deleted = false}) async {
+      {bool deleted = false, bool saveOnly = false}) async {
     final logger = AppLogger(prefixes: ["utils_sync", "encryptAndPushChange"]);
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 != null) {
-      String deviceId = await StorageHive().get(AppString.deviceId.value);
+      String deviceId = await StorageHive().get(AppString.deviceId.string);
       String table = map["table"];
       SupabaseClient supabaseClient = Supabase.instance.client;
       String messageId = map['id'];
@@ -91,20 +122,23 @@ class SyncUtils {
         changeMap["cipher_nonce"] = nonceBase64;
         changeMap["deleted"] = 0;
       }
-      try {
-        await supabaseClient
-            .from(table)
-            .upsert(changeMap, onConflict: 'id')
-            .eq('id', messageId)
-            .gt('updated_at', updatedAt);
-      } catch (e, s) {
-        logger.error("Supabase", error: e, stackTrace: s);
+      if (saveOnly) {
         ModelChange change = ModelChange(
           id: messageId,
           name: table,
           data: jsonEncode(changeMap),
         );
         await change.upcert();
+      } else {
+        try {
+          await supabaseClient
+              .from(table)
+              .upsert(changeMap, onConflict: 'id')
+              .eq('id', messageId)
+              .gt('updated_at', updatedAt);
+        } catch (e, s) {
+          logger.error("Supabase", error: e, stackTrace: s);
+        }
       }
     }
   }
@@ -130,14 +164,14 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetching changes");
-    String deviceId = await StorageHive().get(AppString.deviceId.value);
+    String deviceId = await StorageHive().get(AppString.deviceId.string);
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
     SupabaseClient supabaseClient = Supabase.instance.client;
     String lastFetchedAt = await StorageHive().get(
-        AppString.lastChangesFetchedAt.value,
-        defaultValue: "2000-11-11 11:11:11.111111+00");
+        AppString.lastChangesFetchedAt.string,
+        defaultValue: "2011-11-11 11:11:11.111111+00");
     try {
       // fetch public profile changes
       final profileChanges = await supabaseClient
@@ -156,7 +190,7 @@ class SyncUtils {
       // update last fetched at iso time
       String nowUtcCurrent = nowUtcInISO();
       await StorageHive()
-          .put(AppString.lastChangesFetchedAt.value, nowUtcCurrent);
+          .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
     } catch (e, s) {
       logger.error("Exception", error: e, stackTrace: s);
     }

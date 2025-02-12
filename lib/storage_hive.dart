@@ -16,10 +16,10 @@ class StorageHive {
     final appDocumentDirectory = await getApplicationDocumentsDirectory();
     Hive.init(appDocumentDirectory.path);
     Box box = await Hive.openBox(boxName);
-    String? existingDeviceId = box.get(AppString.deviceId.value);
+    String? existingDeviceId = box.get(AppString.deviceId.string);
     if (existingDeviceId == null) {
       String newDeviceId = Uuid().v4();
-      await box.put(AppString.deviceId.value, newDeviceId);
+      await box.put(AppString.deviceId.string, newDeviceId);
     }
   }
 

@@ -80,13 +80,13 @@ Future<void> initializeDependencies() async {
   await initializeDirectories();
   CryptoUtils.init();
 
-  final String? supaUrl = AppConfig.get(AppString.supabaseUrl.value, null);
-  final String? supaKey = AppConfig.get(AppString.supabaseKey.value, null);
+  final String? supaUrl = AppConfig.get(AppString.supabaseUrl.string, null);
+  final String? supaKey = AppConfig.get(AppString.supabaseKey.string, null);
   if (supaUrl != null && supaKey != null) {
     await Supabase.initialize(url: supaUrl, anonKey: supaKey);
-    await StorageHive().put(AppString.supabaseInitialzed.value, true);
+    await StorageHive().put(AppString.supabaseInitialzed.string, true);
   } else {
-    await StorageHive().put(AppString.supabaseInitialzed.value, false);
+    await StorageHive().put(AppString.supabaseInitialzed.string, false);
   }
 }
 
@@ -272,13 +272,13 @@ class DataSync {
   // Initialize background sync based on platform
   static Future<void> initialize() async {
     if (Platform.isAndroid || Platform.isIOS) {
-      await _initializeDelayedBackgroundOnMobile();
+      await _initializeBackgroundForMobile();
     }
-    await _initializeQuickForegroundOnAll();
+    await _initializeForegroundForAll();
   }
 
   // Mobile-specific initialization using Workmanager
-  static Future<void> _initializeDelayedBackgroundOnMobile() async {
+  static Future<void> _initializeBackgroundForMobile() async {
     await Workmanager()
         .initialize(backgroundTaskDispatcher, isInDebugMode: kDebugMode);
     await Workmanager().registerPeriodicTask(
@@ -297,7 +297,7 @@ class DataSync {
   }
 
   // Foreground initialization using Timer
-  static Future<void> _initializeQuickForegroundOnAll() async {
+  static Future<void> _initializeForegroundForAll() async {
     logger.info("Foreground sync started");
     final sync = DataSync();
     await sync._startQuickForegroundSync();

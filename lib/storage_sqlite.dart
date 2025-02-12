@@ -112,6 +112,7 @@ class StorageSqlite {
     await db.execute('''
       CREATE TABLE category (
         id TEXT PRIMARY KEY,
+        profile_id TEXT,
         title TEXT NOT NULL,
         color TEXT,
         position INTEGER,
@@ -674,5 +675,6 @@ class StorageSqlite {
       )
     ''');
     await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
+    await db.execute("ALTER TABLE category ADD COLUMN profile_id TEXT");
   }
 }
