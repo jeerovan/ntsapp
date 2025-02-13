@@ -31,6 +31,7 @@ import 'page_contact_pick.dart';
 import 'page_group_add_edit.dart';
 import 'page_location_pick.dart';
 import 'page_media_viewer.dart';
+import 'storage_hive.dart';
 
 bool isMobile = Platform.isAndroid || Platform.isIOS;
 
@@ -114,6 +115,10 @@ class _PageItemsState extends State<PageItems> {
     _audioRecorder = AudioRecorder();
     showItemId = widget.loadItemIdOnInit;
     fetchItems(showItemId);
+    // update on server fetch
+    StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
+      fetchItems(null);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadImageDirectoryPath();
       if (widget.sharedContents.isNotEmpty) {

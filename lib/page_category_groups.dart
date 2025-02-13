@@ -4,10 +4,12 @@ import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
 
 import 'common_widgets.dart';
+import 'enums.dart';
 import 'model_category.dart';
 import 'page_category_add_edit.dart';
 import 'page_group_add_edit.dart';
 import 'page_items.dart';
+import 'storage_hive.dart';
 
 class PageCategoryGroups extends StatefulWidget {
   final ModelCategory category;
@@ -35,6 +37,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   @override
   void initState() {
     super.initState();
+    // update on server fetch
+    StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
+      loadGroups(false);
+    });
     category = widget.category;
     loadGroups(false);
   }
