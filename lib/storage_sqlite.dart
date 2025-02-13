@@ -55,7 +55,7 @@ class StorageSqlite {
     }
   }
 
-  Future<void> ensureDatabaseInitialized() async {
+  Future<void> ensureInitialized() async {
     await database; // Forces lazy initialization if not already done
   }
 

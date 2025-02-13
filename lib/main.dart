@@ -31,7 +31,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:http/http.dart' as http;
 
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
-
+final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
@@ -61,23 +61,25 @@ Future<void> main() async {
 Future<void> initializeDependencies() async {
   // Load the configuration before running the app
   await AppConfig.load();
-  // initialize hive
-  await StorageHive().init();
+  logger.info("Initializing Hive");
+  await StorageHive().initialize();
+  logger.info("Initializing Sqlite");
   if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
   // initialize sqlite
-  StorageSqlite dbHelper = StorageSqlite.instance;
-  await dbHelper.ensureDatabaseInitialized();
+  StorageSqlite dbSqlite = StorageSqlite.instance;
+  await dbSqlite.ensureInitialized();
 
-  List<Map<String, dynamic>> keyValuePairs = await dbHelper.getAll('setting');
+  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
   ModelSetting.appJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
   };
 
   await initializeDirectories();
+  logger.info("Initializing Crypto");
   CryptoUtils.init();
 
   final String? supaUrl = AppConfig.get(AppString.supabaseUrl.string, null);

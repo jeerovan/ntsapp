@@ -6,13 +6,14 @@ import 'package:uuid/uuid.dart';
 class StorageHive {
   static final StorageHive _instance = StorageHive._internal();
   static final boxName = "ntsHive";
+
   factory StorageHive() {
     return _instance;
   }
 
   StorageHive._internal();
 
-  Future<void> init() async {
+  Future<void> initialize() async {
     final appDocumentDirectory = await getApplicationDocumentsDirectory();
     Hive.init(appDocumentDirectory.path);
     Box box = await Hive.openBox(boxName);
@@ -31,6 +32,11 @@ class StorageHive {
   dynamic get(String key, {dynamic defaultValue}) {
     var box = Hive.box(boxName);
     return box.get(key, defaultValue: defaultValue);
+  }
+
+  Stream<BoxEvent> watch(String key) {
+    var box = Hive.box(boxName);
+    return box.watch(key: key);
   }
 
   Future<void> delete(String key) async {

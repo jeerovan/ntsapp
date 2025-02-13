@@ -48,6 +48,8 @@ class PageHome extends StatefulWidget {
 class _PageHomeState extends State<PageHome> {
   final logger = AppLogger(prefixes: ["page_home"]);
   final LocalAuthentication _auth = LocalAuthentication();
+  bool requiresAuthentication = false;
+  bool isAuthenticated = false;
   ModelCategory? category;
   final List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
   bool _isLoading = false;
@@ -59,6 +61,12 @@ class _PageHomeState extends State<PageHome> {
   @override
   void initState() {
     super.initState();
+    // update on server fetch
+    StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
+      if (!requiresAuthentication || isAuthenticated) {
+        loadCategoriesGroups();
+      }
+    });
     checkAuthAndLoad();
   }
 
@@ -67,6 +75,7 @@ class _PageHomeState extends State<PageHome> {
       if (ModelSetting.getForKey("local_auth", "no") == "no") {
         await loadCategoriesGroups();
       } else {
+        requiresAuthentication = true;
         await _authenticateOnStart();
       }
     } catch (e, s) {
@@ -90,7 +99,7 @@ class _PageHomeState extends State<PageHome> {
 
   Future<void> _authenticateOnStart() async {
     try {
-      bool isAuthenticated = await _auth.authenticate(
+      isAuthenticated = await _auth.authenticate(
         localizedReason: 'Please authenticate',
         options: const AuthenticationOptions(
           biometricOnly: false, // Use only biometric
@@ -298,19 +307,20 @@ class _PageHomeState extends State<PageHome> {
             LucideIcons.user,
           ),
         ),
-      IconButton(
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => SearchPage(
-              onChanges: loadCategoriesGroups,
-            ),
-            settings: const RouteSettings(name: "SearchNotes"),
-          ));
-        },
-        icon: const Icon(
-          LucideIcons.search,
+      if (!requiresAuthentication || isAuthenticated)
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => SearchPage(
+                onChanges: loadCategoriesGroups,
+              ),
+              settings: const RouteSettings(name: "SearchNotes"),
+            ));
+          },
+          icon: const Icon(
+            LucideIcons.search,
+          ),
         ),
-      ),
       const SizedBox(
         width: 10,
       ),
@@ -324,6 +334,8 @@ class _PageHomeState extends State<PageHome> {
                   builder: (context) => SettingsPage(
                     isDarkMode: widget.isDarkMode,
                     onThemeToggle: widget.onThemeToggle,
+                    canShowBackupRestore:
+                        !requiresAuthentication || isAuthenticated,
                   ),
                   settings: const RouteSettings(name: "Settings"),
                 ),
@@ -341,7 +353,9 @@ class _PageHomeState extends State<PageHome> {
                   logger.error("DeleteBackupOnExitSettings",
                       error: e, stackTrace: s);
                 }
-                await loadCategoriesGroups();
+                if (!requiresAuthentication || isAuthenticated) {
+                  await loadCategoriesGroups();
+                }
               });
               break;
             case 1:
@@ -363,34 +377,38 @@ class _PageHomeState extends State<PageHome> {
                   settings: const RouteSettings(name: "Trash"),
                 ),
               ).then((_) async {
-                await loadCategoriesGroups();
+                if (!requiresAuthentication || isAuthenticated) {
+                  await loadCategoriesGroups();
+                }
               });
               break;
           }
         },
         itemBuilder: (context) => [
-          PopupMenuItem<int>(
-            value: 2,
-            child: Row(
-              children: [
-                Icon(LucideIcons.archiveRestore, color: Colors.grey),
-                Container(width: 8),
-                const SizedBox(width: 5),
-                const Text('Trash'),
-              ],
+          if (!requiresAuthentication || isAuthenticated)
+            PopupMenuItem<int>(
+              value: 2,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.archiveRestore, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Trash'),
+                ],
+              ),
             ),
-          ),
-          PopupMenuItem<int>(
-            value: 1,
-            child: Row(
-              children: [
-                Icon(LucideIcons.star, color: Colors.grey),
-                Container(width: 8),
-                const SizedBox(width: 5),
-                const Text('Starred notes'),
-              ],
+          if (!requiresAuthentication || isAuthenticated)
+            PopupMenuItem<int>(
+              value: 1,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.star, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Starred notes'),
+                ],
+              ),
             ),
-          ),
           PopupMenuItem<int>(
             value: 0,
             child: Row(
@@ -573,20 +591,23 @@ class _PageHomeState extends State<PageHome> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          key: const Key("add_note_group"),
-          onPressed: () {
-            if (_isReordering) {
-              setState(() {
-                _isReordering = false;
-              });
-            } else {
-              createNoteGroup();
-            }
-          },
-          shape: const CircleBorder(),
-          child: Icon(_isReordering ? LucideIcons.check : LucideIcons.plus),
-        ),
+        floatingActionButton: !requiresAuthentication || isAuthenticated
+            ? FloatingActionButton(
+                key: const Key("add_note_group"),
+                onPressed: () {
+                  if (_isReordering) {
+                    setState(() {
+                      _isReordering = false;
+                    });
+                  } else {
+                    createNoteGroup();
+                  }
+                },
+                shape: const CircleBorder(),
+                child:
+                    Icon(_isReordering ? LucideIcons.check : LucideIcons.plus),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }

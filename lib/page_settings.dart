@@ -19,9 +19,13 @@ import 'common.dart';
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
+  final bool canShowBackupRestore;
 
   const SettingsPage(
-      {super.key, required this.isDarkMode, required this.onThemeToggle});
+      {super.key,
+      required this.isDarkMode,
+      required this.onThemeToggle,
+      required this.canShowBackupRestore});
 
   @override
   SettingsPageState createState() => SettingsPageState();
@@ -242,23 +246,25 @@ class SettingsPageState extends State<SettingsPage> {
                 ],
               ),
             ),
-            ListTile(
-              leading:
-                  const Icon(LucideIcons.databaseBackup, color: Colors.grey),
-              title: const Text('Backup'),
-              horizontalTitleGap: 24.0,
-              onTap: () async {
-                createDownloadBackup();
-              },
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.rotateCcw, color: Colors.grey),
-              title: const Text('Restore'),
-              horizontalTitleGap: 24.0,
-              onTap: () async {
-                restoreZipBackup();
-              },
-            ),
+            if (widget.canShowBackupRestore)
+              ListTile(
+                leading:
+                    const Icon(LucideIcons.databaseBackup, color: Colors.grey),
+                title: const Text('Backup'),
+                horizontalTitleGap: 24.0,
+                onTap: () async {
+                  createDownloadBackup();
+                },
+              ),
+            if (widget.canShowBackupRestore)
+              ListTile(
+                leading: const Icon(LucideIcons.rotateCcw, color: Colors.grey),
+                title: const Text('Restore'),
+                horizontalTitleGap: 24.0,
+                onTap: () async {
+                  restoreZipBackup();
+                },
+              ),
             ListTile(
               leading: const Icon(LucideIcons.star, color: Colors.grey),
               title: const Text('Rate app'),
