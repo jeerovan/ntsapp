@@ -358,7 +358,7 @@ class ModelItem {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
-    map["thumbnail"] = null;
+
     map["table"] = "item";
     SyncUtils.encryptAndPushChange(map);
     return inserted;
@@ -374,7 +374,6 @@ class ModelItem {
     }
     int updated = await dbHelper.update("item", updatedMap, id);
     map["updated_at"] = utcNow;
-    map["thumbnail"] = null;
     map["table"] = "item";
     SyncUtils.encryptAndPushChange(
       map,
@@ -382,7 +381,7 @@ class ModelItem {
     return updated;
   }
 
-  Future<int> upcertChangeFromServer() async {
+  Future<int> upcertFromServer() async {
     int result;
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
@@ -429,7 +428,9 @@ class ModelItem {
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("item", id);
     if (withServerSync) {
-      SyncUtils.encryptAndPushChange(map, deleted: true);
+      map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
+      map["table"] = "item";
+      SyncUtils.encryptAndPushChange(map, deleted: true, saveOnly: true);
     }
     return deleted;
   }

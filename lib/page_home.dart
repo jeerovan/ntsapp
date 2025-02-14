@@ -64,7 +64,7 @@ class _PageHomeState extends State<PageHome> {
     // update on server fetch
     StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
       if (!requiresAuthentication || isAuthenticated) {
-        loadCategoriesGroups();
+        if (mounted) loadCategoriesGroups();
       }
     });
     checkAuthAndLoad();
@@ -353,7 +353,10 @@ class _PageHomeState extends State<PageHome> {
                   logger.error("DeleteBackupOnExitSettings",
                       error: e, stackTrace: s);
                 }
-                if (!requiresAuthentication || isAuthenticated) {
+                if (ModelSetting.getForKey("local_auth", "no") == "no") {
+                  requiresAuthentication = false;
+                  await loadCategoriesGroups();
+                } else if (!requiresAuthentication || isAuthenticated) {
                   await loadCategoriesGroups();
                 }
               });

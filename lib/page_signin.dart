@@ -121,7 +121,8 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
           // associate existing categories with this profile if not already associated
           await ModelCategory.associateWithProfile(user.id);
           // If sync is enabled, ready local data to be pushed if not already done
-          SyncUtils.pushLocalChanges(); // no wait
+          // TODO uncomment
+          //SyncUtils.pushLocalChanges(); // no wait
           navigateToChecksPage();
         }
         errorVerifyingOtp = false;

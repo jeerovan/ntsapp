@@ -117,7 +117,7 @@ class _PageItemsState extends State<PageItems> {
     fetchItems(showItemId);
     // update on server fetch
     StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
-      fetchItems(null);
+      if (mounted) fetchItems(null);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadImageDirectoryPath();

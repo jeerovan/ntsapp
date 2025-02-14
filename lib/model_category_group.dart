@@ -39,7 +39,7 @@ class ModelCategoryGroup {
           id, 
           position, 
           'group' AS type
-      FROM itemgroup where itemgroup.archived_at = 0 and itemgroup.category_id = (SELECT id from category where title = 'DND')
+      FROM itemgroup where itemgroup.archived_at = 0 and itemgroup.category_id IN (SELECT id from category where title = 'DND')
       ORDER BY position ASC
     ''';
     List<Map<String, dynamic>> rows = await db.rawQuery(
@@ -96,7 +96,7 @@ class ModelCategoryGroup {
         rowsCategoryCount.isNotEmpty ? rowsCategoryCount[0]['count'] as int : 0;
     String sqlGroupCount = '''
       SELECT count(*) as count
-      FROM itemgroup where category_id = (SELECT id FROM category WHERE title = 'DND')
+      FROM itemgroup where category_id IN (SELECT id FROM category WHERE title = 'DND')
     ''';
     final rowsGroupCount = await db.rawQuery(
       sqlGroupCount,

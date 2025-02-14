@@ -208,7 +208,6 @@ class ModelGroup {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("itemgroup", map);
-    map["thumbnail"] = null;
     map["table"] = "itemgroup";
     SyncUtils.encryptAndPushChange(map);
     return inserted;
@@ -225,13 +224,12 @@ class ModelGroup {
     int updated = await dbHelper.update("itemgroup", updatedMap, id);
 
     map["updated_at"] = utcNow;
-    map["thumbnail"] = null;
     map["table"] = "itemgroup";
     SyncUtils.encryptAndPushChange(map);
     return updated;
   }
 
-  Future<int> upcertChangeFromServer() async {
+  Future<int> upcertFromServer() async {
     int result;
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
@@ -263,7 +261,9 @@ class ModelGroup {
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("itemgroup", id);
     if (withServerSync) {
-      SyncUtils.encryptAndPushChange(map, deleted: true);
+      map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
+      map["table"] = "itemgroup";
+      SyncUtils.encryptAndPushChange(map, deleted: true, saveOnly: true);
     }
     return deleted;
   }

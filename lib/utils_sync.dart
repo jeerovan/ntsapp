@@ -89,54 +89,77 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 != null) {
       String deviceId = await StorageHive().get(AppString.deviceId.string);
+
+      // remove thumbnail if any
+      String? thumbnail = map.remove("thumbnail"); //base64encoded
       String table = map["table"];
-      SupabaseClient supabaseClient = Supabase.instance.client;
       String messageId = map['id'];
       int updatedAt = map['updated_at'];
+      map["deleted"] = deleted ? 1 : 0;
+
       Map<String, dynamic> changeMap = {
         "id": messageId,
         "updated_at": updatedAt,
         "device_id": deviceId
       };
-      if (deleted) {
-        changeMap["deleted"] = 1;
-        changeMap["cipher_text"] = "";
-        changeMap["cipher_nonce"] = "";
-      } else {
-        SodiumSumo sodium = await SodiumSumoInit.init();
-        CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
-        String jsonString = jsonEncode(map);
-        Uint8List jsonBytes = Uint8List.fromList(utf8.encode(jsonString));
+      SodiumSumo sodium = await SodiumSumoInit.init();
+      CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
-        Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
-        ExecutionResult encryptionResult = cryptoUtils.encryptBytes(
-            plainBytes: jsonBytes, key: masterKeyBytes);
-        Uint8List cipherBytes = encryptionResult.getResult()!["encrypted"];
-        Uint8List nonceBytes = encryptionResult.getResult()!["nonce"];
+      String jsonString = jsonEncode(map);
+      Uint8List jsonBytes = Uint8List.fromList(utf8.encode(jsonString));
 
-        String cipherBase64 = base64Encode(cipherBytes);
-        String nonceBase64 = base64Encode(nonceBytes);
+      Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
 
-        changeMap["cipher_text"] = cipherBase64;
-        changeMap["cipher_nonce"] = nonceBase64;
-        changeMap["deleted"] = 0;
-      }
+      //encrypt message and get its key
+      ExecutionResult encryptionResult = cryptoUtils.encryptBytes(
+        plainBytes: jsonBytes,
+      );
+      Uint8List cipherBytes = encryptionResult.getResult()!["encrypted"];
+      Uint8List keyBytes = encryptionResult.getResult()!["key"];
+      Uint8List nonceBytes = encryptionResult.getResult()!["nonce"];
+
+      //encrypt key with master key
+      ExecutionResult keyEncryptionResult =
+          cryptoUtils.encryptBytes(plainBytes: keyBytes, key: masterKeyBytes);
+      Uint8List keyCipherBytes = keyEncryptionResult.getResult()!["encrypted"];
+      Uint8List keyNonceBytes = keyEncryptionResult.getResult()!["nonce"];
+
+      String cipherBase64 = base64Encode(cipherBytes);
+      String nonceBase64 = base64Encode(nonceBytes);
+
+      String keyCipherBase64 = base64Encode(keyCipherBytes);
+      String keyNonceBase64 = base64Encode(keyNonceBytes);
+
+      changeMap["cipher_text"] = cipherBase64;
+      changeMap["cipher_nonce"] = nonceBase64;
+      changeMap["key_cipher"] = keyCipherBase64;
+      changeMap["key_nonce"] = keyNonceBase64;
+
+      String changeData = jsonEncode(changeMap);
+
       if (saveOnly) {
         ModelChange change = ModelChange(
           id: messageId,
           name: table,
-          data: jsonEncode(changeMap),
+          data: changeData,
         );
         await change.upcert();
       } else {
         try {
+          SupabaseClient supabaseClient = Supabase.instance.client;
           await supabaseClient
               .from(table)
               .upsert(changeMap, onConflict: 'id')
               .eq('id', messageId)
               .gt('updated_at', updatedAt);
         } catch (e, s) {
+          ModelChange change = ModelChange(
+            id: messageId,
+            name: table,
+            data: changeData,
+          );
+          await change.upcert();
           logger.error("Supabase", error: e, stackTrace: s);
         }
       }
@@ -182,15 +205,19 @@ class SyncUtils {
         ModelProfile profile = await ModelProfile.fromMap(map);
         await profile.upcertChangeFromServer();
       }
+      int changes = 0;
       // fetch other table changes in sequence
       for (String table in ["category", "itemgroup", "item"]) {
-        await fetchChangesForTable(table, deviceId, lastFetchedAt,
+        int change = await fetchChangesForTable(table, deviceId, lastFetchedAt,
             supabaseClient, masterKeyBytes, cryptoUtils);
+        changes = changes + change;
       }
-      // update last fetched at iso time
-      String nowUtcCurrent = nowUtcInISO();
-      await StorageHive()
-          .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
+      if (changes > 0) {
+        // update last fetched at iso time
+        String nowUtcCurrent = nowUtcInISO();
+        await StorageHive()
+            .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
+      }
     } catch (e, s) {
       logger.error("Exception", error: e, stackTrace: s);
     }
@@ -247,7 +274,7 @@ class SyncUtils {
     return pushed;
   }
 
-  static Future<void> fetchChangesForTable(
+  static Future<int> fetchChangesForTable(
       String table,
       String deviceId,
       String lastFetchedAt,
@@ -256,12 +283,37 @@ class SyncUtils {
       CryptoUtils cryptoUtils) async {
     final response = await supabaseClient
         .from(table)
-        .select('id,cipher_text,cipher_nonce,deleted')
+        .select('id,cipher_text,cipher_nonce,key_cipher,key_nonce')
         .neq('device_id', deviceId)
         .gt('server_at', lastFetchedAt);
-    for (Map<String, dynamic> map in response) {
+    for (Map<String, dynamic> changeMap in response) {
+      String keyCipherBase64 = changeMap["key_cipher"];
+      String keyNonceBase64 = changeMap["key_nonce"];
+      Uint8List keyCipherBytes = base64Decode(keyCipherBase64);
+      Uint8List keyNonceBytes = base64Decode(keyNonceBase64);
+
+      ExecutionResult keyDecryptionResult = cryptoUtils.decryptBytes(
+          cipherBytes: keyCipherBytes,
+          nonce: keyNonceBytes,
+          key: masterKeyBytes);
+      if (keyDecryptionResult.isFailure) continue;
+      Uint8List keyBytes = keyDecryptionResult.getResult()!["decrypted"];
+
+      String cipherTextBase64 = changeMap["cipher_text"];
+      String cipherNonceBase64 = changeMap["cipher_nonce"];
+      Uint8List cipherBytes = base64Decode(cipherTextBase64);
+      Uint8List nonceBytes = base64Decode(cipherNonceBase64);
+
+      ExecutionResult decryptionResult = cryptoUtils.decryptBytes(
+          cipherBytes: cipherBytes, nonce: nonceBytes, key: keyBytes);
+      if (decryptionResult.isFailure) continue;
+
+      Uint8List decryptedBytes = decryptionResult.getResult()!["decrypted"];
+      String jsonString = utf8.decode(decryptedBytes);
+      Map<String, dynamic> map = jsonDecode(jsonString);
+
       String rowId = map["id"];
-      int deleted = map["deleted"];
+      int deleted = map.remove("deleted");
       if (deleted == 1) {
         switch (table) {
           case "category":
@@ -272,29 +324,19 @@ class SyncUtils {
             await ModelItem.deletedFromServer(rowId);
         }
       } else {
-        String cipherText = map["cipher_text"];
-        String cipherNonce = map["cipher_nonce"];
-        Uint8List cipherBytes = base64Decode(cipherText);
-        Uint8List nonceBytes = base64Decode(cipherNonce);
-        ExecutionResult result = cryptoUtils.decryptBytes(
-            cipherBytes: cipherBytes, nonce: nonceBytes, key: masterKeyBytes);
-        if (result.isSuccess) {
-          Uint8List decryptedBytes = result.getResult()!["decrypted"];
-          String jsonString = utf8.decode(decryptedBytes);
-          Map<String, dynamic> map = jsonDecode(jsonString);
-          switch (table) {
-            case "category":
-              ModelCategory category = await ModelCategory.fromMap(map);
-              await category.upcertChangeFromServer();
-            case "itemgroup":
-              ModelGroup group = await ModelGroup.fromMap(map);
-              await group.upcertChangeFromServer();
-            case "item":
-              ModelItem item = await ModelItem.fromMap(map);
-              await item.upcertChangeFromServer();
-          }
+        switch (table) {
+          case "category":
+            ModelCategory category = await ModelCategory.fromMap(map);
+            await category.upcertFromServer();
+          case "itemgroup":
+            ModelGroup group = await ModelGroup.fromMap(map);
+            await group.upcertFromServer();
+          case "item":
+            ModelItem item = await ModelItem.fromMap(map);
+            await item.upcertFromServer();
         }
       }
     }
+    return response.length;
   }
 }

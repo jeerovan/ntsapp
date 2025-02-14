@@ -39,7 +39,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     super.initState();
     // update on server fetch
     StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
-      loadGroups(false);
+      if (mounted) loadGroups(false);
     });
     category = widget.category;
     loadGroups(false);

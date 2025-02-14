@@ -110,19 +110,6 @@ class ModelCategory {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<int> getCount() async {
-    final dbHelper = StorageSqlite.instance;
-    final db = await dbHelper.database;
-    String sql = '''
-      SELECT count(*) as count
-      FROM category
-    ''';
-    final rows = await db.rawQuery(
-      sql,
-    );
-    return rows.isNotEmpty ? rows[0]['count'] as int : 0;
-  }
-
   static Future<ModelCategory> getDND() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
@@ -166,7 +153,6 @@ class ModelCategory {
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("category", map);
     // send to sync
-    map["thumbnail"] = null;
     map["table"] = "category";
     SyncUtils.encryptAndPushChange(map);
     return inserted;
@@ -183,13 +169,12 @@ class ModelCategory {
     int updated = await dbHelper.update("category", updatedMap, id);
     // send to sync
     map["updated_at"] = utcNow;
-    map["thumbnail"] = null;
     map["table"] = "category";
     SyncUtils.encryptAndPushChange(map);
     return updated;
   }
 
-  Future<int> upcertChangeFromServer() async {
+  Future<int> upcertFromServer() async {
     int result;
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
@@ -221,7 +206,9 @@ class ModelCategory {
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("category", id);
     if (withServerSync) {
-      SyncUtils.encryptAndPushChange(map, deleted: true);
+      map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
+      map["table"] = "category";
+      SyncUtils.encryptAndPushChange(map, deleted: true, saveOnly: true);
     }
     return deleted;
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -47,13 +48,16 @@ class CryptoUtils {
   }
 
   ExecutionResult encryptBytes(
-      {required Uint8List plainBytes, required Uint8List key}) {
-    SecureKey secureKey = SecureKey.fromList(_sodium, key);
+      {required Uint8List plainBytes, Uint8List? key}) {
+    SecureKey secureKey =
+        key == null ? generateKey() : SecureKey.fromList(_sodium, key);
+    Uint8List keyBytes = secureKey.extractBytes();
     Uint8List nonce = generateNonce();
     Uint8List cipherBytes = _sodium.crypto.secretBox
         .easy(message: plainBytes, nonce: nonce, key: secureKey);
     secureKey.dispose();
-    return ExecutionResult.success({"encrypted": cipherBytes, "nonce": nonce});
+    return ExecutionResult.success(
+        {"encrypted": cipherBytes, "key": keyBytes, "nonce": nonce});
   }
 
   ExecutionResult decryptBytes(
@@ -75,20 +79,27 @@ class CryptoUtils {
   }
 
   Future<ExecutionResult> encryptFile(String fileIn, String fileOut) async {
+    Stream<List<int>> streamIn = File(fileIn).openRead();
+    StreamConsumer<List<int>> streamOut = File(fileOut).openWrite();
+    String key = await encryptFileStream(streamIn, streamOut);
+    return ExecutionResult.success({"key": key});
+  }
+
+  Future<String> encryptFileStream(
+      Stream<List<int>> streamIn, StreamConsumer<List<int>> streamOut) async {
     SecureKey secretKey = _sodium.crypto.secretStream.keygen();
     String secretKeyBase64 = base64Encode(secretKey.extractBytes());
-
     await _sodium.crypto.secretStream
         .pushChunked(
-          messageStream: File(fileIn).openRead(),
+          messageStream: streamIn,
           key: secretKey,
           chunkSize: 4096,
         )
         .pipe(
-          File(fileOut).openWrite(),
+          streamOut,
         );
     secretKey.dispose();
-    return ExecutionResult.success({"key": secretKeyBase64});
+    return secretKeyBase64;
   }
 
   Future<void> decryptFile(
