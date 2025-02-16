@@ -180,7 +180,10 @@ class StorageSqlite {
       CREATE TABLE change (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        data TEXT NOT NULL
+        data TEXT NOT NULL,
+        type INTEGER NOT NULL,
+        thumbnail TEXT,
+        path TEXT
       )
     ''');
     logger.info("Tables Created");
@@ -671,7 +674,10 @@ class StorageSqlite {
       CREATE TABLE change (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        data TEXT NOT NULL
+        data TEXT NOT NULL,
+        type INTEGER NOT NULL,
+        thumbnail TEXT,
+        path TEXT
       )
     ''');
     await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");

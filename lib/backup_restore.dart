@@ -148,15 +148,15 @@ Future<String> restoreDbFiles(String baseDirPath) async {
           switch (table) {
             case "category":
               ModelCategory category = await ModelCategory.fromMap(row);
-              await category.insert();
+              await category.insert(saveToSync: true);
               break;
             case "itemgroup":
               ModelGroup group = await ModelGroup.fromMap(row);
-              await group.insert();
+              await group.insert(saveToSync: true);
               break;
             case "item":
               ModelItem item = await ModelItem.fromMap(row);
-              await item.insert();
+              await item.insert(saveToSync: true);
               break;
             case "setting":
               await ModelSetting.update(row["id"], row["value"]);

@@ -204,12 +204,12 @@ class ModelGroup {
     return null;
   }
 
-  Future<int> insert() async {
+  Future<int> insert({bool saveToSync = false}) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("itemgroup", map);
     map["table"] = "itemgroup";
-    SyncUtils.encryptAndPushChange(map);
+    SyncUtils.encryptAndPushChange(map, saveOnly: saveToSync);
     return inserted;
   }
 

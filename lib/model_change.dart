@@ -1,14 +1,22 @@
+import 'package:ntsapp/common.dart';
+
 import 'storage_sqlite.dart';
 
 class ModelChange {
   String id;
   String name;
   String data;
+  int type;
+  String? thumbnail;
+  String? filePath;
 
   ModelChange({
     required this.id,
     required this.name,
     required this.data,
+    required this.type,
+    this.thumbnail,
+    this.filePath,
   });
 
   Map<String, dynamic> toMap() {
@@ -16,6 +24,9 @@ class ModelChange {
       'id': id,
       'name': name,
       'data': data,
+      'type': type,
+      'thumbnail': thumbnail,
+      'path': filePath,
     };
   }
 
@@ -24,7 +35,36 @@ class ModelChange {
       id: map['id'],
       name: map['name'],
       data: map['data'],
+      type: getValueFromMap(map, 'type'),
+      thumbnail: getValueFromMap(map, 'thumbnail'),
+      filePath: getValueFromMap(map, 'path'),
     );
+  }
+
+  static Future<void> add(String changeId, String table, String changeData,
+      int changeType, String? thumbnail, String? filePath) async {
+    ModelChange change = ModelChange(
+      id: changeId,
+      name: table,
+      data: changeData,
+      type: changeType,
+      thumbnail: thumbnail,
+      filePath: filePath,
+    );
+    await change.upcert();
+  }
+
+  static Future<String?> getThumbnail(String table, String rowId) async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows = await db.query(table,
+        columns: ["thumbnail"], where: "id = ?", whereArgs: [rowId]);
+    String? thumbnail;
+    if (rows.isNotEmpty) {
+      Map<String, dynamic> rowMap = rows.first;
+      thumbnail = getValueFromMap(rowMap, 'thumbnail', defaultValue: null);
+    }
+    return thumbnail;
   }
 
   static Future<List<ModelChange>> all() async {

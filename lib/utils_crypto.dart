@@ -4,12 +4,15 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 
-class CryptoUtils {
-  final SodiumSumo _sodium;
+import 'enums.dart';
 
+class CryptoUtils {
+  final logger = AppLogger(prefixes: ["utils_crypto"]);
+  final SodiumSumo _sodium;
   CryptoUtils(this._sodium);
 
   static init() {
@@ -56,8 +59,11 @@ class CryptoUtils {
     Uint8List cipherBytes = _sodium.crypto.secretBox
         .easy(message: plainBytes, nonce: nonce, key: secureKey);
     secureKey.dispose();
-    return ExecutionResult.success(
-        {"encrypted": cipherBytes, "key": keyBytes, "nonce": nonce});
+    return ExecutionResult.success({
+      AppString.encrypted.string: cipherBytes,
+      AppString.key.string: keyBytes,
+      AppString.nonce.string: nonce
+    });
   }
 
   ExecutionResult decryptBytes(
@@ -69,8 +75,10 @@ class CryptoUtils {
     try {
       Uint8List plainBytes = _sodium.crypto.secretBox
           .openEasy(cipherText: cipherBytes, nonce: nonce, key: secureKey);
-      executionResult = ExecutionResult.success({"decrypted": plainBytes});
-    } catch (e) {
+      executionResult =
+          ExecutionResult.success({AppString.decrypted.string: plainBytes});
+    } catch (e, s) {
+      logger.error("decryptBytes", error: e, stackTrace: s);
       executionResult = ExecutionResult.failure(reason: e.toString());
     } finally {
       secureKey.dispose();
@@ -79,43 +87,112 @@ class CryptoUtils {
   }
 
   Future<ExecutionResult> encryptFile(String fileIn, String fileOut) async {
-    Stream<List<int>> streamIn = File(fileIn).openRead();
-    StreamConsumer<List<int>> streamOut = File(fileOut).openWrite();
-    String key = await encryptFileStream(streamIn, streamOut);
-    return ExecutionResult.success({"key": key});
-  }
-
-  Future<String> encryptFileStream(
-      Stream<List<int>> streamIn, StreamConsumer<List<int>> streamOut) async {
+    ExecutionResult executionResult;
     SecureKey secretKey = _sodium.crypto.secretStream.keygen();
     String secretKeyBase64 = base64Encode(secretKey.extractBytes());
-    await _sodium.crypto.secretStream
-        .pushChunked(
-          messageStream: streamIn,
-          key: secretKey,
-          chunkSize: 4096,
-        )
-        .pipe(
-          streamOut,
-        );
-    secretKey.dispose();
-    return secretKeyBase64;
+    try {
+      await _sodium.crypto.secretStream
+          .pushChunked(
+            messageStream: File(fileIn).openRead(),
+            key: secretKey,
+            chunkSize: 4096,
+          )
+          .pipe(
+            File(fileOut).openWrite(),
+          );
+      executionResult = ExecutionResult.success({"key": secretKeyBase64});
+    } catch (e, s) {
+      logger.error("encryptFile", error: e, stackTrace: s);
+      executionResult = ExecutionResult.failure(reason: e.toString());
+    } finally {
+      secretKey.dispose();
+    }
+
+    return executionResult;
   }
 
-  Future<void> decryptFile(
+  Future<ExecutionResult> decryptFile(
       String fileIn, String fileOut, Uint8List keyBytes) async {
+    ExecutionResult executionResult;
     SecureKey secretKey = SecureKey.fromList(_sodium, keyBytes);
+    try {
+      await _sodium.crypto.secretStream
+          .pullChunked(
+            cipherStream: File(fileIn).openRead(),
+            key: secretKey,
+            chunkSize: 4096,
+          )
+          .pipe(
+            File(fileOut).openWrite(),
+          );
+      executionResult = ExecutionResult.success({});
+    } catch (e, s) {
+      logger.error("decryptFile", error: e, stackTrace: s);
+      executionResult = ExecutionResult.failure(reason: e.toString());
+    } finally {
+      secretKey.dispose();
+    }
+    return executionResult;
+  }
 
-    await _sodium.crypto.secretStream
-        .pullChunked(
-          cipherStream: File(fileIn).openRead(),
-          key: secretKey,
-          chunkSize: 4096,
-        )
-        .pipe(
-          File(fileOut).openWrite(),
-        );
-    secretKey.dispose();
+  Map<String, dynamic> getEncryptedBytesMap(
+      Uint8List plainBytes, Uint8List masterKeyBytes) {
+    Map<String, dynamic> changeMap = {};
+    ExecutionResult encryptionResult = encryptBytes(
+      plainBytes: plainBytes,
+    );
+    Uint8List cipherBytes =
+        encryptionResult.getResult()![AppString.encrypted.string];
+    Uint8List keyBytes = encryptionResult.getResult()![AppString.key.string];
+    Uint8List nonceBytes =
+        encryptionResult.getResult()![AppString.nonce.string];
+
+    //encrypt key with master key
+    ExecutionResult keyEncryptionResult =
+        encryptBytes(plainBytes: keyBytes, key: masterKeyBytes);
+    Uint8List keyCipherBytes =
+        keyEncryptionResult.getResult()![AppString.encrypted.string];
+    Uint8List keyNonceBytes =
+        keyEncryptionResult.getResult()![AppString.nonce.string];
+
+    String cipherBase64 = base64Encode(cipherBytes);
+    String nonceBase64 = base64Encode(nonceBytes);
+
+    String keyCipherBase64 = base64Encode(keyCipherBytes);
+    String keyNonceBase64 = base64Encode(keyNonceBytes);
+
+    changeMap[AppString.cipherText.string] = cipherBase64;
+    changeMap[AppString.cipherNonce.string] = nonceBase64;
+    changeMap[AppString.keyCipher.string] = keyCipherBase64;
+    changeMap[AppString.keyNonce.string] = keyNonceBase64;
+    return changeMap;
+  }
+
+  Uint8List? getDecryptedBytesFromMap(
+      Map<String, dynamic> map, Uint8List masterKeyBytes) {
+    String keyCipherBase64 = map[AppString.keyCipher.string];
+    String keyNonceBase64 = map[AppString.keyNonce.string];
+    Uint8List keyCipherBytes = base64Decode(keyCipherBase64);
+    Uint8List keyNonceBytes = base64Decode(keyNonceBase64);
+
+    ExecutionResult keyDecryptionResult = decryptBytes(
+        cipherBytes: keyCipherBytes, nonce: keyNonceBytes, key: masterKeyBytes);
+    if (keyDecryptionResult.isFailure) return null;
+    Uint8List keyBytes =
+        keyDecryptionResult.getResult()![AppString.decrypted.string];
+
+    String cipherTextBase64 = map[AppString.cipherText.string];
+    String cipherNonceBase64 = map[AppString.cipherNonce.string];
+    Uint8List cipherBytes = base64Decode(cipherTextBase64);
+    Uint8List nonceBytes = base64Decode(cipherNonceBase64);
+
+    ExecutionResult decryptionResult = decryptBytes(
+        cipherBytes: cipherBytes, nonce: nonceBytes, key: keyBytes);
+    if (decryptionResult.isFailure) return null;
+
+    Uint8List decryptedBytes =
+        decryptionResult.getResult()![AppString.decrypted.string];
+    return decryptedBytes;
   }
 
   Future<ExecutionResult> updateGenerateKeys(

@@ -89,6 +89,16 @@ enum AppString {
   // Sync
   lastChangesFetchedAt,
   localChangesSynced,
+
+  // Cipher
+  key,
+  nonce,
+  encrypted,
+  decrypted,
+  keyCipher,
+  keyNonce,
+  cipherText,
+  cipherNonce,
 }
 
 extension AppStringExtension on AppString {
@@ -110,6 +120,47 @@ extension AppStringExtension on AppString {
         return "otp_sent_to";
       case AppString.otpSentAt:
         return "otp_sent_at";
+      case AppString.keyCipher:
+        return "key_cipher";
+      case AppString.keyNonce:
+        return "key_nonce";
+      case AppString.cipherText:
+        return "cipher_text";
+      case AppString.cipherNonce:
+        return "cipher_nonce";
+      case AppString.key:
+        return "key";
+      case AppString.nonce:
+        return "nonce";
+      case AppString.encrypted:
+        return "encrypted";
+      case AppString.decrypted:
+        return "decrypted";
+    }
+  }
+}
+
+enum ChangeTask {
+  uploadData, // text,tasks,contact,location
+  uploadDataFile, // audio,documents
+  uploadFile, // upload file after data/thumbnail upload
+  uploadDataThumbnailFile, // image,video
+  uploadThumbnailFile, // upload thumbnail and file after data upload
+}
+
+extension ChangeTaskExtension on ChangeTask {
+  int get value {
+    switch (this) {
+      case ChangeTask.uploadData:
+        return 1;
+      case ChangeTask.uploadFile:
+        return 2;
+      case ChangeTask.uploadDataThumbnailFile:
+        return 3;
+      case ChangeTask.uploadDataFile:
+        return 4;
+      case ChangeTask.uploadThumbnailFile:
+        return 5;
     }
   }
 }

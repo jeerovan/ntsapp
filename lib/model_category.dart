@@ -148,13 +148,13 @@ class ModelCategory {
     return await db.query("category");
   }
 
-  Future<int> insert() async {
+  Future<int> insert({bool saveToSync = false}) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("category", map);
     // send to sync
     map["table"] = "category";
-    SyncUtils.encryptAndPushChange(map);
+    SyncUtils.encryptAndPushChange(map, saveOnly: saveToSync);
     return inserted;
   }
 

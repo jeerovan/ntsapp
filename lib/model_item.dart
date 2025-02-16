@@ -354,13 +354,13 @@ class ModelItem {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  Future<int> insert() async {
+  Future<int> insert({bool saveToSync = false}) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
 
     map["table"] = "item";
-    SyncUtils.encryptAndPushChange(map);
+    SyncUtils.encryptAndPushChange(map, saveOnly: saveToSync);
     return inserted;
   }
 

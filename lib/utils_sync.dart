@@ -19,7 +19,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SyncUtils {
   // constants
   static String keySyncProcessRunning = "sync_process";
-
+  static final logger = AppLogger(prefixes: [
+    "utils_sync",
+  ]);
   static String? getSignedInUserId() {
     if (StorageHive().get("supabase_initialized")) {
       SupabaseClient supabaseClient = Supabase.instance.client;
@@ -85,20 +87,21 @@ class SyncUtils {
 
   static Future<void> encryptAndPushChange(Map<String, dynamic> map,
       {bool deleted = false, bool saveOnly = false}) async {
-    final logger = AppLogger(prefixes: ["utils_sync", "encryptAndPushChange"]);
     String? masterKeyBase64 = await getMasterKey();
-    if (masterKeyBase64 != null) {
+    String? signedInUserId = getSignedInUserId();
+    if (masterKeyBase64 != null && signedInUserId != null) {
       String deviceId = await StorageHive().get(AppString.deviceId.string);
 
       // remove thumbnail if any
       String? thumbnail = map.remove("thumbnail"); //base64encoded
       String table = map["table"];
       String messageId = map['id'];
+      String changeId = '$signedInUserId|$messageId';
       int updatedAt = map['updated_at'];
       map["deleted"] = deleted ? 1 : 0;
 
       Map<String, dynamic> changeMap = {
-        "id": messageId,
+        "id": changeId,
         "updated_at": updatedAt,
         "device_id": deviceId
       };
@@ -107,69 +110,103 @@ class SyncUtils {
       CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
       String jsonString = jsonEncode(map);
-      Uint8List jsonBytes = Uint8List.fromList(utf8.encode(jsonString));
-
+      Uint8List plainBytes = Uint8List.fromList(utf8.encode(jsonString));
       Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
 
-      //encrypt message and get its key
-      ExecutionResult encryptionResult = cryptoUtils.encryptBytes(
-        plainBytes: jsonBytes,
-      );
-      Uint8List cipherBytes = encryptionResult.getResult()!["encrypted"];
-      Uint8List keyBytes = encryptionResult.getResult()!["key"];
-      Uint8List nonceBytes = encryptionResult.getResult()!["nonce"];
+      Map<String, dynamic> encryptedDataMap =
+          cryptoUtils.getEncryptedBytesMap(plainBytes, masterKeyBytes);
 
-      //encrypt key with master key
-      ExecutionResult keyEncryptionResult =
-          cryptoUtils.encryptBytes(plainBytes: keyBytes, key: masterKeyBytes);
-      Uint8List keyCipherBytes = keyEncryptionResult.getResult()!["encrypted"];
-      Uint8List keyNonceBytes = keyEncryptionResult.getResult()!["nonce"];
-
-      String cipherBase64 = base64Encode(cipherBytes);
-      String nonceBase64 = base64Encode(nonceBytes);
-
-      String keyCipherBase64 = base64Encode(keyCipherBytes);
-      String keyNonceBase64 = base64Encode(keyNonceBytes);
-
-      changeMap["cipher_text"] = cipherBase64;
-      changeMap["cipher_nonce"] = nonceBase64;
-      changeMap["key_cipher"] = keyCipherBase64;
-      changeMap["key_nonce"] = keyNonceBase64;
+      changeMap.addAll(encryptedDataMap);
 
       String changeData = jsonEncode(changeMap);
+      String? filePath;
 
+      if (map.containsKey('data') && map['data'] != null) {
+        Map<String, dynamic>? dataMap;
+        if (map['data'] is String) {
+          dataMap = jsonDecode(map['data']);
+        } else if (map['data'] is Map) {
+          dataMap = map['data'];
+        }
+        if (dataMap != null && dataMap.containsKey("path")) {
+          filePath = dataMap["path"];
+        }
+      }
+      ChangeTask changeTask = ChangeTask.uploadData;
+      if (!deleted) {
+        changeTask = getChangeTaskType(table, thumbnail == null, map);
+      }
       if (saveOnly) {
-        ModelChange change = ModelChange(
-          id: messageId,
-          name: table,
-          data: changeData,
-        );
-        await change.upcert();
+        await ModelChange.add(
+            changeId, table, changeData, changeTask.value, thumbnail, filePath);
       } else {
         try {
           SupabaseClient supabaseClient = Supabase.instance.client;
           await supabaseClient
               .from(table)
               .upsert(changeMap, onConflict: 'id')
-              .eq('id', messageId)
+              .eq('id', changeId)
               .gt('updated_at', updatedAt);
+          // upload thumbnail if any
+          if (thumbnail != null) {
+            pushThumbnail(table, changeId, thumbnail);
+          }
         } catch (e, s) {
-          ModelChange change = ModelChange(
-            id: messageId,
-            name: table,
-            data: changeData,
-          );
-          await change.upcert();
-          logger.error("Supabase", error: e, stackTrace: s);
+          await ModelChange.add(changeId, table, changeData, changeTask.value,
+              thumbnail, filePath);
+          logger.error("encryptAndPushChange|Supabase",
+              error: e, stackTrace: s);
         }
       }
     }
   }
 
+  static Future<void> pushThumbnail(
+    String table,
+    String changeId,
+    String? thumbnail,
+  ) async {
+    List<String> userIdRowId = changeId.split("|");
+    String userId = userIdRowId[0];
+    String rowId = userIdRowId[1];
+    thumbnail ??= await ModelChange.getThumbnail(table, rowId);
+    Uint8List thumbnailBytes = base64Decode(thumbnail!);
+
+    String? masterKeyBase64 = await getMasterKey();
+    Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    Map<String, dynamic> encryptedThumbnailMap =
+        cryptoUtils.getEncryptedBytesMap(thumbnailBytes, masterKeyBytes);
+    String cipherText = encryptedThumbnailMap[AppString.cipherText.string];
+    Uint8List cipherBytes = base64Decode(cipherText);
+    try {
+      SupabaseClient supabaseClient = Supabase.instance.client;
+      await supabaseClient.storage.from('thmbs').uploadBinary(
+            '$userId/$rowId',
+            cipherBytes,
+            fileOptions: const FileOptions(cacheControl: '900', upsert: true),
+            retryAttempts: 0,
+          );
+      // if successful upload key cipher
+      Map<String, dynamic> keyCipherMap = {
+        "id": changeId,
+        AppString.cipherNonce.string:
+            encryptedThumbnailMap[AppString.cipherNonce.string],
+        AppString.keyCipher.string:
+            encryptedThumbnailMap[AppString.keyCipher.string],
+        AppString.keyNonce.string:
+            encryptedThumbnailMap[AppString.keyNonce.string]
+      };
+      await supabaseClient.from('thmbs').upsert(keyCipherMap, onConflict: 'id');
+    } catch (e, s) {
+      logger.error("pushThumbnail|Supabase", error: e, stackTrace: s);
+    }
+  }
+
   static Future<void> pushAllChanges() async {
     if (!await canSync()) return;
-    final logger = AppLogger(prefixes: ["utils_sync", "pushAllChanges"]);
-    logger.info("Pushing changes");
+    logger.info("PushAllChanges");
     SupabaseClient supabaseClient = Supabase.instance.client;
     bool pushedCategories = await pushChangesForTable(
         supabaseClient, "category", "process_bulk_categories");
@@ -182,11 +219,10 @@ class SyncUtils {
   }
 
   static Future<void> fetchAllChanges() async {
-    final logger = AppLogger(prefixes: ["utils_sync", "fetchAllChanges"]);
     if (!await canSync()) return;
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
-    logger.info("Fetching changes");
+    logger.info("FetchAllChanges");
     String deviceId = await StorageHive().get(AppString.deviceId.string);
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
     SodiumSumo sodium = await SodiumSumoInit.init();
@@ -219,13 +255,12 @@ class SyncUtils {
             .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
       }
     } catch (e, s) {
-      logger.error("Exception", error: e, stackTrace: s);
+      logger.error("fetchAllChanges|Supabase", error: e, stackTrace: s);
     }
   }
 
   static Future<void> pushProfileChange(Map<String, dynamic> map) async {
     if (!await canSync()) return;
-    final logger = AppLogger(prefixes: ["utils_sync", "pushProfileChange"]);
     SupabaseClient supabaseClient = Supabase.instance.client;
     int updatedAt = map["updated_at"];
     Map<String, dynamic> changeMap = {"updated_at": updatedAt};
@@ -242,13 +277,12 @@ class SyncUtils {
           .eq('id', map["id"])
           .gt('updated_at', updatedAt);
     } catch (e, s) {
-      logger.error("Supabase", error: e, stackTrace: s);
+      logger.error("pushProfileChange|Supabase", error: e, stackTrace: s);
     }
   }
 
   static Future<bool> pushChangesForTable(
       SupabaseClient supabaseClient, String table, String rpc) async {
-    final logger = AppLogger(prefixes: ["utils_sync", "pushChangesForTable"]);
     bool pushed = true;
     List<ModelChange> changes = await ModelChange.allForTable(table);
     if (changes.isNotEmpty) {
@@ -265,7 +299,7 @@ class SyncUtils {
         timer.stop();
         logger.debug("Pushed $table changes in: ${timer.elapsed}");
       } catch (e, s) {
-        logger.error("Supabase", error: e, stackTrace: s);
+        logger.error("pushChangesForTable|Supabase", error: e, stackTrace: s);
         pushed = false;
       } finally {
         timer.stop();
@@ -287,28 +321,9 @@ class SyncUtils {
         .neq('device_id', deviceId)
         .gt('server_at', lastFetchedAt);
     for (Map<String, dynamic> changeMap in response) {
-      String keyCipherBase64 = changeMap["key_cipher"];
-      String keyNonceBase64 = changeMap["key_nonce"];
-      Uint8List keyCipherBytes = base64Decode(keyCipherBase64);
-      Uint8List keyNonceBytes = base64Decode(keyNonceBase64);
-
-      ExecutionResult keyDecryptionResult = cryptoUtils.decryptBytes(
-          cipherBytes: keyCipherBytes,
-          nonce: keyNonceBytes,
-          key: masterKeyBytes);
-      if (keyDecryptionResult.isFailure) continue;
-      Uint8List keyBytes = keyDecryptionResult.getResult()!["decrypted"];
-
-      String cipherTextBase64 = changeMap["cipher_text"];
-      String cipherNonceBase64 = changeMap["cipher_nonce"];
-      Uint8List cipherBytes = base64Decode(cipherTextBase64);
-      Uint8List nonceBytes = base64Decode(cipherNonceBase64);
-
-      ExecutionResult decryptionResult = cryptoUtils.decryptBytes(
-          cipherBytes: cipherBytes, nonce: nonceBytes, key: keyBytes);
-      if (decryptionResult.isFailure) continue;
-
-      Uint8List decryptedBytes = decryptionResult.getResult()!["decrypted"];
+      Uint8List? decryptedBytes =
+          cryptoUtils.getDecryptedBytesFromMap(changeMap, masterKeyBytes);
+      if (decryptedBytes == null) continue;
       String jsonString = utf8.decode(decryptedBytes);
       Map<String, dynamic> map = jsonDecode(jsonString);
 
@@ -338,5 +353,40 @@ class SyncUtils {
       }
     }
     return response.length;
+  }
+}
+
+ChangeTask getChangeTaskType(
+    String table, bool thumbnailIsNull, Map<String, dynamic> map) {
+  switch (table) {
+    case "category":
+      return thumbnailIsNull
+          ? ChangeTask.uploadData
+          : ChangeTask.uploadDataFile;
+    case "itemgroup":
+      return thumbnailIsNull
+          ? ChangeTask.uploadData
+          : ChangeTask.uploadDataFile;
+    case "item":
+      int type = map["type"];
+      ItemType? itemType = ItemTypeExtension.fromValue(type);
+      switch (itemType) {
+        case ItemType.text:
+        case ItemType.location:
+        case ItemType.contact:
+        case ItemType.task:
+        case ItemType.completedTask:
+          return ChangeTask.uploadData;
+        case ItemType.image:
+        case ItemType.video:
+          return ChangeTask.uploadDataThumbnailFile;
+        case ItemType.document:
+        case ItemType.audio:
+          return ChangeTask.uploadFile;
+        default:
+          return ChangeTask.uploadData;
+      }
+    default:
+      return ChangeTask.uploadData;
   }
 }
