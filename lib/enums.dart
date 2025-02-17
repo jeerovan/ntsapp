@@ -88,7 +88,6 @@ enum AppString {
 
   // Sync
   lastChangesFetchedAt,
-  localChangesSynced,
 
   // Cipher
   key,
@@ -114,8 +113,6 @@ extension AppStringExtension on AppString {
         return "supabase_initialized";
       case AppString.lastChangesFetchedAt:
         return "last_changes_fetched_at";
-      case AppString.localChangesSynced:
-        return "local_changes_synced";
       case AppString.otpSentTo:
         return "otp_sent_to";
       case AppString.otpSentAt:

@@ -53,38 +53,6 @@ class SyncUtils {
     return masterKeyBase64 != null;
   }
 
-  static Future<void> pushLocalChanges() async {
-    if (await canSync()) {
-      bool synced = await StorageHive()
-          .get(AppString.localChangesSynced.string, defaultValue: false);
-      if (!synced) {
-        //push categories
-        List<Map<String, dynamic>> categories =
-            await ModelCategory.getAllRawRowsMap();
-        for (Map<String, dynamic> category in categories) {
-          category["thumbnail"] = null;
-          category["table"] = "category";
-          encryptAndPushChange(category, saveOnly: true);
-        }
-        //push groups
-        List<Map<String, dynamic>> groups = await ModelGroup.getAllRawRowsMap();
-        for (Map<String, dynamic> group in groups) {
-          group["thumbnail"] = null;
-          group["table"] = "itemgroup";
-          encryptAndPushChange(group, saveOnly: true);
-        }
-        //push groups
-        List<Map<String, dynamic>> items = await ModelItem.getAllRawRowsMap();
-        for (Map<String, dynamic> item in items) {
-          item["thumbnail"] = null;
-          item["table"] = "item";
-          encryptAndPushChange(item, saveOnly: true);
-        }
-        await StorageHive().put(AppString.localChangesSynced.string, true);
-      }
-    }
-  }
-
   static Future<void> encryptAndPushChange(Map<String, dynamic> map,
       {bool deleted = false, bool saveOnly = false}) async {
     String? masterKeyBase64 = await getMasterKey();
@@ -140,8 +108,10 @@ class SyncUtils {
             ModelChange.getChangeTaskType(table, thumbnail == null, map);
       }
       // add change
-      await ModelChange.add(
-          changeId, table, changeData, changeTask.value, thumbnail, filePath);
+      await ModelChange.add(changeId, table, changeData, changeTask.value,
+          thumbnail: thumbnail, filePath: filePath);
+      logger.info(
+          "encryptAndPushChange|$table|Added change:$table|$changeId|${changeTask.value}");
       if (!saveOnly) {
         SupabaseClient supabaseClient = Supabase.instance.client;
         try {
@@ -400,13 +370,14 @@ class SyncUtils {
               }
           }
           if (changeType.value > ChangeType.delete.value) {
-            ModelChange change = await ModelChange.fromMap({
-              "id": changeId,
-              "name": table,
-              "data": "",
-              "type": changeType.value
-            });
-            await change.insert();
+            await ModelChange.add(
+              changeId,
+              table,
+              "",
+              changeType.value,
+            );
+            logger.info(
+                "fetchChangesForTable|$table|Added change:$table|$changeId|${changeType.value}");
           }
         }
       }
@@ -452,19 +423,19 @@ class SyncUtils {
               ModelCategory? category = await ModelCategory.get(rowId);
               if (category != null) {
                 category.thumbnail = decryptedThumbnailBytes;
-                await category.update(["thumbnail"]);
+                await category.update(["thumbnail"], pushToSync: false);
               }
             case "itemgroup":
               ModelGroup? group = await ModelGroup.get(rowId);
               if (group != null) {
                 group.thumbnail = decryptedThumbnailBytes;
-                await group.update(["thumbnail"]);
+                await group.update(["thumbnail"], pushToSync: false);
               }
             case "item":
               ModelItem? item = await ModelItem.get(rowId);
               if (item != null) {
                 item.thumbnail = decryptedThumbnailBytes;
-                await item.update(["thumbnail"]);
+                await item.update(["thumbnail"], pushToSync: false);
               }
           }
           await ModelChange.upgradeType(changeId);

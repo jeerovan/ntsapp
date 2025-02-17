@@ -44,7 +44,9 @@ class AppLogger {
         "NTSAPP $prefixString [$levelStr] [$timestamp] $message";
 
     // Use dart:developer for efficient logging
-    dev.log(logMessage, error: error, stackTrace: stackTrace);
+    if (Platform.isAndroid || Platform.isIOS) {
+      dev.log(logMessage, error: error, stackTrace: stackTrace);
+    }
 
     if (error != null) {
       logMessage += " $error";

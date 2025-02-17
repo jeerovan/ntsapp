@@ -1,9 +1,12 @@
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/service_logger.dart';
 
 import 'enums.dart';
 import 'storage_sqlite.dart';
 
 class ModelChange {
+  static AppLogger logger = AppLogger(prefixes: ["ModelChange"]);
+
   String id;
   String name;
   String data;
@@ -42,8 +45,9 @@ class ModelChange {
     );
   }
 
-  static Future<void> add(String changeId, String table, String changeData,
-      int changeType, String? thumbnail, String? filePath) async {
+  static Future<void> add(
+      String changeId, String table, String changeData, int changeType,
+      {String? thumbnail, String? filePath}) async {
     ModelChange change = ModelChange(
       id: changeId,
       name: table,
@@ -146,6 +150,8 @@ class ModelChange {
       } else {
         change.type = nextType.value;
         await change.update(["type"]);
+        logger
+            .info("upgradeType|From:${currentType.value}|To:${nextType.value}");
       }
     }
   }

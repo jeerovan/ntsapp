@@ -158,7 +158,7 @@ class ModelCategory {
     return inserted;
   }
 
-  Future<int> update(List<String> attrs) async {
+  Future<int> update(List<String> attrs, {bool pushToSync = true}) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
@@ -167,10 +167,12 @@ class ModelCategory {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("category", updatedMap, id);
-    // send to sync
-    map["updated_at"] = utcNow;
-    map["table"] = "category";
-    SyncUtils.encryptAndPushChange(map);
+    if (pushToSync) {
+      // send to sync
+      map["updated_at"] = utcNow;
+      map["table"] = "category";
+      SyncUtils.encryptAndPushChange(map);
+    }
     return updated;
   }
 
