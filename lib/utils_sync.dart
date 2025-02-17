@@ -92,8 +92,10 @@ class SyncUtils {
     if (masterKeyBase64 != null && signedInUserId != null) {
       String deviceId = await StorageHive().get(AppString.deviceId.string);
 
-      // remove thumbnail if any
-      String? thumbnail = map.remove("thumbnail"); //base64encoded
+      // fetch thumbnail and set it as boolean
+      String? thumbnail =
+          getValueFromMap(map, 'thumbnail', defaultValue: null); //base64encoded
+      map['thumbnail'] = thumbnail == null ? 0 : 1;
       String table = map["table"];
       String messageId = map['id'];
       String changeId = '$signedInUserId|$messageId';
@@ -132,32 +134,42 @@ class SyncUtils {
           filePath = dataMap["path"];
         }
       }
-      ChangeTask changeTask = ChangeTask.uploadData;
+      ChangeType changeTask = ChangeType.uploadData;
       if (!deleted) {
-        changeTask = getChangeTaskType(table, thumbnail == null, map);
+        changeTask =
+            ModelChange.getChangeTaskType(table, thumbnail == null, map);
       }
-      if (saveOnly) {
-        await ModelChange.add(
-            changeId, table, changeData, changeTask.value, thumbnail, filePath);
-      } else {
+      // add change
+      await ModelChange.add(
+          changeId, table, changeData, changeTask.value, thumbnail, filePath);
+      if (!saveOnly) {
+        SupabaseClient supabaseClient = Supabase.instance.client;
         try {
-          SupabaseClient supabaseClient = Supabase.instance.client;
           await supabaseClient
               .from(table)
               .upsert(changeMap, onConflict: 'id')
               .eq('id', changeId)
               .gt('updated_at', updatedAt);
+          // update change
+          await ModelChange.upgradeType(changeId);
           // upload thumbnail if any
           if (thumbnail != null) {
             pushThumbnail(table, changeId, thumbnail);
           }
         } catch (e, s) {
-          await ModelChange.add(changeId, table, changeData, changeTask.value,
-              thumbnail, filePath);
           logger.error("encryptAndPushChange|Supabase",
               error: e, stackTrace: s);
         }
       }
+    }
+  }
+
+  static Future<void> pushThumbnails() async {
+    List<ModelChange> changes = await ModelChange.requiresThumbnailPush();
+    for (ModelChange change in changes) {
+      String table = change.name;
+      String changeId = change.id;
+      await pushThumbnail(table, changeId, null);
     }
   }
 
@@ -170,12 +182,15 @@ class SyncUtils {
     String userId = userIdRowId[0];
     String rowId = userIdRowId[1];
     thumbnail ??= await ModelChange.getThumbnail(table, rowId);
-    Uint8List thumbnailBytes = base64Decode(thumbnail!);
+    if (thumbnail == null) return;
+    Uint8List thumbnailBytes = base64Decode(thumbnail);
 
     String? masterKeyBase64 = await getMasterKey();
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
+
     Map<String, dynamic> encryptedThumbnailMap =
         cryptoUtils.getEncryptedBytesMap(thumbnailBytes, masterKeyBytes);
     String cipherText = encryptedThumbnailMap[AppString.cipherText.string];
@@ -199,26 +214,29 @@ class SyncUtils {
             encryptedThumbnailMap[AppString.keyNonce.string]
       };
       await supabaseClient.from('thmbs').upsert(keyCipherMap, onConflict: 'id');
+      // upgrade change task
+      await ModelChange.upgradeType(changeId);
     } catch (e, s) {
       logger.error("pushThumbnail|Supabase", error: e, stackTrace: s);
     }
   }
 
-  static Future<void> pushAllChanges() async {
-    if (!await canSync()) return;
+  static Future<bool> pushDataChanges() async {
+    if (!await canSync()) return false;
     logger.info("PushAllChanges");
     SupabaseClient supabaseClient = Supabase.instance.client;
-    bool pushedCategories = await pushChangesForTable(
+    bool pushedCategories = await pushDataChangesForTable(
         supabaseClient, "category", "process_bulk_categories");
-    if (!pushedCategories) return;
-    bool pushedGroups = await pushChangesForTable(
+    if (!pushedCategories) return false;
+    bool pushedGroups = await pushDataChangesForTable(
         supabaseClient, "itemgroup", "process_bulk_groups");
-    if (!pushedGroups) return;
-    bool _ =
-        await pushChangesForTable(supabaseClient, "item", "process_bulk_items");
+    if (!pushedGroups) return false;
+    bool pushedItems = await pushDataChangesForTable(
+        supabaseClient, "item", "process_bulk_items");
+    return pushedItems;
   }
 
-  static Future<void> fetchAllChanges() async {
+  static Future<void> fetchDataChanges() async {
     if (!await canSync()) return;
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
@@ -281,10 +299,11 @@ class SyncUtils {
     }
   }
 
-  static Future<bool> pushChangesForTable(
+  static Future<bool> pushDataChangesForTable(
       SupabaseClient supabaseClient, String table, String rpc) async {
     bool pushed = true;
-    List<ModelChange> changes = await ModelChange.allForTable(table);
+    List<ModelChange> changes =
+        await ModelChange.requiresDataPushForTable(table);
     if (changes.isNotEmpty) {
       List<Map<String, dynamic>> changeMaps = [];
       List<String> changeIds = [];
@@ -295,7 +314,7 @@ class SyncUtils {
       final timer = Stopwatch()..start();
       try {
         await supabaseClient.rpc(rpc, params: {"data": changeMaps});
-        ModelChange.removeForIds(changeIds);
+        await ModelChange.upgradeTypeForIds(changeIds);
         timer.stop();
         logger.debug("Pushed $table changes in: ${timer.elapsed}");
       } catch (e, s) {
@@ -315,78 +334,144 @@ class SyncUtils {
       SupabaseClient supabaseClient,
       Uint8List masterKeyBytes,
       CryptoUtils cryptoUtils) async {
-    final response = await supabaseClient
-        .from(table)
-        .select('id,cipher_text,cipher_nonce,key_cipher,key_nonce')
-        .neq('device_id', deviceId)
-        .gt('server_at', lastFetchedAt);
-    for (Map<String, dynamic> changeMap in response) {
-      Uint8List? decryptedBytes =
-          cryptoUtils.getDecryptedBytesFromMap(changeMap, masterKeyBytes);
-      if (decryptedBytes == null) continue;
-      String jsonString = utf8.decode(decryptedBytes);
-      Map<String, dynamic> map = jsonDecode(jsonString);
+    int changes = 0;
+    try {
+      final response = await supabaseClient
+          .from(table)
+          .select('id,cipher_text,cipher_nonce,key_cipher,key_nonce')
+          .neq('device_id', deviceId)
+          .gt('server_at', lastFetchedAt);
+      for (Map<String, dynamic> changeMap in response) {
+        Uint8List? decryptedBytes =
+            cryptoUtils.getDecryptedBytesFromMap(changeMap, masterKeyBytes);
+        if (decryptedBytes == null) continue;
+        String jsonString = utf8.decode(decryptedBytes);
+        Map<String, dynamic> map = jsonDecode(jsonString);
+        String changeId = changeMap["id"];
+        String rowId = map["id"];
+        int deleted = map.remove("deleted");
+        bool hasThumbnail = map.remove("thumbnail") == 1 ? true : false;
+        if (deleted == 1) {
+          switch (table) {
+            case "category":
+              await ModelCategory.deletedFromServer(rowId);
+            case "itemgroup":
+              await ModelGroup.deletedFromServer(rowId);
+            case "item":
+              await ModelItem.deletedFromServer(rowId);
+          }
+        } else {
+          switch (table) {
+            case "category":
+              ModelCategory category = await ModelCategory.fromMap(map);
+              await category.upcertFromServer();
+            case "itemgroup":
+              ModelGroup group = await ModelGroup.fromMap(map);
+              await group.upcertFromServer();
+            case "item":
+              ModelItem item = await ModelItem.fromMap(map);
+              await item.upcertFromServer();
+          }
+          ChangeType changeType = ChangeType.delete;
+          switch (table) {
+            case "category":
+            case "itemgroup":
+              if (hasThumbnail) {
+                changeType = ChangeType.downloadThumbnail;
+              }
+            case "item":
+              ItemType? itemType = ItemTypeExtension.fromValue(map["type"]);
+              switch (itemType) {
+                case ItemType.text:
+                case ItemType.task:
+                case ItemType.completedTask:
+                case ItemType.contact:
+                case ItemType.location:
+                  changeType = ChangeType.delete;
+                case ItemType.document:
+                case ItemType.audio:
+                  changeType = ChangeType.downloadFile;
+                case ItemType.image:
+                case ItemType.video:
+                  changeType = ChangeType.downloadThumbnailFile;
+                case null:
+                case ItemType.date:
+                  changeType = ChangeType.delete;
+              }
+          }
+          if (changeType.value > ChangeType.delete.value) {
+            ModelChange change = await ModelChange.fromMap({
+              "id": changeId,
+              "name": table,
+              "data": "",
+              "type": changeType.value
+            });
+            await change.insert();
+          }
+        }
+      }
+      changes = changes + response.length;
+    } catch (e, s) {
+      logger.error("fetchChangesForTable", error: e, stackTrace: s);
+    }
+    return changes;
+  }
 
-      String rowId = map["id"];
-      int deleted = map.remove("deleted");
-      if (deleted == 1) {
-        switch (table) {
-          case "category":
-            await ModelCategory.deletedFromServer(rowId);
-          case "itemgroup":
-            await ModelGroup.deletedFromServer(rowId);
-          case "item":
-            await ModelItem.deletedFromServer(rowId);
+  static Future<void> fetchThumbnails() async {
+    List<ModelChange> changes = await ModelChange.requiresThumbnailFetch();
+    SupabaseClient supabaseClient = Supabase.instance.client;
+    String? masterKeyBase64 = await getMasterKey();
+    Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+
+    for (ModelChange change in changes) {
+      String changeId = change.id;
+      String table = change.name;
+      List<String> userIdRowId = changeId.split("|");
+      String userId = userIdRowId[0];
+      String rowId = userIdRowId[1];
+      try {
+        Uint8List encryptedThumbnailBytes = await supabaseClient.storage
+            .from('thmbs')
+            .download('$userId/$rowId');
+        // if successfull fetch cipher keys
+        final listMap = await supabaseClient
+            .from('thmbs')
+            .select('cipher_nonce,key_cipher,key_nonce')
+            .eq('id', changeId);
+        Map<String, dynamic> map = listMap.first;
+        map[AppString.cipherText.string] =
+            base64Encode(encryptedThumbnailBytes);
+        Uint8List? decryptedThumbnailBytes =
+            cryptoUtils.getDecryptedBytesFromMap(map, masterKeyBytes);
+        if (decryptedThumbnailBytes != null) {
+          switch (table) {
+            case "category":
+              ModelCategory? category = await ModelCategory.get(rowId);
+              if (category != null) {
+                category.thumbnail = decryptedThumbnailBytes;
+                await category.update(["thumbnail"]);
+              }
+            case "itemgroup":
+              ModelGroup? group = await ModelGroup.get(rowId);
+              if (group != null) {
+                group.thumbnail = decryptedThumbnailBytes;
+                await group.update(["thumbnail"]);
+              }
+            case "item":
+              ModelItem? item = await ModelItem.get(rowId);
+              if (item != null) {
+                item.thumbnail = decryptedThumbnailBytes;
+                await item.update(["thumbnail"]);
+              }
+          }
+          await ModelChange.upgradeType(changeId);
         }
-      } else {
-        switch (table) {
-          case "category":
-            ModelCategory category = await ModelCategory.fromMap(map);
-            await category.upcertFromServer();
-          case "itemgroup":
-            ModelGroup group = await ModelGroup.fromMap(map);
-            await group.upcertFromServer();
-          case "item":
-            ModelItem item = await ModelItem.fromMap(map);
-            await item.upcertFromServer();
-        }
+      } catch (e, s) {
+        logger.error("fetchThumbnails", error: e, stackTrace: s);
       }
     }
-    return response.length;
-  }
-}
-
-ChangeTask getChangeTaskType(
-    String table, bool thumbnailIsNull, Map<String, dynamic> map) {
-  switch (table) {
-    case "category":
-      return thumbnailIsNull
-          ? ChangeTask.uploadData
-          : ChangeTask.uploadDataFile;
-    case "itemgroup":
-      return thumbnailIsNull
-          ? ChangeTask.uploadData
-          : ChangeTask.uploadDataFile;
-    case "item":
-      int type = map["type"];
-      ItemType? itemType = ItemTypeExtension.fromValue(type);
-      switch (itemType) {
-        case ItemType.text:
-        case ItemType.location:
-        case ItemType.contact:
-        case ItemType.task:
-        case ItemType.completedTask:
-          return ChangeTask.uploadData;
-        case ItemType.image:
-        case ItemType.video:
-          return ChangeTask.uploadDataThumbnailFile;
-        case ItemType.document:
-        case ItemType.audio:
-          return ChangeTask.uploadFile;
-        default:
-          return ChangeTask.uploadData;
-      }
-    default:
-      return ChangeTask.uploadData;
   }
 }

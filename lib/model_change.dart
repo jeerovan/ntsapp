@@ -1,5 +1,6 @@
 import 'package:ntsapp/common.dart';
 
+import 'enums.dart';
 import 'storage_sqlite.dart';
 
 class ModelChange {
@@ -76,26 +77,77 @@ class ModelChange {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<List<ModelChange>> allForTable(String table) async {
+  static Future<List<ModelChange>> requiresDataPushForTable(
+      String table) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    List<Map<String, dynamic>> rows =
-        await db.query("change", where: "name = ?", whereArgs: [table]);
+    List<dynamic> changeTypes = [
+      ChangeType.uploadData.value,
+      ChangeType.uploadDataFile.value,
+      ChangeType.uploadDataThumbnail.value,
+      ChangeType.uploadDataThumbnailFile.value
+    ];
+    // Generate placeholders (?, ?, ?) for the number of IDs
+    final placeholders = List.filled(changeTypes.length, '?').join(',');
+    changeTypes.insert(0, table);
+    List<Map<String, dynamic>> rows = await db.query("change",
+        where: "name = ? AND type IN ($placeholders)", whereArgs: changeTypes);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<int> removeForIds(List<String> ids) async {
+  static Future<List<ModelChange>> requiresThumbnailPush() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
+    List<int> changeTypes = [
+      ChangeType.uploadThumbnail.value,
+      ChangeType.uploadThumbnailFile.value
+    ];
     // Generate placeholders (?, ?, ?) for the number of IDs
-    final placeholders = List.filled(ids.length, '?').join(',');
-
-    int deleted = await db.delete(
+    final placeholders = List.filled(changeTypes.length, '?').join(',');
+    List<Map<String, dynamic>> rows = await db.query(
       "change",
-      where: "id IN ($placeholders)",
-      whereArgs: ids,
+      where: "type IN ($placeholders)",
+      whereArgs: changeTypes,
     );
-    return deleted;
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
+  static Future<List<ModelChange>> requiresThumbnailFetch() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    List<int> changeTypes = [
+      ChangeType.downloadThumbnail.value,
+      ChangeType.downloadThumbnailFile.value
+    ];
+    // Generate placeholders (?, ?, ?) for the number of IDs
+    final placeholders = List.filled(changeTypes.length, '?').join(',');
+    List<Map<String, dynamic>> rows = await db.query(
+      "change",
+      where: "type IN ($placeholders)",
+      whereArgs: changeTypes,
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
+  static Future<void> upgradeTypeForIds(List<String> ids) async {
+    for (String id in ids) {
+      await upgradeType(id);
+    }
+  }
+
+  static Future<void> upgradeType(String changeId) async {
+    ModelChange? change = await get(changeId);
+    if (change != null) {
+      ChangeType? currentType = ChangeTypeExtension.fromValue(change.type);
+      ChangeType nextType = getNextChangeType(currentType!);
+      if (nextType == ChangeType.delete) {
+        // TODO mark content available on cloud with single tick
+        await change.delete();
+      } else {
+        change.type = nextType.value;
+        await change.update(["type"]);
+      }
+    }
   }
 
   static Future<ModelChange?> get(String id) async {
@@ -115,10 +167,14 @@ class ModelChange {
     return inserted;
   }
 
-  Future<int> update() async {
+  Future<int> update(List<String> attrs) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
-    int updated = await dbHelper.update("change", map, id);
+    Map<String, dynamic> updateMap = {};
+    for (String attr in attrs) {
+      updateMap[attr] = map[attr];
+    }
+    int updated = await dbHelper.update("change", updateMap, id);
     return updated;
   }
 
@@ -139,5 +195,64 @@ class ModelChange {
     final dbHelper = StorageSqlite.instance;
     int deleted = await dbHelper.delete("change", id);
     return deleted;
+  }
+
+  static ChangeType getChangeTaskType(
+      String table, bool thumbnailIsNull, Map<String, dynamic> map) {
+    switch (table) {
+      case "category":
+        return thumbnailIsNull
+            ? ChangeType.uploadData
+            : ChangeType.uploadDataThumbnail;
+      case "itemgroup":
+        return thumbnailIsNull
+            ? ChangeType.uploadData
+            : ChangeType.uploadDataThumbnail;
+      case "item":
+        int type = map["type"];
+        ItemType? itemType = ItemTypeExtension.fromValue(type);
+        switch (itemType) {
+          case ItemType.text:
+          case ItemType.location:
+          case ItemType.contact:
+          case ItemType.task:
+          case ItemType.completedTask:
+            return ChangeType.uploadData;
+          case ItemType.image:
+          case ItemType.video:
+            return ChangeType.uploadDataThumbnailFile;
+          case ItemType.document:
+          case ItemType.audio:
+            return ChangeType.uploadFile;
+          default:
+            return ChangeType.uploadData;
+        }
+      default:
+        return ChangeType.uploadData;
+    }
+  }
+
+  static ChangeType getNextChangeType(ChangeType current) {
+    switch (current) {
+      case ChangeType.delete:
+      case ChangeType.uploadData:
+      case ChangeType.uploadFile:
+      case ChangeType.uploadThumbnail:
+        return ChangeType.delete;
+      case ChangeType.uploadDataFile:
+        return ChangeType.uploadFile;
+      case ChangeType.uploadDataThumbnailFile:
+        return ChangeType.uploadThumbnailFile;
+      case ChangeType.uploadThumbnailFile:
+        return ChangeType.uploadFile;
+      case ChangeType.uploadDataThumbnail:
+        return ChangeType.uploadThumbnail;
+      // download types
+      case ChangeType.downloadThumbnailFile:
+        return ChangeType.downloadFile;
+      case ChangeType.downloadThumbnail:
+      case ChangeType.downloadFile:
+        return ChangeType.delete;
+    }
   }
 }

@@ -367,8 +367,11 @@ Future<void> performSync() async {
     //3. pull server changes
     //4. download media files if any
     try {
-      await SyncUtils.pushAllChanges();
-      await SyncUtils.fetchAllChanges();
+      await SyncUtils.pushDataChanges();
+      await SyncUtils.pushThumbnails();
+
+      await SyncUtils.fetchDataChanges();
+      await SyncUtils.fetchThumbnails();
     } catch (e, s) {
       logger.error("Sync exception", error: e, stackTrace: s);
     }

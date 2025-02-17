@@ -140,27 +140,75 @@ extension AppStringExtension on AppString {
   }
 }
 
-enum ChangeTask {
+enum ChangeType {
+  delete, // delete current change
   uploadData, // text,tasks,contact,location
   uploadDataFile, // audio,documents
   uploadFile, // upload file after data/thumbnail upload
   uploadDataThumbnailFile, // image,video
   uploadThumbnailFile, // upload thumbnail and file after data upload
+  uploadDataThumbnail, // for category/groups
+  uploadThumbnail, // for category/groups after data upload
+
+  downloadThumbnail, // requires only thumbnail: category,groups
+  downloadThumbnailFile, // requires thumbnail + file : image/video
+  downloadFile, // requires only file: audio,document or after thumbnail
 }
 
-extension ChangeTaskExtension on ChangeTask {
+extension ChangeTypeExtension on ChangeType {
   int get value {
     switch (this) {
-      case ChangeTask.uploadData:
+      case ChangeType.delete:
+        return 0;
+      case ChangeType.uploadData:
         return 1;
-      case ChangeTask.uploadFile:
+      case ChangeType.uploadFile:
         return 2;
-      case ChangeTask.uploadDataThumbnailFile:
+      case ChangeType.uploadDataThumbnailFile:
         return 3;
-      case ChangeTask.uploadDataFile:
+      case ChangeType.uploadDataFile:
         return 4;
-      case ChangeTask.uploadThumbnailFile:
+      case ChangeType.uploadThumbnailFile:
         return 5;
+      case ChangeType.uploadDataThumbnail:
+        return 6;
+      case ChangeType.uploadThumbnail:
+        return 7;
+      case ChangeType.downloadThumbnail:
+        return 8;
+      case ChangeType.downloadThumbnailFile:
+        return 9;
+      case ChangeType.downloadFile:
+        return 10;
+    }
+  }
+
+  static ChangeType? fromValue(int value) {
+    switch (value) {
+      case 0:
+        return ChangeType.delete;
+      case 1:
+        return ChangeType.uploadData;
+      case 2:
+        return ChangeType.uploadFile;
+      case 3:
+        return ChangeType.uploadDataThumbnailFile;
+      case 4:
+        return ChangeType.uploadDataFile;
+      case 5:
+        return ChangeType.uploadThumbnailFile;
+      case 6:
+        return ChangeType.uploadDataThumbnail;
+      case 7:
+        return ChangeType.uploadThumbnail;
+      case 8:
+        return ChangeType.downloadThumbnail;
+      case 9:
+        return ChangeType.downloadThumbnailFile;
+      case 10:
+        return ChangeType.downloadFile;
+      default:
+        return null;
     }
   }
 }
