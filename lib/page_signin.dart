@@ -8,7 +8,7 @@ import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
-import 'package:ntsapp/supa_db_explorer.dart';
+import 'package:ntsapp/page_supa_db.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
@@ -177,7 +177,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   void navigateToSupaDbPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => SupaDatabaseExplorer(),
+        builder: (context) => PageSupaDatabase(),
       ),
     );
   }

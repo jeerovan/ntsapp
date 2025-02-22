@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SupaDatabaseExplorer extends StatefulWidget {
-  const SupaDatabaseExplorer({super.key});
+class PageSupaDatabase extends StatefulWidget {
+  const PageSupaDatabase({super.key});
 
   @override
-  State<SupaDatabaseExplorer> createState() => _SupaDatabaseExplorerState();
+  State<PageSupaDatabase> createState() => _PageSupaDatabaseState();
 }
 
-class _SupaDatabaseExplorerState extends State<SupaDatabaseExplorer> {
+class _PageSupaDatabaseState extends State<PageSupaDatabase> {
   final SupabaseClient supabase = Supabase.instance.client;
 
   List<String> tables = [];

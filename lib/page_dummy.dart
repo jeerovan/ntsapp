@@ -4,9 +4,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:path/path.dart' as path;
 import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PageDummy extends StatefulWidget {
   const PageDummy({super.key});
@@ -16,17 +18,13 @@ class PageDummy extends StatefulWidget {
 }
 
 class _PageDummyState extends State<PageDummy> {
-  String? masterKeyStr;
-  String? saltStr;
-  String? deriveKeyStr;
-  bool encryptionDecryptionWorks = false;
-
+  AppLogger logger = AppLogger(prefixes: ["PageDummy"]);
+  bool processing = false;
+  String response = "";
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      testEncryptions();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
   }
 
   @override
@@ -34,51 +32,30 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
-  Future<void> testEncryptions() async {
-    final SodiumSumo sodium = await SodiumSumoInit.init();
-    final CryptoUtils cryptoUtils = CryptoUtils(sodium);
-    SecureKey masterKey = cryptoUtils.generateKey();
-    final Uint8List masterKeyBytes = masterKey.extractBytes();
+  Future<void> request() async {
     setState(() {
-      masterKeyStr = bytesToHex(masterKeyBytes);
+      processing = true;
     });
-    masterKey.dispose();
-    debugPrint("MasterHex:$masterKeyStr");
-    final Uint8List salt = cryptoUtils.generateSalt();
+    SupabaseClient supabase = Supabase.instance.client;
+    try {
+      final res = await supabase.functions
+          .invoke('get_upload_url', body: {'fileSize': 100});
+      Map<String, dynamic> data = jsonDecode(res.data);
+      logger.debug(data["url"]);
+      logger.debug(data["token"]);
+    } on FunctionException catch (e) {
+      Map<String, dynamic> errorData = jsonDecode(e.details);
+      logger.error(errorData["error"]);
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+    }
+
     setState(() {
-      saltStr = bytesToHex(salt);
-    });
-    final timer = Stopwatch()..start();
-    SecureKey derivedKey = await cryptoUtils.deriveKeyFromPassword(
-        password: "helloworld", salt: salt);
-    timer.stop();
-    debugPrint("DerivedIn:${timer.elapsed}");
-    final Uint8List deriveKeyBytes = derivedKey.extractBytes();
-    derivedKey.dispose();
-    setState(() {
-      deriveKeyStr = bytesToHex(deriveKeyBytes);
-    });
-    // encrypt masterKey with derivedKey
-    Map<String, dynamic>? encryptionResult = cryptoUtils
-        .encryptBytes(plainBytes: masterKeyBytes, key: deriveKeyBytes)
-        .getResult();
-    Uint8List encryptedMasterKey = encryptionResult!["encrypted"];
-    Uint8List masterKeyEncryptionNonce = encryptionResult["nonce"];
-    // decrypt encryptedMasterKey with derivedKey
-    Map<String, dynamic>? decryptionResult = cryptoUtils
-        .decryptBytes(
-            cipherBytes: encryptedMasterKey,
-            nonce: masterKeyEncryptionNonce,
-            key: deriveKeyBytes)
-        .getResult();
-    Uint8List decryptedMasterKey = decryptionResult!["decrypted"];
-    setState(() {
-      encryptionDecryptionWorks =
-          bytesToHex(decryptedMasterKey) == bytesToHex(masterKeyBytes);
+      processing = false;
     });
   }
 
-  Future<void> selectFileToEncrypt() async {
+  Future<void> selectFileToUpload() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: false,
@@ -141,13 +118,11 @@ class _PageDummyState extends State<PageDummy> {
       ),
       body: Column(
         children: [
-          CircularProgressIndicator(),
-          Text("MasterKey:$masterKeyStr"),
-          Text("Salt:$saltStr"),
-          Text("DeriveKeyStr:$deriveKeyStr"),
-          Text("Works:$encryptionDecryptionWorks"),
+          if (processing) CircularProgressIndicator(),
+          Text("Result:$response"),
+          ElevatedButton(onPressed: request, child: Text("Request")),
           ElevatedButton(
-              onPressed: selectFileToEncrypt, child: Text("Select File"))
+              onPressed: selectFileToUpload, child: Text("Select File")),
         ],
       ),
     );

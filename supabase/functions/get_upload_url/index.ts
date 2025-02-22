@@ -3,60 +3,95 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { authenticateB2 } from '../_common/backblaze.ts'
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { getUserPlanStatus } from "../_shared/supabase.ts";
+import { authenticateB2 } from "../_shared/backblaze.ts";
 
 const B2_BUCKET_ID = Deno.env.get("B2_BUCKET_ID")!;
-const B2_BUCKET_NAME = Deno.env.get("B2_BUCKET_NAME")!;
-
 const B2_API_URL = Deno.env.get("B2_API")!;
 
 /**
  * Get an upload URL from Backblaze B2
  */
-async function getUploadUrl(filePath:string) {
-  
-  const authData = await authenticateB2();
-  const uploadUrlResponse = await fetch(`${B2_API_URL}/b2_get_upload_url`, {
+async function b2GetUploadUrl(generate: boolean) {
+  const accountToken = await authenticateB2(generate);
+  return await fetch(`${B2_API_URL}/b2_get_upload_url`, {
     method: "POST",
     headers: {
-      Authorization: authData.authorizationToken,
+      Authorization: accountToken,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ bucketId: B2_BUCKET_ID }),
   });
+}
 
-  if (!uploadUrlResponse.ok) {
-    throw new Error("Failed to get upload URL");
+// tries twice with old and new account auth token if necessary
+async function getUploadUrl() {
+  let uploadUrlResponse = await b2GetUploadUrl(false);
+  let statusCode = uploadUrlResponse.status;
+  let url = "";
+  let token = "";
+  let status = 400;
+  let error = "Unhandled";
+  if (statusCode == 200) {
+    const { uploadUrl, authorizationToken } = await uploadUrlResponse.json();
+    url = uploadUrl;
+    token = authorizationToken;
+    status = 200;
+  } else if (statusCode == 400) {
+    const { message } = await uploadUrlResponse.json();
+    status = 400;
+    error = message;
+  } else if (statusCode == 401) {
+    uploadUrlResponse = await b2GetUploadUrl(true);
+    statusCode = uploadUrlResponse.status;
+    if (statusCode == 200) {
+      const { uploadUrl, authorizationToken } = await uploadUrlResponse.json();
+      url = uploadUrl;
+      token = authorizationToken;
+      status = 200;
+    } else {
+      status = statusCode;
+    }
+  } else {
+    status = statusCode;
   }
-
-  const { uploadUrl, authorizationToken } = await uploadUrlResponse.json();
-
-  return {
-    uploadUrl,
-    authorizationToken,
-    fileName: filePath,
-    contentType: "application/octet-stream",
-  };
+  return { status, url, token, error };
 }
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "B2 Method not allowed" }), {
+      status: 405,
+    });
+  }
+  const { fileSize } = await req.json();
+  if (!fileSize) {
+    return new Response(JSON.stringify({ error: "fileSize is required" }), {
+      status: 400,
+    });
   }
   try {
-    const { fileName } = await req.json();
-    if (!fileName ) {
-      return new Response(JSON.stringify({ error: "Missing fileName" }), { status: 400 });
+    const authorization = req.headers.get("Authorization") ?? "";
+
+    const plan = await getUserPlanStatus(authorization, fileSize);
+    if (plan.status > 200) {
+      return new Response(JSON.stringify({ error: plan.error }), {
+        status: plan.status,
+      });
     }
-    const filePath = `${fileName}`; // ${userId}/${fileName}
-    const uploadData = await getUploadUrl(filePath);
-      return new Response(JSON.stringify(uploadData), { status: 200, headers: { "Content-Type": "application/json" } });
+    // in case of error, alwaya get a new upload token
+    const { status, url, token, error } = await getUploadUrl();
+    const uploadData = {
+      url,
+      token,
+      error,
+    };
+    return new Response(JSON.stringify(uploadData), { status: status });
   } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: error }), { status: 400 });
   }
-})
+});
 
 /* To invoke locally:
 

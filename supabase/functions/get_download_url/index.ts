@@ -3,8 +3,9 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { authenticateB2 } from '../_common/backblaze.ts'
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { getUserPlanStatus } from "../_shared/supabase.ts";
+import { authenticateB2 } from "../_shared/backblaze.ts";
 
 const B2_BUCKET_ID = Deno.env.get("B2_BUCKET_ID")!;
 const B2_BUCKET_NAME = Deno.env.get("B2_BUCKET_NAME")!;
@@ -14,9 +15,9 @@ const B2_DOWNLOAD_URL = Deno.env.get("B2_STORAGE");
 /**
  * Generate a Pre-signed Download URL
  */
-async function getDownloadUrl(filePath: string) {
-  const { authorizationToken } = await authenticateB2();
-  const response = await fetch(`${B2_API_URL}/b2_get_download_authorization`, {
+async function b2GetDownloadUrl(generate: boolean, filePath: string) {
+  const authorizationToken = await authenticateB2(generate);
+  return await fetch(`${B2_API_URL}/b2_get_download_authorization`, {
     method: "POST",
     headers: {
       Authorization: authorizationToken,
@@ -28,36 +29,83 @@ async function getDownloadUrl(filePath: string) {
       validDurationInSeconds: 3600, // 1 hour
     }),
   });
+}
 
-  if (!response.ok) {
-    throw new Error("Failed to generate download authorization");
+async function getDownloadUrl(filePath: string) {
+  let downloadUrlResponse = await b2GetDownloadUrl(false, filePath);
+  let statusCode = downloadUrlResponse.status;
+  let token = "";
+  let status = 400;
+  let error = "Unhandled";
+  if (statusCode == 200) {
+    const { authorizationToken } = await downloadUrlResponse.json();
+    token = authorizationToken;
+    status = 200;
+  } else if (statusCode == 400) {
+    const { message } = await downloadUrlResponse.json();
+    status = 400;
+    error = message;
+  } else if (statusCode == 401) {
+    downloadUrlResponse = await b2GetDownloadUrl(true, filePath);
+    statusCode = downloadUrlResponse.status;
+    if (statusCode == 200) {
+      const { authorizationToken } = await downloadUrlResponse.json();
+      token = authorizationToken;
+      status = 200;
+    } else {
+      status = statusCode;
+    }
+  } else {
+    status = statusCode;
   }
-
-  const data = await response.json();
-  return `${B2_DOWNLOAD_URL}/file/${B2_BUCKET_NAME}/${filePath}?Authorization=${data.authorizationToken}`;
+  return { status, token, error };
 }
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+    });
   }
 
+  const { fileName } = await req.json();
+
+  if (!fileName) {
+    return new Response(JSON.stringify({ error: "Missing fileName" }), {
+      status: 400,
+    });
+  }
   try {
-    const { fileName} = await req.json();
+    const authorization = req.headers.get("Authorization") ?? "";
 
-    if (!fileName) {
-      return new Response(JSON.stringify({ error: "Missing fileName" }), { status: 400 });
+    const plan = await getUserPlanStatus(authorization, 0);
+    if (plan.status > 200) {
+      return new Response(JSON.stringify({ error: plan.error }), {
+        status: plan.status,
+      });
     }
+    const userId = plan.userId;
 
-    const filePath = `${fileName}`; // ${userId}/${fileName}
+    const filePath = `${userId}/${fileName}`;
 
-    const downloadUrl = await getDownloadUrl(filePath);
-      return new Response(JSON.stringify({ downloadUrl }), { status: 200, headers: { "Content-Type": "application/json" } });
+    const { status, token, error } = await getDownloadUrl(filePath);
+    let url = "";
+    if (status == 200) {
+      url =
+        `${B2_DOWNLOAD_URL}/file/${B2_BUCKET_NAME}/${filePath}?Authorization=${token}`;
+    }
+    const downloadData = {
+      url,
+      token,
+      error,
+    };
+    return new Response(JSON.stringify({ downloadData }), {
+      status: status,
+    });
   } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: error }), { status: 500 });
   }
-})
+});
 
 /* To invoke locally:
 
