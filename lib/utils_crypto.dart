@@ -7,6 +7,7 @@ import 'package:ntsapp/common.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:crypto/crypto.dart';
 
 import 'enums.dart';
 
@@ -372,5 +373,12 @@ class CryptoUtils {
     };
     return ExecutionResult.success(
         {"server_keys": serverKeysBase64, "private_keys": privateKeysBase64});
+  }
+
+  static Future<String> generateSHA1(String filePath) async {
+    final file = File(filePath);
+    Stream<List<int>> stream = file.openRead();
+    final sha = await stream.transform(sha1).first;
+    return sha.toString();
   }
 }

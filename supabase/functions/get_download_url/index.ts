@@ -41,6 +41,7 @@ async function getDownloadUrl(filePath: string) {
     const { authorizationToken } = await downloadUrlResponse.json();
     token = authorizationToken;
     status = 200;
+    error = "";
   } else if (statusCode == 400) {
     const { message } = await downloadUrlResponse.json();
     status = 400;
@@ -52,6 +53,7 @@ async function getDownloadUrl(filePath: string) {
       const { authorizationToken } = await downloadUrlResponse.json();
       token = authorizationToken;
       status = 200;
+      error = "";
     } else {
       status = statusCode;
     }
@@ -96,10 +98,9 @@ Deno.serve(async (req) => {
     }
     const downloadData = {
       url,
-      token,
       error,
     };
-    return new Response(JSON.stringify({ downloadData }), {
+    return new Response(JSON.stringify(downloadData), {
       status: status,
     });
   } catch (error) {

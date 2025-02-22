@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
@@ -15,6 +16,9 @@ import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 
 class SyncUtils {
   // constants
@@ -444,5 +448,50 @@ class SyncUtils {
         logger.error("fetchThumbnails", error: e, stackTrace: s);
       }
     }
+  }
+
+  static Future<Map<String, dynamic>> uploadFile({
+    required Uint8List bytes,
+    required String url,
+    required Map<String, String> headers,
+  }) async {
+    Map<String, dynamic> data = {"error": ""};
+    try {
+      // Create multipart request
+      var request = http.Request('POST', Uri.parse(url));
+
+      // Add headers
+      request.headers.addAll(headers);
+
+      request.bodyBytes = bytes;
+
+      // Add file to request
+      /* request.files.add(
+        await http.MultipartFile.fromPath(
+          'file', // field name expected by server
+          file.path,
+          filename:
+              path.basename(file.path), // optional: preserves original filename
+        ),
+      ); */
+
+      // Send request and get response
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      // Check response
+      if (response.statusCode == 200) {
+        data.addAll(jsonDecode(response.body));
+      } else if (response.statusCode == 400) {
+        data["error"] = 'Upload:${response.statusCode.toString()}';
+        data.addAll(jsonDecode(response.body));
+      } else {
+        data["error"] = 'Upload:${response.statusCode.toString()}';
+      }
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+      data["error"] = e.toString();
+    }
+    return data;
   }
 }
