@@ -37,6 +37,93 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
+  Future<void> startPartsUpload() async {
+    try {
+      SupabaseClient supabase = Supabase.instance.client;
+      final res = await supabase.functions.invoke('start_parts_upload',
+          body: {'fileName': "backup.zip", "fileSize": 100});
+      logger.debug(res.data);
+    } on FunctionException catch (e) {
+      Map<String, dynamic> errorData = jsonDecode(e.details);
+      logger.error(errorData["error"]);
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+    }
+  }
+
+  Future<void> uploadPart() async {
+    String fileId =
+        "4_z80f1331b8538153a915f0b1e_f204a1195f630d1bb_d20250223_m063950_c006_v0601001_t0039_u01740292790417";
+    String partNumber = "2";
+    try {
+      SupabaseClient supabase = Supabase.instance.client;
+      final res = await supabase.functions
+          .invoke('get_upload_part_url', body: {'fileId': fileId});
+      Map<String, dynamic> data = jsonDecode(res.data);
+      String uploadUrl = data["url"];
+      String uploadToken = data["token"];
+
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        type: FileType.any, // Allows picking files of any type
+      );
+
+      if (result != null) {
+        List<PlatformFile> pickedFiles = result.files;
+        List<String> filePaths = [];
+
+        for (var pickedFile in pickedFiles) {
+          final String? filePath = pickedFile.path; // Handle null safety
+          if (filePath != null) {
+            filePaths.add(filePath);
+          }
+        }
+        String fileOut = filePaths[0];
+
+        //upload file
+        File fileOutfile = File(fileOut);
+        String sha1Hash = await CryptoUtils.generateSHA1(fileOut);
+        logger.debug("Part: $partNumber Sha1:$sha1Hash");
+        Uint8List fileBytes = fileOutfile.readAsBytesSync();
+        int fileSize = fileBytes.length;
+        Map<String, String> headers = {
+          "authorization": uploadToken,
+          "X-Bz-Part-Number": partNumber,
+          "X-Bz-Content-Sha1": sha1Hash,
+          "Content-Length": fileSize.toString(),
+        };
+        Map<String, dynamic> uploadResult = await SyncUtils.uploadFile(
+            bytes: fileBytes, url: uploadUrl, headers: headers);
+        logger.debug(jsonEncode(uploadResult));
+      }
+    } on FunctionException catch (e) {
+      Map<String, dynamic> errorData = jsonDecode(e.details);
+      logger.error(errorData["error"]);
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+    }
+  }
+
+  Future<void> finishPartsUpload() async {
+    String fileId =
+        "4_z80f1331b8538153a915f0b1e_f204a1195f630d1bb_d20250223_m063950_c006_v0601001_t0039_u01740292790417";
+    List<String> partSha1Array = [
+      "c8d431ab774a8e18866edd0367102a85ef1482b2",
+      "e75fe5e0b55b98b196d0803c01dee288c60b26cb"
+    ];
+    try {
+      SupabaseClient supabase = Supabase.instance.client;
+      final res = await supabase.functions.invoke('finish_parts_upload',
+          body: {'fileId': fileId, "partSha1Array": partSha1Array});
+      logger.debug(res.data);
+    } on FunctionException catch (e) {
+      Map<String, dynamic> errorData = jsonDecode(e.details);
+      logger.error(errorData["error"]);
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+    }
+  }
+
   Future<Map<String, dynamic>> uploadRequest() async {
     setState(() {
       processing = true;
@@ -212,6 +299,11 @@ class _PageDummyState extends State<PageDummy> {
               onPressed: selectFileToUpload, child: Text("Upload File")),
           ElevatedButton(
               onPressed: downloadDecryptFile, child: Text("Download File")),
+          ElevatedButton(
+              onPressed: startPartsUpload, child: Text("Start Parts")),
+          ElevatedButton(onPressed: uploadPart, child: Text("Upload Part")),
+          ElevatedButton(
+              onPressed: finishPartsUpload, child: Text("Finish Parts")),
         ],
       ),
     );

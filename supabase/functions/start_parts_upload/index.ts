@@ -8,50 +8,49 @@ import { getUserPlanStatus } from "../_shared/supabase.ts";
 import { authenticateB2 } from "../_shared/backblaze.ts";
 
 const B2_BUCKET_ID = Deno.env.get("B2_BUCKET_ID")!;
-const B2_BUCKET_NAME = Deno.env.get("B2_BUCKET_NAME")!;
-
 const B2_API_URL = Deno.env.get("B2_API")!;
-const B2_DOWNLOAD_URL = Deno.env.get("B2_STORAGE");
+
 /**
- * Generate a Pre-signed Download URL
+ * Start part file upload
  */
-async function b2GetDownloadUrl(generate: boolean, filePath: string) {
-  const authorizationToken = await authenticateB2(generate);
-  return await fetch(`${B2_API_URL}/b2_get_download_authorization`, {
+async function b2StartPartsUpload(generate: boolean, fileName: string) {
+  const accountToken = await authenticateB2(generate);
+  return await fetch(`${B2_API_URL}/b2_start_large_file`, {
     method: "POST",
     headers: {
-      Authorization: authorizationToken,
+      Authorization: accountToken,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       bucketId: B2_BUCKET_ID,
-      fileNamePrefix: filePath,
-      validDurationInSeconds: 24 * 3600,
+      fileName: fileName,
+      contentType: "application/octet-stream",
     }),
   });
 }
 
-async function getDownloadUrl(filePath: string) {
-  let downloadUrlResponse = await b2GetDownloadUrl(false, filePath);
-  let statusCode = downloadUrlResponse.status;
-  let token = "";
+// tries twice with old and new account auth token if necessary
+async function startPartsUpload(fileName: string) {
+  let response = await b2StartPartsUpload(false, fileName);
+  let statusCode = response.status;
+  let largeFileId = "";
   let status = 400;
   let error = "Unhandled";
   if (statusCode == 200) {
-    const { authorizationToken } = await downloadUrlResponse.json();
-    token = authorizationToken; // save token for filename
+    const { fileId } = await response.json();
+    largeFileId = fileId;
     status = 200;
     error = "";
   } else if (statusCode == 400) {
-    const { message } = await downloadUrlResponse.json();
+    const { message } = await response.json();
     status = 400;
     error = message;
   } else if (statusCode == 401) {
-    downloadUrlResponse = await b2GetDownloadUrl(true, filePath);
-    statusCode = downloadUrlResponse.status;
+    response = await b2StartPartsUpload(true, fileName);
+    statusCode = response.status;
     if (statusCode == 200) {
-      const { authorizationToken } = await downloadUrlResponse.json();
-      token = authorizationToken;
+      const { fileId } = await response.json();
+      largeFileId = fileId;
       status = 200;
       error = "";
     } else {
@@ -60,7 +59,7 @@ async function getDownloadUrl(filePath: string) {
   } else {
     status = statusCode;
   }
-  return { status, token, error };
+  return { status, largeFileId, error };
 }
 
 Deno.serve(async (req) => {
@@ -70,17 +69,20 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { fileName } = await req.json();
+  const { fileName, fileSize } = await req.json();
 
-  if (!fileName) {
-    return new Response(JSON.stringify({ error: "Missing fileName" }), {
-      status: 400,
-    });
+  if (!fileName || !fileSize) {
+    return new Response(
+      JSON.stringify({ error: "Missing fileName/fileSize" }),
+      {
+        status: 400,
+      },
+    );
   }
   try {
     const authorization = req.headers.get("Authorization") ?? "";
 
-    const plan = await getUserPlanStatus(authorization, 0);
+    const plan = await getUserPlanStatus(authorization, fileSize);
     if (plan.status > 200) {
       return new Response(JSON.stringify({ error: plan.error }), {
         status: plan.status,
@@ -90,14 +92,13 @@ Deno.serve(async (req) => {
 
     const filePath = `${userId}/${fileName}`;
 
-    const { status, token, error } = await getDownloadUrl(filePath);
-    let url = "";
+    const { status, largeFileId, error } = await startPartsUpload(filePath);
+    let fileId = "";
     if (status == 200) {
-      url =
-        `${B2_DOWNLOAD_URL}/file/${B2_BUCKET_NAME}/${filePath}?Authorization=${token}`;
+      fileId = largeFileId;
     }
     const downloadData = {
-      url,
+      fileId,
       error,
     };
     return new Response(JSON.stringify(downloadData), {
@@ -113,7 +114,7 @@ Deno.serve(async (req) => {
   1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
   2. Make an HTTP request:
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/get_download_url' \
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/start_parts_upload' \
     --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
     --header 'Content-Type: application/json' \
     --data '{"name":"Functions"}'

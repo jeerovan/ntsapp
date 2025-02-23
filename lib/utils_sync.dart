@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
@@ -18,7 +17,6 @@ import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
 
 class SyncUtils {
   // constants
