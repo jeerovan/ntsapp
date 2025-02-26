@@ -105,6 +105,7 @@ class StorageSqlite {
         username TEXT,
         thumbnail TEXT,
         url TEXT,
+        type INTEGER,
         updated_at INTEGER,
         at INTEGER
       )
@@ -183,7 +184,22 @@ class StorageSqlite {
         data TEXT NOT NULL,
         type INTEGER NOT NULL,
         thumbnail TEXT,
-        path TEXT
+        map TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE files (
+        id TEXT PRIMARY KEY,
+        change_id TEXT NOT NULL,
+        path TEXT NOT NULL,
+        size INTEGER NOT NULL,
+        parts INTEGER NOT NULL,
+        parts_uploaded INTEGER NOT NULL,
+        key_cipher TEXT NOT NULL,
+        key_nonce TEXT NOT NULL,
+        uploaded_at INTEGER NOT NULL,
+        b2_id TEXT,
+        FOREIGN KEY (change_id) REFERENCES change(id) ON DELETE CASCADE
       )
     ''');
     logger.info("Tables Created");
@@ -666,6 +682,7 @@ class StorageSqlite {
         username TEXT,
         thumbnail TEXT,
         url TEXT,
+        type INTEGER,
         updated_at INTEGER,
         at INTEGER
       )
@@ -677,7 +694,22 @@ class StorageSqlite {
         data TEXT NOT NULL,
         type INTEGER NOT NULL,
         thumbnail TEXT,
-        path TEXT
+        map TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE files (
+        id TEXT PRIMARY KEY,
+        change_id TEXT NOT NULL,
+        path TEXT NOT NULL,
+        size INTEGER NOT NULL,
+        parts INTEGER NOT NULL,
+        parts_uploaded INTEGER NOT NULL,
+        key_cipher TEXT NOT NULL,
+        key_nonce TEXT NOT NULL,
+        uploaded_at INTEGER NOT NULL,
+        b2_id TEXT,
+        FOREIGN KEY (change_id) REFERENCES change(id) ON DELETE CASCADE
       )
     ''');
     await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");

@@ -87,9 +87,12 @@ class CryptoUtils {
     return executionResult;
   }
 
-  Future<ExecutionResult> encryptFile(String fileIn, String fileOut) async {
+  Future<ExecutionResult> encryptFile(String fileIn, String fileOut,
+      {Uint8List? key}) async {
     ExecutionResult executionResult;
-    SecureKey secretKey = _sodium.crypto.secretStream.keygen();
+    SecureKey secretKey = key == null
+        ? _sodium.crypto.secretStream.keygen()
+        : SecureKey.fromList(_sodium, key);
     String secretKeyBase64 = base64Encode(secretKey.extractBytes());
     try {
       await _sodium.crypto.secretStream

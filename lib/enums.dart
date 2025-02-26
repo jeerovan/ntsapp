@@ -137,7 +137,7 @@ extension AppStringExtension on AppString {
   }
 }
 
-enum ChangeType {
+enum SyncChangeTask {
   delete, // delete current change
   uploadData, // text,tasks,contact,location
   uploadDataFile, // audio,documents
@@ -152,58 +152,58 @@ enum ChangeType {
   downloadFile, // requires only file: audio,document or after thumbnail
 }
 
-extension ChangeTypeExtension on ChangeType {
+extension SyncChangeTaskExtension on SyncChangeTask {
   int get value {
     switch (this) {
-      case ChangeType.delete:
+      case SyncChangeTask.delete:
         return 0;
-      case ChangeType.uploadData:
-        return 1;
-      case ChangeType.uploadFile:
-        return 2;
-      case ChangeType.uploadDataThumbnailFile:
-        return 3;
-      case ChangeType.uploadDataFile:
-        return 4;
-      case ChangeType.uploadThumbnailFile:
-        return 5;
-      case ChangeType.uploadDataThumbnail:
-        return 6;
-      case ChangeType.uploadThumbnail:
-        return 7;
-      case ChangeType.downloadThumbnail:
-        return 8;
-      case ChangeType.downloadThumbnailFile:
-        return 9;
-      case ChangeType.downloadFile:
+      case SyncChangeTask.uploadData:
         return 10;
+      case SyncChangeTask.uploadFile:
+        return 20;
+      case SyncChangeTask.uploadDataThumbnailFile:
+        return 30;
+      case SyncChangeTask.uploadDataFile:
+        return 40;
+      case SyncChangeTask.uploadThumbnailFile:
+        return 50;
+      case SyncChangeTask.uploadDataThumbnail:
+        return 60;
+      case SyncChangeTask.uploadThumbnail:
+        return 70;
+      case SyncChangeTask.downloadThumbnail:
+        return 80;
+      case SyncChangeTask.downloadThumbnailFile:
+        return 90;
+      case SyncChangeTask.downloadFile:
+        return 100;
     }
   }
 
-  static ChangeType? fromValue(int value) {
+  static SyncChangeTask? fromValue(int value) {
     switch (value) {
       case 0:
-        return ChangeType.delete;
-      case 1:
-        return ChangeType.uploadData;
-      case 2:
-        return ChangeType.uploadFile;
-      case 3:
-        return ChangeType.uploadDataThumbnailFile;
-      case 4:
-        return ChangeType.uploadDataFile;
-      case 5:
-        return ChangeType.uploadThumbnailFile;
-      case 6:
-        return ChangeType.uploadDataThumbnail;
-      case 7:
-        return ChangeType.uploadThumbnail;
-      case 8:
-        return ChangeType.downloadThumbnail;
-      case 9:
-        return ChangeType.downloadThumbnailFile;
+        return SyncChangeTask.delete;
       case 10:
-        return ChangeType.downloadFile;
+        return SyncChangeTask.uploadData;
+      case 20:
+        return SyncChangeTask.uploadFile;
+      case 30:
+        return SyncChangeTask.uploadDataThumbnailFile;
+      case 40:
+        return SyncChangeTask.uploadDataFile;
+      case 50:
+        return SyncChangeTask.uploadThumbnailFile;
+      case 60:
+        return SyncChangeTask.uploadDataThumbnail;
+      case 70:
+        return SyncChangeTask.uploadThumbnail;
+      case 80:
+        return SyncChangeTask.downloadThumbnail;
+      case 90:
+        return SyncChangeTask.downloadThumbnailFile;
+      case 100:
+        return SyncChangeTask.downloadFile;
       default:
         return null;
     }

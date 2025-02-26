@@ -11,6 +11,7 @@ class ModelProfile {
   String? username;
   Uint8List? thumbnail;
   String? url;
+  int? type;
   int? updatedAt;
   int? at;
 
@@ -20,6 +21,7 @@ class ModelProfile {
     this.username,
     this.thumbnail,
     this.url,
+    this.type,
     this.updatedAt,
     this.at,
   });
@@ -31,6 +33,7 @@ class ModelProfile {
       'username': username,
       'thumbnail': thumbnail == null ? null : base64Encode(thumbnail!),
       'url': url,
+      'type': type,
       'updated_at': updatedAt,
       'at': at,
     };
@@ -52,6 +55,7 @@ class ModelProfile {
       thumbnail: thumbnail,
       username: getValueFromMap(map, "username", defaultValue: ""),
       url: getValueFromMap(map, "url", defaultValue: ""),
+      type: getValueFromMap(map, "type", defaultValue: 0),
       updatedAt: getValueFromMap(map, "updated_at", defaultValue: nowUtc),
       at: getValueFromMap(map, "at", defaultValue: nowUtc),
     );

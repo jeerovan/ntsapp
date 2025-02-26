@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_change.dart';
+import 'package:ntsapp/model_file.dart';
 import 'package:ntsapp/model_item.dart';
 import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_profile.dart';
@@ -13,9 +15,11 @@ import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
+import 'package:ntsapp/utils_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 
 class SyncUtils {
@@ -91,27 +95,22 @@ class SyncUtils {
       changeMap.addAll(encryptedDataMap);
 
       String changeData = jsonEncode(changeMap);
-      String? filePath;
-
+      Map<String, dynamic>? dataMap;
       if (map.containsKey('data') && map['data'] != null) {
-        Map<String, dynamic>? dataMap;
         if (map['data'] is String) {
           dataMap = jsonDecode(map['data']);
         } else if (map['data'] is Map) {
           dataMap = map['data'];
         }
-        if (dataMap != null && dataMap.containsKey("path")) {
-          filePath = dataMap["path"];
-        }
       }
-      ChangeType changeTask = ChangeType.uploadData;
+      SyncChangeTask changeTask = SyncChangeTask.uploadData;
       if (!deleted) {
         changeTask =
             ModelChange.getChangeTaskType(table, thumbnail == null, map);
       }
       // add change
       await ModelChange.add(changeId, table, changeData, changeTask.value,
-          thumbnail: thumbnail, filePath: filePath);
+          thumbnail: thumbnail, dataMap: dataMap);
       logger.info(
           "encryptAndPushChange|$table|Added change:$table|$changeId|${changeTask.value}");
       if (!saveOnly) {
@@ -123,7 +122,7 @@ class SyncUtils {
               .eq('id', changeId)
               .gt('updated_at', updatedAt);
           // update change
-          await ModelChange.upgradeType(changeId);
+          await ModelChange.upgradeTask(changeId);
           // upload thumbnail if any
           if (thumbnail != null) {
             pushThumbnail(table, changeId, thumbnail);
@@ -187,7 +186,7 @@ class SyncUtils {
       };
       await supabaseClient.from('thmbs').upsert(keyCipherMap, onConflict: 'id');
       // upgrade change task
-      await ModelChange.upgradeType(changeId);
+      await ModelChange.upgradeTask(changeId);
     } catch (e, s) {
       logger.error("pushThumbnail|Supabase", error: e, stackTrace: s);
     }
@@ -333,6 +332,7 @@ class SyncUtils {
               await ModelItem.deletedFromServer(rowId);
           }
         } else {
+          Map<String, dynamic>? dataMap;
           switch (table) {
             case "category":
               ModelCategory category = await ModelCategory.fromMap(map);
@@ -342,42 +342,38 @@ class SyncUtils {
               await group.upcertFromServer();
             case "item":
               ModelItem item = await ModelItem.fromMap(map);
+              dataMap = item.data ?? {};
               await item.upcertFromServer();
           }
-          ChangeType changeType = ChangeType.delete;
+          SyncChangeTask changeType = SyncChangeTask.delete;
           switch (table) {
             case "category":
             case "itemgroup":
               if (hasThumbnail) {
-                changeType = ChangeType.downloadThumbnail;
+                changeType = SyncChangeTask.downloadThumbnail;
               }
             case "item":
               ItemType? itemType = ItemTypeExtension.fromValue(map["type"]);
               switch (itemType) {
+                case ItemType.document:
+                case ItemType.audio:
+                  changeType = SyncChangeTask.downloadFile;
+                case ItemType.image:
+                case ItemType.video:
+                  changeType = SyncChangeTask.downloadThumbnailFile;
                 case ItemType.text:
                 case ItemType.task:
                 case ItemType.completedTask:
                 case ItemType.contact:
                 case ItemType.location:
-                  changeType = ChangeType.delete;
-                case ItemType.document:
-                case ItemType.audio:
-                  changeType = ChangeType.downloadFile;
-                case ItemType.image:
-                case ItemType.video:
-                  changeType = ChangeType.downloadThumbnailFile;
-                case null:
                 case ItemType.date:
-                  changeType = ChangeType.delete;
+                case null:
+                  changeType = SyncChangeTask.delete;
               }
           }
-          if (changeType.value > ChangeType.delete.value) {
-            await ModelChange.add(
-              changeId,
-              table,
-              "",
-              changeType.value,
-            );
+          if (changeType.value > SyncChangeTask.delete.value) {
+            await ModelChange.add(changeId, table, "", changeType.value,
+                dataMap: dataMap);
             logger.info(
                 "fetchChangesForTable|$table|Added change:$table|$changeId|${changeType.value}");
           }
@@ -440,11 +436,232 @@ class SyncUtils {
                 await item.update(["thumbnail"], pushToSync: false);
               }
           }
-          await ModelChange.upgradeType(changeId);
+          await ModelChange.upgradeTask(changeId);
         }
       } catch (e, s) {
         logger.error("fetchThumbnails", error: e, stackTrace: s);
       }
+    }
+  }
+
+  static Future<void> pushFiles(int startedAt, bool inBackground) async {
+    SupabaseClient supabaseClient = Supabase.instance.client;
+
+    // push uploaded files state to supabase if left due to network failures
+    // where uploadedAt > 0 but still exists,
+    List<ModelFile> completedUploads = await ModelFile.pendingForPush();
+    for (ModelFile completedUpload in completedUploads) {
+      String fileId = completedUpload.id;
+      try {
+        // TODO handle failure when uploaded_at is not 0 and manage b2Id
+        supabaseClient
+            .from("files")
+            .update({
+              "uploaded_at": completedUpload.uploadedAt,
+              "parts_uploaded": completedUpload.partsUploaded,
+              "b2_id": completedUpload.b2Id,
+            })
+            .eq("id", fileId)
+            .eq("uploaded_at", 0);
+        String changeId = completedUpload.changeId;
+        await completedUpload
+            .delete(); // deletes the encrypted file in temp dir
+        // upgrade changetask
+        await ModelChange.upgradeTask(changeId);
+      } catch (e, s) {
+        logger.error("pushFiles", error: e, stackTrace: s);
+      }
+    }
+
+    //uploading partial pending files
+    // where uploadedAt = 0
+    List<ModelFile> pendingUploads = await ModelFile.pendingUploads();
+    for (ModelFile pendingFile in pendingUploads) {
+      await pushFile(pendingFile);
+    }
+
+    // upload pending files
+    List<ModelChange> changes = await ModelChange.requiresFilePush();
+    for (ModelChange change in changes) {
+      await checkPushFile(change);
+    }
+  }
+
+  static Future<void> checkPushFile(ModelChange change) async {
+    SupabaseClient supabaseClient = Supabase.instance.client;
+    Map<String, dynamic>? dataMap = change.map;
+    if (dataMap != null) {
+      List<String> userIdRowId = change.id.split("|");
+      String userId = userIdRowId[0];
+      String? fileIn = getValueFromMap(dataMap, "path", defaultValue: null);
+      if (fileIn != null) {
+        String fileName = path.basename(fileIn);
+        // check server if already uploaded (from another device)
+        String fileId = '$userId|$fileName';
+        try {
+          final serverFiles =
+              await supabaseClient.from("files").select().eq("id", fileId);
+          if (serverFiles.isNotEmpty) {
+            // entry exist
+            Map<String, dynamic> serverFile = serverFiles.first;
+            int uploadedAt = serverFile["uploaded_at"];
+            if (uploadedAt == 0) {
+              // not uploaded
+              // create new entry with server data
+              serverFile["change_id"] = change.id;
+              serverFile["path"] = fileIn;
+              ModelFile modelFile = await ModelFile.fromMap(serverFile);
+              await modelFile.insert();
+            } else {
+              // upgrade changetask
+              await ModelChange.upgradeTask(change.id);
+            }
+          } else {
+            // encrypt file, get keys, update server before updating local
+            Directory tempDir = await getTemporaryDirectory();
+            String fileOut = path.join(tempDir.path, "$fileName.crypt");
+            SodiumSumo sodium = await SodiumSumoInit.init();
+            CryptoUtils cryptoUtils = CryptoUtils(sodium);
+            ExecutionResult fileEncryptionResult =
+                await cryptoUtils.encryptFile(fileIn, fileOut);
+            if (fileEncryptionResult.isSuccess) {
+              // may fail due to low storage
+              String encryptionKeyBase64 =
+                  fileEncryptionResult.getResult()!["key"];
+              Uint8List encryptionKeyBytes = base64Decode(encryptionKeyBase64);
+              String? masterKeyBase64 = await getMasterKey();
+              Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+              ExecutionResult keyEncryptionResult = cryptoUtils.encryptBytes(
+                  plainBytes: encryptionKeyBytes, key: masterKeyBytes);
+              Uint8List keyCipherBytes =
+                  keyEncryptionResult.getResult()![AppString.encrypted.string];
+              Uint8List keyNonceBytes =
+                  keyEncryptionResult.getResult()![AppString.nonce.string];
+              String keyCipherBase64 = base64Encode(keyCipherBytes);
+              String keyNonceBase64 = base64Encode(keyNonceBytes);
+              File encryptedFile = File(fileOut);
+              int fileSize = encryptedFile.lengthSync();
+              FileSplitter fileSplitter = FileSplitter(encryptedFile);
+              int parts = fileSplitter.partSizes.length;
+              Map<String, dynamic> fileData = {
+                "id": fileId,
+                "key_cipher": keyCipherBase64,
+                "key_nonce": keyNonceBase64,
+                "parts": parts,
+                "size": fileSize,
+              };
+              await supabaseClient
+                  .from("files")
+                  .insert(fileData); // let it fail with exception
+              // if above succeeds, create local entry
+              fileData["change_id"] = change.id;
+              fileData["path"] = fileIn;
+              ModelFile modelFile = await ModelFile.fromMap(fileData);
+              await modelFile.insert();
+            }
+          }
+        } catch (e, s) {
+          logger.error("PushFile", error: e, stackTrace: s);
+        }
+      }
+    }
+  }
+
+  static Future<void> pushFile(ModelFile modelFile) async {
+    SupabaseClient supabaseClient = Supabase.instance.client;
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    try {
+      final serverFiles =
+          await supabaseClient.from("files").select().eq("id", modelFile.id);
+      if (serverFiles.isNotEmpty) {
+        // entry exist
+        Map<String, dynamic> serverFile = serverFiles.first;
+        int uploadedAt = serverFile["uploaded_at"];
+        if (uploadedAt == 0) {
+          File? fileOut = await getCreateEncryptedFileToUpload(
+              modelFile.filePath,
+              modelFile.keyCipher,
+              modelFile.keyNonce,
+              cryptoUtils);
+          if (fileOut == null) {
+            logger.error("pushFile:error creating encrypted file");
+          } else {
+            // check and update in case of parts_uploaded mismatch
+            int serverPartsUploaded = serverFile["parts_uploaded"];
+            if (serverPartsUploaded != modelFile.partsUploaded) {
+              if (modelFile.partsUploaded > serverPartsUploaded) {
+                // update server only when partsUploaded are less
+                try {
+                  await supabaseClient
+                      .from("files")
+                      .update({"parts_uploaded": modelFile.partsUploaded})
+                      .eq("id", modelFile.id)
+                      .lt("parts_uploaded", modelFile.partsUploaded);
+                } catch (e, s) {
+                  logger.error("pushFile", error: e, stackTrace: s);
+                }
+              } else if (modelFile.partsUploaded < serverPartsUploaded) {
+                // being uploaded from another device
+                // update local
+                modelFile.partsUploaded = serverPartsUploaded;
+                await modelFile.update(["parts_uploaded"]);
+              }
+            }
+            if (modelFile.parts > modelFile.partsUploaded) {
+              if (modelFile.parts > 1 && modelFile.b2Id == null) {
+                // start part upload
+              } else {}
+              int nextPart = modelFile.partsUploaded + 1;
+              FileSplitter fileSplitter = FileSplitter(fileOut);
+              Uint8List? fileBytes = await fileSplitter.getPart(nextPart);
+            } else {
+              // TODO think
+            }
+          }
+        } else {
+          await ModelChange.upgradeTask(modelFile.changeId);
+        }
+      }
+    } catch (e, s) {
+      logger.error("pushFile", error: e, stackTrace: s);
+    }
+  }
+
+  static Future<File?> getCreateEncryptedFileToUpload(
+      String fileInPath,
+      String keyCipherBase64,
+      String keyNonceBase64,
+      CryptoUtils cryptoUtils) async {
+    Directory tempDir = await getTemporaryDirectory();
+    String fileName = path.basename(fileInPath);
+    String fileOutPath = path.join(tempDir.path, '$fileName.crypt');
+    File fileOut = File(fileOutPath);
+    File fileIn = File(fileInPath);
+    if (!fileOut.existsSync()) {
+      if (fileIn.existsSync()) {
+        String? masterKeyBase64 = await getMasterKey();
+        Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+        Uint8List keyNonceBytes = base64Decode(keyNonceBase64);
+        Uint8List keyCipherBytes = base64Decode(keyCipherBase64);
+        ExecutionResult keyDecryptionResult = cryptoUtils.decryptBytes(
+            cipherBytes: keyCipherBytes,
+            nonce: keyNonceBytes,
+            key: masterKeyBytes);
+        Uint8List fileEncryptionKey =
+            keyDecryptionResult.getResult()![AppString.decrypted.string];
+        ExecutionResult fileEncryptionResult = await cryptoUtils
+            .encryptFile(fileInPath, fileOutPath, key: fileEncryptionKey);
+        if (fileEncryptionResult.isSuccess) {
+          return fileOut;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      return fileOut;
     }
   }
 
@@ -462,16 +679,6 @@ class SyncUtils {
       request.headers.addAll(headers);
 
       request.bodyBytes = bytes;
-
-      // Add file to request
-      /* request.files.add(
-        await http.MultipartFile.fromPath(
-          'file', // field name expected by server
-          file.path,
-          filename:
-              path.basename(file.path), // optional: preserves original filename
-        ),
-      ); */
 
       // Send request and get response
       var streamedResponse = await request.send();

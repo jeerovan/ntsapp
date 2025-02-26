@@ -96,6 +96,7 @@ Deno.serve(async (req) => {
     let fileId = "";
     if (status == 200) {
       fileId = largeFileId;
+      //TODO save this b2_file_id against user_file_id
     }
     const downloadData = {
       fileId,

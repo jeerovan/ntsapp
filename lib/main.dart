@@ -255,7 +255,7 @@ void backgroundTaskDispatcher() {
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
-          await performSync();
+          await performSync(inBackground: true);
           break;
       }
       return Future.value(true);
@@ -334,7 +334,7 @@ class DataSync {
   }
 }
 
-Future<void> performSync() async {
+Future<void> performSync({bool inBackground = false}) async {
   final logger = AppLogger(prefixes: [
     "main",
     "performSync",
@@ -362,16 +362,13 @@ Future<void> performSync() async {
           DateTime.now().toUtc().millisecondsSinceEpoch);
     });
 
-    //1. push local changes
-    //2. upload media files if any
-    //3. pull server changes
-    //4. download media files if any
     try {
       await SyncUtils.pushDataChanges();
       await SyncUtils.pushThumbnails();
-
+      // push files with utcNow as input to track duration
       await SyncUtils.fetchDataChanges();
       await SyncUtils.fetchThumbnails();
+      // fetch files
     } catch (e, s) {
       logger.error("Sync exception", error: e, stackTrace: s);
     }

@@ -4,7 +4,11 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getUserPlanStatus } from "../_shared/supabase.ts";
+import {
+  getDownloadToken,
+  getUserPlanStatus,
+  setDownloadToken,
+} from "../_shared/supabase.ts";
 import { authenticateB2 } from "../_shared/backblaze.ts";
 
 const B2_BUCKET_ID = Deno.env.get("B2_BUCKET_ID")!;
@@ -26,7 +30,7 @@ async function b2GetDownloadUrl(generate: boolean, filePath: string) {
     body: JSON.stringify({
       bucketId: B2_BUCKET_ID,
       fileNamePrefix: filePath,
-      validDurationInSeconds: 24 * 3600,
+      validDurationInSeconds: 604800, // one week in seconds
     }),
   });
 }
@@ -34,33 +38,33 @@ async function b2GetDownloadUrl(generate: boolean, filePath: string) {
 async function getDownloadUrl(filePath: string) {
   let downloadUrlResponse = await b2GetDownloadUrl(false, filePath);
   let statusCode = downloadUrlResponse.status;
-  let token = "";
-  let status = 400;
-  let error = "Unhandled";
+  let reqToken = null;
+  let reqStatus = 400;
+  let reqError = "Unhandled";
   if (statusCode == 200) {
     const { authorizationToken } = await downloadUrlResponse.json();
-    token = authorizationToken; // save token for filename
-    status = 200;
-    error = "";
+    reqToken = authorizationToken; // save token for filename
+    reqStatus = 200;
+    reqError = "";
   } else if (statusCode == 400) {
     const { message } = await downloadUrlResponse.json();
-    status = 400;
-    error = message;
+    reqStatus = 400;
+    reqError = message;
   } else if (statusCode == 401) {
     downloadUrlResponse = await b2GetDownloadUrl(true, filePath);
     statusCode = downloadUrlResponse.status;
     if (statusCode == 200) {
       const { authorizationToken } = await downloadUrlResponse.json();
-      token = authorizationToken;
-      status = 200;
-      error = "";
+      reqToken = authorizationToken;
+      reqStatus = 200;
+      reqError = "";
     } else {
-      status = statusCode;
+      reqStatus = statusCode;
     }
   } else {
-    status = statusCode;
+    reqStatus = statusCode;
   }
-  return { status, token, error };
+  return { reqStatus, reqToken, reqError };
 }
 
 Deno.serve(async (req) => {
@@ -87,12 +91,34 @@ Deno.serve(async (req) => {
       });
     }
     const userId = plan.userId;
-
     const filePath = `${userId}/${fileName}`;
 
-    const { status, token, error } = await getDownloadUrl(filePath);
+    const { existingToken, existingTokenExpires } = await getDownloadToken(
+      userId!,
+      fileName,
+    );
+
+    let token = null;
+    let status = 200;
+    let error = "";
+    const now = new Date().getSeconds();
+    if (
+      existingToken != null && existingTokenExpires > now
+    ) {
+      token = existingToken;
+    } else {
+      const { reqStatus, reqToken, reqError } = await getDownloadUrl(filePath);
+      status = reqStatus;
+      error = reqError;
+      if (status == 200) {
+        token = reqToken;
+        const newExpires = now + 604700;
+        await setDownloadToken(userId!, fileName, token, newExpires);
+      }
+    }
+
     let url = "";
-    if (status == 200) {
+    if (token) {
       url =
         `${B2_DOWNLOAD_URL}/file/${B2_BUCKET_NAME}/${filePath}?Authorization=${token}`;
     }

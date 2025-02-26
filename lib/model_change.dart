@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/service_logger.dart';
 
@@ -12,7 +14,7 @@ class ModelChange {
   String data;
   int type;
   String? thumbnail;
-  String? filePath;
+  Map<String, dynamic>? map;
 
   ModelChange({
     required this.id,
@@ -20,7 +22,7 @@ class ModelChange {
     required this.data,
     required this.type,
     this.thumbnail,
-    this.filePath,
+    this.map,
   });
 
   Map<String, dynamic> toMap() {
@@ -30,32 +32,44 @@ class ModelChange {
       'data': data,
       'type': type,
       'thumbnail': thumbnail,
-      'path': filePath,
+      'map': map == null
+          ? null
+          : map is String
+              ? map
+              : jsonEncode(data),
     };
   }
 
   static Future<ModelChange> fromMap(Map<String, dynamic> map) async {
+    Map<String, dynamic>? dataMap;
+    if (map.containsKey('map') && map['map'] != null) {
+      if (map['map'] is String) {
+        dataMap = jsonDecode(map['map']);
+      } else {
+        dataMap = map['map'];
+      }
+    }
     return ModelChange(
       id: map['id'],
       name: map['name'],
       data: map['data'],
       type: getValueFromMap(map, 'type'),
       thumbnail: getValueFromMap(map, 'thumbnail'),
-      filePath: getValueFromMap(map, 'path'),
+      map: dataMap,
     );
   }
 
   static Future<void> add(
       String changeId, String table, String changeData, int changeType,
-      {String? thumbnail, String? filePath}) async {
-    ModelChange change = ModelChange(
-      id: changeId,
-      name: table,
-      data: changeData,
-      type: changeType,
-      thumbnail: thumbnail,
-      filePath: filePath,
-    );
+      {String? thumbnail, Map<String, dynamic>? dataMap}) async {
+    ModelChange change = await ModelChange.fromMap({
+      'id': changeId,
+      'name': table,
+      'data': changeData,
+      'type': changeType,
+      'thumbnail': thumbnail,
+      'map': dataMap,
+    });
     await change.upcert();
   }
 
@@ -86,10 +100,10 @@ class ModelChange {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<dynamic> changeTypes = [
-      ChangeType.uploadData.value,
-      ChangeType.uploadDataFile.value,
-      ChangeType.uploadDataThumbnail.value,
-      ChangeType.uploadDataThumbnailFile.value
+      SyncChangeTask.uploadData.value,
+      SyncChangeTask.uploadDataFile.value,
+      SyncChangeTask.uploadDataThumbnail.value,
+      SyncChangeTask.uploadDataThumbnailFile.value
     ];
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
@@ -103,8 +117,8 @@ class ModelChange {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<int> changeTypes = [
-      ChangeType.uploadThumbnail.value,
-      ChangeType.uploadThumbnailFile.value
+      SyncChangeTask.uploadThumbnail.value,
+      SyncChangeTask.uploadThumbnailFile.value
     ];
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
@@ -116,12 +130,24 @@ class ModelChange {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
+  static Future<List<ModelChange>> requiresFilePush() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    int changeType = SyncChangeTask.uploadFile.value;
+    List<Map<String, dynamic>> rows = await db.query(
+      "change",
+      where: "type = ?",
+      whereArgs: [changeType],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
   static Future<List<ModelChange>> requiresThumbnailFetch() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<int> changeTypes = [
-      ChangeType.downloadThumbnail.value,
-      ChangeType.downloadThumbnailFile.value
+      SyncChangeTask.downloadThumbnail.value,
+      SyncChangeTask.downloadThumbnailFile.value
     ];
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
@@ -135,16 +161,17 @@ class ModelChange {
 
   static Future<void> upgradeTypeForIds(List<String> ids) async {
     for (String id in ids) {
-      await upgradeType(id);
+      await upgradeTask(id);
     }
   }
 
-  static Future<void> upgradeType(String changeId) async {
+  static Future<void> upgradeTask(String changeId) async {
     ModelChange? change = await get(changeId);
     if (change != null) {
-      ChangeType? currentType = ChangeTypeExtension.fromValue(change.type);
-      ChangeType nextType = getNextChangeType(currentType!);
-      if (nextType == ChangeType.delete) {
+      SyncChangeTask? currentType =
+          SyncChangeTaskExtension.fromValue(change.type);
+      SyncChangeTask nextType = getNextChangeType(currentType!);
+      if (nextType == SyncChangeTask.delete) {
         // TODO mark content available on cloud with single tick
         await change.delete();
       } else {
@@ -203,17 +230,17 @@ class ModelChange {
     return deleted;
   }
 
-  static ChangeType getChangeTaskType(
+  static SyncChangeTask getChangeTaskType(
       String table, bool thumbnailIsNull, Map<String, dynamic> map) {
     switch (table) {
       case "category":
         return thumbnailIsNull
-            ? ChangeType.uploadData
-            : ChangeType.uploadDataThumbnail;
+            ? SyncChangeTask.uploadData
+            : SyncChangeTask.uploadDataThumbnail;
       case "itemgroup":
         return thumbnailIsNull
-            ? ChangeType.uploadData
-            : ChangeType.uploadDataThumbnail;
+            ? SyncChangeTask.uploadData
+            : SyncChangeTask.uploadDataThumbnail;
       case "item":
         int type = map["type"];
         ItemType? itemType = ItemTypeExtension.fromValue(type);
@@ -223,42 +250,42 @@ class ModelChange {
           case ItemType.contact:
           case ItemType.task:
           case ItemType.completedTask:
-            return ChangeType.uploadData;
+            return SyncChangeTask.uploadData;
           case ItemType.image:
           case ItemType.video:
-            return ChangeType.uploadDataThumbnailFile;
+            return SyncChangeTask.uploadDataThumbnailFile;
           case ItemType.document:
           case ItemType.audio:
-            return ChangeType.uploadFile;
+            return SyncChangeTask.uploadFile;
           default:
-            return ChangeType.uploadData;
+            return SyncChangeTask.uploadData;
         }
       default:
-        return ChangeType.uploadData;
+        return SyncChangeTask.uploadData;
     }
   }
 
-  static ChangeType getNextChangeType(ChangeType current) {
+  static SyncChangeTask getNextChangeType(SyncChangeTask current) {
     switch (current) {
-      case ChangeType.delete:
-      case ChangeType.uploadData:
-      case ChangeType.uploadFile:
-      case ChangeType.uploadThumbnail:
-        return ChangeType.delete;
-      case ChangeType.uploadDataFile:
-        return ChangeType.uploadFile;
-      case ChangeType.uploadDataThumbnailFile:
-        return ChangeType.uploadThumbnailFile;
-      case ChangeType.uploadThumbnailFile:
-        return ChangeType.uploadFile;
-      case ChangeType.uploadDataThumbnail:
-        return ChangeType.uploadThumbnail;
+      case SyncChangeTask.delete:
+      case SyncChangeTask.uploadData:
+      case SyncChangeTask.uploadFile:
+      case SyncChangeTask.uploadThumbnail:
+        return SyncChangeTask.delete;
+      case SyncChangeTask.uploadDataFile:
+        return SyncChangeTask.uploadFile;
+      case SyncChangeTask.uploadDataThumbnailFile:
+        return SyncChangeTask.uploadThumbnailFile;
+      case SyncChangeTask.uploadThumbnailFile:
+        return SyncChangeTask.uploadFile;
+      case SyncChangeTask.uploadDataThumbnail:
+        return SyncChangeTask.uploadThumbnail;
       // download types
-      case ChangeType.downloadThumbnailFile:
-        return ChangeType.downloadFile;
-      case ChangeType.downloadThumbnail:
-      case ChangeType.downloadFile:
-        return ChangeType.delete;
+      case SyncChangeTask.downloadThumbnailFile:
+        return SyncChangeTask.downloadFile;
+      case SyncChangeTask.downloadThumbnail:
+      case SyncChangeTask.downloadFile:
+        return SyncChangeTask.delete;
     }
   }
 }

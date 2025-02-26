@@ -63,3 +63,48 @@ export async function getUserPlanStatus(
 
   return { status, userId, error };
 }
+
+export async function getDownloadToken(userId: string, fileName: string) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  let existingToken = null;
+  let existingTokenExpires = null;
+
+  // Fetch existing token from Supabase (Only fetching required columns)
+  const { data, error } = await supabaseClient
+    .from("files")
+    .select("token, expires")
+    .eq("user_id", userId)
+    .eq("file_name", fileName)
+    .single();
+
+  // If no data exists, we must generate a new token
+  if (data && !error) {
+    existingToken = data.token;
+    existingTokenExpires = data.expires;
+  }
+  return { existingToken, existingTokenExpires };
+}
+
+export async function setDownloadToken(
+  userId: string,
+  fileName: string,
+  token: string,
+  expires: number,
+) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  // update token and expiry
+  await supabaseClient
+    .from("files")
+    .update({ token: token, expires: expires })
+    .eq("user_id", userId)
+    .eq("file_name", fileName)
+    .select();
+}
