@@ -91,11 +91,11 @@ Deno.serve(async (req) => {
       });
     }
     const userId = plan.userId;
+    const userFileId = `${userId}|${fileName}`;
     const filePath = `${userId}/${fileName}`;
 
     const { existingToken, existingTokenExpires } = await getDownloadToken(
-      userId!,
-      fileName,
+      userFileId,
     );
 
     let token = null;
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       if (status == 200) {
         token = reqToken;
         const newExpires = now + 604700;
-        await setDownloadToken(userId!, fileName, token, newExpires);
+        await setDownloadToken(userFileId, token, newExpires);
       }
     }
 

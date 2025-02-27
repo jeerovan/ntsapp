@@ -202,6 +202,14 @@ class StorageSqlite {
         FOREIGN KEY (change_id) REFERENCES change(id) ON DELETE CASCADE
       )
     ''');
+    await db.execute('''
+      CREATE TABLE parts (
+        sha TEXT PRIMARY KEY,
+        file_id TEXT NOT NULL,
+        part_number INTEGER NOT NULL,
+        FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
+      )
+    ''');
     logger.info("Tables Created");
   }
 
@@ -710,6 +718,14 @@ class StorageSqlite {
         uploaded_at INTEGER NOT NULL,
         b2_id TEXT,
         FOREIGN KEY (change_id) REFERENCES change(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE parts (
+        sha TEXT PRIMARY KEY,
+        file_id TEXT NOT NULL,
+        part_number INTEGER NOT NULL,
+        FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
       )
     ''');
     await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");

@@ -4,7 +4,11 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getUserPlanStatus } from "../_shared/supabase.ts";
+import {
+  getB2FileId,
+  getUserPlanStatus,
+  setB2FileId,
+} from "../_shared/supabase.ts";
 import { authenticateB2 } from "../_shared/backblaze.ts";
 
 const B2_BUCKET_ID = Deno.env.get("B2_BUCKET_ID")!;
@@ -89,21 +93,32 @@ Deno.serve(async (req) => {
       });
     }
     const userId = plan.userId;
-
+    const userFileId = `${userId}|${fileName}`;
     const filePath = `${userId}/${fileName}`;
-
-    const { status, largeFileId, error } = await startPartsUpload(filePath);
     let fileId = "";
-    if (status == 200) {
-      fileId = largeFileId;
-      //TODO save this b2_file_id against user_file_id
+    let callError = "";
+    let callStatus = 200;
+
+    const existingB2FileId = await getB2FileId(userFileId);
+    if (existingB2FileId == null) {
+      const { status, largeFileId, error } = await startPartsUpload(filePath);
+      if (status == 200) {
+        fileId = largeFileId;
+        await setB2FileId(userFileId, largeFileId);
+      } else {
+        callStatus = status;
+        callError = error;
+      }
+    } else {
+      fileId = existingB2FileId;
     }
-    const downloadData = {
+
+    const b2Data = {
       fileId,
-      error,
+      callError,
     };
-    return new Response(JSON.stringify(downloadData), {
-      status: status,
+    return new Response(JSON.stringify(b2Data), {
+      status: callStatus,
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error }), { status: 500 });

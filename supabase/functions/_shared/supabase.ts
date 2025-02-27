@@ -64,7 +64,7 @@ export async function getUserPlanStatus(
   return { status, userId, error };
 }
 
-export async function getDownloadToken(userId: string, fileName: string) {
+export async function getDownloadToken(userFileId: string) {
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -77,8 +77,7 @@ export async function getDownloadToken(userId: string, fileName: string) {
   const { data, error } = await supabaseClient
     .from("files")
     .select("token, expires")
-    .eq("user_id", userId)
-    .eq("file_name", fileName)
+    .eq("id", userFileId)
     .single();
 
   // If no data exists, we must generate a new token
@@ -90,8 +89,7 @@ export async function getDownloadToken(userId: string, fileName: string) {
 }
 
 export async function setDownloadToken(
-  userId: string,
-  fileName: string,
+  userFileId: string,
   token: string,
   expires: number,
 ) {
@@ -104,7 +102,37 @@ export async function setDownloadToken(
   await supabaseClient
     .from("files")
     .update({ token: token, expires: expires })
-    .eq("user_id", userId)
-    .eq("file_name", fileName)
-    .select();
+    .eq("id", userFileId);
+}
+
+export async function getB2FileId(userFileId: string) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  let b2Id = null;
+
+  // Fetch
+  const { data, error } = await supabaseClient
+    .from("files")
+    .select("b2_id")
+    .eq("id", userFileId)
+    .single();
+  if (data && !error) {
+    b2Id = data.b2_id;
+  }
+  return b2Id;
+}
+
+export async function setB2FileId(userFileId: string, b2FileId: string) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+  // update b2fileid
+  await supabaseClient
+    .from("files")
+    .update({ b2_id: b2FileId })
+    .eq("id", userFileId).eq("b2_id", null);
 }

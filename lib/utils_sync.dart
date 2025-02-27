@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
@@ -10,6 +11,7 @@ import 'package:ntsapp/model_change.dart';
 import 'package:ntsapp/model_file.dart';
 import 'package:ntsapp/model_item.dart';
 import 'package:ntsapp/model_item_group.dart';
+import 'package:ntsapp/model_part.dart';
 import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
@@ -512,6 +514,8 @@ class SyncUtils {
               serverFile["path"] = fileIn;
               ModelFile modelFile = await ModelFile.fromMap(serverFile);
               await modelFile.insert();
+              // push file
+              await pushFile(modelFile);
             } else {
               // upgrade changetask
               await ModelChange.upgradeTask(change.id);
@@ -558,6 +562,8 @@ class SyncUtils {
               fileData["path"] = fileIn;
               ModelFile modelFile = await ModelFile.fromMap(fileData);
               await modelFile.insert();
+              // start actual upload
+              await pushFile(modelFile);
             }
           }
         } catch (e, s) {
@@ -569,8 +575,6 @@ class SyncUtils {
 
   static Future<void> pushFile(ModelFile modelFile) async {
     SupabaseClient supabaseClient = Supabase.instance.client;
-    SodiumSumo sodium = await SodiumSumoInit.init();
-    CryptoUtils cryptoUtils = CryptoUtils(sodium);
     try {
       final serverFiles =
           await supabaseClient.from("files").select().eq("id", modelFile.id);
@@ -579,44 +583,80 @@ class SyncUtils {
         Map<String, dynamic> serverFile = serverFiles.first;
         int uploadedAt = serverFile["uploaded_at"];
         if (uploadedAt == 0) {
-          File? fileOut = await getCreateEncryptedFileToUpload(
-              modelFile.filePath,
-              modelFile.keyCipher,
-              modelFile.keyNonce,
-              cryptoUtils);
-          if (fileOut == null) {
-            logger.error("pushFile:error creating encrypted file");
-          } else {
-            // check and update in case of parts_uploaded mismatch
-            int serverPartsUploaded = serverFile["parts_uploaded"];
-            if (serverPartsUploaded != modelFile.partsUploaded) {
-              if (modelFile.partsUploaded > serverPartsUploaded) {
-                // update server only when partsUploaded are less
-                try {
-                  await supabaseClient
-                      .from("files")
-                      .update({"parts_uploaded": modelFile.partsUploaded})
-                      .eq("id", modelFile.id)
-                      .lt("parts_uploaded", modelFile.partsUploaded);
-                } catch (e, s) {
-                  logger.error("pushFile", error: e, stackTrace: s);
-                }
-              } else if (modelFile.partsUploaded < serverPartsUploaded) {
-                // being uploaded from another device
-                // update local
-                modelFile.partsUploaded = serverPartsUploaded;
-                await modelFile.update(["parts_uploaded"]);
+          // check and update in case of parts_uploaded mismatch
+          int serverPartsUploaded = serverFile["parts_uploaded"];
+          if (serverPartsUploaded != modelFile.partsUploaded) {
+            if (modelFile.partsUploaded > serverPartsUploaded) {
+              // update server only when partsUploaded are less
+              try {
+                await supabaseClient
+                    .from("files")
+                    .update({"parts_uploaded": modelFile.partsUploaded})
+                    .eq("id", modelFile.id)
+                    .lt("parts_uploaded", modelFile.partsUploaded);
+              } catch (e, s) {
+                logger.error("pushFile", error: e, stackTrace: s);
               }
+            } else if (modelFile.partsUploaded < serverPartsUploaded) {
+              // being uploaded from another device
+              // update local
+              modelFile.partsUploaded = serverPartsUploaded;
+              await modelFile.update(["parts_uploaded"]);
             }
-            if (modelFile.parts > modelFile.partsUploaded) {
-              if (modelFile.parts > 1 && modelFile.b2Id == null) {
-                // start part upload
-              } else {}
-              int nextPart = modelFile.partsUploaded + 1;
-              FileSplitter fileSplitter = FileSplitter(fileOut);
-              Uint8List? fileBytes = await fileSplitter.getPart(nextPart);
+          }
+          // check update b2_id
+          if (serverFile["b2_id"] != null && modelFile.b2Id == null) {
+            modelFile.b2Id = serverFile["b2_id"];
+            await modelFile.update(["b2_id"]);
+          }
+          String userIdFileName = modelFile.id;
+          String fileName = userIdFileName.split("|")[1];
+          if (modelFile.parts > modelFile.partsUploaded) {
+            if (modelFile.parts > 1) {
+              if (modelFile.b2Id == null) {
+                // call start_parts_upload to get b2 file id
+                try {
+                  SupabaseClient supabase = Supabase.instance.client;
+                  final res = await supabase.functions.invoke(
+                      'start_parts_upload',
+                      body: {'fileName': fileName, "fileSize": modelFile.size});
+                  Map<String, dynamic> resData = jsonDecode(res.data);
+                  modelFile.b2Id = resData["fileId"];
+                  await modelFile.update(["b2_id"]);
+                  await pushFilePart(modelFile);
+                } on FunctionException catch (e) {
+                  Map<String, dynamic> errorData = jsonDecode(e.details);
+                  logger.error(errorData["error"]);
+                } catch (e, s) {
+                  logger.error("Exception", error: e, stackTrace: s);
+                }
+              } else {
+                await pushFilePart(modelFile);
+              }
             } else {
-              // TODO think
+              await pushFilePart(modelFile);
+            }
+          } else {
+            // all parts uploaded
+            if (modelFile.parts > 1 && modelFile.uploadedAt == 0) {
+              // finish multi-part upload
+              List<String> partSha1Array =
+                  await ModelPart.shasForFileId(modelFile.id);
+              await supabaseClient.functions.invoke('finish_parts_upload',
+                  body: {
+                    'fileId': modelFile.b2Id,
+                    "partSha1Array": partSha1Array
+                  });
+              // uploaded_at is set only when above call succeeds
+              modelFile.uploadedAt =
+                  DateTime.now().toUtc().millisecondsSinceEpoch;
+              await modelFile.update(["uploaded_at"]);
+              // update server
+              await supabaseClient.from("files").update({
+                "parts_uploaded": modelFile.partsUploaded,
+                "uploaded_at": modelFile.uploadedAt,
+                "b2_id": modelFile.b2Id
+              }).eq("id", modelFile.id);
             }
           }
         } else {
@@ -625,6 +665,106 @@ class SyncUtils {
       }
     } catch (e, s) {
       logger.error("pushFile", error: e, stackTrace: s);
+    }
+  }
+
+  static Future<void> pushFilePart(ModelFile modelFile) async {
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    File? fileOut = await getCreateEncryptedFileToUpload(modelFile.filePath,
+        modelFile.keyCipher, modelFile.keyNonce, cryptoUtils);
+    if (fileOut == null) {
+      logger.error("pushFile:error creating encrypted file");
+    } else {
+      int partNumber = modelFile.partsUploaded + 1;
+      FileSplitter fileSplitter = FileSplitter(fileOut);
+      Uint8List? fileBytes = await fileSplitter.getPart(partNumber);
+      if (fileBytes != null) {
+        SupabaseClient supabaseClient = Supabase.instance.client;
+        int fileSize = fileBytes.length;
+        String sha1Hash = sha1.convert(fileBytes).toString();
+        String uploadUrl = "";
+        Map<String, String> headers = {};
+        try {
+          if (modelFile.parts > 1) {
+            final res = await supabaseClient.functions.invoke(
+                'get_upload_part_url',
+                body: {'fileId': modelFile.b2Id});
+            Map<String, dynamic> data = jsonDecode(res.data);
+            uploadUrl = data["url"];
+            String uploadToken = data["token"];
+            headers = {
+              "authorization": uploadToken,
+              "X-Bz-Part-Number": partNumber.toString(),
+              "X-Bz-Content-Sha1": sha1Hash,
+              "Content-Length": fileSize.toString(),
+            };
+            // save sha
+            ModelPart filePart = ModelPart(
+                id: sha1Hash, fileId: modelFile.id, partNumber: partNumber);
+            await filePart.insert();
+          } else {
+            List<String> userIdFileName = modelFile.id.split("|");
+            String userId = userIdFileName[0];
+            String fileName = userIdFileName[1];
+            final res = await supabaseClient.functions
+                .invoke('get_upload_url', body: {'fileSize': fileSize});
+            Map<String, dynamic> data = jsonDecode(res.data);
+            uploadUrl = data["url"];
+            String uploadToken = data["token"];
+            headers = {
+              "authorization": uploadToken,
+              "X-Bz-Content-Sha1": sha1Hash,
+              "X-Bz-File-Name": '$userId%2F$fileName',
+              "Content-Length": fileSize.toString(),
+              "Content-Type": "application/octet-stream",
+            };
+          }
+          if (uploadUrl.isNotEmpty) {
+            Map<String, dynamic> uploadResult = await SyncUtils.uploadFile(
+                bytes: fileBytes, url: uploadUrl, headers: headers);
+            // update parts_uploaded
+            if (uploadResult["error"].isEmpty) {
+              String b2Id = uploadResult["fileId"];
+              //update local first
+              modelFile.partsUploaded = partNumber;
+              modelFile.b2Id = b2Id;
+              await modelFile.update(["parts_uploaded", "b2_id"]);
+              if (modelFile.parts == modelFile.partsUploaded) {
+                if (modelFile.parts > 1) {
+                  // call finish parts upload
+                  List<String> partSha1Array =
+                      await ModelPart.shasForFileId(modelFile.id);
+                  await supabaseClient.functions.invoke('finish_parts_upload',
+                      body: {'fileId': b2Id, "partSha1Array": partSha1Array});
+                  // uploaded_at is set only when above call succeeds
+                  modelFile.uploadedAt =
+                      DateTime.now().toUtc().millisecondsSinceEpoch;
+                  await modelFile.update(["uploaded_at"]);
+                  // update server
+                  await supabaseClient.from("files").update({
+                    "parts_uploaded": partNumber,
+                    "uploaded_at": modelFile.uploadedAt,
+                    "b2_id": b2Id
+                  }).eq("id", modelFile.id);
+                } else {
+                  modelFile.uploadedAt =
+                      DateTime.now().toUtc().millisecondsSinceEpoch;
+                  await modelFile.update(["uploaded_at"]);
+                  // update server
+                  await supabaseClient.from("files").update({
+                    "parts_uploaded": partNumber,
+                    "uploaded_at": modelFile.uploadedAt,
+                    "b2_id": b2Id
+                  }).eq("id", modelFile.id);
+                }
+              }
+            }
+          }
+        } catch (e, s) {
+          logger.error("pushFilePart", error: e, stackTrace: s);
+        }
+      }
     }
   }
 
