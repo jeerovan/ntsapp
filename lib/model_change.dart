@@ -36,7 +36,7 @@ class ModelChange {
           ? null
           : map is String
               ? map
-              : jsonEncode(data),
+              : jsonEncode(map),
     };
   }
 
@@ -68,7 +68,7 @@ class ModelChange {
       'data': changeData,
       'type': changeType,
       'thumbnail': thumbnail,
-      'map': dataMap,
+      'map': jsonEncode(dataMap),
     });
     await change.upcert();
   }
@@ -177,8 +177,8 @@ class ModelChange {
       } else {
         change.type = nextType.value;
         await change.update(["type"]);
-        logger
-            .info("upgradeType|From:${currentType.value}|To:${nextType.value}");
+        logger.info(
+            "upgradeType|${change.id}|${currentType.value}->${nextType.value}");
       }
     }
   }

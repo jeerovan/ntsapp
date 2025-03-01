@@ -306,13 +306,6 @@ class DataSync {
   }
 
   Future<void> _startQuickForegroundSync() async {
-    // Initial sync
-    try {
-      await performSync();
-    } catch (e, s) {
-      logger.error('Quick sync', error: e, stackTrace: s);
-    }
-
     // Setup periodic sync
     _quickSyncTimer = Timer.periodic(
         const Duration(minutes: 1), (_) => _handleForegroundSync());
@@ -339,7 +332,8 @@ Future<void> performSync({bool inBackground = false}) async {
     "main",
     "performSync",
   ]);
-  logger.info("Checking Sync");
+  String mode = inBackground ? "Background" : "Foreground";
+  logger.info("$mode|Sync");
   bool canSync = await SyncUtils.canSync();
   if (!canSync) return;
 
@@ -364,8 +358,9 @@ Future<void> performSync({bool inBackground = false}) async {
 
     try {
       await SyncUtils.pushDataChanges();
-      await SyncUtils.pushThumbnails();
-      // push files with utcNow as input to track duration
+      await SyncUtils.pushThumbnails(utcNow, inBackground);
+      await SyncUtils.pushFiles(utcNow, inBackground);
+
       await SyncUtils.fetchDataChanges();
       await SyncUtils.fetchThumbnails();
       // fetch files

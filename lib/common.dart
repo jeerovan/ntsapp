@@ -54,7 +54,17 @@ int getRandomInt(int range) {
 
 dynamic getValueFromMap(Map<String, dynamic> map, String key,
     {dynamic defaultValue}) {
-  return map.containsKey(key) ? map[key] ?? defaultValue : defaultValue;
+  dynamic value;
+  if (map.containsKey(key)) {
+    if (map[key] == null) {
+      value = defaultValue;
+    } else {
+      value = map[key];
+    }
+  } else {
+    value = defaultValue;
+  }
+  return value;
 }
 
 /* input validations -- starts */

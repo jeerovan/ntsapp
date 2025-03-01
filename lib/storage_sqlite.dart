@@ -204,7 +204,7 @@ class StorageSqlite {
     ''');
     await db.execute('''
       CREATE TABLE parts (
-        sha TEXT PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         file_id TEXT NOT NULL,
         part_number INTEGER NOT NULL,
         FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
@@ -722,7 +722,7 @@ class StorageSqlite {
     ''');
     await db.execute('''
       CREATE TABLE parts (
-        sha TEXT PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         file_id TEXT NOT NULL,
         part_number INTEGER NOT NULL,
         FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
