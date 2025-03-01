@@ -1,4 +1,4 @@
-import 'package:ntsapp/enums.dart';
+import 'package:flutter/foundation.dart';
 
 import 'storage_sqlite.dart';
 import 'model_category.dart';
@@ -29,35 +29,23 @@ class ModelSearchItem {
       String query, int offset, int limit) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    // Tokenize input
-    List<String> tokens = query
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove punctuation
-        .split(RegExp(r'\s+')) // Split by spaces
-        .where((token) => token.isNotEmpty) // Remove empty tokens
-        .toList();
-    // Build the WHERE clause with AND logic
-    String conditions =
-        tokens.map((token) => "text LIKE '%$token%'").join(" AND ");
-    String whereClause = tokens.isEmpty ? "" : " AND $conditions";
-    List<Map<String, dynamic>> rows = await db.rawQuery(
-      '''SELECT * FROM item
-         WHERE type != ${ItemType.date.value} $whereClause
-         ORDER BY at DESC
-         LIMIT $limit
-         OFFSET $offset
-      ''',
-    );
 
-    /* List<Map<String, dynamic>> rows = await db.rawQuery(
-      '''SELECT item.*
+    List<Map<String, dynamic>> rows = [];
+    try {
+      List<Map<String, dynamic>> filteredRows = await db.rawQuery(
+        '''SELECT item.*
        FROM item
-       JOIN item_fts ON item.id = item_fts.rowid
+       JOIN item_fts ON item.id = item_fts.item_id
        WHERE item_fts MATCH ?
        ORDER BY item.at DESC
        LIMIT ? OFFSET ?''',
-      [query, limit, offset],
-    ); */
+        [query, limit, offset],
+      );
+
+      rows.addAll(filteredRows);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
 
     return await Future.wait(rows.map((map) => fromMap(map)));
   }

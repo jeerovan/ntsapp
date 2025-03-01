@@ -80,8 +80,8 @@ class StorageSqlite {
 
   Future _onCreate(Database db, int version) async {
     await initTables(db);
-    await createCategoryAndGroupsWithNotesOnFreshInstall(db);
     logger.info('Database created with version: $version');
+    await createCategoryAndGroupsWithNotesOnFreshInstall(db);
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -163,27 +163,24 @@ class StorageSqlite {
     await db.execute('''
       CREATE INDEX idx_item_text ON item(text)
     ''');
-    /* await db.execute('''
-      CREATE VIRTUAL TABLE item_fts USING fts5(text, content='item', content_rowid='id');
+    await db.execute('''
+      CREATE VIRTUAL TABLE item_fts USING fts5(text, item_id);
     ''');
     await db.execute('''
-      CREATE TRIGGER item_ai AFTER INSERT ON item
-      BEGIN
-        INSERT INTO item_fts(rowid, text) VALUES (new.id, new.text);
+      CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+        INSERT INTO item_fts(rowid, text, item_id) VALUES (new.rowid, new.text, new.id);
       END;
     ''');
     await db.execute('''
-      CREATE TRIGGER item_au AFTER UPDATE ON item 
-      BEGIN
-        UPDATE item_fts SET text = new.text WHERE rowid = new.id;
+      CREATE TRIGGER item_au AFTER UPDATE ON item BEGIN
+        UPDATE item_fts SET text = new.text WHERE item_id = old.id;
       END;
     ''');
     await db.execute('''
-      CREATE TRIGGER item_ad AFTER DELETE ON item 
-      BEGIN
-        DELETE FROM item_fts WHERE rowid = old.id;
+      CREATE TRIGGER item_ad AFTER DELETE ON item BEGIN
+        DELETE FROM item_fts WHERE item_id = old.id;
       END;
-    '''); */
+    ''');
     await db.execute('''
       CREATE TABLE itemfile (
         id TEXT PRIMARY KEY,
@@ -277,7 +274,7 @@ class StorageSqlite {
       'id': uuid.v4(),
       'group_id': notesGroupId,
       'text':
-          """Welcome to Note to Self!\nIdeas, lists or anything on your mind, put it all in here.\n\nLong press on this note for delete, edit and other options.""",
+          'Welcome to Note to Self!\nIdeas, lists or anything on your mind, put it all in here.\n\nLong press on this note for delete, edit and other options.',
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -307,7 +304,7 @@ class StorageSqlite {
       'id': uuid.v4(),
       'group_id': readWatchGroupId,
       'text':
-          """Books, shows, articles or rare videos, put all their names and links here and get back to them whenever you're feeling bored.\n\nHere are 2 of our favourites:\n1. Blog: https://blog.samaltman.com/how-to-be-successful\n2. Short film: https://www.youtube.com/watch?v=gYlV0AnUcJE""",
+          '''Books, shows, articles or rare videos, put all their names and links here and get back to them whenever you're feeling bored.\n\nHere are 2 of our favourites:\n1. Blog: https://blog.samaltman.com/how-to-be-successful\n2. Short film: https://www.youtube.com/watch?v=gYlV0AnUcJE''',
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -337,7 +334,7 @@ class StorageSqlite {
       'id': uuid.v4(),
       'group_id': bucketListGroupId,
       'text':
-          """Remember, if it doesn't scare you, it shouldn't be in the list. I'll start with skydiving. What about you?""",
+          '''Remember, if it doesn't scare you, it shouldn't be in the list. I'll start with skydiving. What about you?''',
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -367,7 +364,7 @@ class StorageSqlite {
       'id': uuid.v4(),
       'group_id': journalGroupId,
       'text':
-          """Researchers have found that keeping a daily journal helps you in achieving goals, improves confidence and reduces stress.\nIf writing every day feels too hard, use the voice note feature and record your life, in your own voice.""",
+          '''Researchers have found that keeping a daily journal helps you in achieving goals, improves confidence and reduces stress.\nIf writing every day feels too hard, use the voice note feature and record your life, in your own voice.''',
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -753,7 +750,29 @@ class StorageSqlite {
         FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
       )
     ''');
+    await db.execute('''
+      CREATE VIRTUAL TABLE item_fts USING fts5(text, item_id);
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+        INSERT INTO item_fts(rowid, text, item_id) VALUES (new.rowid, new.text, new.id);
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_au AFTER UPDATE ON item BEGIN
+        UPDATE item_fts SET text = new.text WHERE item_id = old.id;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ad AFTER DELETE ON item BEGIN
+        DELETE FROM item_fts WHERE item_id = old.id;
+      END;
+    ''');
     await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
     await db.execute("ALTER TABLE category ADD COLUMN profile_id TEXT");
+    await db.execute('''
+        INSERT INTO item_fts(rowid, text, item_id) 
+        SELECT rowid, text, id FROM item;
+      ''');
   }
 }
