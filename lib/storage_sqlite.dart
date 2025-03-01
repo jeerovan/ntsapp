@@ -72,7 +72,10 @@ class StorageSqlite {
   }
 
   Future _onOpen(Database db) async {
-    logger.info('Database opened');
+    List<Map<String, dynamic>> result =
+        await db.rawQuery('SELECT sqlite_version()');
+    String version = result.first.values.first;
+    logger.info('Database opened, Version: $version');
   }
 
   Future _onCreate(Database db, int version) async {
@@ -160,6 +163,27 @@ class StorageSqlite {
     await db.execute('''
       CREATE INDEX idx_item_text ON item(text)
     ''');
+    /* await db.execute('''
+      CREATE VIRTUAL TABLE item_fts USING fts5(text, content='item', content_rowid='id');
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ai AFTER INSERT ON item
+      BEGIN
+        INSERT INTO item_fts(rowid, text) VALUES (new.id, new.text);
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_au AFTER UPDATE ON item 
+      BEGIN
+        UPDATE item_fts SET text = new.text WHERE rowid = new.id;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ad AFTER DELETE ON item 
+      BEGIN
+        DELETE FROM item_fts WHERE rowid = old.id;
+      END;
+    '''); */
     await db.execute('''
       CREATE TABLE itemfile (
         id TEXT PRIMARY KEY,
@@ -210,6 +234,7 @@ class StorageSqlite {
         FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
       )
     ''');
+
     logger.info("Tables Created");
   }
 

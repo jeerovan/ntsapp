@@ -134,6 +134,7 @@ class SyncUtils {
   }
 
   static Future<void> pushThumbnails(int startedAt, bool inBackground) async {
+    logger.info("Push Thumbnails");
     List<ModelChange> changes = await ModelChange.requiresThumbnailPush();
     for (ModelChange change in changes) {
       String table = change.name;
@@ -192,7 +193,7 @@ class SyncUtils {
 
   static Future<bool> pushDataChanges() async {
     if (!await canSync()) return false;
-    logger.info("PushDataChanges");
+    logger.info("Push Data Changes");
     SupabaseClient supabaseClient = Supabase.instance.client;
     bool pushedCategories = await pushDataChangesForTable(
         supabaseClient, "category", "process_bulk_categories");
@@ -443,8 +444,8 @@ class SyncUtils {
   }
 
   static Future<void> pushFiles(int startedAt, bool inBackground) async {
+    logger.info("Push Files");
     SupabaseClient supabaseClient = Supabase.instance.client;
-
     // push uploaded files state to supabase if left due to network failures
     // where uploadedAt > 0 but still exists,
     List<ModelFile> completedUploads = await ModelFile.pendingForPush();
@@ -486,7 +487,7 @@ class SyncUtils {
       await checkPushFile(change);
     }
     logger.info(
-        "Pushing New Uploads. Spent: ${DateTime.now().toUtc().millisecondsSinceEpoch - startedAt}");
+        "Creating New Uploads. Spent: ${DateTime.now().toUtc().millisecondsSinceEpoch - startedAt}");
   }
 
   static Future<void> checkPushFile(ModelChange change) async {

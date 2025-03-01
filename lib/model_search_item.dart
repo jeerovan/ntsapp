@@ -48,6 +48,17 @@ class ModelSearchItem {
          OFFSET $offset
       ''',
     );
+
+    /* List<Map<String, dynamic>> rows = await db.rawQuery(
+      '''SELECT item.*
+       FROM item
+       JOIN item_fts ON item.id = item_fts.rowid
+       WHERE item_fts MATCH ?
+       ORDER BY item.at DESC
+       LIMIT ? OFFSET ?''',
+      [query, limit, offset],
+    ); */
+
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 }
