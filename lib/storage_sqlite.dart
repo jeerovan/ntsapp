@@ -163,7 +163,7 @@ class StorageSqlite {
     await db.execute('''
       CREATE INDEX idx_item_text ON item(text)
     ''');
-    await db.execute('''
+    /* await db.execute('''
       CREATE VIRTUAL TABLE item_fts USING fts5(text, item_id);
     ''');
     await db.execute('''
@@ -180,7 +180,7 @@ class StorageSqlite {
       CREATE TRIGGER item_ad AFTER DELETE ON item BEGIN
         DELETE FROM item_fts WHERE item_id = old.id;
       END;
-    ''');
+    '''); */
     await db.execute('''
       CREATE TABLE itemfile (
         id TEXT PRIMARY KEY,
@@ -750,7 +750,9 @@ class StorageSqlite {
         FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
       )
     ''');
-    await db.execute('''
+    await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
+    await db.execute("ALTER TABLE category ADD COLUMN profile_id TEXT");
+    /* await db.execute('''
       CREATE VIRTUAL TABLE item_fts USING fts5(text, item_id);
     ''');
     await db.execute('''
@@ -768,11 +770,9 @@ class StorageSqlite {
         DELETE FROM item_fts WHERE item_id = old.id;
       END;
     ''');
-    await db.execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
-    await db.execute("ALTER TABLE category ADD COLUMN profile_id TEXT");
     await db.execute('''
         INSERT INTO item_fts(rowid, text, item_id) 
         SELECT rowid, text, id FROM item;
-      ''');
+      '''); */
   }
 }
