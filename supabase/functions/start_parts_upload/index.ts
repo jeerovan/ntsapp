@@ -5,9 +5,9 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {
-  getB2FileId,
   getUserPlanStatus,
   setB2FileId,
+  setFileEntry,
 } from "../_shared/supabase.ts";
 import { authenticateB2 } from "../_shared/backblaze.ts";
 
@@ -37,33 +37,33 @@ async function b2StartPartsUpload(generate: boolean, fileName: string) {
 async function startPartsUpload(fileName: string) {
   let response = await b2StartPartsUpload(false, fileName);
   let statusCode = response.status;
-  let largeFileId = "";
-  let status = 400;
-  let error = "Unhandled";
+  let b2FileId = "";
+  let callStatus = 400;
+  let callError = "Unhandled";
   if (statusCode == 200) {
     const { fileId } = await response.json();
-    largeFileId = fileId;
-    status = 200;
-    error = "";
+    b2FileId = fileId;
+    callStatus = 200;
+    callError = "";
   } else if (statusCode == 400) {
     const { message } = await response.json();
-    status = 400;
-    error = message;
+    callStatus = 400;
+    callError = message;
   } else if (statusCode == 401) {
     response = await b2StartPartsUpload(true, fileName);
     statusCode = response.status;
     if (statusCode == 200) {
       const { fileId } = await response.json();
-      largeFileId = fileId;
-      status = 200;
-      error = "";
+      b2FileId = fileId;
+      callStatus = 200;
+      callError = "";
     } else {
-      status = statusCode;
+      callStatus = statusCode;
     }
   } else {
-    status = statusCode;
+    callStatus = statusCode;
   }
-  return { status, largeFileId, error };
+  return { callStatus, b2FileId, callError };
 }
 
 Deno.serve(async (req) => {
@@ -73,52 +73,51 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { fileName, fileSize } = await req.json();
+  const { file_name, size, key_cipher, key_nonce, parts } = await req.json();
 
-  if (!fileName || !fileSize) {
-    return new Response(
-      JSON.stringify({ error: "Missing fileName/fileSize" }),
-      {
-        status: 400,
-      },
-    );
-  }
   try {
     const authorization = req.headers.get("Authorization") ?? "";
-
-    const plan = await getUserPlanStatus(authorization, fileSize);
+    const plan = await getUserPlanStatus(authorization, size);
     if (plan.status > 200) {
       return new Response(JSON.stringify({ error: plan.error }), {
         status: plan.status,
       });
     }
     const userId = plan.userId;
-    const userFileId = `${userId}|${fileName}`;
-    const filePath = `${userId}/${fileName}`;
-    let fileId = "";
-    let callError = "";
-    let callStatus = 200;
+    const userFileId = `${userId}|${file_name}`;
+    const filePath = `${userId}/${file_name}`;
 
-    const existingB2FileId = await getB2FileId(userFileId);
-    if (existingB2FileId == null) {
-      const { status, largeFileId, error } = await startPartsUpload(filePath);
-      if (status == 200) {
-        fileId = largeFileId;
-        await setB2FileId(userFileId, largeFileId);
+    const file = await setFileEntry(
+      userId!,
+      userFileId,
+      key_cipher,
+      key_nonce,
+      parts,
+      size,
+    );
+
+    let error = "";
+    let status = 200;
+
+    if (file.b2_id == null && file.parts > 1) {
+      const { callStatus, b2FileId, callError } = await startPartsUpload(
+        filePath,
+      );
+      if (callStatus == 200) {
+        file.b2_id = b2FileId;
+        await setB2FileId(userFileId, b2FileId);
       } else {
-        callStatus = status;
-        callError = error;
+        status = callStatus;
+        error = callError;
       }
-    } else {
-      fileId = existingB2FileId;
     }
 
     const b2Data = {
-      fileId,
-      callError,
+      file,
+      error,
     };
     return new Response(JSON.stringify(b2Data), {
-      status: callStatus,
+      status: status,
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error }), { status: 500 });

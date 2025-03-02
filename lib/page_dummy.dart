@@ -39,13 +39,20 @@ class _PageDummyState extends State<PageDummy> {
 
   Future<void> startPartsUpload() async {
     try {
+      Map<String, dynamic> fileData = {
+        "id": "fileId",
+        "file_name": "fileName",
+        "key_cipher": "keyCipherBase64",
+        "key_nonce": "keyNonceBase64",
+        "parts": 2,
+        "size": 100,
+      };
       SupabaseClient supabase = Supabase.instance.client;
-      final res = await supabase.functions.invoke('start_parts_upload',
-          body: {'fileName': "backup.zip", "fileSize": 100});
+      final res =
+          await supabase.functions.invoke('start_parts_upload', body: fileData);
       logger.debug(res.data);
     } on FunctionException catch (e) {
-      Map<String, dynamic> errorData = jsonDecode(e.details);
-      logger.error(errorData["error"]);
+      logger.error(e.toString());
     } catch (e, s) {
       logger.error("Exception", error: e, stackTrace: s);
     }

@@ -64,6 +64,56 @@ export async function getUserPlanStatus(
   return { status, userId, error };
 }
 
+export async function setFileEntry(
+  userId: string,
+  fileId: string,
+  cipher: string,
+  nonce: string,
+  parts: number,
+  size: number,
+) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  const { data: existingFile } = await supabaseClient.from("files").select().eq(
+    "id",
+    fileId,
+  ).single();
+  if (existingFile) {
+    return existingFile;
+  } else {
+    const { data: file } = await supabaseClient.from("files").insert({
+      id: fileId,
+      user_id: userId,
+      key_cipher: cipher,
+      key_nonce: nonce,
+      parts: parts,
+      size: size,
+    }).select().single();
+    return file;
+  }
+}
+
+export async function setFileUploaded(
+  fileId: string,
+  parts: number,
+) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+  const now = new Date().getTime();
+  await supabaseClient.from("files").update({
+    parts_uploaded: parts,
+    uploaded_at: now,
+  }).eq(
+    "id",
+    fileId,
+  ).lt("uploaded_at", now);
+}
+
 export async function getDownloadToken(userFileId: string) {
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
@@ -105,24 +155,22 @@ export async function setDownloadToken(
     .eq("id", userFileId);
 }
 
-export async function getB2FileId(userFileId: string) {
+export async function getFile(fileId: string) {
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
   );
 
-  let b2Id = null;
-
   // Fetch
-  const { data, error } = await supabaseClient
+  const { data: file, error } = await supabaseClient
     .from("files")
-    .select("b2_id")
-    .eq("id", userFileId)
+    .select()
+    .eq("id", fileId)
     .single();
-  if (data && !error) {
-    b2Id = data.b2_id;
+  if (!error) {
+    return file;
   }
-  return b2Id;
+  return null;
 }
 
 export async function setB2FileId(userFileId: string, b2FileId: string) {
@@ -134,5 +182,5 @@ export async function setB2FileId(userFileId: string, b2FileId: string) {
   await supabaseClient
     .from("files")
     .update({ b2_id: b2FileId })
-    .eq("id", userFileId).eq("b2_id", null);
+    .eq("id", userFileId).is("b2_id", null);
 }

@@ -4,7 +4,11 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getUserPlanStatus } from "../_shared/supabase.ts";
+import {
+  getFile,
+  getUserPlanStatus,
+  setFileUploaded,
+} from "../_shared/supabase.ts";
 import { authenticateB2 } from "../_shared/backblaze.ts";
 
 const B2_API_URL = Deno.env.get("B2_API")!;
@@ -14,7 +18,7 @@ const B2_API_URL = Deno.env.get("B2_API")!;
  */
 async function b2FinishPartsUpload(
   generate: boolean,
-  fileId: string,
+  b2FileId: string,
   partSha1Array: [string],
 ) {
   const accountToken = await authenticateB2(generate);
@@ -25,25 +29,39 @@ async function b2FinishPartsUpload(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      fileId: fileId,
+      fileId: b2FileId,
       partSha1Array: partSha1Array,
     }),
   });
 }
 
 // tries twice with old and new account auth token if necessary
-async function finishPartsUpload(fileId: string, partSha1Array: [string]) {
-  let response = await b2FinishPartsUpload(false, fileId, partSha1Array);
-  let status = response.status;
-  let error = "Unhandled";
-  if (status == 200) {
-    error = "";
-  } else if (status == 400) {
-    const { message } = await response.json();
-    error = message;
-  } else if (status == 401) {
-    response = await b2FinishPartsUpload(true, fileId, partSha1Array);
+async function finishPartsUpload(
+  fileId: string,
+  partSha1Array: [string],
+) {
+  let status = 200;
+  let error = "";
+  const file = await getFile(fileId);
+  if (file != null) {
+    const b2FileId = file.b2_id;
+    const parts = file.parts;
+    let response = await b2FinishPartsUpload(false, b2FileId, partSha1Array);
     status = response.status;
+    if (status == 400) {
+      const { message } = await response.json();
+      error = message;
+    } else if (status == 401) {
+      response = await b2FinishPartsUpload(true, b2FileId, partSha1Array);
+      status = response.status;
+    }
+    if (status == 200) {
+      await setFileUploaded(fileId, parts);
+      error = "";
+    }
+  } else {
+    status = 400;
+    error = "File not found";
   }
   return { status, error };
 }
@@ -55,7 +73,7 @@ Deno.serve(async (req) => {
     });
   }
   const { fileId, partSha1Array } = await req.json();
-  if (!fileId || !partSha1Array) {
+  if (!partSha1Array || !fileId) {
     return new Response(
       JSON.stringify({ error: "fileId,partSha1Array required" }),
       {
@@ -73,7 +91,10 @@ Deno.serve(async (req) => {
       });
     }
     // in case of error, alwaya get a new upload token
-    const { status, error } = await finishPartsUpload(fileId, partSha1Array);
+    const { status, error } = await finishPartsUpload(
+      fileId,
+      partSha1Array,
+    );
     return new Response(JSON.stringify({ error: error }), { status: status });
   } catch (error) {
     return new Response(JSON.stringify({ error: error }), { status: 400 });

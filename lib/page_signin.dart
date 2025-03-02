@@ -119,8 +119,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
           await profile.upcertChangeFromServer();
           // associate existing categories with this profile if not already associated
           await ModelCategory.associateWithProfile(user.id);
-          // If sync is enabled, ready local data to be pushed if not already done
-          // TODO uncomment
+          // TODO If sync is enabled, ready local data to be pushed if not already done
           //SyncUtils.pushLocalChanges(); // no wait
           navigateToChecksPage();
         }

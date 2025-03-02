@@ -256,7 +256,7 @@ class ModelChange {
             return SyncChangeTask.uploadDataThumbnailFile;
           case ItemType.document:
           case ItemType.audio:
-            return SyncChangeTask.uploadFile;
+            return SyncChangeTask.uploadDataFile;
           default:
             return SyncChangeTask.uploadData;
         }
