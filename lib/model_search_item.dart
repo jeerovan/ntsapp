@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'enums.dart';
 import 'storage_sqlite.dart';
 import 'model_category.dart';
 import 'model_item.dart';
@@ -32,29 +31,17 @@ class ModelSearchItem {
     final db = await dbHelper.database;
 
     List<Map<String, dynamic>> rows = [];
-
-    // Tokenize input
-    List<String> tokens = query
-        .toLowerCase()
-        .replaceAll(
-            RegExp(r'[^\p{L}\p{N}\s]', unicode: true), '') // Remove punctuation
-        .split(RegExp(r'\s+')) // Split by spaces
-        .where((token) => token.isNotEmpty) // Remove empty tokens
-        .toList();
-    // Build the WHERE clause with AND logic
-    String conditions = tokens
-        .map((token) => "LOWER(text) LIKE LOWER('%$token%')")
-        .join(" AND ");
-    String whereClause = tokens.isEmpty ? "" : " AND $conditions";
     try {
       List<Map<String, dynamic>> filteredRows = await db.rawQuery(
-        '''SELECT * FROM item
-         WHERE type != ${ItemType.date.value} $whereClause
-         ORDER BY at DESC
-         LIMIT $limit
-         OFFSET $offset
-      ''',
+        '''SELECT item.*
+       FROM item
+       JOIN item_fts ON item.id = item_fts.item_id
+       WHERE item_fts MATCH ?
+       ORDER BY item.at DESC
+       LIMIT ? OFFSET ?''',
+        [query, limit, offset],
       );
+
       rows.addAll(filteredRows);
     } catch (e) {
       debugPrint(e.toString());
