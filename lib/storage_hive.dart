@@ -22,6 +22,12 @@ class StorageHive {
       String newDeviceId = Uuid().v4();
       await box.put(AppString.deviceId.string, newDeviceId);
     }
+    int? installedAt = box.get(AppString.installedAt.string);
+    if (installedAt == null) {
+      // app installed at
+      await box.put(AppString.installedAt.string,
+          DateTime.now().toUtc().millisecondsSinceEpoch);
+    }
   }
 
   Future<void> put(String key, dynamic value) async {

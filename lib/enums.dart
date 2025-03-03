@@ -75,7 +75,11 @@ enum AppTask {
 }
 
 enum AppString {
+  // app
+  appName,
   deviceId,
+  installedAt,
+  reviewDialogShown,
 
   // Supabase
   supabaseKey,
@@ -103,6 +107,12 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.appName:
+        return "app_name";
+      case AppString.reviewDialogShown:
+        return "review_dialog_shown";
+      case AppString.installedAt:
+        return "installed_at";
       case AppString.deviceId:
         return "device_id";
       case AppString.supabaseKey:

@@ -62,7 +62,7 @@ Future<void> initializeDependencies() async {
   // Load the configuration before running the app
   await AppConfig.load();
   logger.info("Initializing Hive");
-  await StorageHive().initialize();
+  await StorageHive().initialize(); // sets deviceId
   logger.info("Initializing Sqlite");
   if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)

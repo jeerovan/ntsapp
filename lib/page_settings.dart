@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/backup_restore.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -267,7 +268,7 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ListTile(
               leading: const Icon(LucideIcons.star, color: Colors.grey),
-              title: const Text('Rate app'),
+              title: const Text('Leave a review'),
               horizontalTitleGap: 24.0,
               onTap: () => _redirectToFeedback(),
             ),
@@ -311,8 +312,9 @@ class SettingsPageState extends State<SettingsPage> {
   }
 
   void _share() {
+    String appName = AppConfig.get(AppString.appName.string);
     const String appLink =
         'https://play.google.com/store/apps/details?id=com.makenotetoself';
-    Share.share("Make a note to self: $appLink");
+    Share.share("Make a $appName: $appLink");
   }
 }

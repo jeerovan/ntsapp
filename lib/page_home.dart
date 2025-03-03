@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -209,6 +210,7 @@ class _PageHomeState extends State<PageHome> {
           updateGroupInDisplayList(group.id!);
         });
       }
+      checkShowReviewDialog();
     });
   }
 
@@ -269,6 +271,91 @@ class _PageHomeState extends State<PageHome> {
         category.position = position;
         await category.update(["position"]);
       }
+    }
+  }
+
+  Future<void> checkShowReviewDialog() async {
+    if (!StorageHive()
+        .get(AppString.reviewDialogShown.string, defaultValue: false)) {
+      int now = DateTime.now().toUtc().millisecondsSinceEpoch;
+      int installedAt = await StorageHive().get(AppString.installedAt.string);
+      if (now - installedAt > 10 * 60 * 1000) {
+        // 10 minutes
+        await StorageHive().put(AppString.reviewDialogShown.string, true);
+        _showReviewDialog();
+      }
+    }
+  }
+
+  void _showReviewDialog() {
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          String appName = AppConfig.get(AppString.appName.string);
+          return AlertDialog(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Did you know?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$appName :',
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 10),
+                ListTile(
+                  leading: Icon(Icons.check, color: Colors.green),
+                  title: Text('is completely private'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.check, color: Colors.green),
+                  title: Text('is free to use'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.check, color: Colors.green),
+                  title: Text('has no ads'),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Handle "Leave a review" action
+                  Navigator.pop(context);
+                  const url =
+                      'https://play.google.com/store/apps/details?id=com.makenotetoself';
+                  // Use package name
+                  openURL(url);
+                },
+                child: Text(
+                  'Leave a review',
+                ),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -491,7 +578,7 @@ class _PageHomeState extends State<PageHome> {
               _isReordering
                   ? "Reorder"
                   : loadedSharedContents || widget.sharedContents.isEmpty
-                      ? "Note to self"
+                      ? AppConfig.get(AppString.appName.string)
                       : "Select...",
               style: TextStyle(fontSize: 18)),
           actions: _buildDefaultActions(),
