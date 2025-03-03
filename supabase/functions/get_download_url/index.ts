@@ -5,7 +5,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {
-  getDownloadToken,
+  getFile,
   getUserPlanStatus,
   setDownloadToken,
 } from "../_shared/supabase.ts";
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     const userFileId = `${userId}|${fileName}`;
     const filePath = `${userId}/${fileName}`;
 
-    const { existingToken, existingTokenExpires } = await getDownloadToken(
+    const file = await getFile(
       userFileId,
     );
 
@@ -102,28 +102,38 @@ Deno.serve(async (req) => {
     let status = 200;
     let error = "";
     const now = new Date().getSeconds();
-    if (
-      existingToken != null && existingTokenExpires > now
-    ) {
-      token = existingToken;
-    } else {
-      const { reqStatus, reqToken, reqError } = await getDownloadUrl(filePath);
-      status = reqStatus;
-      error = reqError;
-      if (status == 200) {
-        token = reqToken;
-        const newExpires = now + 604700;
-        await setDownloadToken(userFileId, token, newExpires);
+    if (file != null) {
+      if (
+        file.token != null && file.expires > now
+      ) {
+        token = file.token;
+      } else {
+        const { reqStatus, reqToken, reqError } = await getDownloadUrl(
+          filePath,
+        );
+        status = reqStatus;
+        error = reqError;
+        if (status == 200) {
+          token = reqToken;
+          const newExpires = now + 604700;
+          await setDownloadToken(userFileId, token, newExpires);
+        }
       }
     }
 
     let url = "";
+    let key = "";
+    let nonce = "";
     if (token) {
       url =
         `${B2_DOWNLOAD_URL}/file/${B2_BUCKET_NAME}/${filePath}?Authorization=${token}`;
+      key = file.key_cipher;
+      nonce = file.key_nonce;
     }
     const downloadData = {
       url,
+      key,
+      nonce,
       error,
     };
     return new Response(JSON.stringify(downloadData), {

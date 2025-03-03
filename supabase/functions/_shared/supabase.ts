@@ -114,30 +114,6 @@ export async function setFileUploaded(
   ).lt("uploaded_at", now);
 }
 
-export async function getDownloadToken(userFileId: string) {
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
-
-  let existingToken = null;
-  let existingTokenExpires = null;
-
-  // Fetch existing token from Supabase (Only fetching required columns)
-  const { data, error } = await supabaseClient
-    .from("files")
-    .select("token, expires")
-    .eq("id", userFileId)
-    .single();
-
-  // If no data exists, we must generate a new token
-  if (data && !error) {
-    existingToken = data.token;
-    existingTokenExpires = data.expires;
-  }
-  return { existingToken, existingTokenExpires };
-}
-
 export async function setDownloadToken(
   userFileId: string,
   token: string,

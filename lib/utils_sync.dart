@@ -341,7 +341,7 @@ class SyncUtils {
               await group.upcertFromServer();
             case "item":
               ModelItem item = await ModelItem.fromMap(map);
-              dataMap = item.data ?? {};
+              dataMap = item.data;
               await item.upcertFromServer();
           }
           SyncChangeTask changeType = SyncChangeTask.delete;
@@ -443,6 +443,88 @@ class SyncUtils {
     }
   }
 
+  static Future<void> fetchFiles(int startedAt, bool inBackground) async {
+    List<ModelChange> changes = await ModelChange.requiresFileFetch();
+    String? masterKeyBase64 = await getMasterKey();
+
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+
+    for (ModelChange change in changes) {
+      String changeId = change.id;
+      List<String> userIdRowId = changeId.split("|");
+      String itemRowId = userIdRowId[1];
+      ModelItem? modelitem = await ModelItem.get(itemRowId);
+      Map<String, dynamic>? data = change.map;
+      if (data != null && modelitem != null) {
+        String fileName = data["name"];
+        Map<String, dynamic> serverData = await getDataToDownloadFile(fileName);
+        if (serverData.containsKey("url") && serverData["data"].isNotEmpty) {
+          String downloadUrl = serverData["url"];
+          Directory tempDir = await getTemporaryDirectory();
+          String fileInPath = "${tempDir.path}/$fileName";
+          File fileIn = File(fileInPath);
+          IOSink fileInSink = fileIn.openWrite();
+          try {
+            var request = http.Request("GET", Uri.parse(downloadUrl));
+            http.StreamedResponse response = await request.send();
+            if (response.statusCode == 200) {
+              // Stream file data to avoid memory overuse
+              await response.stream.forEach((chunk) => fileInSink.add(chunk));
+              await fileInSink.close();
+              // decrypt file
+              String mimeDirectory = data["mime"].split("/").first;
+              String fileOutPath = await getFilePath(mimeDirectory, fileName);
+              String keyCipherBase64 = serverData[AppString.keyCipher.string];
+              String keyNonceBase64 = serverData[AppString.keyNonce.string];
+              Uint8List? fileEncryptionKeyBytes =
+                  cryptoUtils.getFileEncryptionKeyBytes(
+                      keyCipherBase64, keyNonceBase64, masterKeyBase64!);
+              if (fileEncryptionKeyBytes != null) {
+                ExecutionResult decryptionResult =
+                    await cryptoUtils.decryptFile(
+                        fileInPath, fileOutPath, fileEncryptionKeyBytes);
+                if (decryptionResult.isSuccess) {
+                  logger.info("downloaded & decrypted");
+                  data["path"] = fileOutPath;
+                  modelitem.data = data;
+                  await modelitem.update(["data"], pushToSync: false);
+                  await ModelChange.upgradeTask(change.id);
+                } else {
+                  String error = decryptionResult.failureReason ?? "";
+                  logger.error("Downloaded but decryption failed",
+                      error: error);
+                }
+              }
+            }
+          } catch (e, s) {
+            logger.error("Downloading File", error: e, stackTrace: s);
+          } finally {
+            await fileInSink.close();
+          }
+        }
+      }
+    }
+  }
+
+  static Future<Map<String, dynamic>> getDataToDownloadFile(
+      String fileName) async {
+    SupabaseClient supabase = Supabase.instance.client;
+    Map<String, dynamic> downloadData = {};
+    try {
+      final res = await supabase.functions
+          .invoke('get_download_url', body: {'fileName': fileName});
+      Map<String, dynamic> data = jsonDecode(res.data);
+      downloadData.addAll(data);
+    } on FunctionException catch (e) {
+      Map<String, dynamic> errorData = jsonDecode(e.details);
+      logger.error(errorData["error"]);
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+    }
+    return downloadData;
+  }
+
   static Future<void> pushFiles(int startedAt, bool inBackground) async {
     logger.info("Push Files");
     SupabaseClient supabaseClient = Supabase.instance.client;
@@ -541,35 +623,36 @@ class SyncUtils {
               Uint8List encryptionKeyBytes = base64Decode(encryptionKeyBase64);
               String? masterKeyBase64 = await getMasterKey();
               Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
-              ExecutionResult keyEncryptionResult = cryptoUtils.encryptBytes(
-                  plainBytes: encryptionKeyBytes, key: masterKeyBytes);
-              Uint8List keyCipherBytes =
-                  keyEncryptionResult.getResult()![AppString.encrypted.string];
-              Uint8List keyNonceBytes =
-                  keyEncryptionResult.getResult()![AppString.nonce.string];
-              String keyCipherBase64 = base64Encode(keyCipherBytes);
-              String keyNonceBase64 = base64Encode(keyNonceBytes);
+              Map<String, dynamic> encryptionKeyCipher =
+                  cryptoUtils.getFileEncryptionKeyCipher(
+                      encryptionKeyBytes, masterKeyBytes);
               File encryptedFile = File(fileOut);
               int fileSize = encryptedFile.lengthSync();
               FileSplitter fileSplitter = FileSplitter(encryptedFile);
               int parts = fileSplitter.partSizes.length;
+              String keyNonceBase64 =
+                  encryptionKeyCipher[AppString.keyNonce.string];
               Map<String, dynamic> fileData = {
                 "id": fileId,
                 "file_name": fileName,
-                "key_cipher": keyCipherBase64,
-                "key_nonce": keyNonceBase64,
+                AppString.keyCipher.string:
+                    encryptionKeyCipher[AppString.keyCipher.string],
+                AppString.keyNonce.string: keyNonceBase64,
                 "parts": parts,
                 "size": fileSize,
               };
               final res = await supabaseClient.functions
                   .invoke('start_parts_upload', body: fileData);
               Map<String, dynamic> resData = jsonDecode(res.data);
-              if (resData["file"]["key_nonce"] != keyNonceBase64) {
+              if (resData["file"][AppString.keyNonce.string] !=
+                  keyNonceBase64) {
                 File tempFile = File(fileOut);
                 if (tempFile.existsSync()) tempFile.delete();
               }
-              fileData["key_cipher"] = resData["file"]["key_cipher"];
-              fileData["key_nonce"] = resData["file"]["key_nonce"];
+              fileData[AppString.keyCipher.string] =
+                  resData["file"][AppString.keyCipher.string];
+              fileData[AppString.keyNonce.string] =
+                  resData["file"][AppString.keyNonce.string];
               fileData["parts"] = resData["file"]["parts"];
               fileData["size"] = resData["file"]["size"];
               fileData["b2_id"] = resData["file"]["b2_id"];

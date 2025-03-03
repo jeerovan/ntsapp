@@ -159,6 +159,18 @@ class ModelChange {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
+  static Future<List<ModelChange>> requiresFileFetch() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    int changeType = SyncChangeTask.downloadFile.value;
+    List<Map<String, dynamic>> rows = await db.query(
+      "change",
+      where: "type = ?",
+      whereArgs: [changeType],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
   static Future<void> upgradeTypeForIds(List<String> ids) async {
     for (String id in ids) {
       await upgradeTask(id);

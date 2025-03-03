@@ -395,10 +395,10 @@ Future<File?> getFile(String fileType, String fileName) async {
   return null;
 }
 
-Future<String> getFilePath(String fileType, String fileName) async {
+Future<String> getFilePath(String mimeDirectory, String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
   String mediaDir = AppConfig.get("media_dir");
-  return path.join(directory.path, mediaDir, fileType, fileName);
+  return path.join(directory.path, mediaDir, mimeDirectory, fileName);
 }
 
 void copyFile(Map<String, String> mediaData) {
@@ -456,9 +456,9 @@ Future<Map<String, dynamic>?> processAndGetFileAttributes(
   String fileTitle = path.basename(file.path);
   String fileName = '$hash$extension';
   int fileSize = file.lengthSync();
-  String directory = mime.split("/").first;
-  File? existing = await getFile(directory, fileName);
-  String newPath = await getFilePath(directory, fileName);
+  String mimeDirectory = mime.split("/").first;
+  File? existing = await getFile(mimeDirectory, fileName);
+  String newPath = await getFilePath(mimeDirectory, fileName);
   await checkAndCreateDirectory(newPath);
   if (existing == null) {
     Map<String, String> mediaData = {"oldPath": filePath, "newPath": newPath};

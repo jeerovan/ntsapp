@@ -363,6 +363,7 @@ Future<void> performSync({bool inBackground = false}) async {
 
       await SyncUtils.fetchDataChanges();
       await SyncUtils.fetchThumbnails();
+      await SyncUtils.fetchFiles(utcNow, inBackground);
       // fetch files
     } catch (e, s) {
       logger.error("Sync exception", error: e, stackTrace: s);

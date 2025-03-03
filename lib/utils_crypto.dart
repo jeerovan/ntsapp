@@ -199,6 +199,35 @@ class CryptoUtils {
     return decryptedBytes;
   }
 
+  Map<String, dynamic> getFileEncryptionKeyCipher(
+      Uint8List encryptionKeyBytes, Uint8List masterKeyBytes) {
+    ExecutionResult keyEncryptionResult =
+        encryptBytes(plainBytes: encryptionKeyBytes, key: masterKeyBytes);
+    Uint8List keyCipherBytes =
+        keyEncryptionResult.getResult()![AppString.encrypted.string];
+    Uint8List keyNonceBytes =
+        keyEncryptionResult.getResult()![AppString.nonce.string];
+    String keyCipherBase64 = base64Encode(keyCipherBytes);
+    String keyNonceBase64 = base64Encode(keyNonceBytes);
+    return {
+      AppString.keyCipher.string: keyCipherBase64,
+      AppString.keyNonce.string: keyNonceBase64
+    };
+  }
+
+  Uint8List? getFileEncryptionKeyBytes(
+      String keyCipherBase64, String keyNonceBase64, String masterKeyBase64) {
+    Uint8List keyCipherBytes = base64Decode(keyCipherBase64);
+    Uint8List keyNonceBytes = base64Decode(keyNonceBase64);
+    Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
+    ExecutionResult keyDecryptionResult = decryptBytes(
+        cipherBytes: keyCipherBytes, nonce: keyNonceBytes, key: masterKeyBytes);
+    if (keyDecryptionResult.isFailure) return null;
+    Uint8List keyBytes =
+        keyDecryptionResult.getResult()![AppString.decrypted.string];
+    return keyBytes;
+  }
+
   Future<ExecutionResult> updateGenerateKeys(
       String password, Map<String, dynamic> profileData) async {
     ExecutionResult result = ExecutionResult.failure(reason: "");

@@ -526,10 +526,18 @@ class _WidgetAudioState extends State<WidgetAudio> {
   }
 
   Future<void> _togglePlayPause() async {
+    String filePath = widget.item.data!["path"];
+    File audioFile = File(filePath);
+    if (!audioFile.existsSync()) {
+      if (mounted) {
+        showAlertMessage(context, "Please wait", "File not available yet.");
+      }
+      return;
+    }
     if (_isPlaying) {
       await _audioPlayer.pause();
     } else {
-      await _audioPlayer.setSourceDeviceFile(widget.item.data!["path"]);
+      await _audioPlayer.setSourceDeviceFile(filePath);
       await _audioPlayer.resume();
     }
     setState(() {

@@ -1628,13 +1628,13 @@ class _PageItemsState extends State<PageItems> {
       case ItemType.image:
         return ItemWidgetImage(
           item: item,
-          onTap: viewMedia,
+          onTap: viewImageVideo,
           showTimestamp: showTimestamp,
         );
       case ItemType.video:
         return ItemWidgetVideo(
           item: item,
-          onTap: viewMedia,
+          onTap: viewImageVideo,
           showTimestamp: showTimestamp,
         );
       case ItemType.audio:
@@ -1645,7 +1645,7 @@ class _PageItemsState extends State<PageItems> {
       case ItemType.document:
         return ItemWidgetDocument(
           item: item,
-          onTap: openItemMedia,
+          onTap: openDocument,
           showTimestamp: showTimestamp,
         );
       case ItemType.location:
@@ -1675,7 +1675,7 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  void viewMedia(ModelItem item) async {
+  void viewImageVideo(ModelItem item) async {
     if (_hasNotesSelected) {
       onItemTapped(item);
     } else {
@@ -1697,11 +1697,19 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  void openItemMedia(ModelItem item) {
+  void openDocument(ModelItem item) {
     if (_hasNotesSelected) {
       onItemTapped(item);
     } else {
-      openMedia(item.data!["path"]);
+      String filePath = item.data!["path"];
+      File file = File(filePath);
+      if (!file.existsSync()) {
+        if (mounted) {
+          showAlertMessage(context, "Please wait", "File not available yet");
+        }
+      } else {
+        openMedia(filePath);
+      }
     }
   }
 
