@@ -306,6 +306,7 @@ class _PageHomeState extends State<PageHome> {
                   ),
                 ),
                 IconButton(
+                  tooltip: "Close",
                   icon: Icon(Icons.close),
                   onPressed: () {
                     Navigator.pop(context);
@@ -396,6 +397,7 @@ class _PageHomeState extends State<PageHome> {
         ),
       if (!requiresAuthentication || isAuthenticated)
         IconButton(
+          tooltip: "Search notes",
           onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => SearchPage(

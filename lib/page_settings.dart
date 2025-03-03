@@ -176,6 +176,7 @@ class SettingsPageState extends State<SettingsPage> {
               horizontalTitleGap: 24.0,
               onTap: widget.onThemeToggle,
               trailing: IconButton(
+                tooltip: "Day/night theme",
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 500),
                   transitionBuilder:
@@ -222,6 +223,7 @@ class SettingsPageState extends State<SettingsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
+                    tooltip: "Reduce text size",
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       Provider.of<FontSizeController>(context, listen: false)
@@ -238,6 +240,7 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
 */
                   IconButton(
+                    tooltip: "Increase text size",
                     icon: Icon(Icons.add),
                     onPressed: () {
                       Provider.of<FontSizeController>(context, listen: false)

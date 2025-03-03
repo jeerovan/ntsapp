@@ -542,6 +542,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
     return Row(
       children: [
         IconButton(
+          tooltip: "Play/pause",
           icon: Icon(
             _isPlaying ? Icons.pause_circle : Icons.play_circle,
             size: 40,

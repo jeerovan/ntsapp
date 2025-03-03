@@ -403,6 +403,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      tooltip: "Filter pinned notes",
                       onPressed: () {
                         setState(() {
                           pinned = !pinned;
@@ -417,6 +418,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
+                      tooltip: "Filter starred notes",
                       onPressed: () {
                         setState(() {
                           starred = !starred;
@@ -439,6 +441,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      tooltip: "Filter text notes",
                       onPressed: () {
                         setState(() {
                           notes = !notes;
@@ -453,6 +456,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
+                      tooltip: "Filter tasks",
                       onPressed: () {
                         setState(() {
                           tasks = !tasks;
@@ -475,6 +479,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      tooltip: "Filter links",
                       onPressed: () {
                         setState(() {
                           links = !links;
@@ -489,6 +494,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
+                      tooltip: "Filter images",
                       onPressed: () {
                         setState(() {
                           images = !images;
@@ -511,6 +517,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      tooltip: "Filter audio",
                       onPressed: () {
                         setState(() {
                           audio = !audio;
@@ -525,6 +532,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
+                      tooltip: "Filter video",
                       onPressed: () {
                         setState(() {
                           video = !video;
@@ -547,6 +555,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      tooltip: "Filter files",
                       onPressed: () {
                         setState(() {
                           documents = !documents;
@@ -561,6 +570,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
+                      tooltip: "Filter contacts",
                       onPressed: () {
                         setState(() {
                           contacts = !contacts;
@@ -583,6 +593,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      tooltip: "Filter location",
                       onPressed: () {
                         setState(() {
                           locations = !locations;
@@ -1585,6 +1596,7 @@ class _PageItemsState extends State<PageItems> {
                   Positioned(
                     right: 0,
                     child: IconButton(
+                      tooltip: "Filter notes",
                       onPressed: () {
                         _openFilterDialog();
                       },
@@ -1746,6 +1758,7 @@ class _PageItemsState extends State<PageItems> {
           children: [
             Flexible(
               child: IconButton(
+                  tooltip: "Clear selection",
                   iconSize: iconSize,
                   onPressed: () {
                     clearSelection();
@@ -1757,6 +1770,7 @@ class _PageItemsState extends State<PageItems> {
             if (selectionHasOnlyTextOrTaskItem)
               Flexible(
                 child: IconButton(
+                  tooltip: "Copy notes",
                   iconSize: iconSize,
                   onPressed: () {
                     copyToClipboard();
@@ -1769,6 +1783,7 @@ class _PageItemsState extends State<PageItems> {
             if (selectionHasOnlyTextOrTaskItem)
               Flexible(
                 child: IconButton(
+                  tooltip: "Change task type",
                   iconSize: iconSize,
                   onPressed: () {
                     updateSelectedItemsTaskType();
@@ -1780,6 +1795,7 @@ class _PageItemsState extends State<PageItems> {
               ),
             Flexible(
               child: IconButton(
+                tooltip: "Share notes",
                 iconSize: iconSize,
                 onPressed: () {
                   shareNotes();
@@ -1790,6 +1806,7 @@ class _PageItemsState extends State<PageItems> {
             if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
               Flexible(
                 child: IconButton(
+                  tooltip: "Edit note",
                   iconSize: iconSize,
                   onPressed: () {
                     editNote();
@@ -1799,6 +1816,7 @@ class _PageItemsState extends State<PageItems> {
               ),
             Flexible(
               child: IconButton(
+                tooltip: "Star/unstar notes",
                 iconSize: iconSize,
                 onPressed: () {
                   updateSelectedItemsStarred();
@@ -1810,6 +1828,7 @@ class _PageItemsState extends State<PageItems> {
             ),
             Flexible(
               child: IconButton(
+                tooltip: "Move to trash",
                 iconSize: iconSize,
                 onPressed: () {
                   archiveSelectedItems();
@@ -1819,6 +1838,7 @@ class _PageItemsState extends State<PageItems> {
             ),
             Flexible(
               child: IconButton(
+                tooltip: "Pin/unpin notes",
                 iconSize: iconSize,
                 onPressed: () {
                   updateSelectedItemsPinned();
@@ -1870,6 +1890,7 @@ class _PageItemsState extends State<PageItems> {
                                   ),
                                 ),
                                 IconButton(
+                                  tooltip: "Cancel reply item",
                                   icon: const Icon(LucideIcons.x),
                                   onPressed:
                                       cancelReplyItem, // Cancel reply action
@@ -1928,6 +1949,7 @@ class _PageItemsState extends State<PageItems> {
                               duration: const Duration(milliseconds: 150),
                               // Set your animation duration
                               child: IconButton(
+                                tooltip: "Attach",
                                 icon: const Icon(LucideIcons.plus),
                                 color: Theme.of(context).colorScheme.outline,
                                 onPressed: () {
@@ -1986,6 +2008,7 @@ class _PageItemsState extends State<PageItems> {
                         );
                       },
                       child: IconButton(
+                        tooltip: "Record/stop audio",
                         key: ValueKey<String>(_isRecording
                             ? 'stop'
                             : _isTyping
