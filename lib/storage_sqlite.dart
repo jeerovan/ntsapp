@@ -43,7 +43,7 @@ class StorageSqlite {
       final dbPath = join(dbDir, dbFileName);
       logger.info("DbPath:$dbPath");
       return await openDatabase(dbPath,
-          version: 11,
+          version: 12,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
@@ -91,11 +91,16 @@ class StorageSqlite {
       await dbMigration_9(db);
       await dbMigration_10(db);
       await dbMigration_11(db);
+      await dbMigration_12(db);
     } else if (oldVersion == 9) {
       await dbMigration_10(db);
       await dbMigration_11(db);
+      await dbMigration_12(db);
     } else if (oldVersion == 10) {
       await dbMigration_11(db);
+      await dbMigration_12(db);
+    } else if (oldVersion == 11) {
+      await dbMigration_12(db);
     }
     logger.info('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -122,6 +127,7 @@ class StorageSqlite {
         position INTEGER,
         archived_at INTEGER,
         at INTEGER,
+        state INTEGER,
         updated_at INTEGER,
         thumbnail TEXT
       )
@@ -774,5 +780,19 @@ class StorageSqlite {
         INSERT INTO item_fts(rowid, text, item_id) 
         SELECT rowid, text, id FROM item;
       ''');
+  }
+
+  Future<void> dbMigration_12(Database db) async {
+    bool columnExists = await _checkColumnExists(db, 'category', 'state');
+    if (!columnExists) {
+      await db
+          .execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
+    }
+  }
+
+  Future<bool> _checkColumnExists(
+      Database db, String tableName, String columnName) async {
+    final result = await db.rawQuery('PRAGMA table_info($tableName);');
+    return result.any((row) => row['name'] == columnName);
   }
 }

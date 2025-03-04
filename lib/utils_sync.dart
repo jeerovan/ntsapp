@@ -62,7 +62,7 @@ class SyncUtils {
   }
 
   static Future<void> encryptAndPushChange(Map<String, dynamic> map,
-      {bool deleted = false, bool saveOnly = false}) async {
+      {bool deleted = false, bool saveOnly = true}) async {
     String? masterKeyBase64 = await getMasterKey();
     String? signedInUserId = getSignedInUserId();
     if (masterKeyBase64 != null && signedInUserId != null) {
@@ -73,8 +73,8 @@ class SyncUtils {
           getValueFromMap(map, 'thumbnail', defaultValue: null); //base64encoded
       map['thumbnail'] = thumbnail == null ? 0 : 1;
       String table = map["table"];
-      String messageId = map['id'];
-      String changeId = '$signedInUserId|$messageId';
+      String rowId = map['id'];
+      String changeId = '$signedInUserId|$rowId';
       int updatedAt = map['updated_at'];
       map["deleted"] = deleted ? 1 : 0;
 
@@ -122,7 +122,7 @@ class SyncUtils {
               .from(table)
               .upsert(changeMap, onConflict: 'id')
               .eq('id', changeId)
-              .gt('updated_at', updatedAt);
+              .lt('updated_at', updatedAt);
           // update change
           await ModelChange.upgradeTask(changeId);
         } catch (e, s) {
