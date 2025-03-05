@@ -219,3 +219,50 @@ extension SyncChangeTaskExtension on SyncChangeTask {
     }
   }
 }
+
+enum SyncState {
+  initial,
+  uploading,
+  uploaded,
+  downloading,
+  downloaded,
+  downloadable, // mark only when file is available to download (fully uploaded on server from other device),
+}
+
+extension SyncStateExtension on SyncState {
+  int get value {
+    switch (this) {
+      case SyncState.initial:
+        return 0;
+      case SyncState.uploading:
+        return 10;
+      case SyncState.uploaded:
+        return 20;
+      case SyncState.downloading:
+        return 30;
+      case SyncState.downloaded:
+        return 40;
+      case SyncState.downloadable:
+        return 50;
+    }
+  }
+
+  static SyncState? fromValue(int value) {
+    switch (value) {
+      case 0:
+        return SyncState.initial;
+      case 10:
+        return SyncState.uploading;
+      case 20:
+        return SyncState.uploaded;
+      case 30:
+        return SyncState.downloading;
+      case 40:
+        return SyncState.downloaded;
+      case 50:
+        return SyncState.downloadable;
+      default:
+        return null;
+    }
+  }
+}

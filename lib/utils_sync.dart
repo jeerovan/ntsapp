@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category.dart';
@@ -62,7 +63,7 @@ class SyncUtils {
   }
 
   static Future<void> encryptAndPushChange(Map<String, dynamic> map,
-      {bool deleted = false, bool saveOnly = true}) async {
+      {bool deleted = false, bool saveOnly = false}) async {
     String? masterKeyBase64 = await getMasterKey();
     String? signedInUserId = getSignedInUserId();
     if (masterKeyBase64 != null && signedInUserId != null) {
@@ -115,6 +116,7 @@ class SyncUtils {
           thumbnail: thumbnail, dataMap: dataMap);
       logger.info(
           "encryptAndPushChange|$table|Added change:$table|$changeId|${changeTask.value}");
+      await ModelChange.updateTypeState(changeId, SyncState.uploading);
       if (!saveOnly) {
         SupabaseClient supabaseClient = Supabase.instance.client;
         try {
@@ -124,7 +126,7 @@ class SyncUtils {
               .eq('id', changeId)
               .lt('updated_at', updatedAt);
           // update change
-          await ModelChange.upgradeTask(changeId);
+          await ModelChange.upgradeSyncTask(changeId);
         } catch (e, s) {
           logger.error("encryptAndPushChange|Supabase",
               error: e, stackTrace: s);
@@ -185,7 +187,7 @@ class SyncUtils {
       };
       await supabaseClient.from('thmbs').upsert(keyCipherMap, onConflict: 'id');
       // upgrade change task
-      await ModelChange.upgradeTask(changeId);
+      await ModelChange.upgradeSyncTask(changeId);
     } catch (e, s) {
       logger.error("pushThumbnail|Supabase", error: e, stackTrace: s);
     }
@@ -343,6 +345,46 @@ class SyncUtils {
               ModelItem item = await ModelItem.fromMap(map);
               dataMap = item.data;
               await item.upcertFromServer();
+              // check for urls and add preview
+              if (map["type"] == ItemType.text.value) {
+                final RegExp linkRegExp = RegExp(r'(https?://[^\s]+)');
+                final matches = linkRegExp.allMatches(item.text);
+                String link = "";
+                // get only first link
+                for (final match in matches) {
+                  final start = match.start;
+                  final end = match.end;
+                  link = item.text.substring(start, end);
+                  break;
+                }
+                if (link.isNotEmpty) {
+                  final Metadata? metaData = await MetadataFetch.extract(link);
+                  if (metaData != null) {
+                    int portrait = 1;
+                    // download the url image if available
+                    if (metaData.image != null) {
+                      portrait = await checkDownloadNetworkImage(
+                          item.id!, metaData.image!);
+                    }
+                    Map<String, dynamic> urlInfo = {
+                      "url": link,
+                      "title": metaData.title,
+                      "desc": metaData.description,
+                      "image": metaData.image,
+                      "portrait": portrait
+                    };
+                    Map<String, dynamic>? data = item.data;
+                    if (data != null) {
+                      data["url_info"] = urlInfo;
+                      item.data = data;
+                      await item.update(["data"], pushToSync: false);
+                    } else {
+                      item.data = {"url_info": urlInfo};
+                      await item.update(["data"], pushToSync: false);
+                    }
+                  }
+                }
+              }
           }
           SyncChangeTask changeType = SyncChangeTask.delete;
           switch (table) {
@@ -375,6 +417,7 @@ class SyncUtils {
                 dataMap: dataMap);
             logger.info(
                 "fetchChangesForTable|$table|Added change:$table|$changeId|${changeType.value}");
+            await ModelChange.updateTypeState(changeId, SyncState.downloading);
           }
         }
       }
@@ -435,7 +478,7 @@ class SyncUtils {
                 await item.update(["thumbnail"], pushToSync: false);
               }
           }
-          await ModelChange.upgradeTask(changeId);
+          await ModelChange.upgradeSyncTask(changeId);
         }
       } catch (e, s) {
         logger.error("fetchThumbnails", error: e, stackTrace: s);
@@ -445,7 +488,6 @@ class SyncUtils {
 
   static Future<void> fetchFiles(int startedAt, bool inBackground) async {
     List<ModelChange> changes = await ModelChange.requiresFileFetch();
-    String? masterKeyBase64 = await getMasterKey();
 
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
@@ -454,75 +496,32 @@ class SyncUtils {
       String changeId = change.id;
       List<String> userIdRowId = changeId.split("|");
       String itemRowId = userIdRowId[1];
-      ModelItem? modelitem = await ModelItem.get(itemRowId);
+      ModelItem? modelItem = await ModelItem.get(itemRowId);
       Map<String, dynamic>? data = change.map;
-      if (data != null && modelitem != null) {
+      if (data != null && modelItem != null) {
         String fileName = data["name"];
         Map<String, dynamic> serverData = await getDataToDownloadFile(fileName);
-        if (serverData.containsKey("url") && serverData["data"].isNotEmpty) {
-          String downloadUrl = serverData["url"];
-          Directory tempDir = await getTemporaryDirectory();
-          String fileInPath = "${tempDir.path}/$fileName";
-          File fileIn = File(fileInPath);
-          IOSink fileInSink = fileIn.openWrite();
-          try {
-            var request = http.Request("GET", Uri.parse(downloadUrl));
-            http.StreamedResponse response = await request.send();
-            if (response.statusCode == 200) {
-              // Stream file data to avoid memory overuse
-              await response.stream.forEach((chunk) => fileInSink.add(chunk));
-              await fileInSink.close();
-              // decrypt file
+        if (serverData.containsKey("url") && serverData["url"].isNotEmpty) {
+          int fileSize = data["size"];
+          if (fileSize > 20 * 1024 * 1024) {
+            // mark set downloadable
+            await ModelChange.updateTypeState(changeId, SyncState.downloadable);
+            await ModelChange.upgradeSyncTask(changeId, updateState: false);
+          } else {
+            bool downloadDecrypted =
+                await cryptoUtils.downloadDecryptFile(data);
+            if (downloadDecrypted) {
               String mimeDirectory = data["mime"].split("/").first;
               String fileOutPath = await getFilePath(mimeDirectory, fileName);
-              String keyCipherBase64 = serverData[AppString.keyCipher.string];
-              String keyNonceBase64 = serverData[AppString.keyNonce.string];
-              Uint8List? fileEncryptionKeyBytes =
-                  cryptoUtils.getFileEncryptionKeyBytes(
-                      keyCipherBase64, keyNonceBase64, masterKeyBase64!);
-              if (fileEncryptionKeyBytes != null) {
-                ExecutionResult decryptionResult =
-                    await cryptoUtils.decryptFile(
-                        fileInPath, fileOutPath, fileEncryptionKeyBytes);
-                if (decryptionResult.isSuccess) {
-                  logger.info("downloaded & decrypted");
-                  data["path"] = fileOutPath;
-                  modelitem.data = data;
-                  await modelitem.update(["data"], pushToSync: false);
-                  await ModelChange.upgradeTask(change.id);
-                } else {
-                  String error = decryptionResult.failureReason ?? "";
-                  logger.error("Downloaded but decryption failed",
-                      error: error);
-                }
-              }
+              data["path"] = fileOutPath;
+              modelItem.data = data;
+              await modelItem.update(["data"], pushToSync: false);
+              await ModelChange.upgradeSyncTask(change.id);
             }
-          } catch (e, s) {
-            logger.error("Downloading File", error: e, stackTrace: s);
-          } finally {
-            await fileInSink.close();
           }
         }
       }
     }
-  }
-
-  static Future<Map<String, dynamic>> getDataToDownloadFile(
-      String fileName) async {
-    SupabaseClient supabase = Supabase.instance.client;
-    Map<String, dynamic> downloadData = {};
-    try {
-      final res = await supabase.functions
-          .invoke('get_download_url', body: {'fileName': fileName});
-      Map<String, dynamic> data = jsonDecode(res.data);
-      downloadData.addAll(data);
-    } on FunctionException catch (e) {
-      Map<String, dynamic> errorData = jsonDecode(e.details);
-      logger.error(errorData["error"]);
-    } catch (e, s) {
-      logger.error("Exception", error: e, stackTrace: s);
-    }
-    return downloadData;
   }
 
   static Future<void> pushFiles(int startedAt, bool inBackground) async {
@@ -548,7 +547,7 @@ class SyncUtils {
         await completedUpload
             .delete(); // deletes the encrypted file in temp dir
         // upgrade changetask
-        await ModelChange.upgradeTask(changeId);
+        await ModelChange.upgradeSyncTask(changeId);
       } catch (e, s) {
         logger.error("pushFiles", error: e, stackTrace: s);
       }
@@ -606,7 +605,7 @@ class SyncUtils {
               await pushFile(modelFile);
             } else {
               // upgrade changetask
-              await ModelChange.upgradeTask(change.id);
+              await ModelChange.upgradeSyncTask(change.id);
             }
           } else {
             // encrypt file, get keys, update server before updating local
@@ -753,7 +752,7 @@ class SyncUtils {
             } // single file upload will have uploaded_at > 0 when parts == partsUploaded
           }
         } else {
-          await ModelChange.upgradeTask(modelFile.changeId);
+          await ModelChange.upgradeSyncTask(modelFile.changeId);
         }
       }
     } catch (e, s) {

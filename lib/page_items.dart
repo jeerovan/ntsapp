@@ -1072,7 +1072,7 @@ class _PageItemsState extends State<PageItems> {
       _addItemsToDisplayList([item], false);
       replyOnItem = null;
     });
-    if (type == ItemType.task || type == ItemType.text) {
+    if (type == ItemType.text) {
       checkFetchUrlMetadata(item);
     }
   }

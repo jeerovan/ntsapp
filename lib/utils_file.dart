@@ -31,6 +31,7 @@ class FileSplitter {
 
   /// Returns max part size based on file size
   int _getMaxPartSize(int size) {
+    if (size <= 50 * 1024 * 1024) return 6 * 1024 * 1024;
     if (size <= 100 * 1024 * 1024) return 10 * 1024 * 1024;
     if (size <= 200 * 1024 * 1024) return 20 * 1024 * 1024;
     if (size <= 300 * 1024 * 1024) return 30 * 1024 * 1024;

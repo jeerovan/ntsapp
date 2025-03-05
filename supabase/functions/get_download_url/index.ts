@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     let status = 200;
     let error = "";
     const now = new Date().getSeconds();
-    if (file != null) {
+    if (file != null && file.uploaded_at > 0) {
       if (
         file.token != null && file.expires > now
       ) {

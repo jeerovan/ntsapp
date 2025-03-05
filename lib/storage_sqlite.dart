@@ -321,36 +321,6 @@ class StorageSqlite {
       'at': at,
       'updated_at': at
     });
-    String bucketListGroupId = uuid.v4();
-    await db.insert("itemgroup", {
-      "id": bucketListGroupId,
-      "category_id": dndCategoryId,
-      "title": "Bucket list",
-      "pinned": 0,
-      "position": 2,
-      "archived_at": 0,
-      "color": colorToHex(getIndexedColor(2)),
-      "at": at,
-      "updated_at": at,
-      "thumbnail": null,
-      "data": null,
-      "state": 0,
-    });
-    await db.insert("item", {
-      'id': uuid.v4(),
-      'group_id': bucketListGroupId,
-      'text':
-          '''Remember, if it doesn't scare you, it shouldn't be in the list. I'll start with skydiving. What about you?''',
-      'thumbnail': null,
-      'starred': 0,
-      'pinned': 0,
-      'archived_at': 0,
-      'type': ItemType.text.value,
-      'state': 0,
-      'data': null,
-      'at': at,
-      'updated_at': at
-    });
     String journalGroupId = uuid.v4();
     await db.insert("itemgroup", {
       "id": journalGroupId,

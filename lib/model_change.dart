@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/model_category.dart';
+import 'package:ntsapp/model_item.dart';
+import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/service_logger.dart';
 
 import 'enums.dart';
@@ -173,24 +176,59 @@ class ModelChange {
 
   static Future<void> upgradeTypeForIds(List<String> ids) async {
     for (String id in ids) {
-      await upgradeTask(id);
+      await upgradeSyncTask(id);
     }
   }
 
-  static Future<void> upgradeTask(String changeId) async {
+  static Future<void> upgradeSyncTask(String changeId,
+      {bool updateState = true}) async {
     ModelChange? change = await get(changeId);
     if (change != null) {
       SyncChangeTask? currentType =
           SyncChangeTaskExtension.fromValue(change.type);
-      SyncChangeTask nextType = getNextChangeType(currentType!);
+      SyncChangeTask nextType = getNextChangeTaskType(currentType!);
+      SyncState newState = getNextSyncState(currentType);
+      if (updateState) await updateTypeState(changeId, newState);
       if (nextType == SyncChangeTask.delete) {
-        // TODO mark content available on cloud with single tick
         await change.delete();
       } else {
         change.type = nextType.value;
         await change.update(["type"]);
         logger.info(
             "upgradeType|${change.id}|${currentType.value}->${nextType.value}");
+      }
+    }
+  }
+
+  static Future<void> updateTypeState(
+      String changeId, SyncState newState) async {
+    ModelChange? change = await get(changeId);
+    if (change != null) {
+      String table = change.name;
+      List<String> userIdRowId = changeId.split("|");
+      String rowId = userIdRowId[1];
+      switch (table) {
+        case "category":
+          ModelCategory? modelCategory = await ModelCategory.get(rowId);
+          if (modelCategory != null) {
+            modelCategory.state = newState.value;
+            await modelCategory.update(["state"], pushToSync: false);
+          }
+          break;
+        case "itemgroup":
+          ModelGroup? modelGroup = await ModelGroup.get(rowId);
+          if (modelGroup != null) {
+            modelGroup.state = newState.value;
+            await modelGroup.update(["state"], pushToSync: false);
+          }
+          break;
+        case "item":
+          ModelItem? modelItem = await ModelItem.get(rowId);
+          if (modelItem != null) {
+            modelItem.state = newState.value;
+            await modelItem.update(["state"], pushToSync: false);
+          }
+          break;
       }
     }
   }
@@ -277,7 +315,29 @@ class ModelChange {
     }
   }
 
-  static SyncChangeTask getNextChangeType(SyncChangeTask current) {
+  static SyncState getNextSyncState(SyncChangeTask current) {
+    switch (current) {
+      case SyncChangeTask.uploadData:
+      case SyncChangeTask.uploadFile:
+      case SyncChangeTask.uploadThumbnail:
+        return SyncState.uploaded;
+      case SyncChangeTask.uploadDataFile:
+      case SyncChangeTask.uploadDataThumbnail:
+      case SyncChangeTask.uploadThumbnailFile:
+      case SyncChangeTask.uploadDataThumbnailFile:
+        return SyncState.uploading;
+      // download types
+      case SyncChangeTask.downloadThumbnailFile:
+        return SyncState.downloading;
+      case SyncChangeTask.downloadThumbnail:
+      case SyncChangeTask.downloadFile:
+        return SyncState.downloaded;
+      default:
+        return SyncState.initial;
+    }
+  }
+
+  static SyncChangeTask getNextChangeTaskType(SyncChangeTask current) {
     switch (current) {
       case SyncChangeTask.delete:
       case SyncChangeTask.uploadData:

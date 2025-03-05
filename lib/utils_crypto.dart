@@ -6,10 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:crypto/crypto.dart';
-
 import 'enums.dart';
+
+import 'package:http/http.dart' as http;
+
+import 'utils_sync.dart';
 
 class CryptoUtils {
   final logger = AppLogger(prefixes: ["utils_crypto"]);
@@ -137,6 +141,52 @@ class CryptoUtils {
       secretKey.dispose();
     }
     return executionResult;
+  }
+
+  Future<bool> downloadDecryptFile(Map<String, dynamic> data) async {
+    bool downloadDecrypted = false;
+    String fileName = data["name"];
+    Map<String, dynamic> serverData = await getDataToDownloadFile(fileName);
+    String? masterKeyBase64 = await SyncUtils.getMasterKey();
+    if (serverData.containsKey("url") && serverData["url"].isNotEmpty) {
+      String downloadUrl = serverData["url"];
+      Directory tempDir = await getTemporaryDirectory();
+      String fileInPath = "${tempDir.path}/$fileName";
+      File fileIn = File(fileInPath);
+      IOSink fileInSink = fileIn.openWrite();
+      try {
+        var request = http.Request("GET", Uri.parse(downloadUrl));
+        http.StreamedResponse response = await request.send();
+        if (response.statusCode == 200) {
+          // Stream file data to avoid memory overuse
+          await response.stream.forEach((chunk) => fileInSink.add(chunk));
+          await fileInSink.close();
+          // decrypt file
+          String mimeDirectory = data["mime"].split("/").first;
+          String fileOutPath = await getFilePath(mimeDirectory, fileName);
+          String keyCipherBase64 = serverData[AppString.key.string];
+          String keyNonceBase64 = serverData[AppString.nonce.string];
+          Uint8List? fileEncryptionKeyBytes = getFileEncryptionKeyBytes(
+              keyCipherBase64, keyNonceBase64, masterKeyBase64!);
+          if (fileEncryptionKeyBytes != null) {
+            ExecutionResult decryptionResult = await decryptFile(
+                fileInPath, fileOutPath, fileEncryptionKeyBytes);
+            if (decryptionResult.isSuccess) {
+              downloadDecrypted = true;
+              logger.info("downloaded & decrypted");
+            } else {
+              String error = decryptionResult.failureReason ?? "";
+              logger.error("Downloaded but decryption failed", error: error);
+            }
+          }
+        }
+      } catch (e, s) {
+        logger.error("Downloading File", error: e, stackTrace: s);
+      } finally {
+        await fileInSink.close();
+      }
+    }
+    return downloadDecrypted;
   }
 
   Map<String, dynamic> getEncryptedBytesMap(

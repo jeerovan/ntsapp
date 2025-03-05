@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -17,6 +18,7 @@ import 'package:ntsapp/service_logger.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -502,6 +504,22 @@ Future<int> checkDownloadNetworkImage(String itemId, String imageUrl) async {
     logger.error("Exception", error: e, stackTrace: s);
   }
   return portrait;
+}
+
+Future<Map<String, dynamic>> getDataToDownloadFile(String fileName) async {
+  SupabaseClient supabase = Supabase.instance.client;
+  Map<String, dynamic> downloadData = {};
+  try {
+    final res = await supabase.functions
+        .invoke('get_download_url', body: {'fileName': fileName});
+    Map<String, dynamic> data = jsonDecode(res.data);
+    downloadData.addAll(data);
+  } on FunctionException catch (e) {
+    downloadData["error"] = e.details.toString();
+  } catch (e) {
+    downloadData["error"] = e.toString();
+  }
+  return downloadData;
 }
 
 Future<String?> getAudioDuration(String filePath) async {

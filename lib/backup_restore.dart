@@ -278,7 +278,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
             "at": at,
             "updated_at": at,
           });
-          newGroup.insert();
+          newGroup.insert(saveToSync: true);
           groupCount = groupCount + 1;
         }
       }
@@ -313,7 +313,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                 "at": at,
                 "updated_at": at,
               });
-              await textNote.insert();
+              await textNote.insert(saveToSync: true);
               break;
             case 2:
               if (mediaPath != null) {
@@ -345,7 +345,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                       "at": at,
                       "updated_at": at,
                     });
-                    await item.insert();
+                    await item.insert(saveToSync: true);
                   }
                 }
               }
@@ -378,7 +378,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                       "at": at,
                       "updated_at": at,
                     });
-                    await item.insert();
+                    await item.insert(saveToSync: true);
                   }
                 }
               }
@@ -395,7 +395,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                   "at": at,
                   "updated_at": at,
                 });
-                await item.insert();
+                await item.insert(saveToSync: true);
               }
               break;
           }
