@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -301,43 +300,23 @@ class _PageHomeState extends State<PageHome> {
                 Text(
                   'Did you know?',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                    fontSize: 22,
                   ),
                 ),
                 IconButton(
                   tooltip: "Close",
-                  icon: Icon(Icons.close),
+                  icon: Icon(Icons.close, color: Colors.grey),
                   onPressed: () {
                     Navigator.pop(context);
                   },
                 ),
               ],
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$appName :',
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-                SizedBox(height: 10),
-                ListTile(
-                  leading: Icon(Icons.check, color: Colors.green),
-                  title: Text('is completely private'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.check, color: Colors.green),
-                  title: Text('is free to use'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.check, color: Colors.green),
-                  title: Text('has no ads'),
-                ),
-              ],
+            content: Text(
+              '$appName is a completely private notes app. It doesn\'t collect your personal data or show you ads.\n\nWe hope you enjoy using it. Tell us what you think.',
+              style: TextStyle(
+                fontSize: 14,
+              ),
             ),
             actions: [
               TextButton(
