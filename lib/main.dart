@@ -357,7 +357,11 @@ Future<void> performSync({bool inBackground = false}) async {
     });
 
     try {
-      await SyncUtils.pushDataChanges();
+      await SyncUtils.pushMapChanges();
+
+      await SyncUtils.deleteFiles();
+      await SyncUtils.deleteThumbnails();
+
       await SyncUtils.pushThumbnails(utcNow, inBackground);
       await SyncUtils.pushFiles(utcNow, inBackground);
 

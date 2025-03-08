@@ -89,7 +89,7 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
   Future<void> deleteSelectedItems() async {
     for (ModelCategory category in _selection) {
       _archivedCategories.remove(category);
-      await category.delete(withServerSync: true);
+      await category.deleteCascade(withServerSync: true);
     }
     if (mounted) {
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);

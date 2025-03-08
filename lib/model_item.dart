@@ -376,9 +376,7 @@ class ModelItem {
     if (pushToSync) {
       map["updated_at"] = utcNow;
       map["table"] = "item";
-      SyncUtils.encryptAndPushChange(
-        map,
-      );
+      SyncUtils.encryptAndPushChange(map, mediaChanges: false);
     }
     return updated;
   }
@@ -405,6 +403,7 @@ class ModelItem {
   Future<int> delete({bool withServerSync = false}) async {
     final logger = AppLogger(prefixes: ["model_item", "delete"]);
     final dbHelper = StorageSqlite.instance;
+    int deleteTask = 1;
     if (data != null) {
       if (data!.containsKey("path")) {
         final String filePath = data!["path"];
@@ -413,10 +412,11 @@ class ModelItem {
             await ModelItemFile.getFileHashItemIds(fileHash);
         logger.debug("ItemId:$id,FileItems:$fileHashItemIds");
         File file = File(filePath);
-        if (file.existsSync() &&
-            fileHashItemIds.length == 1 &&
-            fileHashItemIds[0] == id) {
-          file.deleteSync();
+        if (fileHashItemIds.length == 1 && fileHashItemIds[0] == id) {
+          if (file.existsSync()) {
+            deleteTask = 2;
+            file.deleteSync();
+          }
         }
       }
       if (data!.containsKey("url_info")) {
@@ -432,7 +432,8 @@ class ModelItem {
     if (withServerSync) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "item";
-      SyncUtils.encryptAndPushChange(map, deleted: true, saveOnly: true);
+      SyncUtils.encryptAndPushChange(map,
+          deleteTask: deleteTask, saveOnly: true);
     }
     return deleted;
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/utils_sync.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PageDummy extends StatefulWidget {
   const PageDummy({super.key});
@@ -24,6 +26,21 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
+  Future<void> simiulate() async {
+    SupabaseClient supabaseClient = Supabase.instance.client;
+    String? userId = SyncUtils.getSignedInUserId();
+    try {
+      final res = await supabaseClient
+          .from("storage")
+          .update({"db_size": 1234})
+          .eq("id", userId!)
+          .select();
+      logger.info('Result:${res.toString()}');
+    } catch (e, s) {
+      logger.error("Exception", error: e, stackTrace: s);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +51,7 @@ class _PageDummyState extends State<PageDummy> {
         children: [
           if (processing) CircularProgressIndicator(),
           Text(text),
+          ElevatedButton(onPressed: simiulate, child: Text("Simulate")),
         ],
       ),
     );

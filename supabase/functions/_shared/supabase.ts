@@ -148,6 +148,17 @@ export async function getFile(fileId: string) {
   }
   return null;
 }
+export async function deleteFileEntry(fileId: string) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  await supabaseClient
+    .from("files")
+    .delete()
+    .eq("id", fileId);
+}
 
 export async function setB2FileId(userFileId: string, b2FileId: string) {
   const supabaseClient = createClient(

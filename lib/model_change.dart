@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_item.dart';
@@ -62,7 +61,7 @@ class ModelChange {
     );
   }
 
-  static Future<void> add(
+  static Future<void> addUpdate(
       String changeId, String table, String changeData, int changeType,
       {String? thumbnail, Map<String, dynamic>? dataMap}) async {
     ModelChange change = await ModelChange.fromMap({
@@ -98,15 +97,16 @@ class ModelChange {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<List<ModelChange>> requiresDataPushForTable(
-      String table) async {
+  static Future<List<ModelChange>> requiresMapPushForTable(String table) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<dynamic> changeTypes = [
-      SyncChangeTask.uploadData.value,
-      SyncChangeTask.uploadDataFile.value,
-      SyncChangeTask.uploadDataThumbnail.value,
-      SyncChangeTask.uploadDataThumbnailFile.value
+      SyncChangeTask.pushMap.value,
+      SyncChangeTask.pushMapFile.value,
+      SyncChangeTask.pushMapThumbnail.value,
+      SyncChangeTask.pushMapThumbnailFile.value,
+      SyncChangeTask.pushMapDeleteThumbnailFile.value,
+      SyncChangeTask.pushMapDeleteThumbnail.value
     ];
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
@@ -120,8 +120,8 @@ class ModelChange {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<int> changeTypes = [
-      SyncChangeTask.uploadThumbnail.value,
-      SyncChangeTask.uploadThumbnailFile.value
+      SyncChangeTask.pushThumbnail.value,
+      SyncChangeTask.pushThumbnailFile.value
     ];
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
@@ -136,7 +136,31 @@ class ModelChange {
   static Future<List<ModelChange>> requiresFilePush() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    int changeType = SyncChangeTask.uploadFile.value;
+    int changeType = SyncChangeTask.pushFile.value;
+    List<Map<String, dynamic>> rows = await db.query(
+      "change",
+      where: "type = ?",
+      whereArgs: [changeType],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
+  static Future<List<ModelChange>> requiresFileDelete() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    int changeType = SyncChangeTask.deleteThumbnailFile.value;
+    List<Map<String, dynamic>> rows = await db.query(
+      "change",
+      where: "type = ?",
+      whereArgs: [changeType],
+    );
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
+  static Future<List<ModelChange>> requiresThumbnailDelete() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    int changeType = SyncChangeTask.deleteThumbnail.value;
     List<Map<String, dynamic>> rows = await db.query(
       "change",
       where: "type = ?",
@@ -149,8 +173,8 @@ class ModelChange {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<int> changeTypes = [
-      SyncChangeTask.downloadThumbnail.value,
-      SyncChangeTask.downloadThumbnailFile.value
+      SyncChangeTask.fetchThumbnail.value,
+      SyncChangeTask.fetchThumbnailFile.value
     ];
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
@@ -165,7 +189,7 @@ class ModelChange {
   static Future<List<ModelChange>> requiresFileFetch() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    int changeType = SyncChangeTask.downloadFile.value;
+    int changeType = SyncChangeTask.fetchFile.value;
     List<Map<String, dynamic>> rows = await db.query(
       "change",
       where: "type = ?",
@@ -186,16 +210,16 @@ class ModelChange {
     if (change != null) {
       SyncChangeTask? currentType =
           SyncChangeTaskExtension.fromValue(change.type);
-      SyncChangeTask nextType = getNextChangeTaskType(currentType!);
+      SyncChangeTask nextTaskType = getNextTaskType(currentType!);
       SyncState newState = getNextSyncState(currentType);
       if (updateState) await updateTypeState(changeId, newState);
-      if (nextType == SyncChangeTask.delete) {
+      if (nextTaskType == SyncChangeTask.delete) {
         await change.delete();
       } else {
-        change.type = nextType.value;
+        change.type = nextTaskType.value;
         await change.update(["type"]);
         logger.info(
-            "upgradeType|${change.id}|${currentType.value}->${nextType.value}");
+            "upgradeType|${change.id}|${currentType.value}->${nextTaskType.value}");
       }
     }
   }
@@ -280,17 +304,17 @@ class ModelChange {
     return deleted;
   }
 
-  static SyncChangeTask getChangeTaskType(
+  static SyncChangeTask getPushChangeTaskType(
       String table, bool thumbnailIsNull, Map<String, dynamic> map) {
     switch (table) {
       case "category":
         return thumbnailIsNull
-            ? SyncChangeTask.uploadData
-            : SyncChangeTask.uploadDataThumbnail;
+            ? SyncChangeTask.pushMap
+            : SyncChangeTask.pushMapThumbnail;
       case "itemgroup":
         return thumbnailIsNull
-            ? SyncChangeTask.uploadData
-            : SyncChangeTask.uploadDataThumbnail;
+            ? SyncChangeTask.pushMap
+            : SyncChangeTask.pushMapThumbnail;
       case "item":
         int type = map["type"];
         ItemType? itemType = ItemTypeExtension.fromValue(type);
@@ -300,63 +324,72 @@ class ModelChange {
           case ItemType.contact:
           case ItemType.task:
           case ItemType.completedTask:
-            return SyncChangeTask.uploadData;
+            return SyncChangeTask.pushMap;
           case ItemType.image:
           case ItemType.video:
-            return SyncChangeTask.uploadDataThumbnailFile;
+            return SyncChangeTask.pushMapThumbnailFile;
           case ItemType.document:
           case ItemType.audio:
-            return SyncChangeTask.uploadDataFile;
+            return SyncChangeTask.pushMapFile;
           default:
-            return SyncChangeTask.uploadData;
+            return SyncChangeTask.pushMap;
         }
       default:
-        return SyncChangeTask.uploadData;
+        return SyncChangeTask.pushMap;
     }
   }
 
   static SyncState getNextSyncState(SyncChangeTask current) {
     switch (current) {
-      case SyncChangeTask.uploadData:
-      case SyncChangeTask.uploadFile:
-      case SyncChangeTask.uploadThumbnail:
+      case SyncChangeTask.pushMap:
+      case SyncChangeTask.pushFile:
+      case SyncChangeTask.pushThumbnail:
         return SyncState.uploaded;
-      case SyncChangeTask.uploadDataFile:
-      case SyncChangeTask.uploadDataThumbnail:
-      case SyncChangeTask.uploadThumbnailFile:
-      case SyncChangeTask.uploadDataThumbnailFile:
+      case SyncChangeTask.pushMapFile:
+      case SyncChangeTask.pushMapThumbnail:
+      case SyncChangeTask.pushThumbnailFile:
+      case SyncChangeTask.pushMapThumbnailFile:
         return SyncState.uploading;
       // download types
-      case SyncChangeTask.downloadThumbnailFile:
+      case SyncChangeTask.fetchThumbnailFile:
         return SyncState.downloading;
-      case SyncChangeTask.downloadThumbnail:
-      case SyncChangeTask.downloadFile:
+      case SyncChangeTask.fetchThumbnail:
+      case SyncChangeTask.fetchFile:
         return SyncState.downloaded;
       default:
         return SyncState.initial;
     }
   }
 
-  static SyncChangeTask getNextChangeTaskType(SyncChangeTask current) {
+  static SyncChangeTask getNextTaskType(SyncChangeTask current) {
     switch (current) {
+      //upload types
       case SyncChangeTask.delete:
-      case SyncChangeTask.uploadData:
-      case SyncChangeTask.uploadFile:
-      case SyncChangeTask.uploadThumbnail:
+      case SyncChangeTask.pushMap:
+      case SyncChangeTask.pushFile:
+      case SyncChangeTask.pushThumbnail:
         return SyncChangeTask.delete;
-      case SyncChangeTask.uploadDataFile:
-        return SyncChangeTask.uploadFile;
-      case SyncChangeTask.uploadDataThumbnailFile:
-        return SyncChangeTask.uploadThumbnailFile;
-      case SyncChangeTask.uploadThumbnailFile:
-        return SyncChangeTask.uploadFile;
-      case SyncChangeTask.uploadDataThumbnail:
-        return SyncChangeTask.uploadThumbnail;
+      case SyncChangeTask.pushMapFile:
+        return SyncChangeTask.pushFile;
+      case SyncChangeTask.pushMapThumbnailFile:
+        return SyncChangeTask.pushThumbnailFile;
+      case SyncChangeTask.pushThumbnailFile:
+        return SyncChangeTask.pushFile;
+      case SyncChangeTask.pushMapThumbnail:
+        return SyncChangeTask.pushThumbnail;
       // download types
-      case SyncChangeTask.downloadThumbnailFile:
-        return SyncChangeTask.downloadFile;
-      case SyncChangeTask.downloadThumbnail:
-      case SyncChangeTask.downloadFile:
+      case SyncChangeTask.fetchThumbnailFile:
+        return SyncChangeTask.fetchFile;
+      case SyncChangeTask.fetchThumbnail:
+      case SyncChangeTask.fetchFile:
+        return SyncChangeTask.delete;
+      // delete types
+      case SyncChangeTask.pushMapDeleteThumbnailFile:
+        return SyncChangeTask.deleteThumbnailFile;
+      case SyncChangeTask.pushMapDeleteThumbnail:
+      case SyncChangeTask.deleteThumbnailFile:
+        return SyncChangeTask.deleteThumbnail;
+      case SyncChangeTask.deleteThumbnail:
         return SyncChangeTask.delete;
     }
   }

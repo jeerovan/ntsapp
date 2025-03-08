@@ -97,6 +97,18 @@ class ModelFile {
     return null;
   }
 
+  static Future<ModelFile?> getForChange(String changeId) async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> list =
+        await db.query("files", where: "change_id = ?", whereArgs: [changeId]);
+    if (list.isNotEmpty) {
+      Map<String, dynamic> map = list.first;
+      return await fromMap(map);
+    }
+    return null;
+  }
+
   Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();

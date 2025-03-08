@@ -171,7 +171,8 @@ class ModelCategory {
       // send to sync
       map["updated_at"] = utcNow;
       map["table"] = "category";
-      SyncUtils.encryptAndPushChange(map);
+      bool mediaChanges = attrs.contains("thumbnail");
+      SyncUtils.encryptAndPushChange(map, mediaChanges: mediaChanges);
     }
     return updated;
   }
@@ -210,7 +211,7 @@ class ModelCategory {
     if (withServerSync) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "category";
-      SyncUtils.encryptAndPushChange(map, deleted: true, saveOnly: true);
+      SyncUtils.encryptAndPushChange(map, deleteTask: 1, saveOnly: true);
     }
     return deleted;
   }

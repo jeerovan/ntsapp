@@ -29,7 +29,6 @@ class CryptoUtils {
   }
 
   // Derive key from password and salt
-  //TODO check limits
   Future<SecureKey> deriveKeyFromPassword({
     required String password,
     required Uint8List salt,

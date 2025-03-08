@@ -225,7 +225,8 @@ class ModelGroup {
     if (pushToSync) {
       map["updated_at"] = utcNow;
       map["table"] = "itemgroup";
-      SyncUtils.encryptAndPushChange(map);
+      bool mediaChanges = attrs.contains("thumbnail");
+      SyncUtils.encryptAndPushChange(map, mediaChanges: mediaChanges);
     }
     return updated;
   }
@@ -264,7 +265,7 @@ class ModelGroup {
     if (withServerSync) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "itemgroup";
-      SyncUtils.encryptAndPushChange(map, deleted: true, saveOnly: true);
+      SyncUtils.encryptAndPushChange(map, deleteTask: 1, saveOnly: true);
     }
     return deleted;
   }

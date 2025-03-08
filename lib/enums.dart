@@ -149,17 +149,22 @@ extension AppStringExtension on AppString {
 
 enum SyncChangeTask {
   delete, // delete current change
-  uploadData, // text,tasks,contact,location
-  uploadDataFile, // audio,documents
-  uploadFile, // upload file after data/thumbnail upload
-  uploadDataThumbnailFile, // image,video
-  uploadThumbnailFile, // upload thumbnail and file after data upload
-  uploadDataThumbnail, // for category/groups
-  uploadThumbnail, // for category/groups after data upload
+  pushMap, // text,tasks,contact,location
+  pushMapFile, // audio,documents
+  pushFile, // upload file after data/thumbnail upload
+  pushMapThumbnailFile, // image,video
+  pushThumbnailFile, // upload thumbnail and file after data upload
+  pushMapThumbnail, // for category/groups
+  pushThumbnail, // for category/groups after data upload
 
-  downloadThumbnail, // requires only thumbnail: category,groups
-  downloadThumbnailFile, // requires thumbnail + file : image/video
-  downloadFile, // requires only file: audio,document or after thumbnail
+  fetchThumbnail, // requires only thumbnail: category,groups
+  fetchThumbnailFile, // requires thumbnail + file : image/video
+  fetchFile, // requires only file: audio,document or after thumbnail
+
+  pushMapDeleteThumbnailFile,
+  pushMapDeleteThumbnail,
+  deleteThumbnailFile,
+  deleteThumbnail,
 }
 
 extension SyncChangeTaskExtension on SyncChangeTask {
@@ -167,26 +172,34 @@ extension SyncChangeTaskExtension on SyncChangeTask {
     switch (this) {
       case SyncChangeTask.delete:
         return 0;
-      case SyncChangeTask.uploadData:
+      case SyncChangeTask.pushMap:
         return 10;
-      case SyncChangeTask.uploadFile:
+      case SyncChangeTask.pushFile:
         return 20;
-      case SyncChangeTask.uploadDataThumbnailFile:
+      case SyncChangeTask.pushMapThumbnailFile:
         return 30;
-      case SyncChangeTask.uploadDataFile:
+      case SyncChangeTask.pushMapFile:
         return 40;
-      case SyncChangeTask.uploadThumbnailFile:
+      case SyncChangeTask.pushThumbnailFile:
         return 50;
-      case SyncChangeTask.uploadDataThumbnail:
+      case SyncChangeTask.pushMapThumbnail:
         return 60;
-      case SyncChangeTask.uploadThumbnail:
+      case SyncChangeTask.pushThumbnail:
         return 70;
-      case SyncChangeTask.downloadThumbnail:
+      case SyncChangeTask.fetchThumbnail:
         return 80;
-      case SyncChangeTask.downloadThumbnailFile:
+      case SyncChangeTask.fetchThumbnailFile:
         return 90;
-      case SyncChangeTask.downloadFile:
+      case SyncChangeTask.fetchFile:
         return 100;
+      case SyncChangeTask.pushMapDeleteThumbnailFile:
+        return 110;
+      case SyncChangeTask.pushMapDeleteThumbnail:
+        return 120;
+      case SyncChangeTask.deleteThumbnailFile:
+        return 130;
+      case SyncChangeTask.deleteThumbnail:
+        return 140;
     }
   }
 
@@ -195,25 +208,33 @@ extension SyncChangeTaskExtension on SyncChangeTask {
       case 0:
         return SyncChangeTask.delete;
       case 10:
-        return SyncChangeTask.uploadData;
+        return SyncChangeTask.pushMap;
       case 20:
-        return SyncChangeTask.uploadFile;
+        return SyncChangeTask.pushFile;
       case 30:
-        return SyncChangeTask.uploadDataThumbnailFile;
+        return SyncChangeTask.pushMapThumbnailFile;
       case 40:
-        return SyncChangeTask.uploadDataFile;
+        return SyncChangeTask.pushMapFile;
       case 50:
-        return SyncChangeTask.uploadThumbnailFile;
+        return SyncChangeTask.pushThumbnailFile;
       case 60:
-        return SyncChangeTask.uploadDataThumbnail;
+        return SyncChangeTask.pushMapThumbnail;
       case 70:
-        return SyncChangeTask.uploadThumbnail;
+        return SyncChangeTask.pushThumbnail;
       case 80:
-        return SyncChangeTask.downloadThumbnail;
+        return SyncChangeTask.fetchThumbnail;
       case 90:
-        return SyncChangeTask.downloadThumbnailFile;
+        return SyncChangeTask.fetchThumbnailFile;
       case 100:
-        return SyncChangeTask.downloadFile;
+        return SyncChangeTask.fetchFile;
+      case 110:
+        return SyncChangeTask.pushMapDeleteThumbnailFile;
+      case 120:
+        return SyncChangeTask.pushMapDeleteThumbnail;
+      case 130:
+        return SyncChangeTask.deleteThumbnailFile;
+      case 140:
+        return SyncChangeTask.deleteThumbnail;
       default:
         return null;
     }
