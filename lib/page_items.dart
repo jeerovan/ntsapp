@@ -68,6 +68,7 @@ class _PageItemsState extends State<PageItems> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
+  final GlobalKey<TooltipState> _recordtooltipKey = GlobalKey<TooltipState>();
 
   late ModelGroup noteGroup;
 
@@ -1977,6 +1978,14 @@ class _PageItemsState extends State<PageItems> {
             ),
             GestureDetector(
               onLongPress: () async {
+                if (!_isTyping) {
+                  _recordtooltipKey.currentState?.ensureTooltipVisible();
+                  Future.delayed(Duration(seconds: 1), () {
+                    if (mounted) {
+                      Tooltip.dismissAllToolTips();
+                    }
+                  });
+                }
                 if (!_isTyping && !_isRecording) {
                   await _startRecording();
                 }
@@ -1984,8 +1993,16 @@ class _PageItemsState extends State<PageItems> {
               onTap: () async {
                 if (_isRecording) {
                   await _stopRecording();
-                }
-                if (!_isTyping && !_isRecording) {
+                } else if (_isTyping) {
+                  final String text = _textController.text.trim();
+                  if (text.isNotEmpty) {
+                    ItemType itemType =
+                        _isCreatingTask ? ItemType.task : ItemType.text;
+                    _addItemToDbAndDisplayList(text, itemType, null, null);
+                    _textController.clear();
+                    _onInputTextChanged("");
+                  }
+                } else if (!_isTyping && !_isRecording) {
                   if (mounted) {
                     displaySnackBar(context,
                         message: 'Press long to start recording.', seconds: 1);
@@ -2015,16 +2032,18 @@ class _PageItemsState extends State<PageItems> {
                               child, // The widget to be animated (the IconButton)
                         );
                       },
-                      child: IconButton(
-                        tooltip: "Record/stop audio",
-                        key: ValueKey<String>(_isRecording
-                            ? 'stop'
-                            : _isTyping
-                                ? _isCreatingTask
-                                    ? 'check'
-                                    : 'send'
-                                : 'mic'),
-                        icon: Icon(
+                      child: Tooltip(
+                        message: "Record/stop audio",
+                        key: _recordtooltipKey,
+                        triggerMode: TooltipTriggerMode.manual,
+                        child: Icon(
+                          key: ValueKey<String>(_isRecording
+                              ? 'stop'
+                              : _isTyping
+                                  ? _isCreatingTask
+                                      ? 'check'
+                                      : 'send'
+                                  : 'mic'),
                           _isRecording
                               ? Icons.stop
                               : _isTyping
@@ -2034,23 +2053,6 @@ class _PageItemsState extends State<PageItems> {
                                   : Icons.mic,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        onPressed: _isRecording
-                            ? _stopRecording
-                            : _isTyping
-                                ? () {
-                                    final String text =
-                                        _textController.text.trim();
-                                    if (text.isNotEmpty) {
-                                      ItemType itemType = _isCreatingTask
-                                          ? ItemType.task
-                                          : ItemType.text;
-                                      _addItemToDbAndDisplayList(
-                                          text, itemType, null, null);
-                                      _textController.clear();
-                                      _onInputTextChanged("");
-                                    }
-                                  }
-                                : null,
                       ),
                     ),
                   ),
