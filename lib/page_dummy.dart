@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PageDummy extends StatefulWidget {
@@ -12,7 +11,7 @@ class PageDummy extends StatefulWidget {
 
 class _PageDummyState extends State<PageDummy> {
   AppLogger logger = AppLogger(prefixes: ["PageDummy"]);
-  bool processing = false;
+  bool processing = true;
   String response = "";
   String text = "";
   @override
@@ -28,13 +27,9 @@ class _PageDummyState extends State<PageDummy> {
 
   Future<void> simiulate() async {
     SupabaseClient supabaseClient = Supabase.instance.client;
-    String? userId = SyncUtils.getSignedInUserId();
     try {
-      final res = await supabaseClient
-          .from("storage")
-          .update({"db_size": 1234})
-          .eq("id", userId!)
-          .select();
+      final res =
+          await supabaseClient.from("storage").select("b2_size").single();
       logger.info('Result:${res.toString()}');
     } catch (e, s) {
       logger.error("Exception", error: e, stackTrace: s);

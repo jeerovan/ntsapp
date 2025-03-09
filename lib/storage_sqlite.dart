@@ -291,66 +291,6 @@ class StorageSqlite {
       'at': at,
       'updated_at': at
     });
-    String readWatchGroupId = uuid.v4();
-    await db.insert("itemgroup", {
-      "id": readWatchGroupId,
-      "category_id": dndCategoryId,
-      "title": "To read/watch",
-      "pinned": 0,
-      "position": 1,
-      "archived_at": 0,
-      "color": colorToHex(getIndexedColor(1)),
-      "at": at,
-      "updated_at": at,
-      "thumbnail": null,
-      "data": null,
-      "state": 0,
-    });
-    await db.insert("item", {
-      'id': uuid.v4(),
-      'group_id': readWatchGroupId,
-      'text':
-          '''Books, shows, articles or rare videos, put all their names and links here and get back to them whenever you're feeling bored.\n\nHere are 2 of our favourites:\n1. Blog: https://blog.samaltman.com/how-to-be-successful\n2. Short film: https://www.youtube.com/watch?v=gYlV0AnUcJE''',
-      'thumbnail': null,
-      'starred': 0,
-      'pinned': 0,
-      'archived_at': 0,
-      'type': ItemType.text.value,
-      'state': 0,
-      'data': null,
-      'at': at,
-      'updated_at': at
-    });
-    String journalGroupId = uuid.v4();
-    await db.insert("itemgroup", {
-      "id": journalGroupId,
-      "category_id": dndCategoryId,
-      "title": "Daily journal",
-      "pinned": 0,
-      "position": 3,
-      "archived_at": 0,
-      "color": colorToHex(getIndexedColor(3)),
-      "at": at,
-      "updated_at": at,
-      "thumbnail": null,
-      "data": null,
-      "state": 0,
-    });
-    await db.insert("item", {
-      'id': uuid.v4(),
-      'group_id': journalGroupId,
-      'text':
-          '''Researchers have found that keeping a daily journal helps you in achieving goals, improves confidence and reduces stress.\nIf writing every day feels too hard, use the voice note feature and record your life, in your own voice.''',
-      'thumbnail': null,
-      'starred': 0,
-      'pinned': 0,
-      'archived_at': 0,
-      'type': ItemType.text.value,
-      'state': 0,
-      'data': null,
-      'at': at,
-      'updated_at': at
-    });
 
     String tasksCategoryId = uuid.v4();
     await db.insert("category", {

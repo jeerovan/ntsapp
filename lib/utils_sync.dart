@@ -153,7 +153,7 @@ class SyncUtils {
 
   static Future<bool> pushMapChanges() async {
     if (!await canSync()) return false;
-    logger.info("Push Data Changes");
+    logger.info("Push Map Changes");
     SupabaseClient supabaseClient = Supabase.instance.client;
     bool pushedCategories = await pushMapChangesForTable(
         supabaseClient, "category", "process_bulk_categories");
@@ -178,17 +178,13 @@ class SyncUtils {
         changeMaps.add(jsonDecode(change.data));
         changeIds.add(change.id);
       }
-      final timer = Stopwatch()..start();
       try {
         await supabaseClient.rpc(rpc, params: {"data": changeMaps});
         await ModelChange.upgradeTypeForIds(changeIds);
-        timer.stop();
-        logger.debug("Pushed $table changes in: ${timer.elapsed}");
+        logger.debug("Pushed $table changes");
       } catch (e, s) {
         logger.error("pushChangesForTable|Supabase", error: e, stackTrace: s);
         pushed = false;
-      } finally {
-        timer.stop();
       }
     }
     return pushed;
@@ -316,11 +312,11 @@ class SyncUtils {
     }
   }
 
-  static Future<void> fetchDataChanges() async {
+  static Future<void> fetchMapChanges() async {
     if (!await canSync()) return;
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
-    logger.info("FetchAllChanges");
+    logger.info("Fetch Map Changes");
     String deviceId = await StorageHive().get(AppString.deviceId.string);
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
     SodiumSumo sodium = await SodiumSumoInit.init();
@@ -404,7 +400,7 @@ class SyncUtils {
               ModelItem item = await ModelItem.fromMap(map);
               dataMap = item.data;
               await item.upcertFromServer();
-              // fix data map
+              // fix file path in data map
               if (dataMap != null && dataMap.containsKey("path")) {
                 String fileName = dataMap["name"];
                 String mimeDirectory = dataMap["mime"].split("/").first;
@@ -475,13 +471,14 @@ class SyncUtils {
                 case ItemType.document:
                 case ItemType.audio:
                   changeType = SyncChangeTask.fetchFile;
+                case ItemType.contact:
+                  if (hasThumbnail) changeType = SyncChangeTask.fetchThumbnail;
                 case ItemType.image:
                 case ItemType.video:
                   changeType = SyncChangeTask.fetchThumbnailFile;
                 case ItemType.text:
                 case ItemType.task:
                 case ItemType.completedTask:
-                case ItemType.contact:
                 case ItemType.location:
                 case ItemType.date:
                 case null:
@@ -617,7 +614,8 @@ class SyncUtils {
       String fileId = completedUpload.id;
       try {
         // update if the the current uploadedAt on server is earlier than this uploadedAt
-        supabaseClient
+        logger.info("pushFiles|$fileId|syncing completed upload");
+        await supabaseClient
             .from("files")
             .update({
               "uploaded_at": completedUpload.uploadedAt,
@@ -626,6 +624,7 @@ class SyncUtils {
             })
             .eq("id", fileId)
             .lt("uploaded_at", completedUpload.uploadedAt);
+
         String changeId = completedUpload.changeId;
         await completedUpload
             .delete(); // deletes the encrypted file in temp dir
@@ -901,7 +900,7 @@ class SyncUtils {
           if (uploadUrl.isNotEmpty) {
             logger.info(
                 "pushFilePart|$fileName|$partNumber| uploading bytes to upload url with headers");
-            Map<String, dynamic> uploadResult = await SyncUtils.uploadFile(
+            Map<String, dynamic> uploadResult = await SyncUtils.uploadFileBytes(
                 bytes: fileBytes, url: uploadUrl, headers: headers);
             logger.info("UploadedBytes:${jsonEncode(uploadResult)}");
             // update parts_uploaded
@@ -934,17 +933,6 @@ class SyncUtils {
                   modelFile.uploadedAt =
                       DateTime.now().toUtc().millisecondsSinceEpoch;
                   await modelFile.update(["uploaded_at"]);
-                  // update server
-                  logger.info("pushFilePart|$fileName|single|syncing server");
-                  await supabaseClient
-                      .from("files")
-                      .update({
-                        "parts_uploaded": partNumber,
-                        "uploaded_at": modelFile.uploadedAt,
-                        "b2_id": b2Id
-                      })
-                      .eq("id", modelFile.id)
-                      .lt("uploaded_at", modelFile.uploadedAt);
                 }
               }
             } else {
@@ -996,7 +984,7 @@ class SyncUtils {
     }
   }
 
-  static Future<Map<String, dynamic>> uploadFile({
+  static Future<Map<String, dynamic>> uploadFileBytes({
     required Uint8List bytes,
     required String url,
     required Map<String, String> headers,

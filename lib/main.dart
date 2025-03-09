@@ -333,7 +333,7 @@ Future<void> performSync({bool inBackground = false}) async {
     "performSync",
   ]);
   String mode = inBackground ? "Background" : "Foreground";
-  logger.info("$mode|Sync");
+  logger.info("$mode|Sync|------------------START----------------");
   bool canSync = await SyncUtils.canSync();
   if (!canSync) return;
 
@@ -365,14 +365,14 @@ Future<void> performSync({bool inBackground = false}) async {
       await SyncUtils.pushThumbnails(utcNow, inBackground);
       await SyncUtils.pushFiles(utcNow, inBackground);
 
-      await SyncUtils.fetchDataChanges();
+      await SyncUtils.fetchMapChanges();
       await SyncUtils.fetchThumbnails();
       await SyncUtils.fetchFiles(utcNow, inBackground);
       // fetch files
     } catch (e, s) {
       logger.error("Sync exception", error: e, stackTrace: s);
     }
-    logger.info("Executed sync");
+    logger.info("$mode|Sync|------------------ENDED----------------");
     timer.cancel();
   }
 }
