@@ -11,12 +11,15 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/widgets_item.dart';
 import 'package:provider/provider.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
 import 'common.dart';
+import 'enums.dart';
 import 'model_category_group.dart';
 import 'model_item.dart';
+import 'utils_crypto.dart';
 
 class MessageInCenter extends StatelessWidget {
   final String text;
@@ -255,11 +258,15 @@ class WidgetCategoryGroup extends StatelessWidget {
 }
 
 class WidgetVideoImageThumbnail extends StatefulWidget {
+  final VoidCallback onPressed;
   final ModelItem item;
   final double iconSize;
 
   const WidgetVideoImageThumbnail(
-      {super.key, required this.item, required this.iconSize});
+      {super.key,
+      required this.item,
+      required this.iconSize,
+      required this.onPressed});
 
   @override
   State<WidgetVideoImageThumbnail> createState() =>
@@ -269,6 +276,7 @@ class WidgetVideoImageThumbnail extends StatefulWidget {
 class _WidgetVideoImageThumbnailState extends State<WidgetVideoImageThumbnail> {
   @override
   Widget build(BuildContext context) {
+    bool showPlay = widget.item.state != SyncState.downloadable.value;
     ModelItem item = widget.item;
     return Stack(
       alignment: Alignment.center, // Center the play button overlay
@@ -282,31 +290,25 @@ class _WidgetVideoImageThumbnailState extends State<WidgetVideoImageThumbnail> {
           ),
         ),
         // Play button overlay
-        Container(
-          width: widget.iconSize,
-          height: widget.iconSize,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
-            // Semi-transparent grey background
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            LucideIcons.play,
-            color: Colors.white,
-            size: widget.iconSize / 2,
-          ),
-        ),
+        VideoPlayDownloadButton(
+            iconSize: widget.iconSize,
+            onPressed: widget.onPressed,
+            showPlay: showPlay),
       ],
     );
   }
 }
 
 class WidgetVideoPlayerThumbnail extends StatefulWidget {
+  final VoidCallback onPressed;
   final ModelItem item;
   final double iconSize;
 
   const WidgetVideoPlayerThumbnail(
-      {super.key, required this.item, required this.iconSize});
+      {super.key,
+      required this.item,
+      required this.iconSize,
+      required this.onPressed});
 
   @override
   State<WidgetVideoPlayerThumbnail> createState() =>
@@ -352,6 +354,7 @@ class _WidgetVideoPlayerThumbnailState
 
   @override
   Widget build(BuildContext context) {
+    bool showPlay = widget.item.state != SyncState.downloadable.value;
     return _isInitialized
         ? _fileAvailable
             ? Stack(
@@ -362,17 +365,10 @@ class _WidgetVideoPlayerThumbnailState
                     child: VideoPlayer(_controller),
                   ),
                   // Play button overlay
-                  Container(
-                    width: widget.iconSize,
-                    height: widget.iconSize,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      // Semi-transparent grey background
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(LucideIcons.play,
-                        color: Colors.white, size: widget.iconSize / 2),
-                  ),
+                  VideoPlayDownloadButton(
+                      iconSize: widget.iconSize,
+                      onPressed: widget.onPressed,
+                      showPlay: showPlay),
                 ],
               )
             : Image.asset(
@@ -389,11 +385,15 @@ class _WidgetVideoPlayerThumbnailState
 }
 
 class WidgetMediaKitThumbnail extends StatefulWidget {
+  final VoidCallback onPressed;
   final ModelItem item;
   final double iconSize;
 
   const WidgetMediaKitThumbnail(
-      {super.key, required this.item, required this.iconSize});
+      {super.key,
+      required this.item,
+      required this.iconSize,
+      required this.onPressed});
 
   @override
   State<WidgetMediaKitThumbnail> createState() =>
@@ -432,6 +432,7 @@ class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
 
   @override
   Widget build(BuildContext context) {
+    bool showPlay = widget.item.state != SyncState.downloadable.value;
     return _isInitialized
         ? _fileAvailable
             ? Stack(
@@ -447,20 +448,10 @@ class _WidgetMediaKitThumbnailState extends State<WidgetMediaKitThumbnail> {
                     ),
                   ),
                   // Play button overlay
-                  Container(
-                    width: widget.iconSize,
-                    height: widget.iconSize,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      // Semi-transparent grey background
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      LucideIcons.play,
-                      color: Colors.white,
-                      size: widget.iconSize / 2,
-                    ),
-                  ),
+                  VideoPlayDownloadButton(
+                      iconSize: widget.iconSize,
+                      onPressed: widget.onPressed,
+                      showPlay: showPlay),
                 ],
               )
             : Image.asset(
@@ -525,6 +516,31 @@ class _WidgetAudioState extends State<WidgetAudio> {
     super.dispose();
   }
 
+  Future<void> downloadMedia() async {
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    widget.item.state = SyncState.downloading.value;
+    widget.item.update(["state"], pushToSync: false);
+    if (mounted) {
+      setState(() {});
+    }
+    bool downloadedDecrypted =
+        await cryptoUtils.downloadDecryptFile(widget.item.data!);
+    if (downloadedDecrypted) {
+      widget.item.state = SyncState.downloaded.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    } else {
+      widget.item.state = SyncState.downloadable.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   Future<void> _togglePlayPause() async {
     String filePath = widget.item.data!["path"];
     File audioFile = File(filePath);
@@ -547,16 +563,24 @@ class _WidgetAudioState extends State<WidgetAudio> {
 
   @override
   Widget build(BuildContext context) {
+    bool displayDownloadButton =
+        widget.item.state == SyncState.downloadable.value;
     return Row(
       children: [
-        IconButton(
-          tooltip: "Play/pause",
-          icon: Icon(
-            _isPlaying ? Icons.pause_circle : Icons.play_circle,
-            size: 40,
-          ),
-          onPressed: _togglePlayPause,
-        ),
+        displayDownloadButton
+            ? DownloadButton(
+                onPressed: downloadMedia,
+                item: widget.item,
+                iconSize: 30,
+              )
+            : IconButton(
+                tooltip: "Play/pause",
+                icon: Icon(
+                  _isPlaying ? Icons.pause_circle : Icons.play_circle,
+                  size: 40,
+                ),
+                onPressed: _togglePlayPause,
+              ),
         Expanded(
           child: Slider(
             activeColor: Theme.of(context).brightness == Brightness.dark
@@ -1051,6 +1075,172 @@ class AnimatedPageRoute extends PageRouteBuilder {
           ),
         ),
       ],
+    );
+  }
+}
+
+class UploadDownloadIndicator extends StatefulWidget {
+  final double size;
+  final bool uploading;
+  const UploadDownloadIndicator(
+      {super.key, required this.size, required this.uploading});
+  @override
+  State<UploadDownloadIndicator> createState() =>
+      UploadDownloadIndicatorState();
+}
+
+class UploadDownloadIndicatorState extends State<UploadDownloadIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+    )..repeat(reverse: true);
+
+    _fadeAnimation = Tween<double>(begin: 0.2, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Icon(
+        widget.uploading ? Icons.arrow_upward : Icons.arrow_downward,
+        size: widget.size,
+      ),
+    );
+  }
+}
+
+class DownloadButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  final ModelItem item;
+  final double iconSize;
+
+  const DownloadButton({
+    super.key,
+    required this.item,
+    this.iconSize = 30.0,
+    required this.onPressed, // Default icon size
+  });
+
+  @override
+  State<DownloadButton> createState() => _DownloadButtonState();
+}
+
+class _DownloadButtonState extends State<DownloadButton> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurface.withAlpha(50),
+          width: 2.0,
+        ),
+      ),
+      child: IconButton(
+        tooltip: "Download",
+        icon: Opacity(
+          opacity: 0.5,
+          child: Icon(
+            Icons.arrow_downward,
+            size: widget.iconSize,
+          ),
+        ),
+        onPressed: widget.onPressed,
+      ),
+    );
+  }
+}
+
+class VideoPlayDownloadButton extends StatelessWidget {
+  final double iconSize;
+  final bool showPlay;
+  final VoidCallback onPressed;
+  const VideoPlayDownloadButton(
+      {super.key,
+      required this.iconSize,
+      required this.showPlay,
+      required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      width: iconSize,
+      height: iconSize,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        // Semi-transparent grey background
+        shape: BoxShape.circle,
+      ),
+      child: showPlay
+          ? Icon(
+              LucideIcons.play,
+              color: Colors.white,
+              size: iconSize / 2,
+            )
+          : IconButton(
+              tooltip: "Download",
+              icon: Icon(
+                Icons.arrow_downward,
+                color: Colors.white,
+                size: iconSize / 2,
+              ),
+              onPressed: onPressed,
+            ),
+    );
+  }
+}
+
+class ImageDownloadButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  final ModelItem item;
+  final double iconSize;
+  const ImageDownloadButton({
+    super.key,
+    required this.iconSize,
+    required this.item,
+    required this.onPressed,
+  });
+
+  @override
+  State<ImageDownloadButton> createState() => _ImageDownloadButtonState();
+}
+
+class _ImageDownloadButtonState extends State<ImageDownloadButton> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.iconSize,
+      height: widget.iconSize,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        // Semi-transparent grey background
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        tooltip: "Download",
+        icon: Icon(
+          Icons.arrow_downward,
+          color: Colors.white,
+          size: widget.iconSize / 2,
+        ),
+        onPressed: widget.onPressed,
+      ),
     );
   }
 }

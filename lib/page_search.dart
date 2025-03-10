@@ -336,14 +336,17 @@ class SearchPageState extends State<SearchPage> {
             child: item.thumbnail == null
                 ? canUseVideoPlayer
                     ? WidgetVideoPlayerThumbnail(
+                        onPressed: () {},
                         item: item,
                         iconSize: 20,
                       )
                     : WidgetMediaKitThumbnail(
+                        onPressed: () {},
                         item: item,
                         iconSize: 20,
                       )
                 : WidgetVideoImageThumbnail(
+                    onPressed: () {},
                     item: item,
                     iconSize: 20,
                   ),

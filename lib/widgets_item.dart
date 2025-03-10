@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:path/path.dart' as path;
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item.dart';
+import 'utils_crypto.dart';
 
 class ItemWidgetDate extends StatelessWidget {
   final ModelItem item;
@@ -52,6 +54,23 @@ class WidgetTimeStampPinnedStarred extends StatelessWidget {
   const WidgetTimeStampPinnedStarred(
       {super.key, required this.item, required this.showTimestamp});
 
+  Widget itemStateIcon(ModelItem item) {
+    if (item.state == SyncState.uploading.value) {
+      return UploadDownloadIndicator(uploading: true, size: 12);
+    } else if (item.state == SyncState.downloading.value) {
+      return UploadDownloadIndicator(uploading: false, size: 12);
+    } else if (item.state == SyncState.uploaded.value ||
+        item.state == SyncState.downloaded.value ||
+        item.state == SyncState.downloadable.value) {
+      return Icon(
+        LucideIcons.check,
+        size: 12,
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -66,6 +85,10 @@ class WidgetTimeStampPinnedStarred extends StatelessWidget {
             ? Icon(LucideIcons.star,
                 size: 12, color: Theme.of(context).colorScheme.inversePrimary)
             : const SizedBox.shrink(),
+        const SizedBox(
+          width: 2,
+        ),
+        itemStateIcon(item),
         const SizedBox(width: 4),
         if (showTimestamp)
           Opacity(
@@ -141,7 +164,7 @@ class ItemWidgetTask extends StatelessWidget {
   }
 }
 
-class ItemWidgetImage extends StatelessWidget {
+class ItemWidgetImage extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -153,11 +176,43 @@ class ItemWidgetImage extends StatelessWidget {
       required this.showTimestamp});
 
   @override
+  State<ItemWidgetImage> createState() => _ItemWidgetImageState();
+}
+
+class _ItemWidgetImageState extends State<ItemWidgetImage> {
+  Future<void> downloadMedia() async {
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    widget.item.state = SyncState.downloading.value;
+    widget.item.update(["state"], pushToSync: false);
+    if (mounted) {
+      setState(() {});
+    }
+    bool downloadedDecrypted =
+        await cryptoUtils.downloadDecryptFile(widget.item.data!);
+    if (downloadedDecrypted) {
+      widget.item.state = SyncState.downloaded.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    } else {
+      widget.item.state = SyncState.downloadable.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    bool displayDownloadButton =
+        widget.item.state == SyncState.downloadable.value;
     double size = 200;
     return GestureDetector(
       onTap: () {
-        onTap(item);
+        widget.onTap(widget.item);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -166,16 +221,26 @@ class ItemWidgetImage extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(
               width: size,
-              child: item.thumbnail == null
+              child: widget.item.thumbnail == null
                   ? Image.asset(
                       "assets/image.webp",
                       width: double.infinity,
                       fit: BoxFit.cover,
                     )
-                  : Image.memory(
-                      item.thumbnail!,
-                      width: double.infinity, // Full width of container
-                      fit: BoxFit.cover,
+                  : Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.memory(
+                          widget.item.thumbnail!,
+                          width: double.infinity, // Full width of container
+                          fit: BoxFit.cover,
+                        ),
+                        if (displayDownloadButton)
+                          ImageDownloadButton(
+                              item: widget.item,
+                              onPressed: downloadMedia,
+                              iconSize: 50)
+                      ],
                     ),
             ),
           ),
@@ -183,8 +248,8 @@ class ItemWidgetImage extends StatelessWidget {
             height: 5,
           ),
           WidgetTimeStampPinnedStarred(
-            item: item,
-            showTimestamp: showTimestamp,
+            item: widget.item,
+            showTimestamp: widget.showTimestamp,
           ),
         ],
       ),
@@ -192,7 +257,7 @@ class ItemWidgetImage extends StatelessWidget {
   }
 }
 
-class ItemWidgetVideo extends StatelessWidget {
+class ItemWidgetVideo extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -204,11 +269,41 @@ class ItemWidgetVideo extends StatelessWidget {
       required this.showTimestamp});
 
   @override
+  State<ItemWidgetVideo> createState() => _ItemWidgetVideoState();
+}
+
+class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
+  Future<void> downloadMedia() async {
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    widget.item.state = SyncState.downloading.value;
+    widget.item.update(["state"], pushToSync: false);
+    if (mounted) {
+      setState(() {});
+    }
+    bool downloadedDecrypted =
+        await cryptoUtils.downloadDecryptFile(widget.item.data!);
+    if (downloadedDecrypted) {
+      widget.item.state = SyncState.downloaded.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    } else {
+      widget.item.state = SyncState.downloadable.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     double size = 200;
     return GestureDetector(
       onTap: () {
-        onTap(item);
+        widget.onTap(widget.item);
       },
       child: Column(
         children: [
@@ -216,20 +311,23 @@ class ItemWidgetVideo extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             child: SizedBox(
               width: size,
-              height: size / item.data!["aspect"],
-              child: item.thumbnail == null
+              height: size / widget.item.data!["aspect"],
+              child: widget.item.thumbnail == null
                   ? canUseVideoPlayer
                       ? WidgetVideoPlayerThumbnail(
-                          item: item,
-                          iconSize: 40,
+                          onPressed: downloadMedia,
+                          item: widget.item,
+                          iconSize: 50,
                         )
                       : WidgetMediaKitThumbnail(
-                          item: item,
-                          iconSize: 40,
+                          onPressed: downloadMedia,
+                          item: widget.item,
+                          iconSize: 50,
                         )
                   : WidgetVideoImageThumbnail(
-                      item: item,
-                      iconSize: 40,
+                      onPressed: downloadMedia,
+                      item: widget.item,
+                      iconSize: 50,
                     ),
             ),
           ),
@@ -247,14 +345,14 @@ class ItemWidgetVideo extends StatelessWidget {
                       width: 2,
                     ),
                     Text(
-                      item.data!["duration"],
+                      widget.item.data!["duration"],
                       style: const TextStyle(color: Colors.white, fontSize: 10),
                     ),
                   ],
                 ),
                 WidgetTimeStampPinnedStarred(
-                  item: item,
-                  showTimestamp: showTimestamp,
+                  item: widget.item,
+                  showTimestamp: widget.showTimestamp,
                 ),
               ],
             ),
@@ -287,7 +385,7 @@ class ItemWidgetAudio extends StatelessWidget {
   }
 }
 
-class ItemWidgetDocument extends StatelessWidget {
+class ItemWidgetDocument extends StatefulWidget {
   final ModelItem item;
   final Function(ModelItem) onTap;
   final bool showTimestamp;
@@ -299,13 +397,45 @@ class ItemWidgetDocument extends StatelessWidget {
       required this.showTimestamp});
 
   @override
+  State<ItemWidgetDocument> createState() => _ItemWidgetDocumentState();
+}
+
+class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
+  Future<void> downloadMedia() async {
+    SodiumSumo sodium = await SodiumSumoInit.init();
+    CryptoUtils cryptoUtils = CryptoUtils(sodium);
+    widget.item.state = SyncState.downloading.value;
+    widget.item.update(["state"], pushToSync: false);
+    if (mounted) {
+      setState(() {});
+    }
+    bool downloadedDecrypted =
+        await cryptoUtils.downloadDecryptFile(widget.item.data!);
+    if (downloadedDecrypted) {
+      widget.item.state = SyncState.downloaded.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    } else {
+      widget.item.state = SyncState.downloadable.value;
+      widget.item.update(["state"], pushToSync: false);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String title = item.data!.containsKey("title")
-        ? item.data!["title"]
-        : item.data!["name"];
+    bool displayDownloadButton =
+        widget.item.state == SyncState.downloadable.value;
+    String title = widget.item.data!.containsKey("title")
+        ? widget.item.data!["title"]
+        : widget.item.data!["name"];
     return GestureDetector(
       onTap: () {
-        onTap(item);
+        widget.onTap(widget.item);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -314,10 +444,19 @@ class ItemWidgetDocument extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                LucideIcons.file,
-                size: 40,
-              ),
+              displayDownloadButton
+                  ? Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: DownloadButton(
+                        onPressed: downloadMedia,
+                        item: widget.item,
+                        iconSize: 30,
+                      ),
+                    )
+                  : const Icon(
+                      LucideIcons.file,
+                      size: 40,
+                    ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
@@ -337,12 +476,12 @@ class ItemWidgetDocument extends StatelessWidget {
             children: [
               // File size text at the left
               Text(
-                readableFileSizeFromBytes(item.data!["size"]),
+                readableFileSizeFromBytes(widget.item.data!["size"]),
                 style: const TextStyle(fontSize: 10),
               ),
               WidgetTimeStampPinnedStarred(
-                item: item,
-                showTimestamp: showTimestamp,
+                item: widget.item,
+                showTimestamp: widget.showTimestamp,
               ),
             ],
           ),

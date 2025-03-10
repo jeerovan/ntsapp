@@ -399,6 +399,7 @@ class SyncUtils {
             case "item":
               ModelItem item = await ModelItem.fromMap(map);
               dataMap = item.data;
+              item.state = SyncState.downloaded.value;
               await item.upcertFromServer();
               // fix file path in data map
               if (dataMap != null && dataMap.containsKey("path")) {
@@ -472,7 +473,9 @@ class SyncUtils {
                 case ItemType.audio:
                   changeType = SyncChangeTask.fetchFile;
                 case ItemType.contact:
-                  if (hasThumbnail) changeType = SyncChangeTask.fetchThumbnail;
+                  if (hasThumbnail) {
+                    changeType = SyncChangeTask.fetchThumbnail;
+                  }
                 case ItemType.image:
                 case ItemType.video:
                   changeType = SyncChangeTask.fetchThumbnailFile;
