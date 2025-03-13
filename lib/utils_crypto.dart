@@ -391,12 +391,14 @@ class CryptoUtils {
     return result;
   }
 
-  Future<ExecutionResult> generateKeysForNewPassword(
-      String password, String userId) async {
-    final storage = SecureStorage();
-    String keyForMasterKey = '${userId}_mk';
-    String? masterKeyBase64 = await storage.read(key: keyForMasterKey);
-    Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+  Future<ExecutionResult> generatePasswordKeys(String password,
+      {Uint8List? masterKeyBytes}) async {
+    if (masterKeyBytes == null) {
+      SecureKey masterKey = generateKey();
+      masterKeyBytes = masterKey.extractBytes();
+      masterKey.dispose();
+    }
+    String masterKeyBase64 = base64Encode(masterKeyBytes);
     Uint8List passwordSalt = generateSalt();
     String passwordSaltBase64 = base64Encode(passwordSalt);
     SecureKey passwordKey =
@@ -413,18 +415,24 @@ class CryptoUtils {
         base64Encode(masterKeyEncryptedWithPasswordKeyBytes);
     String masterKeyPasswordKeyNonceBase64 =
         base64Encode(masterKeyPasswordKeyNonceBytes);
-    Map<String, dynamic> keysBase64 = {
-      "mk_ew_pk": masterKeyEncryptedWithPasswordKeyBase64,
-      "mk_pk_nonce": masterKeyPasswordKeyNonceBase64,
-      "pk_salt": passwordSaltBase64,
+    Map<String, dynamic> serverKeys = {
+      "cipher": masterKeyEncryptedWithPasswordKeyBase64,
+      "nonce": masterKeyPasswordKeyNonceBase64,
+      "salt": passwordSaltBase64,
     };
-    return ExecutionResult.success({"keys": keysBase64});
+    Map<String, dynamic> privateKeys = {
+      "master_key": masterKeyBase64,
+    };
+    return ExecutionResult.success(
+        {"server_keys": serverKeys, "private_keys": privateKeys});
   }
 
-  ExecutionResult generateKeys() {
-    SecureKey masterKey = generateKey();
-    Uint8List masterKeyBytes = masterKey.extractBytes();
-    masterKey.dispose();
+  ExecutionResult generateKeys({Uint8List? masterKeyBytes}) {
+    if (masterKeyBytes == null) {
+      SecureKey masterKey = generateKey();
+      masterKeyBytes = masterKey.extractBytes();
+      masterKey.dispose();
+    }
     String masterKeyBase64 = base64Encode(masterKeyBytes);
 
     SecureKey accessKey = generateKey();
@@ -444,8 +452,8 @@ class CryptoUtils {
         base64Encode(masterKeyAccessKeyNonceBytes);
 
     Map<String, dynamic> serverKeysBase64 = {
-      "mk_ew_ak": masterKeyEncryptedWithAccessKeyBase64,
-      "mk_ak_nonce": masterKeyAccessKeyNonceBase64,
+      "cipher": masterKeyEncryptedWithAccessKeyBase64,
+      "nonce": masterKeyAccessKeyNonceBase64,
     };
 
     Map<String, dynamic> privateKeysBase64 = {

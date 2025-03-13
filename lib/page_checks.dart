@@ -23,7 +23,7 @@ class _PageChecksState extends State<PageChecks> {
   bool processing = false;
   final SupabaseClient supabase = Supabase.instance.client;
 
-  SecureStorage storage = SecureStorage();
+  SecureStorage secureStorage = SecureStorage();
 
   bool taskIsCheckForKeys = false;
 
@@ -77,8 +77,10 @@ class _PageChecksState extends State<PageChecks> {
 
           String masterKeyBase64 = privateKeys["master_key"];
           String accessKeyBase64 = privateKeys["access_key"];
-          await storage.write(key: keyForMasterKey, value: masterKeyBase64);
-          await storage.write(key: keyForAccessKey, value: accessKeyBase64);
+          await secureStorage.write(
+              key: keyForMasterKey, value: masterKeyBase64);
+          await secureStorage.write(
+              key: keyForAccessKey, value: accessKeyBase64);
           pushUpdatedKeys();
         } else {
           navigateToAccessKeyInputPage(data.first);
@@ -99,7 +101,7 @@ class _PageChecksState extends State<PageChecks> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => PageAccessKeyInput(
-          profileData: profileData,
+          cipherData: profileData,
         ),
         settings: const RouteSettings(name: "AcessKeyInput"),
       ),

@@ -11,8 +11,8 @@ import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 
 class PageAccessKeyInput extends StatefulWidget {
-  final Map<String, dynamic> profileData;
-  const PageAccessKeyInput({super.key, required this.profileData});
+  final Map<String, dynamic> cipherData;
+  const PageAccessKeyInput({super.key, required this.cipherData});
 
   @override
   State<PageAccessKeyInput> createState() => _PageAccessKeyInputState();
@@ -50,21 +50,14 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
     String accessKeyHex = bip39.mnemonicToEntropy(words);
     Uint8List accessKeyBytes = hexToBytes(accessKeyHex);
 
-    String userId = widget.profileData["id"];
-    String keyForMasterKey = '${userId}_mk';
-    String keyForAccessKey = '${userId}_ak';
+    String masterKeyCipheredBase64 = widget.cipherData["cipher"];
+    String masterKeyNonceBase64 = widget.cipherData["nonce"];
 
-    String masterKeyEncryptedWithAccessKeyBase64 =
-        widget.profileData["mk_ew_ak"];
-    String masterKeyAccessKeyNonceBase64 = widget.profileData["mk_ak_nonce"];
-
-    Uint8List masterKeyEncryptedWithAccessKeyBytes =
-        base64Decode(masterKeyEncryptedWithAccessKeyBase64);
-    Uint8List masterKeyAccessKeyNonce =
-        base64Decode(masterKeyAccessKeyNonceBase64);
+    Uint8List masterKeyCipheredBytes = base64Decode(masterKeyCipheredBase64);
+    Uint8List masterKeyNonceBytes = base64Decode(masterKeyNonceBase64);
     ExecutionResult masterKeyDecryptionResult = cryptoUtils.decryptBytes(
-        cipherBytes: masterKeyEncryptedWithAccessKeyBytes,
-        nonce: masterKeyAccessKeyNonce,
+        cipherBytes: masterKeyCipheredBytes,
+        nonce: masterKeyNonceBytes,
         key: accessKeyBytes);
     if (masterKeyDecryptionResult.isFailure) {
       if (mounted) {
@@ -75,11 +68,16 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
           masterKeyDecryptionResult.getResult()!["decrypted"];
       String decryptedMasterKeyBase64 = base64Encode(decryptedMasterKeyBytes);
 
+      String userId = widget.cipherData["id"];
+      String keyForMasterKey = '${userId}_mk';
+      String keyForAccessKey = '${userId}_ak';
+      String keyForKeyType = '${userId}_kt';
       // save keys to secure storage
       await storage.write(
           key: keyForMasterKey, value: decryptedMasterKeyBase64);
       await storage.write(
           key: keyForAccessKey, value: base64Encode(accessKeyBytes));
+      await storage.write(key: keyForKeyType, value: "key");
 
       if (mounted) {
         Navigator.of(context).pop();

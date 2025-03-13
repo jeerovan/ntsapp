@@ -25,7 +25,7 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
-  Future<void> simiulate() async {
+  Future<void> simulate() async {
     SupabaseClient supabaseClient = Supabase.instance.client;
     try {
       final res =
@@ -46,7 +46,7 @@ class _PageDummyState extends State<PageDummy> {
         children: [
           if (processing) CircularProgressIndicator(),
           Text(text),
-          ElevatedButton(onPressed: simiulate, child: Text("Simulate")),
+          ElevatedButton(onPressed: simulate, child: Text("Simulate")),
         ],
       ),
     );

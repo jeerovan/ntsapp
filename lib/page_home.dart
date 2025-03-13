@@ -371,7 +371,7 @@ class _PageHomeState extends State<PageHome> {
             });
           },
           icon: const Icon(
-            LucideIcons.user,
+            LucideIcons.refreshCcw,
           ),
         ),
       if (!requiresAuthentication || isAuthenticated)

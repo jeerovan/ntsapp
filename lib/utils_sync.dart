@@ -327,6 +327,7 @@ class SyncUtils {
         defaultValue: "2011-11-11 11:11:11.111111+00");
     try {
       // fetch public profile changes
+      logger.info("fetch profile changes");
       final profileChanges = await supabaseClient
           .from("profiles")
           .select()
@@ -362,6 +363,7 @@ class SyncUtils {
       CryptoUtils cryptoUtils) async {
     int changes = 0;
     try {
+      logger.info("fetchChangesForTable:$table");
       final response = await supabaseClient
           .from(table)
           .select('id,cipher_text,cipher_nonce,key_cipher,key_nonce')
