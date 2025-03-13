@@ -21,11 +21,16 @@ class PageAccessKeyNotice extends StatefulWidget {
 class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
   SupabaseClient supabaseClient = Supabase.instance.client;
   SecureStorage secureStorage = SecureStorage();
+  bool processing = false;
   AppLogger logger = AppLogger(prefixes: ["PageAccessKeyNotice"]);
 
   Future<void> generateKeys() async {
     String? userId = SyncUtils.getSignedInUserId();
     if (userId == null) return;
+    setState(() {
+      processing = true;
+    });
+
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
@@ -46,7 +51,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
       await secureStorage.write(key: keyForKeyType, value: "key");
       // navigate to display key
       if (mounted) {
-        Navigator.of(context).push(
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => PageAccessKey(),
             settings: const RouteSettings(name: "PageAcessKey"),
@@ -56,6 +61,9 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
     } catch (e, s) {
       logger.error("generateKeys", error: e, stackTrace: s);
     }
+    setState(() {
+      processing = false;
+    });
   }
 
   @override
@@ -91,14 +99,28 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                // Handle create key for user
+                generateKeys();
               },
-              child: Text(
-                'I understand. Show me the key.',
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (processing)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          right: 8.0), // Add spacing between indicator and text
+                      child: SizedBox(
+                        width: 16, // Set width and height for the indicator
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2, // Set color to white
+                        ),
+                      ),
+                    ),
+                  Text(
+                    textAlign: TextAlign.center,
+                    'I understand.\nShow me the key.',
+                  ),
+                ],
               ),
             ),
           ],

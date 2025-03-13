@@ -24,7 +24,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
   final logger = AppLogger(prefixes: ["page_signin"]);
   final emailController = TextEditingController();
   final otpController = TextEditingController();
-
+  SecureStorage storage = SecureStorage();
   bool processing = false;
   bool otpSent = false;
   bool canResend = false;
@@ -65,7 +65,6 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
       String userId = user.id;
       String keyForMasterKey = '${userId}_mk';
 
-      SecureStorage storage = SecureStorage();
       bool hasMasterKeyCipher = await storage.containsKey(key: keyForMasterKey);
       setState(() {
         canSync = hasMasterKeyCipher;
@@ -194,7 +193,18 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
 
   Future<void> signOut() async {
     try {
-      await supabase.auth.signOut();
+      String? userId = SyncUtils.getSignedInUserId();
+      if (userId != null) {
+        await supabase.auth.signOut();
+        String keyForMasterKey = '${userId}_mk';
+        String keyForAccessKey = '{$userId}_ak';
+        String keyForPasswordKey = '{$userId}_pk';
+        String keyForKeyType = '${userId}_kt';
+        await storage.delete(key: keyForMasterKey);
+        await storage.delete(key: keyForAccessKey);
+        await storage.delete(key: keyForKeyType);
+        await storage.delete(key: keyForPasswordKey);
+      }
       setState(() {
         signedIn = false;
       });
@@ -256,6 +266,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 height: 40,
               ),
               if (!signedIn && otpSent)
+                Text(
+                    "We have sent a one-time password (OTP) to your email $email"),
+              SizedBox(height: 20),
+              if (!signedIn && otpSent)
                 TextField(
                   controller: otpController,
                   decoration: InputDecoration(labelText: 'Enter OTP'),
@@ -267,20 +281,18 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                     onPressed: verifyOtp,
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       if (processing)
-                        if (processing)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                right:
-                                    8.0), // Add spacing between indicator and text
-                            child: SizedBox(
-                              width:
-                                  16, // Set width and height for the indicator
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2, // Set color to white
-                              ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              right:
+                                  8.0), // Add spacing between indicator and text
+                          child: SizedBox(
+                            width: 16, // Set width and height for the indicator
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2, // Set color to white
                             ),
                           ),
+                        ),
                       Text(errorVerifyingOtp ? 'Retry' : 'Verify OTP')
                     ])),
               Expanded(
@@ -290,6 +302,18 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               ),
               if (!signedIn && otpSent)
                 TextButton(onPressed: changeEmail, child: Text('Change email')),
+              SizedBox(
+                height: 20,
+              ),
+              if (signedIn)
+                TextButton(onPressed: signOut, child: Text('Sign Out')),
+              SizedBox(
+                height: 20,
+              ),
+              if (signedIn)
+                TextButton(
+                    onPressed: navigateAfterSignin,
+                    child: Text('After Sign In')),
               SizedBox(
                 height: 20,
               ),

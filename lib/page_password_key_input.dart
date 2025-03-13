@@ -17,7 +17,7 @@ class PagePasswordKeyInput extends StatefulWidget {
 class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
-
+  bool processing = false;
   SecureStorage storage = SecureStorage();
 
   @override
@@ -33,6 +33,9 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
 
   /// Processes the validated 24 words further
   Future<void> _submitForm(String passwordString) async {
+    setState(() {
+      processing = true;
+    });
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
@@ -74,6 +77,9 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
         Navigator.of(context).pop();
       }
     }
+    setState(() {
+      processing = false;
+    });
   }
 
   @override
@@ -122,9 +128,27 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: Text(
-                  'Submit',
-                  style: TextStyle(fontSize: 16.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (processing)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            right:
+                                8.0), // Add spacing between indicator and text
+                        child: SizedBox(
+                          width: 16, // Set width and height for the indicator
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2, // Set color to white
+                          ),
+                        ),
+                      ),
+                    Text(
+                      'Submit',
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 30.0),

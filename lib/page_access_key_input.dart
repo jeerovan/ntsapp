@@ -22,7 +22,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   String _loadedFileContent = '';
-
+  bool processing = false;
   SecureStorage storage = SecureStorage();
 
   @override
@@ -44,6 +44,9 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
 
   /// Processes the validated 24 words further
   Future<void> _processWords(String words) async {
+    setState(() {
+      processing = true;
+    });
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
@@ -83,6 +86,9 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
         Navigator.of(context).pop();
       }
     }
+    setState(() {
+      processing = false;
+    });
   }
 
   /// Handles file selection and validation
@@ -171,9 +177,27 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: Text(
-                  'Submit',
-                  style: TextStyle(fontSize: 16.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (processing)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            right:
+                                8.0), // Add spacing between indicator and text
+                        child: SizedBox(
+                          width: 16, // Set width and height for the indicator
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2, // Set color to white
+                          ),
+                        ),
+                      ),
+                    Text(
+                      'Submit',
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 30.0),

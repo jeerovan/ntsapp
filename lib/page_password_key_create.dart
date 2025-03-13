@@ -21,7 +21,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
   final _passwordCopyController = TextEditingController();
   SupabaseClient supabaseClient = Supabase.instance.client;
   SecureStorage storage = SecureStorage();
-
+  bool processing = false;
   @override
   void initState() {
     super.initState();
@@ -41,6 +41,9 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
     if (userId == null) {
       return;
     }
+    setState(() {
+      processing = true;
+    });
     ExecutionResult generationResult =
         await cryptoUtils.generatePasswordKeys(password);
     if (generationResult.isSuccess) {
@@ -48,17 +51,24 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       Map<String, dynamic> serverKeys = passwordKeys["server_keys"];
       serverKeys["id"] = userId;
       // save keys to server
-      await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
-      // save locally
-      String keyForMasterKey = '${userId}_mk';
-      String keyForKeyType = '${userId}_kt';
-      String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
-      await storage.write(key: keyForMasterKey, value: masterKeyBase64);
-      await storage.write(key: keyForKeyType, value: "password");
-      if (mounted) {
-        Navigator.of(context).pop();
+      try {
+        await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
+        // save locally
+        String keyForMasterKey = '${userId}_mk';
+        String keyForKeyType = '${userId}_kt';
+        String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
+        await storage.write(key: keyForMasterKey, value: masterKeyBase64);
+        await storage.write(key: keyForKeyType, value: "password");
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        debugPrint(e.toString());
       }
     }
+    setState(() {
+      processing = false;
+    });
   }
 
   @override
@@ -76,6 +86,11 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(
+                  "Please enter a long and hard to guess key (password). Remember to save it somewhere safe. If it lost/forgotten, it can not be recovered."),
+              SizedBox(
+                height: 40,
+              ),
               TextFormField(
                 controller: _passwordController,
                 maxLines: null, // Allows all words to be visible
@@ -125,9 +140,27 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: Text(
-                  'Submit',
-                  style: TextStyle(fontSize: 16.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (processing)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            right:
+                                8.0), // Add spacing between indicator and text
+                        child: SizedBox(
+                          width: 16, // Set width and height for the indicator
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2, // Set color to white
+                          ),
+                        ),
+                      ),
+                    Text(
+                      'Submit',
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 30.0),

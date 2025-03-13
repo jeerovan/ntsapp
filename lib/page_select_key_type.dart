@@ -54,7 +54,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                   SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).push(
+                      Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (context) => PageAccessKeyNotice(),
                         ),
@@ -62,16 +62,12 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                     },
                     child: Text(
                       'Create the key for me',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   SizedBox(height: 15),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(
+                      Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (context) => PagePasswordKeyCreate(),
                         ),
@@ -118,10 +114,6 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                     },
                     child: Text(
                       'Next',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

@@ -87,7 +87,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
           children: [
             // Description Text
             Text(
-              "Use this to access your data on another device. Keep it safe, keep it secure. Loosing this will loose access to data.",
+              "Please save this key in a secure place. You'll need it to sync notes on another device.",
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
