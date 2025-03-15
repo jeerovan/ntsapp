@@ -3,7 +3,6 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/page_access_key_input.dart';
-import 'package:ntsapp/page_access_key_notice.dart';
 import 'package:ntsapp/page_password_key_input.dart';
 import 'package:ntsapp/page_select_key_type.dart';
 import 'package:ntsapp/service_logger.dart';
@@ -13,6 +12,7 @@ import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
+import 'page_access_key.dart';
 
 class PageSignin extends StatefulWidget {
   const PageSignin({super.key});
@@ -225,7 +225,7 @@ class _PageSigninState extends State<PageSignin> {
   void navigateToPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PageAccessKeyNotice(),
+        builder: (context) => PageAccessKey(),
       ),
     );
   }

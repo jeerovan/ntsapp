@@ -80,6 +80,7 @@ enum AppString {
   deviceId,
   installedAt,
   reviewDialogShown,
+  accessKeyViewedAt,
 
   // Supabase
   supabaseKey,
@@ -143,6 +144,8 @@ extension AppStringExtension on AppString {
         return "encrypted";
       case AppString.decrypted:
         return "decrypted";
+      case AppString.accessKeyViewedAt:
+        return "access_key_viewed_at";
     }
   }
 }

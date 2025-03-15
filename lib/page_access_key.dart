@@ -2,15 +2,18 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'common.dart';
 
 class PageAccessKey extends StatefulWidget {
@@ -24,12 +27,41 @@ class PageAccessKey extends StatefulWidget {
 
 class _PageAccessKeyState extends State<PageAccessKey> {
   SecureStorage storage = SecureStorage();
+  final LocalAuthentication _auth = LocalAuthentication();
+  AppLogger logger = AppLogger(prefixes: ["PageAccessKey"]);
   String sentence = "";
 
   @override
   void initState() {
     super.initState();
-    loadAccessKey();
+    int lastViewedAt =
+        StorageHive().get(AppString.accessKeyViewedAt.string, defaultValue: 0);
+    int timeNow = DateTime.now().toUtc().millisecondsSinceEpoch;
+    if (timeNow - lastViewedAt > 300 * 1000) {
+      _authenticate();
+    } else {
+      loadAccessKey();
+    }
+  }
+
+  Future<void> _authenticate() async {
+    try {
+      bool isAuthenticated = await _auth.authenticate(
+        localizedReason: 'Please authenticate',
+        options: const AuthenticationOptions(
+          biometricOnly: false, // Use only biometric
+          stickyAuth: true, // Keeps the authentication open
+        ),
+      );
+
+      if (isAuthenticated) {
+        await StorageHive().put(AppString.accessKeyViewedAt.string,
+            DateTime.now().toUtc().millisecondsSinceEpoch);
+        loadAccessKey();
+      }
+    } catch (e, s) {
+      logger.error("_authenticate", error: e, stackTrace: s);
+    }
   }
 
   Future<void> loadAccessKey() async {
