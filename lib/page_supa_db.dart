@@ -268,7 +268,10 @@ class _SupaFilterDialogState extends State<SupaFilterDialog> {
               Navigator.pop(context);
             }
           },
-          child: Text("Apply"),
+          child: Text(
+            "Apply",
+            style: TextStyle(color: Colors.black),
+          ),
         ),
       ],
     );

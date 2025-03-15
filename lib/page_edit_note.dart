@@ -32,7 +32,10 @@ class _PageEditNoteState extends State<PageEditNote> {
               onPressed: () {
                 Navigator.of(context).pop(controller.text);
               },
-              child: const Text('Save'),
+              child: const Text(
+                'Save',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ),
         ],

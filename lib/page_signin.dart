@@ -3,6 +3,7 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/page_access_key_input.dart';
+import 'package:ntsapp/page_access_key_notice.dart';
 import 'package:ntsapp/page_password_key_input.dart';
 import 'package:ntsapp/page_select_key_type.dart';
 import 'package:ntsapp/service_logger.dart';
@@ -13,14 +14,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
 
-class EmailAuthScreen extends StatefulWidget {
-  const EmailAuthScreen({super.key});
+class PageSignin extends StatefulWidget {
+  const PageSignin({super.key});
 
   @override
-  State<EmailAuthScreen> createState() => _EmailAuthScreenState();
+  State<PageSignin> createState() => _PageSigninState();
 }
 
-class _EmailAuthScreenState extends State<EmailAuthScreen> {
+class _PageSigninState extends State<PageSignin> {
   final logger = AppLogger(prefixes: ["page_signin"]);
   final emailController = TextEditingController();
   final otpController = TextEditingController();
@@ -221,6 +222,14 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
     );
   }
 
+  void navigateToPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PageAccessKeyNotice(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,7 +268,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                               ),
                             ),
                           ),
-                        Text(errorSendingOtp ? 'Retry' : 'Send OTP'),
+                        Text(
+                          errorSendingOtp ? 'Retry' : 'Send OTP',
+                          style: TextStyle(color: Colors.black),
+                        ),
                       ],
                     )),
               SizedBox(
@@ -293,7 +305,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                             ),
                           ),
                         ),
-                      Text(errorVerifyingOtp ? 'Retry' : 'Verify OTP')
+                      Text(
+                        errorVerifyingOtp ? 'Retry' : 'Verify OTP',
+                        style: TextStyle(color: Colors.black),
+                      )
                     ])),
               Expanded(
                 child: SizedBox(
@@ -317,6 +332,12 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               SizedBox(
                 height: 20,
               ),
+              ElevatedButton(
+                  onPressed: navigateToPage,
+                  child: Text(
+                    'Navigate',
+                    style: TextStyle(color: Colors.black),
+                  )),
             ],
           ),
         ),

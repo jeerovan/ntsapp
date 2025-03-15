@@ -134,12 +134,6 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                     _submitForm(_passwordController.text.trim());
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -158,7 +152,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                       ),
                     Text(
                       'Submit',
-                      style: TextStyle(fontSize: 16.0),
+                      style: TextStyle(fontSize: 16.0, color: Colors.black),
                     ),
                   ],
                 ),

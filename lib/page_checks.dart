@@ -153,7 +153,11 @@ class _PageChecksState extends State<PageChecks> {
                               height: 24,
                             ),
                             ElevatedButton(
-                                onPressed: checkForKeys, child: Text("Retry"))
+                                onPressed: checkForKeys,
+                                child: Text(
+                                  "Retry",
+                                  style: TextStyle(color: Colors.black),
+                                ))
                           ],
                         ),
                       )

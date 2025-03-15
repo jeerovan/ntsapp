@@ -111,12 +111,9 @@ class _PageAccessKeyState extends State<PageAccessKey> {
             ElevatedButton.icon(
               onPressed: () => copyToClipboard(),
               icon: Icon(LucideIcons.copy),
-              label: Text("Copy"),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
+              label: Text(
+                "Copy",
+                style: TextStyle(color: Colors.black),
               ),
             ),
             SizedBox(height: 20.0),
@@ -124,12 +121,9 @@ class _PageAccessKeyState extends State<PageAccessKey> {
             ElevatedButton.icon(
               onPressed: () => _downloadTextFile(sentence),
               icon: Icon(LucideIcons.download),
-              label: Text("Download as Text File"),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
+              label: Text(
+                "Download as Text File",
+                style: TextStyle(color: Colors.black),
               ),
             ),
             SizedBox(height: 20.0),

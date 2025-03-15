@@ -171,12 +171,6 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                     _processWords(_textController.text.trim());
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -195,7 +189,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                       ),
                     Text(
                       'Submit',
-                      style: TextStyle(fontSize: 16.0),
+                      style: TextStyle(fontSize: 16.0, color: Colors.black),
                     ),
                   ],
                 ),
@@ -223,12 +217,9 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
               ElevatedButton.icon(
                 onPressed: _selectFile,
                 icon: Icon(Icons.upload_file),
-                label: Text("Select .txt File"),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                label: Text(
+                  "Select .txt File",
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ],

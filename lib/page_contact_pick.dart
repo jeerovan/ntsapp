@@ -51,7 +51,10 @@ class _PageContactsState extends State<PageContacts> {
               onPressed: () {
                 openAppSettings(); // Open app settings on tap
               },
-              child: const Text("Grant permission"),
+              child: const Text(
+                "Grant permission",
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ],
         ),

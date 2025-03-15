@@ -62,6 +62,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                     },
                     child: Text(
                       'Create the key for me',
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                   SizedBox(height: 15),
@@ -114,6 +115,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                     },
                     child: Text(
                       'Next',
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                 ],

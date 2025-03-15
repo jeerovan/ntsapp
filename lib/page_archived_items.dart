@@ -151,7 +151,11 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
           ),
           if (_isSelecting)
             ElevatedButton(
-                onPressed: selectAllItems, child: Text("Select all")),
+                onPressed: selectAllItems,
+                child: Text(
+                  "Select all",
+                  style: TextStyle(color: Colors.black),
+                )),
         ],
       ),
     );

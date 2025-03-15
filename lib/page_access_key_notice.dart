@@ -119,6 +119,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
                   Text(
                     textAlign: TextAlign.center,
                     'I understand.\nShow me the key.',
+                    style: TextStyle(color: Colors.black),
                   ),
                 ],
               ),

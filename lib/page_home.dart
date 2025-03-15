@@ -9,6 +9,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
+import 'package:ntsapp/page_plan_status.dart';
 import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:ntsapp/service_logger.dart';
@@ -359,8 +360,8 @@ class _PageHomeState extends State<PageHome> {
             Navigator.of(context)
                 .push(
               MaterialPageRoute(
-                builder: (context) => EmailAuthScreen(),
-                settings: const RouteSettings(name: "EmailSignIn"),
+                builder: (context) => PagePlanStatus(),
+                settings: const RouteSettings(name: "SyncStatus"),
               ),
             )
                 .then((value) {

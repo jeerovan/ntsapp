@@ -46,7 +46,12 @@ class _PageDummyState extends State<PageDummy> {
         children: [
           if (processing) CircularProgressIndicator(),
           Text(text),
-          ElevatedButton(onPressed: simulate, child: Text("Simulate")),
+          ElevatedButton(
+              onPressed: simulate,
+              child: Text(
+                "Simulate",
+                style: TextStyle(color: Colors.black),
+              )),
         ],
       ),
     );
