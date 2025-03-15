@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category.dart';
@@ -404,59 +403,35 @@ class SyncUtils {
               item.state = SyncState.downloaded.value;
               await item.upcertFromServer();
               // fix file path in data map
-              if (dataMap != null && dataMap.containsKey("path")) {
-                String fileName = dataMap["name"];
-                String mimeDirectory = dataMap["mime"].split("/").first;
-                String fileOutPath = await getFilePath(mimeDirectory, fileName);
-                dataMap["path"] = fileOutPath;
-                item.data = dataMap;
-                await item.update(["data"], pushToSync: false);
-                // check file
-                File fileOut = File(fileOutPath);
-                if (fileOut.existsSync()) {
-                  // duplicate note item (may be different group)
-                  ModelItemFile itemFile =
-                      ModelItemFile(id: item.id!, fileHash: fileName);
-                  await itemFile.insert();
+              if (dataMap != null) {
+                if (dataMap.containsKey("path")) {
+                  String fileName = dataMap["name"];
+                  String mimeDirectory = dataMap["mime"].split("/").first;
+                  String fileOutPath =
+                      await getFilePath(mimeDirectory, fileName);
+                  dataMap["path"] = fileOutPath;
+                  item.data = dataMap;
+                  await item.update(["data"], pushToSync: false);
+                  // check file
+                  File fileOut = File(fileOutPath);
+                  if (fileOut.existsSync()) {
+                    // duplicate note item (may be different group)
+                    ModelItemFile itemFile =
+                        ModelItemFile(id: item.id!, fileHash: fileName);
+                    await itemFile.insert();
+                  }
                 }
-              }
-              // check for urls and add preview
-              if (map["type"] == ItemType.text.value) {
-                final RegExp linkRegExp = RegExp(r'(https?://[^\s]+)');
-                final matches = linkRegExp.allMatches(item.text);
-                String link = "";
-                // get only first link
-                for (final match in matches) {
-                  final start = match.start;
-                  final end = match.end;
-                  link = item.text.substring(start, end);
-                  break;
-                }
-                if (link.isNotEmpty) {
-                  final Metadata? metaData = await MetadataFetch.extract(link);
-                  if (metaData != null) {
-                    int portrait = 1;
-                    // download the url image if available
-                    if (metaData.image != null) {
-                      portrait = await checkDownloadNetworkImage(
-                          item.id!, metaData.image!);
-                    }
-                    Map<String, dynamic> urlInfo = {
-                      "url": link,
-                      "title": metaData.title,
-                      "desc": metaData.description,
-                      "image": metaData.image,
-                      "portrait": portrait
-                    };
-                    Map<String, dynamic>? data = item.data;
-                    if (data != null) {
-                      data["url_info"] = urlInfo;
-                      item.data = data;
-                      await item.update(["data"], pushToSync: false);
-                    } else {
-                      item.data = {"url_info": urlInfo};
-                      await item.update(["data"], pushToSync: false);
-                    }
+                // check for urls and add preview image
+                if (dataMap.containsKey("url_info")) {
+                  Map<String, dynamic> urlInfo = dataMap["url_info"];
+                  String imageUrl = urlInfo["image"];
+                  await checkDownloadNetworkImage(item.id!, imageUrl);
+                } else {
+                  // remove if exists
+                  String fileName = '${item.id}-urlimage.png';
+                  File? imageFile = await getFile("image", fileName);
+                  if (imageFile != null && imageFile.existsSync()) {
+                    imageFile.deleteSync();
                   }
                 }
               }

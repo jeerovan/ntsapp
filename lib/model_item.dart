@@ -309,6 +309,25 @@ class ModelItem {
     return rows.isNotEmpty ? rows[0]['count'] as int : 0;
   }
 
+  static Future<bool> removeUrlInfo(String itemId) async {
+    ModelItem? item = await get(itemId);
+    if (item != null && item.data != null) {
+      Map<String, dynamic> data = item.data!;
+      dynamic urlInfo = data.remove("url_info");
+      if (urlInfo != null) {
+        String fileName = '$itemId-urlimage.png';
+        File? imageFile = await getFile("image", fileName);
+        if (imageFile != null && imageFile.existsSync()) {
+          imageFile.deleteSync();
+        }
+      }
+      item.data = data;
+      await item.update(["data"]);
+      return true;
+    }
+    return false;
+  }
+
   static Future<ModelItem?> get(String id) async {
     final dbHelper = StorageSqlite.instance;
     List<Map<String, dynamic>> rows = await dbHelper.getWithId("item", id);

@@ -789,7 +789,7 @@ class NotePreviewSummary extends StatelessWidget {
   }
 }
 
-class NoteUrlPreview extends StatelessWidget {
+class NoteUrlPreview extends StatefulWidget {
   final String itemId;
   final String imageDirectory;
   final Map<String, dynamic> urlInfo;
@@ -801,46 +801,66 @@ class NoteUrlPreview extends StatelessWidget {
       required this.imageDirectory});
 
   @override
+  State<NoteUrlPreview> createState() => _NoteUrlPreviewState();
+}
+
+class _NoteUrlPreviewState extends State<NoteUrlPreview> {
+  bool removed = false;
+
+  Future<void> remove() async {
+    removed = await ModelItem.removeUrlInfo(widget.itemId);
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String fileName = '$itemId-urlimage.png';
-    String filePath = path.join(imageDirectory, fileName);
+    String fileName = '${widget.itemId}-urlimage.png';
+    String filePath = path.join(widget.imageDirectory, fileName);
     File imageFile = File(filePath);
     bool imageAvailable = imageFile.existsSync();
-    bool portrait = urlInfo["portrait"] == 1 ? true : false;
+    bool portrait = widget.urlInfo["portrait"] == 1 ? true : false;
     if (imageAvailable) {}
-    return Column(
-      //crossAxisAlignment: CrossAxisAlignment.start, // For desktops
-      children: [
-        if (!portrait)
-          Image.file(
-            imageFile,
-            height: 100,
-            fit: BoxFit.contain,
-          ),
-        ListTile(
-          leading: imageAvailable && portrait
-              ? Image.file(
-                  imageFile,
-                  width: 80,
-                  fit: BoxFit.contain,
-                )
-              : null,
-          title: urlInfo["title"] == null
-              ? null
-              : Text(
-                  urlInfo["title"],
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-          subtitle: urlInfo["desc"] == null
-              ? null
-              : Text(
-                  urlInfo["desc"],
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-        ),
-      ],
-    );
+    return removed
+        ? const SizedBox.shrink()
+        : Stack(
+            alignment: Alignment.topRight,
+            children: [
+              Column(
+                //crossAxisAlignment: CrossAxisAlignment.start, // For desktops
+                children: [
+                  if (!portrait)
+                    Image.file(
+                      imageFile,
+                      height: 100,
+                      fit: BoxFit.contain,
+                    ),
+                  ListTile(
+                    leading: imageAvailable && portrait
+                        ? Image.file(
+                            imageFile,
+                            width: 80,
+                            fit: BoxFit.contain,
+                          )
+                        : null,
+                    title: widget.urlInfo["title"] == null
+                        ? null
+                        : Text(
+                            widget.urlInfo["title"],
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                    subtitle: widget.urlInfo["desc"] == null
+                        ? null
+                        : Text(
+                            widget.urlInfo["desc"],
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                  ),
+                ],
+              ),
+              IconButton(onPressed: remove, icon: Icon(Icons.close))
+            ],
+          );
   }
 }
