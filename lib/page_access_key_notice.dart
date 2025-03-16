@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/app_config.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,8 +49,6 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
       await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
       await secureStorage.write(key: keyForAccessKey, value: accessKeyBase64);
       await secureStorage.write(key: keyForKeyType, value: "key");
-      await StorageHive().put(AppString.accessKeyViewedAt.string,
-          DateTime.now().toUtc().millisecondsSinceEpoch);
       // navigate to display key
       if (mounted) {
         Navigator.of(context).pushReplacement(

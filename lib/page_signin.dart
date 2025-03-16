@@ -225,7 +225,9 @@ class _PageSigninState extends State<PageSignin> {
   void navigateToPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PagePasswordKeyCreate(),
+        builder: (context) => PagePasswordKeyCreate(
+          recreate: false,
+        ),
       ),
     );
   }

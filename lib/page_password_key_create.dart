@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -7,8 +10,10 @@ import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PagePasswordKeyCreate extends StatefulWidget {
+  final bool recreate;
   const PagePasswordKeyCreate({
     super.key,
+    required this.recreate,
   });
 
   @override
@@ -20,7 +25,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
   final _passwordController = TextEditingController();
   final _passwordCopyController = TextEditingController();
   SupabaseClient supabaseClient = Supabase.instance.client;
-  SecureStorage storage = SecureStorage();
+  SecureStorage secureStorage = SecureStorage();
   bool processing = false;
 
   bool hasMinOneWord = false;
@@ -77,8 +82,16 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
     setState(() {
       processing = true;
     });
-    ExecutionResult generationResult =
-        await cryptoUtils.generatePasswordKeys(password);
+    String keyForMasterKey = '${userId}_mk';
+    String keyForKeyType = '${userId}_kt';
+    Uint8List? masterKeyBytes;
+    if (widget.recreate) {
+      String? masterKeyBase64 = await secureStorage.read(key: keyForMasterKey);
+      masterKeyBytes =
+          masterKeyBase64 == null ? null : base64Decode(masterKeyBase64);
+    }
+    ExecutionResult generationResult = await cryptoUtils
+        .generatePasswordKeys(password, masterKeyBytes: masterKeyBytes);
     if (generationResult.isSuccess) {
       Map<String, dynamic> passwordKeys = generationResult.getResult()!;
       Map<String, dynamic> serverKeys = passwordKeys["server_keys"];
@@ -87,11 +100,10 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       try {
         await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
         // save locally
-        String keyForMasterKey = '${userId}_mk';
-        String keyForKeyType = '${userId}_kt';
+
         String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
-        await storage.write(key: keyForMasterKey, value: masterKeyBase64);
-        await storage.write(key: keyForKeyType, value: "password");
+        await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
+        await secureStorage.write(key: keyForKeyType, value: "password");
         if (mounted) {
           Navigator.of(context).pop();
         }

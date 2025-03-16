@@ -70,7 +70,9 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                     onPressed: () {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (context) => PagePasswordKeyCreate(),
+                          builder: (context) => PagePasswordKeyCreate(
+                            recreate: false,
+                          ),
                         ),
                       );
                     },

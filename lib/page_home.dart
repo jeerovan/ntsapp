@@ -353,7 +353,8 @@ class _PageHomeState extends State<PageHome> {
             LucideIcons.database,
           ),
         ),
-      if (StorageHive().get(AppString.supabaseInitialzed.string))
+      if (StorageHive().get(AppString.supabaseInitialzed.string) &&
+          (!requiresAuthentication || isAuthenticated))
         IconButton(
           onPressed: () {
             Navigator.of(context)
