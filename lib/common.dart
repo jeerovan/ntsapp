@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:crypto/crypto.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -791,4 +792,27 @@ Uint8List hexToBytes(String hex) {
       return int.parse(byte, radix: 16);
     }),
   );
+}
+
+Future<String> getDeviceName() async {
+  final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+  if (Platform.isAndroid) {
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    return '${androidInfo.manufacturer} ${androidInfo.model}';
+  } else if (Platform.isIOS) {
+    IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    return '${iosInfo.name} (${iosInfo.model})';
+  } else if (Platform.isMacOS) {
+    MacOsDeviceInfo macInfo = await deviceInfo.macOsInfo;
+    return 'MacOS ${macInfo.computerName}';
+  } else if (Platform.isWindows) {
+    WindowsDeviceInfo winInfo = await deviceInfo.windowsInfo;
+    return '${winInfo.productName} ${winInfo.computerName}';
+  } else if (Platform.isLinux) {
+    LinuxDeviceInfo linuxInfo = await deviceInfo.linuxInfo;
+    return 'Linux ${linuxInfo.name}';
+  } else {
+    return 'Unknown Device';
+  }
 }

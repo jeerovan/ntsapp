@@ -1,7 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
 
 class StorageHive {
   static final StorageHive _instance = StorageHive._internal();
@@ -17,11 +16,6 @@ class StorageHive {
     final appDocumentDirectory = await getApplicationDocumentsDirectory();
     Hive.init(appDocumentDirectory.path);
     Box box = await Hive.openBox(boxName);
-    String? existingDeviceId = box.get(AppString.deviceId.string);
-    if (existingDeviceId == null) {
-      String newDeviceId = Uuid().v4();
-      await box.put(AppString.deviceId.string, newDeviceId);
-    }
     int? installedAt = box.get(AppString.installedAt.string);
     if (installedAt == null) {
       // app installed at

@@ -68,7 +68,7 @@ async function finishPartsUpload(
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "B2 Method not allowed" }), {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
     });
   }
@@ -83,8 +83,8 @@ Deno.serve(async (req) => {
   }
   try {
     const authorization = req.headers.get("Authorization") ?? "";
-
-    const plan = await getUserPlanStatus(authorization, 0);
+    const deviceId = req.headers.get("deviceId") ?? "";
+    const plan = await getUserPlanStatus(authorization, 0, deviceId);
     if (plan.status > 200) {
       return new Response(JSON.stringify({ error: plan.error }), {
         status: plan.status,

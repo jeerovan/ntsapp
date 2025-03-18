@@ -71,7 +71,8 @@ enum ExecutionStatus {
 }
 
 enum AppTask {
-  checkForKeys,
+  registerDevice,
+  checkEncryptionKeys,
 }
 
 enum AppString {
@@ -80,6 +81,7 @@ enum AppString {
   deviceId,
   installedAt,
   reviewDialogShown,
+  deviceRegistered,
 
   // Supabase
   supabaseKey,
@@ -107,6 +109,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.deviceRegistered:
+        return "device_registered";
       case AppString.appName:
         return "app_name";
       case AppString.reviewDialogShown:

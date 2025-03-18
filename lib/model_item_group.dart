@@ -204,12 +204,14 @@ class ModelGroup {
     return null;
   }
 
-  Future<int> insert({bool saveToSync = false}) async {
+  Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("itemgroup", map);
     map["table"] = "itemgroup";
-    SyncUtils.encryptAndPushChange(map, saveOnly: saveToSync);
+    SyncUtils.encryptAndPushChange(
+      map,
+    );
     return inserted;
   }
 
@@ -265,7 +267,10 @@ class ModelGroup {
     if (withServerSync) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "itemgroup";
-      SyncUtils.encryptAndPushChange(map, deleteTask: 1, saveOnly: true);
+      SyncUtils.encryptAndPushChange(
+        map,
+        deleteTask: 1,
+      );
     }
     return deleted;
   }

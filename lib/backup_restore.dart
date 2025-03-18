@@ -148,15 +148,15 @@ Future<String> restoreDbFiles(String baseDirPath) async {
           switch (table) {
             case "category":
               ModelCategory category = await ModelCategory.fromMap(row);
-              await category.insert(saveToSync: true);
+              await category.insert();
               break;
             case "itemgroup":
               ModelGroup group = await ModelGroup.fromMap(row);
-              await group.insert(saveToSync: true);
+              await group.insert();
               break;
             case "item":
               ModelItem item = await ModelItem.fromMap(row);
-              await item.insert(saveToSync: true);
+              await item.insert();
               break;
             case "setting":
               await ModelSetting.update(row["id"], row["value"]);
@@ -278,7 +278,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
             "at": at,
             "updated_at": at,
           });
-          newGroup.insert(saveToSync: true);
+          newGroup.insert();
           groupCount = groupCount + 1;
         }
       }
@@ -313,7 +313,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                 "at": at,
                 "updated_at": at,
               });
-              await textNote.insert(saveToSync: true);
+              await textNote.insert();
               break;
             case 2:
               if (mediaPath != null) {
@@ -345,7 +345,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                       "at": at,
                       "updated_at": at,
                     });
-                    await item.insert(saveToSync: true);
+                    await item.insert();
                   }
                 }
               }
@@ -378,7 +378,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                       "at": at,
                       "updated_at": at,
                     });
-                    await item.insert(saveToSync: true);
+                    await item.insert();
                   }
                 }
               }
@@ -395,7 +395,7 @@ Future<String> restoreOldDb(String baseDirPath) async {
                   "at": at,
                   "updated_at": at,
                 });
-                await item.insert(saveToSync: true);
+                await item.insert();
               }
               break;
           }

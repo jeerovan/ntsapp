@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
-import 'package:ntsapp/page_access_key_input.dart';
+import 'package:ntsapp/page_onboard_task.dart';
 import 'package:ntsapp/page_password_key_create.dart';
-import 'package:ntsapp/page_password_key_input.dart';
-import 'package:ntsapp/page_select_key_type.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import 'enums.dart';
 
@@ -35,7 +34,6 @@ class _PageSigninState extends State<PageSignin> {
       StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = false;
-  bool canSync = false;
 
   @override
   void initState() {
@@ -50,7 +48,6 @@ class _PageSigninState extends State<PageSignin> {
     } else {
       signedIn = true;
     }
-    checkIfReadyToSync();
   }
 
   @override
@@ -58,19 +55,6 @@ class _PageSigninState extends State<PageSignin> {
     emailController.dispose();
     otpController.dispose();
     super.dispose();
-  }
-
-  Future<void> checkIfReadyToSync() async {
-    User? user = supabase.auth.currentUser;
-    if (user != null) {
-      String userId = user.id;
-      String keyForMasterKey = '${userId}_mk';
-
-      bool hasMasterKeyCipher = await storage.containsKey(key: keyForMasterKey);
-      setState(() {
-        canSync = hasMasterKeyCipher;
-      });
-    }
   }
 
   // OTP expire after 15min
@@ -130,7 +114,14 @@ class _PageSigninState extends State<PageSignin> {
           await profile.upcertChangeFromServer();
           // associate existing categories with this profile if not already associated
           await ModelCategory.associateWithProfile(user.id);
-          await navigateAfterSignin();
+          // assign a device Id
+          String? existingDeviceId =
+              StorageHive().get(AppString.deviceId.string);
+          if (existingDeviceId == null) {
+            String newDeviceId = Uuid().v4();
+            await StorageHive().put(AppString.deviceId.string, newDeviceId);
+          }
+          await navigateToRegisterDevice();
         }
         errorVerifyingOtp = false;
       } catch (e, s) {
@@ -148,40 +139,14 @@ class _PageSigninState extends State<PageSignin> {
     }
   }
 
-  Future<void> navigateAfterSignin() async {
-    String? userId = SyncUtils.getSignedInUserId();
-    if (userId == null) return;
-    //check where to navigate
-    try {
-      final List<Map<String, dynamic>> keyRows =
-          await supabase.from("keys").select().eq("id", userId);
-      if (keyRows.isEmpty) {
-        navigateToKeySelectPage();
-      } else if (mounted) {
-        Map<String, dynamic> keyRow = keyRows.first;
-        if (keyRow["salt"] != null) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PagePasswordKeyInput(
-                cipherData: keyRow,
-              ),
-            ),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PageAccessKeyInput(
-                cipherData: keyRow,
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e, s) {
-      logger.error("navigateAfterSignin", error: e, stackTrace: s);
-    }
-    // TODO If sync is enabled, ready local data to be pushed if not already done
-    //SyncUtils.pushLocalChanges(); // no wait
+  Future<void> navigateToRegisterDevice() async {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => PageOnBoardTask(
+          task: AppTask.registerDevice,
+        ),
+      ),
+    );
   }
 
   Future<void> changeEmail() async {
@@ -196,6 +161,9 @@ class _PageSigninState extends State<PageSignin> {
     try {
       String? userId = SyncUtils.getSignedInUserId();
       if (userId != null) {
+        String deviceId = StorageHive().get(AppString.deviceId.string);
+        await supabase.functions
+            .invoke("remove_device", headers: {"deviceId": deviceId});
         await supabase.auth.signOut();
         String keyForMasterKey = '${userId}_mk';
         String keyForAccessKey = '{$userId}_ak';
@@ -205,6 +173,8 @@ class _PageSigninState extends State<PageSignin> {
         await storage.delete(key: keyForAccessKey);
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
+        await StorageHive().delete(AppString.deviceId.string);
+        await StorageHive().delete(AppString.deviceRegistered.string);
       }
       setState(() {
         signedIn = false;
@@ -212,14 +182,6 @@ class _PageSigninState extends State<PageSignin> {
     } catch (e, s) {
       logger.error("signOut", error: e, stackTrace: s);
     }
-  }
-
-  void navigateToKeySelectPage() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PageSelectKeyType(),
-      ),
-    );
   }
 
   void navigateToPage() {
@@ -329,8 +291,8 @@ class _PageSigninState extends State<PageSignin> {
               ),
               if (signedIn)
                 TextButton(
-                    onPressed: navigateAfterSignin,
-                    child: Text('After Sign In')),
+                    onPressed: navigateToRegisterDevice,
+                    child: Text('Register Device')),
               SizedBox(
                 height: 20,
               ),

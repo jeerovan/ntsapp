@@ -63,13 +63,14 @@ class SyncUtils {
     return masterKeyBase64 != null;
   }
 
-  static Future<void> encryptAndPushChange(Map<String, dynamic> map,
-      {bool mediaChanges = true,
-      int deleteTask = 0,
-      bool saveOnly = false}) async {
+  static Future<void> encryptAndPushChange(
+    Map<String, dynamic> map, {
+    bool mediaChanges = true,
+    int deleteTask = 0,
+  }) async {
     String? masterKeyBase64 = await getMasterKey();
-    String? signedInUserId = getSignedInUserId();
-    if (masterKeyBase64 != null && signedInUserId != null) {
+    String? userId = getSignedInUserId();
+    if (masterKeyBase64 != null && userId != null) {
       String deviceId = await StorageHive().get(AppString.deviceId.string);
 
       // fetch thumbnail and set it as boolean
@@ -78,12 +79,13 @@ class SyncUtils {
       map['thumbnail'] = thumbnail == null ? 0 : 1;
       String table = map["table"];
       String rowId = map['id'];
-      String changeId = '$signedInUserId|$rowId';
+      String changeId = '$userId|$rowId';
       int updatedAt = map['updated_at'];
       map["deleted"] = deleteTask;
 
       Map<String, dynamic> changeMap = {
         "id": changeId,
+        "user_id": userId,
         "updated_at": updatedAt,
         "device_id": deviceId
       };
@@ -132,41 +134,27 @@ class SyncUtils {
           thumbnail: thumbnail, dataMap: dataMap);
       logger.info("encryptAndPushChange:$table|$changeId|${changeTask.value}");
       await ModelChange.updateTypeState(changeId, SyncState.uploading);
-      if (!saveOnly) {
-        SupabaseClient supabaseClient = Supabase.instance.client;
-        try {
-          await supabaseClient
-              .from(table)
-              .upsert(changeMap, onConflict: 'id')
-              .eq('id', changeId)
-              .lt('updated_at', updatedAt);
-          // update change
-          await ModelChange.upgradeSyncTask(changeId);
-        } catch (e, s) {
-          logger.error("encryptAndPushChange|Supabase",
-              error: e, stackTrace: s);
-        }
-      }
     }
   }
 
   static Future<bool> pushMapChanges() async {
     if (!await canSync()) return false;
     logger.info("Push Map Changes");
+    String deviceId = StorageHive().get(AppString.deviceId.string);
     SupabaseClient supabaseClient = Supabase.instance.client;
-    bool pushedCategories = await pushMapChangesForTable(
-        supabaseClient, "category", "process_bulk_categories");
+    bool pushedCategories =
+        await pushMapChangesForTable(supabaseClient, "category", deviceId);
     if (!pushedCategories) return false;
-    bool pushedGroups = await pushMapChangesForTable(
-        supabaseClient, "itemgroup", "process_bulk_groups");
+    bool pushedGroups =
+        await pushMapChangesForTable(supabaseClient, "itemgroup", deviceId);
     if (!pushedGroups) return false;
-    bool pushedItems = await pushMapChangesForTable(
-        supabaseClient, "item", "process_bulk_items");
+    bool pushedItems =
+        await pushMapChangesForTable(supabaseClient, "item", deviceId);
     return pushedItems;
   }
 
   static Future<bool> pushMapChangesForTable(
-      SupabaseClient supabaseClient, String table, String rpc) async {
+      SupabaseClient supabaseClient, String table, String deviceId) async {
     bool pushed = true;
     List<ModelChange> changes =
         await ModelChange.requiresMapPushForTable(table);
@@ -178,7 +166,9 @@ class SyncUtils {
         changeIds.add(change.id);
       }
       try {
-        await supabaseClient.rpc(rpc, params: {"data": changeMaps});
+        await supabaseClient.functions.invoke("push_changes",
+            headers: {"deviceId": deviceId},
+            body: {"table": table, "changes": changeMaps});
         await ModelChange.upgradeTypeForIds(changeIds);
         logger.debug("Pushed $table changes");
       } catch (e, s) {
@@ -363,12 +353,12 @@ class SyncUtils {
     int changes = 0;
     try {
       logger.info("fetchChangesForTable:$table");
-      final response = await supabaseClient
-          .from(table)
-          .select('id,cipher_text,cipher_nonce,key_cipher,key_nonce')
-          .neq('device_id', deviceId)
-          .gt('server_at', lastFetchedAt);
-      for (Map<String, dynamic> changeMap in response) {
+      final response = await supabaseClient.functions.invoke("fetch_changes",
+          headers: {"deviceId": deviceId},
+          body: {"table": table, "lastAt": lastFetchedAt});
+
+      List<dynamic> changesMap = jsonDecode(response.data);
+      for (Map<String, dynamic> changeMap in changesMap) {
         Uint8List? decryptedBytes =
             cryptoUtils.getDecryptedBytesFromMap(changeMap, masterKeyBytes);
         if (decryptedBytes == null) continue;
@@ -474,7 +464,7 @@ class SyncUtils {
           }
         }
       }
-      changes = changes + response.length;
+      changes = changes + changesMap.length;
     } catch (e, s) {
       logger.error("fetchChangesForTable", error: e, stackTrace: s);
     }

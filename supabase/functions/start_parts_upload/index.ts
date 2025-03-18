@@ -77,7 +77,8 @@ Deno.serve(async (req) => {
 
   try {
     const authorization = req.headers.get("Authorization") ?? "";
-    const plan = await getUserPlanStatus(authorization, size);
+    const deviceId = req.headers.get("deviceId") ?? "";
+    const plan = await getUserPlanStatus(authorization, size, deviceId);
     if (plan.status > 200) {
       return new Response(JSON.stringify({ error: plan.error }), {
         status: plan.status,

@@ -10,7 +10,7 @@ const SECRET = Deno.env.get("B2_HMAC")!;
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "B2 Method not allowed" }), {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
     });
   }

@@ -373,13 +373,15 @@ class ModelItem {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  Future<int> insert({bool saveToSync = false}) async {
+  Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
 
     map["table"] = "item";
-    SyncUtils.encryptAndPushChange(map, saveOnly: saveToSync);
+    SyncUtils.encryptAndPushChange(
+      map,
+    );
     return inserted;
   }
 
@@ -451,8 +453,10 @@ class ModelItem {
     if (withServerSync) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "item";
-      SyncUtils.encryptAndPushChange(map,
-          deleteTask: deleteTask, saveOnly: true);
+      SyncUtils.encryptAndPushChange(
+        map,
+        deleteTask: deleteTask,
+      );
     }
     return deleted;
   }

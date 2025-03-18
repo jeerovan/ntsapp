@@ -38,15 +38,15 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.auto_awesome, color: Colors.amber, size: 40),
+            Icon(Icons.auto_awesome, color: Colors.amber, size: 50),
             SizedBox(height: 10),
             Text(
               'Sync all your notes',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
               'across your devices',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             SizedBox(height: 20),
             Column(
@@ -100,7 +100,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
           SizedBox(width: 10),
           Text(
             text,
-            style: TextStyle(fontSize: 16),
+            style: TextStyle(fontSize: 14),
           ),
         ],
       ),
@@ -144,13 +144,13 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
               ),
               Text(
                 price,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
           Text(
             description,
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
       ),
