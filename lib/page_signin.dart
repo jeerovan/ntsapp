@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
+import 'package:ntsapp/page_devices.dart';
 import 'package:ntsapp/page_onboard_task.dart';
-import 'package:ntsapp/page_password_key_create.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -158,38 +158,18 @@ class _PageSigninState extends State<PageSignin> {
   }
 
   Future<void> signOut() async {
-    try {
-      String? userId = SyncUtils.getSignedInUserId();
-      if (userId != null) {
-        String deviceId = StorageHive().get(AppString.deviceId.string);
-        await supabase.functions
-            .invoke("remove_device", headers: {"deviceId": deviceId});
-        await supabase.auth.signOut();
-        String keyForMasterKey = '${userId}_mk';
-        String keyForAccessKey = '{$userId}_ak';
-        String keyForPasswordKey = '{$userId}_pk';
-        String keyForKeyType = '${userId}_kt';
-        await storage.delete(key: keyForMasterKey);
-        await storage.delete(key: keyForAccessKey);
-        await storage.delete(key: keyForKeyType);
-        await storage.delete(key: keyForPasswordKey);
-        await StorageHive().delete(AppString.deviceId.string);
-        await StorageHive().delete(AppString.deviceRegistered.string);
-      }
+    bool success = await SyncUtils.signout();
+    if (success) {
       setState(() {
         signedIn = false;
       });
-    } catch (e, s) {
-      logger.error("signOut", error: e, stackTrace: s);
     }
   }
 
   void navigateToPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PagePasswordKeyCreate(
-          recreate: false,
-        ),
+        builder: (context) => PageDevices(),
       ),
     );
   }

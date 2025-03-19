@@ -338,9 +338,9 @@ Future<void> performSync({bool inBackground = false}) async {
   if (!canSync) return;
 
   //check if already running
-  int utcNow = DateTime.now().toUtc().millisecondsSinceEpoch;
-  int? lastUpdatedAt = StorageHive().get(SyncUtils.keySyncProcessRunning);
-  if (lastUpdatedAt != null && (utcNow - lastUpdatedAt < 6000)) {
+  int startedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+  int? lastRunningAt = StorageHive().get(SyncUtils.keySyncProcessRunning);
+  if (lastRunningAt != null && (startedAt - lastRunningAt < 6000)) {
     logger.warning("Already Syncing");
     return;
   }
@@ -357,18 +357,23 @@ Future<void> performSync({bool inBackground = false}) async {
     });
 
     try {
-      await SyncUtils.pushMapChanges();
+      bool removed = await SyncUtils.checkDeviceStatus();
+      if (!removed) {
+        await SyncUtils.pushMapChanges();
 
-      await SyncUtils.deleteFiles();
-      await SyncUtils.deleteThumbnails();
+        await SyncUtils.deleteFiles();
+        await SyncUtils.deleteThumbnails();
 
-      await SyncUtils.pushThumbnails(utcNow, inBackground);
-      await SyncUtils.pushFiles(utcNow, inBackground);
+        await SyncUtils.pushThumbnails(startedAt, inBackground);
 
-      await SyncUtils.fetchMapChanges();
-      await SyncUtils.fetchThumbnails();
-      await SyncUtils.fetchFiles(utcNow, inBackground);
-      // fetch files
+        await SyncUtils.fetchMapChanges();
+        await SyncUtils.fetchThumbnails();
+        // large files over 20 mb are not fetched
+        await SyncUtils.fetchFiles(startedAt, inBackground);
+
+        // pushing files is a time consuming task
+        await SyncUtils.pushFiles(startedAt, inBackground);
+      }
     } catch (e, s) {
       logger.error("Sync exception", error: e, stackTrace: s);
     }

@@ -63,6 +63,62 @@ class SyncUtils {
     return masterKeyBase64 != null;
   }
 
+  static Future<bool> checkDeviceStatus() async {
+    bool removed = false;
+    try {
+      SupabaseClient supabaseClient = Supabase.instance.client;
+      String deviceId =
+          StorageHive().get(AppString.deviceId.string, defaultValue: "");
+      Map<String, dynamic> row = await supabaseClient
+          .from("devices")
+          .select("status")
+          .eq("id", deviceId)
+          .single();
+      int status = row.isEmpty ? 1 : row["status"];
+      if (status == 0) {
+        // signout
+        await signout();
+        // wipe out local data
+        await ModelCategory.deleteAll();
+        removed = true;
+        // TODO send signal to update UI
+      }
+      logger.info("device Status Checked");
+    } catch (e, s) {
+      logger.error("checkDeviceStatus", error: e, stackTrace: s);
+    }
+    return removed;
+  }
+
+  static Future<bool> signout() async {
+    bool success = false;
+    String? userId = SyncUtils.getSignedInUserId();
+    if (userId != null) {
+      String deviceId = StorageHive().get(AppString.deviceId.string);
+      SecureStorage storage = SecureStorage();
+      SupabaseClient supabase = Supabase.instance.client;
+      try {
+        await supabase.functions
+            .invoke("remove_device", headers: {"deviceId": deviceId});
+        await supabase.auth.signOut();
+        String keyForMasterKey = '${userId}_mk';
+        String keyForAccessKey = '{$userId}_ak';
+        String keyForPasswordKey = '{$userId}_pk';
+        String keyForKeyType = '${userId}_kt';
+        await storage.delete(key: keyForMasterKey);
+        await storage.delete(key: keyForAccessKey);
+        await storage.delete(key: keyForKeyType);
+        await storage.delete(key: keyForPasswordKey);
+        await StorageHive().delete(AppString.deviceId.string);
+        await StorageHive().delete(AppString.deviceRegistered.string);
+        success = true;
+      } catch (e, s) {
+        logger.error("signout", error: e, stackTrace: s);
+      }
+    }
+    return success;
+  }
+
   static Future<void> encryptAndPushChange(
     Map<String, dynamic> map, {
     bool mediaChanges = true,

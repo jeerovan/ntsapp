@@ -311,6 +311,14 @@ String getFormattedTime(int utcMilliSeconds) {
   return formattedTime;
 }
 
+String getFormattedDateTime(int utcMilliSeconds) {
+  final DateTime dateTime =
+      DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
+  final String formattedTime = DateFormat('dd MMM yy hh:mm a')
+      .format(dateTime.toLocal()); // Converts to local time and formats
+  return formattedTime;
+}
+
 DateTime getLocalDateFromUtcMilliSeconds(int utcMilliSeconds) {
   final DateTime dateTime =
       DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);

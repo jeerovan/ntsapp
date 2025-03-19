@@ -148,6 +148,18 @@ class ModelCategory {
     return await db.query("category");
   }
 
+  static Future<void> deleteAll() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows = await db.query(
+      "category",
+    );
+    for (Map<String, dynamic> row in rows) {
+      ModelCategory category = await fromMap(row);
+      await category.deleteCascade();
+    }
+  }
+
   Future<int> insert() async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
@@ -209,6 +221,7 @@ class ModelCategory {
   Future<int> delete({bool withServerSync = false}) async {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
+    if (title == "DND") return 0;
     int deleted = await dbHelper.delete("category", id);
     if (withServerSync) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
