@@ -7,6 +7,14 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getUserPlanStatus } from "../_shared/supabase.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+interface EncryptedData {
+  id: string;
+  cipher_text: string;
+  cipher_nonce: string;
+  key_cipher: string;
+  key_nonce: string;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -22,18 +30,23 @@ Deno.serve(async (req) => {
         status: plan.status,
       });
     }
-    const { table, lastAt } = await req.json();
+    const { lastAt } = await req.json();
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    const { data } = await supabaseClient
-      .from(table)
-      .select("id,cipher_text,cipher_nonce,key_cipher,key_nonce")
-      .eq("user_id", plan.userId)
-      .neq("device_id", deviceId)
-      .gt("server_at", lastAt);
-    return new Response(JSON.stringify(data), { status: 200 });
+    const tables = ["category", "itemgroup", "item"];
+    const changes: Record<string, EncryptedData[]> = {};
+    for (const table of tables) {
+      const { data } = await supabaseClient
+        .from(table)
+        .select("id,cipher_text,cipher_nonce,key_cipher,key_nonce")
+        .eq("user_id", plan.userId)
+        .neq("device_id", deviceId)
+        .gt("server_at", lastAt);
+      if (data && data.length > 0) changes[table] = data;
+    }
+    return new Response(JSON.stringify(changes), { status: 200 });
   } catch (error) {
     return new Response(JSON.stringify({ error: error }), { status: 400 });
   }

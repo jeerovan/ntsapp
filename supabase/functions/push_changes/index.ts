@@ -22,17 +22,20 @@ Deno.serve(async (req) => {
         status: plan.status,
       });
     }
-    const { table, changes } = await req.json();
+    const { allChanges } = await req.json();
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    for (const change of changes) {
-      const { id, user_id, updated_at } = change;
-      await supabaseClient.from(table).upsert(change, { onConflict: "id" }).eq(
-        "id",
-        id,
-      ).eq("user_id", user_id).lt("updated_at", updated_at);
+    for (const { table, changes } of allChanges) {
+      for (const change of changes) {
+        const { id, user_id, updated_at } = change;
+        await supabaseClient.from(table).upsert(change, { onConflict: "id" })
+          .eq(
+            "id",
+            id,
+          ).eq("user_id", user_id).lt("updated_at", updated_at);
+      }
     }
     return new Response("", { status: 200 });
   } catch (error) {
