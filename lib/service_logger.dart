@@ -15,13 +15,13 @@ class AppLogger {
   static const String _white = '\x1B[37m';
 
   /// Get color based on log level
-  String _getColor(LogLevel level) {
+  String _getColor(AppLogLevel level) {
     switch (level) {
-      case LogLevel.debug:
+      case AppLogLevel.debug:
         return _blue;
-      case LogLevel.warning:
+      case AppLogLevel.warning:
         return _yellow;
-      case LogLevel.error:
+      case AppLogLevel.error:
         return _red;
       default:
         return _white; // Default (info)
@@ -33,7 +33,7 @@ class AppLogger {
     String message, {
     Object? error,
     StackTrace? stackTrace,
-    LogLevel level = LogLevel.info,
+    AppLogLevel level = AppLogLevel.info,
   }) {
     final timestamp = DateTime.now().toIso8601String();
     final levelStr = level.toString().split('.').last.toUpperCase();
@@ -62,13 +62,14 @@ class AppLogger {
   }
 
   /// Convenience methods
-  void debug(String message) => log(message, level: LogLevel.debug);
-  void info(String message) => log(message, level: LogLevel.info);
-  void warning(String message) => log(message, level: LogLevel.warning);
+  void debug(String message) => log(message, level: AppLogLevel.debug);
+  void info(String message) => log(message, level: AppLogLevel.info);
+  void warning(String message) => log(message, level: AppLogLevel.warning);
   void error(String message, {Object? error, StackTrace? stackTrace}) {
-    log(message, level: LogLevel.error, error: error, stackTrace: stackTrace);
+    log(message,
+        level: AppLogLevel.error, error: error, stackTrace: stackTrace);
   }
 }
 
 /// Enum for log levels
-enum LogLevel { debug, info, warning, error }
+enum AppLogLevel { debug, info, warning, error }

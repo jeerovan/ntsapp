@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
-import 'package:ntsapp/page_db_fixes.dart';
 import 'package:ntsapp/page_media_migration.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/utils_crypto.dart';
@@ -17,11 +16,11 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'app_config.dart';
 import 'service_logger.dart';
 import 'storage_sqlite.dart';
-import 'model_item.dart';
 import 'model_setting.dart';
 import 'page_home.dart';
 import 'themes.dart';
@@ -36,14 +35,18 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await initializeDependencies();
-  // check set flags for fixes for fresh installs
-  List<ModelItem> videoItems = await ModelItem.getForType(ItemType.video);
-  if (videoItems.isEmpty) {
-    ModelSetting.update("fix_video_thumbnail", "yes");
-  }
   //initialize sync
   DataSync.initialize();
+  // initialize purchases -- not required in background tasks
 
+  if (Platform.isAndroid) {
+    /* if (kDebugMode) {
+      await Purchases.setLogLevel(LogLevel.debug);
+    } */
+    PurchasesConfiguration configuration =
+        PurchasesConfiguration(AppConfig.get("rc_android"));
+    await Purchases.configure(configuration);
+  }
   await SentryFlutter.init(
     (options) {
       options.dsn = AppConfig.get("sentry_dsn");
@@ -191,9 +194,6 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     String processMedia = ModelSetting.getForKey("process_media", "no");
-    String fixVideoThumbnailTask = "fix_video_thumbnail";
-    String fixedVideoThumbnail =
-        ModelSetting.getForKey(fixVideoThumbnailTask, "no");
     Widget page = PageHome(
       sharedContents: _sharedContents,
       isDarkMode: isDark,
@@ -204,11 +204,6 @@ class _MainAppState extends State<MainApp> {
         isDarkMode: isDark,
         onThemeToggle: _toggleTheme,
       );
-    } else if (fixedVideoThumbnail == "no") {
-      page = PageDbFixes(
-          isDarkMode: isDark,
-          onThemeToggle: _toggleTheme,
-          task: fixVideoThumbnailTask);
     }
     return ChangeNotifierProvider(
       create: (_) => FontSizeController(),

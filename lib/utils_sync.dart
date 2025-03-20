@@ -375,8 +375,10 @@ class SyncUtils {
           headers: {"deviceId": deviceId}, body: {"lastAt": lastFetchedAt});
       Map<String, dynamic> tableChanges = jsonDecode(response.data);
       List<String> tables = ["category", "itemgroup", "item"];
+      bool hadChanges = false;
       for (String table in tables) {
         if (!tableChanges.containsKey(table)) continue;
+        hadChanges = true;
         List<dynamic> changesMap = tableChanges[table];
         for (Map<String, dynamic> changeMap in changesMap) {
           Uint8List? decryptedBytes =
@@ -487,9 +489,11 @@ class SyncUtils {
         }
       }
       // update last fetched at iso time
-      String nowUtcCurrent = nowUtcInISO();
-      await StorageHive()
-          .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
+      if (hadChanges) {
+        String nowUtcCurrent = nowUtcInISO();
+        await StorageHive()
+            .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
+      }
       logger.info("Fetched Map Changes");
     } catch (e, s) {
       logger.error("fetchMapChanges|Supabase", error: e, stackTrace: s);
