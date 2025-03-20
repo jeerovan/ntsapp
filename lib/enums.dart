@@ -88,6 +88,9 @@ enum AppString {
   supabaseUrl,
   supabaseInitialzed,
 
+  // RevenueCat
+  rcKeyAndroid,
+
   //sign-in
   otpSentTo,
   otpSentAt,
@@ -109,6 +112,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.rcKeyAndroid:
+        return "rc_key_android";
       case AppString.deviceRegistered:
         return "device_registered";
       case AppString.appName:

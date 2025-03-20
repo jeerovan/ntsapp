@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/page_plan_subscribe.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'page_access_key_input.dart';
@@ -57,15 +60,33 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
     }
   }
 
-  Future<void> checkOnBoard() async {
+  Future<void> checkCloudSync() async {
+    bool hasPlanInRC = false;
+    bool hasPlanInSupa = false;
+    // check payments
+    try {
+      CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+      if (customerInfo.entitlements.active.isNotEmpty) {
+        hasPlanInRC = true;
+      }
+    } on PlatformException catch (e) {
+      logger.error("checkPlan", error: e);
+    }
     // check signed in
     bool signedIn =
         StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
             null;
+
     bool deviceRegistered = StorageHive()
         .get(AppString.deviceRegistered.string, defaultValue: false);
     bool canSync = await SyncUtils.canSync();
-    if (!signedIn && mounted) {
+    if (!hasPlanInRC && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PagePlanSubscribe(),
+        ),
+      );
+    } else if (!signedIn && mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => PageSignin(),

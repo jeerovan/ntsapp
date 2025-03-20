@@ -43,9 +43,12 @@ Future<void> main() async {
     /* if (kDebugMode) {
       await Purchases.setLogLevel(LogLevel.debug);
     } */
-    PurchasesConfiguration configuration =
-        PurchasesConfiguration(AppConfig.get("rc_android"));
-    await Purchases.configure(configuration);
+    String? rcKeyAndroid = AppConfig.get(AppString.rcKeyAndroid.string, null);
+    if (rcKeyAndroid != null) {
+      PurchasesConfiguration configuration =
+          PurchasesConfiguration(rcKeyAndroid);
+      await Purchases.configure(configuration);
+    }
   }
   await SentryFlutter.init(
     (options) {
