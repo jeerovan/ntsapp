@@ -1,13 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
-import 'package:ntsapp/page_devices.dart';
 import 'package:ntsapp/page_onboard_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_sync.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -121,7 +124,18 @@ class _PageSigninState extends State<PageSignin> {
             String newDeviceId = Uuid().v4();
             await StorageHive().put(AppString.deviceId.string, newDeviceId);
           }
-          await navigateToRegisterDevice();
+          //If subscribed to plan, associate
+          if (Platform.isAndroid) {
+            try {
+              CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+              if (customerInfo.entitlements.active.isNotEmpty) {
+                await Purchases.logIn(user.id);
+              }
+            } on PlatformException catch (e) {
+              logger.error("purchaseAssociationAfterSignin", error: e);
+            }
+          }
+          await navigateToOnboardCheck();
         }
         errorVerifyingOtp = false;
       } catch (e, s) {
@@ -139,11 +153,11 @@ class _PageSigninState extends State<PageSignin> {
     }
   }
 
-  Future<void> navigateToRegisterDevice() async {
+  Future<void> navigateToOnboardCheck() async {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => PageOnBoardTask(
-          task: AppTask.registerDevice,
+          task: AppTask.checkCloudSync,
         ),
       ),
     );
@@ -164,14 +178,6 @@ class _PageSigninState extends State<PageSignin> {
         signedIn = false;
       });
     }
-  }
-
-  void navigateToPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PageDevices(),
-      ),
-    );
   }
 
   @override
@@ -269,19 +275,6 @@ class _PageSigninState extends State<PageSignin> {
               SizedBox(
                 height: 20,
               ),
-              if (signedIn)
-                TextButton(
-                    onPressed: navigateToRegisterDevice,
-                    child: Text('Register Device')),
-              SizedBox(
-                height: 20,
-              ),
-              ElevatedButton(
-                  onPressed: navigateToPage,
-                  child: Text(
-                    'Navigate',
-                    style: TextStyle(color: Colors.black),
-                  )),
             ],
           ),
         ),

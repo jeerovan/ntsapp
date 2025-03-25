@@ -19,6 +19,7 @@ import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
@@ -111,6 +112,9 @@ class SyncUtils {
         await storage.delete(key: keyForPasswordKey);
         await StorageHive().delete(AppString.deviceId.string);
         await StorageHive().delete(AppString.deviceRegistered.string);
+        if (Platform.isAndroid) {
+          await Purchases.logOut();
+        }
         success = true;
       } catch (e, s) {
         logger.error("signout", error: e, stackTrace: s);

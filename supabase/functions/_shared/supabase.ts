@@ -30,7 +30,7 @@ export async function getUserPlanStatus(
   const { data: plan, error: planError } = await supabaseClient
     .from("plans")
     .select("b2_limit,expires_at,devices")
-    .eq("id", userId)
+    .eq("user_id", userId)
     .single();
 
   if (planError || !plan) {
@@ -38,9 +38,10 @@ export async function getUserPlanStatus(
     error = "Failed to fetch plan";
     return { status, userId, error, devices };
   }
+
   devices = plan.devices;
 
-  if (new Date(plan.expires_at) < new Date()) {
+  if (plan.expires_at < new Date().getTime()) {
     status = 400;
     error = "Plan expired";
     return { status, userId, error, devices };

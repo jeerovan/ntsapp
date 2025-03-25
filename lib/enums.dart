@@ -73,6 +73,7 @@ enum ExecutionStatus {
 enum AppTask {
   registerDevice,
   checkEncryptionKeys,
+  checkCloudSync,
 }
 
 enum AppString {

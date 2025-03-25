@@ -24,6 +24,7 @@ import 'model_setting.dart';
 import 'page_archived.dart';
 import 'page_category_add_edit.dart';
 import 'page_items.dart';
+import 'page_onboard_task.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
 import 'storage_hive.dart';
@@ -339,6 +340,24 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
+  Future<void> navigateToOnboardCheck() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PageOnBoardTask(
+          task: AppTask.checkCloudSync,
+        ),
+      ),
+    );
+  }
+
+  Future<void> navigateToPage() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PagePlanSubscribe(),
+      ),
+    );
+  }
+
   List<Widget> _buildDefaultActions() {
     return [
       if (debug)
@@ -357,19 +376,7 @@ class _PageHomeState extends State<PageHome> {
           (!requiresAuthentication || isAuthenticated))
         IconButton(
           onPressed: () {
-            Navigator.of(context)
-                .push(
-              MaterialPageRoute(
-                builder: (context) => PagePlanSubscribe(),
-                settings: const RouteSettings(name: "SyncStatus"),
-              ),
-            )
-                .then((value) {
-              if (value != null && value == true) {
-                // user signed in
-                // Navigate to password page
-              }
-            });
+            navigateToPage();
           },
           icon: const Icon(
             LucideIcons.refreshCcw,

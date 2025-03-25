@@ -4,6 +4,10 @@ import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
+import 'enums.dart';
+import 'page_onboard_task.dart';
+import 'storage_hive.dart';
+
 class PagePlanSubscribe extends StatefulWidget {
   const PagePlanSubscribe({super.key});
 
@@ -13,8 +17,7 @@ class PagePlanSubscribe extends StatefulWidget {
 
 class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   AppLogger logger = AppLogger(prefixes: ["PagePlan"]);
-  StoreProduct? annual;
-  StoreProduct? monthly;
+  List<Package> _packages = [];
   bool processing = true;
   @override
   void initState() {
@@ -30,17 +33,12 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
 
   Future<void> fetchOfferings() async {
     try {
-      Offerings offerings = await Purchases.getOfferings();
-      if (offerings.current != null &&
-          offerings.current!.availablePackages.isNotEmpty) {
-        Package? annualPackage = offerings.current!.annual;
-        Package? monthlyPackage = offerings.current!.monthly;
-        if (annualPackage != null) {
-          annual = annualPackage.storeProduct;
-        }
-        if (monthlyPackage != null) {
-          monthly = monthlyPackage.storeProduct;
-        }
+      Offerings? offerings = await Purchases.getOfferings();
+      if (offerings.current != null) {
+        setState(() {
+          _packages = offerings.current!.availablePackages;
+          logger.info(_packages.toString());
+        });
       }
     } on PlatformException catch (e) {
       logger.error("fetchOfferings", error: e);
@@ -52,17 +50,22 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
     }
   }
 
-  Future<void> makePurchase(StoreProduct productToBuy) async {
+  Future<void> makePurchase(Package package) async {
+    setState(() {
+      processing = true;
+    });
     try {
-      CustomerInfo customerInfo =
-          await Purchases.purchaseStoreProduct(productToBuy);
-      Map<String, EntitlementInfo> entitlements = customerInfo.entitlements.all;
-      if (entitlements.containsKey(productToBuy.identifier)) {
-        EntitlementInfo entitlementInfo =
-            entitlements[productToBuy.identifier]!;
-        if (entitlementInfo.isActive) {
-          logger.info("Purchased:${productToBuy.title}");
+      CustomerInfo customerInfo = await Purchases.purchasePackage(package);
+      if (customerInfo.entitlements.active.isNotEmpty) {
+        logger.info("Purchased:${package.storeProduct.title}");
+        //if signed in, associate
+        String? userId =
+            StorageHive().get(AppString.deviceId.string, defaultValue: null);
+        if (userId != null) {
+          LogInResult result = await Purchases.logIn(userId);
+          logger.info(result.toString());
         }
+        navigateToOnboardingChecks();
       }
     } on PlatformException catch (e) {
       var errorCode = PurchasesErrorHelper.getErrorCode(e);
@@ -70,6 +73,19 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
         logger.error("purchaseError", error: e);
       }
     }
+    setState(() {
+      processing = false;
+    });
+  }
+
+  Future<void> navigateToOnboardingChecks() async {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => PageOnBoardTask(
+          task: AppTask.checkCloudSync,
+        ),
+      ),
+    );
   }
 
   @override
@@ -81,23 +97,26 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => PageSignin(),
-                ),
-              );
-            },
-            child: Text(
-              'Login',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+          if (StorageHive()
+                  .get(AppString.deviceId.string, defaultValue: null) ==
+              null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => PageSignin(),
+                  ),
+                );
+              },
+              child: Text(
+                'Login',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
             ),
-          ),
         ],
       ),
       body: processing
-          ? CircularProgressIndicator()
+          ? Center(child: CircularProgressIndicator()) // Centering the loader
           : Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -114,41 +133,45 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   SizedBox(height: 20),
+
+                  /// Features List
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildFeatureItem('End-to-end encryption'),
-                      _buildFeatureItem('50 GB storage'),
                       _buildFeatureItem('Sync up to 3 devices'),
-                      _buildFeatureItem('One more benefit'),
+                      _buildFeatureItem('Upgrade/Cancel anytime'),
                     ],
                   ),
+
                   SizedBox(height: 20),
-                  if (annual != null) _buildPlanOption(annual!, 'Yearly', true),
-                  SizedBox(height: 20),
-                  if (monthly != null)
-                    _buildPlanOption(monthly!, 'Monthly', false),
-                  SizedBox(height: 20),
-                  /* ElevatedButton(
-                    onPressed: () {},
+
+                  /// ListView inside Expanded to prevent unbounded height issues
+                  _packages.isEmpty
+                      ? Center(child: Text("No plans available"))
+                      : Expanded(
+                          child: ListView.builder(
+                            shrinkWrap: true, // Ensures it works inside Column
+                            physics:
+                                BouncingScrollPhysics(), // Smooth scrolling
+                            itemCount: _packages.length,
+                            itemBuilder: (context, index) {
+                              Package package = _packages[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 15),
+                                child: _buildPlanOption(package),
+                              );
+                            },
+                          ),
+                        ),
+
+                  /// Privacy Terms
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
                     child: Text(
-                      'Continue',
-                      style: TextStyle(color: Colors.black),
+                      "Privacy • Terms",
+                      style: TextStyle(color: Colors.grey, fontSize: 10),
                     ),
-                  ), */
-                  Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Cancel anytime",
-                        style: TextStyle(color: Colors.grey, fontSize: 10),
-                      ),
-                      Text(
-                        "Privacy • Terms",
-                        style: TextStyle(color: Colors.grey, fontSize: 10),
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -172,16 +195,37 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
     );
   }
 
-  Widget _buildPlanOption(
-      StoreProduct product, String title, bool isHighlighted) {
+  Widget _buildPlanOption(Package package) {
+    StoreProduct product = package.storeProduct;
+    final productId = product.identifier;
+
+    // Extract the part before the colon (if present)
+    final idPart = productId.split(':').first;
+
+    // Extract numbers and units using regex
+    //final deviceMatch =RegExp(r'(\d+)devices?').firstMatch(idPart.toLowerCase());
+    final storageMatch =
+        RegExp(r'(\d+)(gb|tb)').firstMatch(idPart.toLowerCase());
+    String planDuration = idPart.contains("year") ? "year" : "month";
+    // Parse number of devices
+    //final String numDevices = deviceMatch != null ? deviceMatch.group(1)! : "1";
+
+    // Parse storage size (convert TB to GB if needed)
+    String storageSize = "";
+    if (storageMatch != null) {
+      final String size = storageMatch.group(1)!;
+      final String unit = storageMatch.group(2)!;
+      storageSize = '$size ${unit.toUpperCase()}';
+    }
+
     return GestureDetector(
       onTap: () {
-        makePurchase(product);
+        makePurchase(package);
       },
       child: Container(
         padding: EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 30),
         decoration: BoxDecoration(
-          border: Border.all(color: isHighlighted ? Colors.blue : Colors.grey),
+          border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -193,11 +237,11 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                 Row(
                   children: [
                     Text(
-                      title,
+                      storageSize,
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    if (isHighlighted)
+                    if ("show_savings".isEmpty)
                       Container(
                         margin: EdgeInsets.only(left: 8),
                         padding:
@@ -213,14 +257,10 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                       ),
                   ],
                 ),
-                /* Text(
-                  '',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ), */
               ],
             ),
             Text(
-              '${product.priceString}/${title.replaceAll("ly", "")}',
+              '${product.priceString.replaceAll(".00", "")}/$planDuration',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],

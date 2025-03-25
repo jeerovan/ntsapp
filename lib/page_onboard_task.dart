@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/common.dart';
@@ -25,7 +28,7 @@ class PageOnBoardTask extends StatefulWidget {
 
 class _PageOnBoardTaskState extends State<PageOnBoardTask> {
   final logger = AppLogger(prefixes: ["page_onboard_task"]);
-  bool processing = false;
+  bool processing = true;
   final SupabaseClient supabase = Supabase.instance.client;
 
   SecureStorage secureStorage = SecureStorage();
@@ -50,33 +53,53 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
     }
     switch (widget.task) {
       case AppTask.registerDevice:
-        taskTitle = "Registering Device";
         registerDevice();
         break;
       case AppTask.checkEncryptionKeys:
-        taskTitle = "Fetching Keys";
         checkEncryptionKeys();
+        break;
+      case AppTask.checkCloudSync:
+        checkCloudSync();
         break;
     }
   }
 
   Future<void> checkCloudSync() async {
+    setState(() {
+      taskTitle = "Onboarding";
+      processing = true;
+      errorFetching = false;
+    });
     bool hasPlanInRC = false;
-    bool hasPlanInSupa = false;
     // check payments
-    try {
-      CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-      if (customerInfo.entitlements.active.isNotEmpty) {
-        hasPlanInRC = true;
+    if (Platform.isAndroid) {
+      try {
+        CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+        logger.info(customerInfo.toString());
+        if (customerInfo.entitlements.active.isNotEmpty) {
+          hasPlanInRC = true;
+        }
+      } on PlatformException catch (e) {
+        logger.error("checkPlan", error: e);
+        setState(() {
+          processing = false;
+          errorFetching = true;
+          displayMessage = "Could not fetch";
+          buttonText = "Retry";
+        });
+        return;
       }
-    } on PlatformException catch (e) {
-      logger.error("checkPlan", error: e);
+    } else {
+      // TODO add support for other platforms
+      hasPlanInRC = true;
     }
+    setState(() {
+      processing = false;
+    });
     // check signed in
     bool signedIn =
         StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
             null;
-
     bool deviceRegistered = StorageHive()
         .get(AppString.deviceRegistered.string, defaultValue: false);
     bool canSync = await SyncUtils.canSync();
@@ -103,6 +126,7 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
 
   Future<void> registerDevice() async {
     setState(() {
+      taskTitle = "Register device";
       processing = true;
       errorFetching = false;
     });
@@ -121,7 +145,7 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
         }
       }
     } on FunctionException catch (e) {
-      displayMessage = e.details.toString();
+      displayMessage = jsonDecode(e.details)["error"];
       buttonText = "Continue";
     } catch (e, s) {
       logger.error("registerDevice", error: e, stackTrace: s);
@@ -185,8 +209,6 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
     setState(() {
       processing = false;
     });
-    // TODO If sync is enabled, ready local data to be pushed if not already done
-    //SyncUtils.pushLocalChanges(); // no wait
   }
 
   Future<void> takeAction() async {
@@ -199,6 +221,9 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
           break;
         case AppTask.checkEncryptionKeys:
           checkEncryptionKeys();
+          break;
+        case AppTask.checkCloudSync:
+          checkCloudSync();
           break;
       }
     } else if (displayMessage.isNotEmpty) {
