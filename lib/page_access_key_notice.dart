@@ -98,9 +98,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
             ),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {
-                generateKeys();
-              },
+              onPressed: generateKeys,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

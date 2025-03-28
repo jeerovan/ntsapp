@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
         .eq("user_id", plan.userId).eq("status", 1);
       if (devices!.length >= plan.devices) {
         return new Response(
-          "Device limit exceeded.",
+          JSON.stringify({ error: "Device limit exceeded." }),
           { status: 400 },
         );
       } else {
@@ -55,7 +55,10 @@ Deno.serve(async (req) => {
         { status: 200 },
       );
     } else {
-      return new Response("Registered with another user.", { status: 400 });
+      return new Response(
+        JSON.stringify({ error: "Registered with another user." }),
+        { status: 400 },
+      );
     }
   } catch (error) {
     return new Response(JSON.stringify({ error: error }), { status: 400 });

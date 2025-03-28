@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'common.dart';
+import 'page_plan_status.dart';
 
 class PageAccessKey extends StatefulWidget {
   const PageAccessKey({
@@ -73,6 +74,14 @@ class _PageAccessKeyState extends State<PageAccessKey> {
     }
   }
 
+  void navigateToPlanStatus() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => PagePlanStatus(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,9 +140,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
 
             // Button to Continue to Next Page
             OutlinedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: navigateToPlanStatus,
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 side: BorderSide(color: Theme.of(context).primaryColor),

@@ -9,7 +9,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
-import 'package:ntsapp/page_plan_subscribe.dart';
+import 'package:ntsapp/page_plan_status.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:path/path.dart' as path;
@@ -24,10 +24,11 @@ import 'model_setting.dart';
 import 'page_archived.dart';
 import 'page_category_add_edit.dart';
 import 'page_items.dart';
-import 'page_onboard_task.dart';
+import 'page_user_task.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
 import 'storage_hive.dart';
+import 'utils_sync.dart';
 
 bool debug = false;
 
@@ -343,17 +344,17 @@ class _PageHomeState extends State<PageHome> {
   Future<void> navigateToOnboardCheck() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PageOnBoardTask(
+        builder: (context) => PageUserTask(
           task: AppTask.checkCloudSync,
         ),
       ),
     );
   }
 
-  Future<void> navigateToPage() async {
+  Future<void> navigateToPlanStatus() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PagePlanSubscribe(),
+        builder: (context) => PagePlanStatus(),
       ),
     );
   }
@@ -375,8 +376,13 @@ class _PageHomeState extends State<PageHome> {
       if (StorageHive().get(AppString.supabaseInitialzed.string) &&
           (!requiresAuthentication || isAuthenticated))
         IconButton(
-          onPressed: () {
-            navigateToPage();
+          onPressed: () async {
+            bool canSync = await SyncUtils.canSync();
+            if (canSync) {
+              navigateToPlanStatus();
+            } else {
+              navigateToOnboardCheck();
+            }
           },
           icon: const Icon(
             LucideIcons.refreshCcw,

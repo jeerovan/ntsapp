@@ -87,7 +87,6 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Enable Sync'),
-        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

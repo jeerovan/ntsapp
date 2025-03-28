@@ -27,7 +27,6 @@ import 'themes.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:http/http.dart' as http;
 
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
@@ -377,24 +376,5 @@ Future<void> performSync({bool inBackground = false}) async {
     }
     logger.info("$mode|Sync|------------------ENDED----------------");
     timer.cancel();
-  }
-}
-
-// Helper to check internet connectivity
-Future<bool> hasInternetConnection() async {
-  try {
-    if (kIsWeb) {
-      // For Web, perform an HTTP request
-      final response = await http
-          .get(Uri.parse('https://www.google.com'))
-          .timeout(Duration(seconds: 2));
-      return response.statusCode == 200;
-    }
-
-    // For mobile and desktop, use DNS ping
-    final result = await InternetAddress.lookup('8.8.8.8');
-    return result.isNotEmpty;
-  } catch (_) {
-    return false;
   }
 }

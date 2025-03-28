@@ -18,15 +18,15 @@ import 'page_select_key_type.dart';
 import 'page_signin.dart';
 import 'utils_sync.dart';
 
-class PageOnBoardTask extends StatefulWidget {
+class PageUserTask extends StatefulWidget {
   final AppTask task;
-  const PageOnBoardTask({super.key, required this.task});
+  const PageUserTask({super.key, required this.task});
 
   @override
-  State<PageOnBoardTask> createState() => _PageOnBoardTaskState();
+  State<PageUserTask> createState() => _PageUserTaskState();
 }
 
-class _PageOnBoardTaskState extends State<PageOnBoardTask> {
+class _PageUserTaskState extends State<PageUserTask> {
   final logger = AppLogger(prefixes: ["page_onboard_task"]);
   bool processing = true;
   final SupabaseClient supabase = Supabase.instance.client;
@@ -61,26 +61,30 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
       case AppTask.checkCloudSync:
         checkCloudSync();
         break;
+      case AppTask.signOut:
+        signOut();
+        break;
     }
   }
 
   Future<void> checkCloudSync() async {
     setState(() {
-      taskTitle = "Onboarding";
+      taskTitle = "Fetching details";
       processing = true;
       errorFetching = false;
     });
     bool hasPlanInRC = false;
-    // check payments
+    String rcId = "";
+    // check plan in rc
     if (Platform.isAndroid) {
       try {
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-        logger.info(customerInfo.toString());
         if (customerInfo.entitlements.active.isNotEmpty) {
           hasPlanInRC = true;
+          rcId = customerInfo.originalAppUserId;
         }
       } on PlatformException catch (e) {
-        logger.error("checkPlan", error: e);
+        logger.error("checkRcPlan", error: e);
         setState(() {
           processing = false;
           errorFetching = true;
@@ -93,16 +97,35 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
       // TODO add support for other platforms
       hasPlanInRC = true;
     }
-    setState(() {
-      processing = false;
-    });
     // check signed in
     bool signedIn =
         StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
             null;
+    // check association of rc id with supa user id
+    if (hasPlanInRC && signedIn) {
+      try {
+        await supabase.functions.invoke("set_id_rc", body: {"rc_id": rcId});
+      } on FunctionException catch (e) {
+        errorFetching = false;
+        displayMessage = jsonDecode(e.details)["error"];
+        buttonText = "Continue";
+      } catch (e, s) {
+        logger.error("set id rc", error: e, stackTrace: s);
+        setState(() {
+          processing = false;
+          errorFetching = true;
+          displayMessage = "Error checking plan details";
+          buttonText = "Retry";
+        });
+        return;
+      }
+    }
     bool deviceRegistered = StorageHive()
         .get(AppString.deviceRegistered.string, defaultValue: false);
     bool canSync = await SyncUtils.canSync();
+    setState(() {
+      processing = false;
+    });
     if (!hasPlanInRC && mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -145,6 +168,7 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
         }
       }
     } on FunctionException catch (e) {
+      errorFetching = false;
       displayMessage = jsonDecode(e.details)["error"];
       buttonText = "Continue";
     } catch (e, s) {
@@ -211,6 +235,35 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
     });
   }
 
+  Future<void> signOut() async {
+    setState(() {
+      processing = true;
+      errorFetching = false;
+      taskTitle = "Signing out";
+    });
+    // check internet
+    bool hasInternet = await hasInternetConnection();
+    if (!hasInternet && mounted) {
+      setState(() {
+        errorFetching = true;
+        processing = false;
+        displayMessage = "Please check internet";
+        buttonText = "Retry";
+      });
+    }
+    bool success = await SyncUtils.signout();
+    if (success && mounted) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() {
+        errorFetching = true;
+        processing = false;
+        displayMessage = "Something went wrong";
+        buttonText = "Retry";
+      });
+    }
+  }
+
   Future<void> takeAction() async {
     if (errorFetching) {
       displayMessage = "";
@@ -224,6 +277,8 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
           break;
         case AppTask.checkCloudSync:
           checkCloudSync();
+          break;
+        case AppTask.signOut:
           break;
       }
     } else if (displayMessage.isNotEmpty) {
@@ -244,9 +299,12 @@ class _PageOnBoardTaskState extends State<PageOnBoardTask> {
             : Center(
                 child: Column(
                   children: [
-                    Text(displayMessage),
+                    Text(
+                      displayMessage,
+                      style: TextStyle(fontSize: 15),
+                    ),
                     SizedBox(
-                      height: 24,
+                      height: 30,
                     ),
                     ElevatedButton(
                         onPressed: takeAction,

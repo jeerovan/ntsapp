@@ -1,5 +1,25 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+export async function getUser(authorization: string) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    {
+      global: {
+        headers: { Authorization: authorization },
+      },
+    },
+  );
+  // First get the token from the Authorization header
+  const userToken = authorization.replace("Bearer ", "");
+
+  // Now we can get the session or user object
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser(userToken);
+  return { user };
+}
+
 export async function getUserPlanStatus(
   authorization: string,
   fileSize: number,

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/page_plan_status.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -105,7 +106,11 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
         await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
         await secureStorage.write(key: keyForKeyType, value: "password");
         if (mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => PagePlanStatus(),
+            ),
+          );
         }
       } catch (e) {
         debugPrint(e.toString());

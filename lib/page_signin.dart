@@ -5,11 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_profile.dart';
-import 'package:ntsapp/page_onboard_task.dart';
+import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
-import 'package:ntsapp/utils_sync.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -135,7 +134,7 @@ class _PageSigninState extends State<PageSignin> {
               logger.error("purchaseAssociationAfterSignin", error: e);
             }
           }
-          await navigateToOnboardCheck();
+          navigateToOnboardCheck();
         }
         errorVerifyingOtp = false;
       } catch (e, s) {
@@ -156,7 +155,7 @@ class _PageSigninState extends State<PageSignin> {
   Future<void> navigateToOnboardCheck() async {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => PageOnBoardTask(
+        builder: (context) => PageUserTask(
           task: AppTask.checkCloudSync,
         ),
       ),
@@ -169,15 +168,6 @@ class _PageSigninState extends State<PageSignin> {
     setState(() {
       otpSent = false;
     });
-  }
-
-  Future<void> signOut() async {
-    bool success = await SyncUtils.signout();
-    if (success) {
-      setState(() {
-        signedIn = false;
-      });
-    }
   }
 
   @override
@@ -267,11 +257,6 @@ class _PageSigninState extends State<PageSignin> {
               ),
               if (!signedIn && otpSent)
                 TextButton(onPressed: changeEmail, child: Text('Change email')),
-              SizedBox(
-                height: 20,
-              ),
-              if (signedIn)
-                TextButton(onPressed: signOut, child: Text('Sign Out')),
               SizedBox(
                 height: 20,
               ),

@@ -824,3 +824,22 @@ Future<String> getDeviceName() async {
     return 'Unknown Device';
   }
 }
+
+// Helper to check internet connectivity
+Future<bool> hasInternetConnection() async {
+  try {
+    if (kIsWeb) {
+      // For Web, perform an HTTP request
+      final response = await http
+          .get(Uri.parse('https://www.google.com'))
+          .timeout(Duration(seconds: 2));
+      return response.statusCode == 200;
+    }
+
+    // For mobile and desktop, use DNS ping
+    final result = await InternetAddress.lookup('8.8.8.8');
+    return result.isNotEmpty;
+  } catch (_) {
+    return false;
+  }
+}

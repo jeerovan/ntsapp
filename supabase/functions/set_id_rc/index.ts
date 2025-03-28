@@ -3,21 +3,76 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-
-console.log("Hello from Functions!")
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { getUser } from "../_shared/supabase.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+    });
+  }
+  const { rc_id } = await req.json();
+  if (!rc_id) {
+    return new Response(JSON.stringify({ error: "rc_id required" }), {
+      status: 400,
+    });
+  }
+  const authorization = req.headers.get("Authorization") ?? "";
+  const { user } = await getUser(authorization);
+  const user_id = user?.id;
+
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  // Initialize response variables
+  let error = null;
+  let status = 200;
+  const message = "Success";
+
+  // Check if row exists
+  const { data: existingRow, error: queryError } = await supabaseClient
+    .from("plans")
+    .select("user_id")
+    .eq("rc_id", rc_id)
+    .single();
+  if (queryError || !existingRow) {
+    error = "not found";
+    status = 400;
+  } else {
+    // Check if user_id matches or is null
+    if (existingRow.user_id !== null && existingRow.user_id !== user_id) {
+      error = "user_id mismatch";
+      status = 400;
+    } else if (existingRow.user_id === null) {
+      // Update the row with new user_id
+      const { error: updateError } = await supabaseClient
+        .from("plans")
+        .update({ user_id })
+        .eq("rc_id", rc_id);
+
+      if (updateError) {
+        error = updateError.message;
+        status = 500;
+      }
+    }
+  }
+  // Return response
+  if (error) {
+    return new Response(JSON.stringify({ error }), {
+      headers: { "Content-Type": "application/json" },
+      status,
+    });
   }
 
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+  return new Response(JSON.stringify({ message }), {
+    headers: { "Content-Type": "application/json" },
+    status,
+  });
+});
 
 /* To invoke locally:
 

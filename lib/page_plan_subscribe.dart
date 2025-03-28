@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/utils_sync.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'enums.dart';
-import 'page_onboard_task.dart';
+import 'page_user_task.dart';
 import 'storage_hive.dart';
 
 class PagePlanSubscribe extends StatefulWidget {
@@ -37,7 +38,6 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
       if (offerings.current != null) {
         setState(() {
           _packages = offerings.current!.availablePackages;
-          logger.info(_packages.toString());
         });
       }
     } on PlatformException catch (e) {
@@ -59,8 +59,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
       if (customerInfo.entitlements.active.isNotEmpty) {
         logger.info("Purchased:${package.storeProduct.title}");
         //if signed in, associate
-        String? userId =
-            StorageHive().get(AppString.deviceId.string, defaultValue: null);
+        String? userId = SyncUtils.getSignedInUserId();
         if (userId != null) {
           LogInResult result = await Purchases.logIn(userId);
           logger.info(result.toString());
@@ -81,7 +80,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   Future<void> navigateToOnboardingChecks() async {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => PageOnBoardTask(
+        builder: (context) => PageUserTask(
           task: AppTask.checkCloudSync,
         ),
       ),

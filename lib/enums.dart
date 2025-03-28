@@ -74,6 +74,7 @@ enum AppTask {
   registerDevice,
   checkEncryptionKeys,
   checkCloudSync,
+  signOut,
 }
 
 enum AppString {
@@ -91,6 +92,8 @@ enum AppString {
 
   // RevenueCat
   rcKeyAndroid,
+  planExpired,
+  planFull,
 
   //sign-in
   otpSentTo,
@@ -113,6 +116,10 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.planExpired:
+        return 'rc_plan_expired';
+      case AppString.planFull:
+        return 'rc_plan_full';
       case AppString.rcKeyAndroid:
         return "rc_key_android";
       case AppString.deviceRegistered:

@@ -47,6 +47,20 @@ class SyncUtils {
     }
   }
 
+  static String? getSignedInEmailId() {
+    if (StorageHive().get("supabase_initialized")) {
+      SupabaseClient supabaseClient = Supabase.instance.client;
+      User? currentUser = supabaseClient.auth.currentUser;
+      if (currentUser != null) {
+        return currentUser.email;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
   static Future<String?> getMasterKey() async {
     String? signedInUserId = getSignedInUserId();
     if (signedInUserId == null) {
@@ -95,12 +109,15 @@ class SyncUtils {
     bool success = false;
     String? userId = SyncUtils.getSignedInUserId();
     if (userId != null) {
-      String deviceId = StorageHive().get(AppString.deviceId.string);
+      String? deviceId =
+          StorageHive().get(AppString.deviceId.string, defaultValue: null);
       SecureStorage storage = SecureStorage();
       SupabaseClient supabase = Supabase.instance.client;
       try {
-        await supabase.functions
-            .invoke("remove_device", headers: {"deviceId": deviceId});
+        if (deviceId != null) {
+          await supabase.functions
+              .invoke("remove_device", headers: {"deviceId": deviceId});
+        }
         await supabase.auth.signOut();
         String keyForMasterKey = '${userId}_mk';
         String keyForAccessKey = '{$userId}_ak';
@@ -221,7 +238,14 @@ class SyncUtils {
         await supabaseClient.functions.invoke("push_changes",
             headers: {"deviceId": deviceId}, body: {"allChanges": allChanges});
         await ModelChange.upgradeTypeForIds(changeIds);
+        StorageHive().put(AppString.planExpired.string, false);
         logger.info("Pushed Map Changes");
+      } on FunctionException catch (e) {
+        String error = jsonDecode(e.details)["error"];
+        if (error == "Plan expired") {
+          StorageHive().put(AppString.planExpired.string, true);
+          logger.error("pushMapChanges|Supabase", error: "Plan Expired");
+        }
       } catch (e, s) {
         logger.error("pushMapChanges|Supabase", error: e, stackTrace: s);
       }
@@ -498,7 +522,14 @@ class SyncUtils {
         await StorageHive()
             .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
       }
+      StorageHive().put(AppString.planExpired.string, false);
       logger.info("Fetched Map Changes");
+    } on FunctionException catch (e) {
+      String error = jsonDecode(e.details)["error"];
+      if (error == "Plan expired") {
+        StorageHive().put(AppString.planExpired.string, true);
+        logger.error("fetchMapChanges|Supabase", error: "Plan Expired");
+      }
     } catch (e, s) {
       logger.error("fetchMapChanges|Supabase", error: e, stackTrace: s);
     }
