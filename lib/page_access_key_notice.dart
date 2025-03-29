@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'common.dart';
 import 'enums.dart';
 import 'page_access_key.dart';
+import 'storage_hive.dart';
 import 'storage_secure.dart';
 import 'utils_crypto.dart';
 
@@ -49,6 +50,11 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
       await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
       await secureStorage.write(key: keyForAccessKey, value: accessKeyBase64);
       await secureStorage.write(key: keyForKeyType, value: "key");
+      // push local content
+      if (StorageHive().get(AppString.pushedLocalContentForSync.string,
+          defaultValue: false)) {
+        await SyncUtils.pushLocalChanges();
+      }
       // navigate to display key
       if (mounted) {
         Navigator.of(context).pushReplacement(

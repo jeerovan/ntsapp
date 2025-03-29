@@ -100,6 +100,7 @@ enum AppString {
   otpSentAt,
 
   // Sync
+  pushedLocalContentForSync,
   lastChangesFetchedAt,
 
   // Cipher
@@ -116,6 +117,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.pushedLocalContentForSync:
+        return 'pushed_local_content_for_sync';
       case AppString.planExpired:
         return 'rc_plan_expired';
       case AppString.planFull:

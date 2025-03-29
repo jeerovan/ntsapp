@@ -3,7 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_plan_status.dart';
+import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -101,10 +103,13 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       try {
         await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
         // save locally
-
         String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
         await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
         await secureStorage.write(key: keyForKeyType, value: "password");
+        if (StorageHive().get(AppString.pushedLocalContentForSync.string,
+            defaultValue: false)) {
+          await SyncUtils.pushLocalChanges();
+        }
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(

@@ -140,6 +140,35 @@ class SyncUtils {
     return success;
   }
 
+  static Future<void> pushLocalChanges() async {
+    //push categories
+    List<Map<String, dynamic>> categories =
+        await ModelCategory.getAllRawRowsMap();
+    for (Map<String, dynamic> category in categories) {
+      category["table"] = "category";
+      encryptAndPushChange(
+        category,
+      );
+    }
+    //push groups
+    List<Map<String, dynamic>> groups = await ModelGroup.getAllRawRowsMap();
+    for (Map<String, dynamic> group in groups) {
+      group["table"] = "itemgroup";
+      encryptAndPushChange(
+        group,
+      );
+    }
+    //push items
+    List<Map<String, dynamic>> items = await ModelItem.getAllRawRowsMap();
+    for (Map<String, dynamic> item in items) {
+      item["table"] = "item";
+      encryptAndPushChange(
+        item,
+      );
+    }
+    StorageHive().put(AppString.pushedLocalContentForSync.string, true);
+  }
+
   static Future<void> encryptAndPushChange(
     Map<String, dynamic> map, {
     bool mediaChanges = true,
