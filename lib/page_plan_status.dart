@@ -55,12 +55,15 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
           .from("plans")
           .select("b2_limit")
           .eq("user_id", userId!)
-          .single(); // Fetches row
+          .order("expires_at", ascending: false) // Get the latest plan
+          .limit(1) // Ensure only one row is returned
+          .maybeSingle();
 
       setState(() {
         usedStorageBytes = int.parse(usedStorageResponse["b2_size"].toString());
         totalStorageBytes =
-            int.parse(totalStorageResponse["b2_limit"].toString());
+            int.parse(totalStorageResponse!["b2_limit"].toString());
+        totalStorageBytes = totalStorageBytes > 0 ? totalStorageBytes : 1;
       });
     } catch (e) {
       setState(() {

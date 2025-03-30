@@ -17,17 +17,7 @@ Deno.serve(async (req) => {
     const authorization = req.headers.get("Authorization") ?? "";
     const headerDeviceId = req.headers.get("deviceId") ?? "";
     const plan = await getUserPlanStatus(authorization, 0, headerDeviceId);
-    if (plan.status > 200) {
-      return new Response(JSON.stringify({ error: plan.error }), {
-        status: plan.status,
-      });
-    }
     const { deviceId } = await req.json();
-    if (!deviceId) {
-      return new Response(JSON.stringify({ error: "deviceId required" }), {
-        status: 400,
-      });
-    }
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -43,6 +33,10 @@ Deno.serve(async (req) => {
         "id",
         deviceId,
       ).eq("user_id", plan.userId);
+    } else {
+      return new Response(JSON.stringify({ error: "Missing deviceId" }), {
+        status: 400,
+      });
     }
     return new Response("", { status: 200 });
   } catch (error) {

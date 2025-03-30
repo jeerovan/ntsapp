@@ -31,7 +31,6 @@ Deno.serve(async (req) => {
   // Initialize response variables
   let error = null;
   let status = 200;
-  const message = "Success";
 
   // Check if row exists
   const { data: existingRow, error: queryError } = await supabaseClient
@@ -51,25 +50,24 @@ Deno.serve(async (req) => {
       // Update the row with new user_id
       const { error: updateError } = await supabaseClient
         .from("plans")
-        .update({ user_id })
+        .update({ user_id: user_id })
         .eq("rc_id", rc_id);
 
       if (updateError) {
         error = updateError.message;
-        status = 500;
+        status = 400;
       }
     }
   }
   // Return response
   if (error) {
-    return new Response(JSON.stringify({ error }), {
+    return new Response(JSON.stringify({ error: error }), {
       headers: { "Content-Type": "application/json" },
       status,
     });
   }
 
-  return new Response(JSON.stringify({ message }), {
-    headers: { "Content-Type": "application/json" },
+  return new Response("", {
     status,
   });
 });

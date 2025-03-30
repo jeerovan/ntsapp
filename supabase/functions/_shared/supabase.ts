@@ -51,7 +51,9 @@ export async function getUserPlanStatus(
     .from("plans")
     .select("b2_limit,expires_at,devices")
     .eq("user_id", userId)
-    .single();
+    .order("expires_at", { ascending: false }) // Get the latest plan
+    .limit(1) // Ensure only one row is returned
+    .maybeSingle();
 
   if (planError || !plan) {
     status = 400;

@@ -107,8 +107,14 @@ class _PageUserTaskState extends State<PageUserTask> {
         await supabase.functions.invoke("set_id_rc", body: {"rc_id": rcId});
       } on FunctionException catch (e) {
         errorFetching = false;
-        displayMessage = jsonDecode(e.details)["error"];
-        buttonText = "Continue";
+        Map<String, dynamic> errorDetails =
+            e.details is String ? jsonDecode(e.details) : e.details;
+        setState(() {
+          processing = false;
+          displayMessage = errorDetails["error"];
+          buttonText = "Continue";
+        });
+        return;
       } catch (e, s) {
         logger.error("set id rc", error: e, stackTrace: s);
         setState(() {
@@ -169,7 +175,9 @@ class _PageUserTaskState extends State<PageUserTask> {
       }
     } on FunctionException catch (e) {
       errorFetching = false;
-      displayMessage = jsonDecode(e.details)["error"];
+      Map<String, dynamic> errorDetails =
+          e.details is String ? jsonDecode(e.details) : e.details;
+      displayMessage = errorDetails["error"];
       buttonText = "Continue";
     } catch (e, s) {
       logger.error("registerDevice", error: e, stackTrace: s);

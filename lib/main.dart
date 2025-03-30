@@ -39,11 +39,11 @@ Future<void> main() async {
   // initialize purchases -- not required in background tasks
 
   if (Platform.isAndroid) {
-    /* if (kDebugMode) {
-      await Purchases.setLogLevel(LogLevel.debug);
-    } */
     String? rcKeyAndroid = AppConfig.get(AppString.rcKeyAndroid.string, null);
     if (rcKeyAndroid != null) {
+      if (kDebugMode) {
+        await Purchases.setLogLevel(LogLevel.debug);
+      }
       PurchasesConfiguration configuration =
           PurchasesConfiguration(rcKeyAndroid);
       await Purchases.configure(configuration);
