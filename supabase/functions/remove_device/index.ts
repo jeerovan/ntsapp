@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const authorization = req.headers.get("Authorization") ?? "";
     const headerDeviceId = req.headers.get("deviceId") ?? "";
     const plan = await getUserPlanStatus(authorization, 0, headerDeviceId);
-    const { deviceId } = await req.json();
+    const { deviceId = null } = await req.json();
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -39,8 +39,24 @@ Deno.serve(async (req) => {
       });
     }
     return new Response("", { status: 200 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error }), { status: 400 });
+  } catch (e) {
+    console.error("Error occurred:", e);
+
+    let errorMessage = "Unknown error occurred";
+    if (e instanceof Error) {
+      errorMessage = e.message; // Standard JS Error
+    } else if (typeof e === "string") {
+      errorMessage = e; // If error is a string
+    } else {
+      try {
+        errorMessage = JSON.stringify(e); // Convert objects to string
+      } catch {
+        errorMessage = "Failed to serialize error";
+      }
+    }
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 400,
+    });
   }
 });
 

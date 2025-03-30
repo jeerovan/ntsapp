@@ -115,8 +115,8 @@ class SyncUtils {
       SupabaseClient supabase = Supabase.instance.client;
       try {
         if (deviceId != null) {
-          await supabase.functions
-              .invoke("remove_device", headers: {"deviceId": deviceId});
+          await supabase.functions.invoke("remove_device",
+              headers: {"deviceId": deviceId}, body: {});
         }
         await supabase.auth.signOut();
         String keyForMasterKey = '${userId}_mk';
@@ -133,6 +133,11 @@ class SyncUtils {
           await Purchases.logOut();
         }
         success = true;
+      } on FunctionException catch (e) {
+        Map<String, dynamic> errorMap =
+            e.details is String ? jsonDecode(e.details) : e.details;
+        dynamic error = errorMap.containsKey("error") ? errorMap["error"] : "";
+        logger.error("signout", error: error);
       } catch (e, s) {
         logger.error("signout", error: e, stackTrace: s);
       }

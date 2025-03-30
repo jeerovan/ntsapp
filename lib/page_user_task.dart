@@ -75,6 +75,16 @@ class _PageUserTaskState extends State<PageUserTask> {
     });
     bool hasPlanInRC = false;
     String rcId = "";
+    // check signed in
+    bool signedIn =
+        StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
+            null;
+    if (signedIn && Platform.isAndroid) {
+      String? userId = SyncUtils.getSignedInUserId();
+      if (userId != null) {
+        Purchases.logIn(userId);
+      }
+    }
     // check plan in rc
     if (Platform.isAndroid) {
       try {
@@ -97,10 +107,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       // TODO add support for other platforms
       hasPlanInRC = true;
     }
-    // check signed in
-    bool signedIn =
-        StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
-            null;
+
     // check association of rc id with supa user id
     if (hasPlanInRC && signedIn) {
       try {
