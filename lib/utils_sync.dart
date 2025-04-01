@@ -149,24 +149,31 @@ class SyncUtils {
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();
-    for (Map<String, dynamic> category in categories) {
-      category["table"] = "category";
+    List<Map<String, dynamic>> mutableCategories = categories
+        .map((category) => Map<String, dynamic>.from(category))
+        .toList();
+    for (Map<String, dynamic> category in mutableCategories) {
+      category.addAll({"table": "category"});
       encryptAndPushChange(
         category,
       );
     }
     //push groups
     List<Map<String, dynamic>> groups = await ModelGroup.getAllRawRowsMap();
-    for (Map<String, dynamic> group in groups) {
-      group["table"] = "itemgroup";
+    List<Map<String, dynamic>> mutableGroups =
+        groups.map((group) => Map<String, dynamic>.from(group)).toList();
+    for (Map<String, dynamic> group in mutableGroups) {
+      group.addAll({"table": "itemgroup"});
       encryptAndPushChange(
         group,
       );
     }
     //push items
     List<Map<String, dynamic>> items = await ModelItem.getAllRawRowsMap();
-    for (Map<String, dynamic> item in items) {
-      item["table"] = "item";
+    List<Map<String, dynamic>> mutableItems =
+        items.map((item) => Map<String, dynamic>.from(item)).toList();
+    for (Map<String, dynamic> item in mutableItems) {
+      item.addAll({"table": "item"});
       encryptAndPushChange(
         item,
       );
