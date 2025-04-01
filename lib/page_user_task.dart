@@ -82,7 +82,8 @@ class _PageUserTaskState extends State<PageUserTask> {
     if (signedIn && Platform.isAndroid) {
       String? userId = SyncUtils.getSignedInUserId();
       if (userId != null) {
-        Purchases.logIn(userId);
+        LogInResult loginResult = await Purchases.logIn(userId);
+        logger.info(loginResult.customerInfo.toString());
       }
     }
     // check plan in rc

@@ -103,7 +103,7 @@ class WidgetTimeStampPinnedStarred extends StatelessWidget {
   }
 }
 
-class ItemWidgetText extends StatelessWidget {
+class ItemWidgetText extends StatefulWidget {
   final ModelItem item;
   final bool showTimestamp;
 
@@ -111,29 +111,39 @@ class ItemWidgetText extends StatelessWidget {
       {super.key, required this.item, required this.showTimestamp});
 
   @override
+  State<ItemWidgetText> createState() => _ItemWidgetTextState();
+}
+
+class _ItemWidgetTextState extends State<ItemWidgetText> {
+  @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         SizedBox(width: 4),
-        Flexible(child: WidgetTextWithLinks(text: item.text)),
+        Flexible(child: WidgetTextWithLinks(text: widget.item.text)),
         WidgetTimeStampPinnedStarred(
-          item: item,
-          showTimestamp: showTimestamp,
+          item: widget.item,
+          showTimestamp: widget.showTimestamp,
         ),
       ],
     );
   }
 }
 
-class ItemWidgetTask extends StatelessWidget {
+class ItemWidgetTask extends StatefulWidget {
   final ModelItem item;
   final bool showTimestamp;
 
   const ItemWidgetTask(
       {super.key, required this.item, required this.showTimestamp});
 
+  @override
+  State<ItemWidgetTask> createState() => _ItemWidgetTaskState();
+}
+
+class _ItemWidgetTaskState extends State<ItemWidgetTask> {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -145,20 +155,21 @@ class ItemWidgetTask extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(child: WidgetTextWithLinks(text: item.text)),
+              Flexible(child: WidgetTextWithLinks(text: widget.item.text)),
               const SizedBox(width: 8),
               Icon(
-                item.type == ItemType.completedTask
+                widget.item.type == ItemType.completedTask
                     ? Icons.check_circle
                     : Icons.radio_button_unchecked,
-                color: item.type == ItemType.task
+                color: widget.item.type == ItemType.task
                     ? Theme.of(context).colorScheme.inversePrimary
                     : Theme.of(context).colorScheme.primary,
               ),
             ],
           ),
         ),
-        WidgetTimeStampPinnedStarred(item: item, showTimestamp: showTimestamp)
+        WidgetTimeStampPinnedStarred(
+            item: widget.item, showTimestamp: widget.showTimestamp)
       ],
     );
   }
@@ -363,7 +374,7 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
   }
 }
 
-class ItemWidgetAudio extends StatelessWidget {
+class ItemWidgetAudio extends StatefulWidget {
   final ModelItem item;
   final bool showTimestamp;
 
@@ -374,12 +385,17 @@ class ItemWidgetAudio extends StatelessWidget {
   });
 
   @override
+  State<ItemWidgetAudio> createState() => _ItemWidgetAudioState();
+}
+
+class _ItemWidgetAudioState extends State<ItemWidgetAudio> {
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        WidgetAudio(item: item),
-        widgetAudioDetails(item, showTimestamp),
+        WidgetAudio(item: widget.item),
+        widgetAudioDetails(widget.item, widget.showTimestamp),
       ],
     );
   }

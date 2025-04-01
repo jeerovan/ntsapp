@@ -10,6 +10,10 @@ import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 
+import 'enums.dart';
+import 'storage_hive.dart';
+import 'utils_sync.dart';
+
 class PageAccessKeyInput extends StatefulWidget {
   final Map<String, dynamic> cipherData;
   const PageAccessKeyInput({super.key, required this.cipherData});
@@ -81,7 +85,11 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
       await storage.write(
           key: keyForAccessKey, value: base64Encode(accessKeyBytes));
       await storage.write(key: keyForKeyType, value: "key");
-
+      // push local content
+      if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
+          defaultValue: false)) {
+        await SyncUtils.pushLocalChanges();
+      }
       if (mounted) {
         Navigator.of(context).pop();
       }
@@ -129,100 +137,102 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Text Widget
-              Text(
-                "Please enter your 24-word recovery phrase or load a .txt file containing it.",
-                style: TextStyle(fontSize: 16.0),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 20.0),
-
-              // TextField with Validation
-              TextFormField(
-                controller: _textController,
-                maxLines: null, // Allows all words to be visible
-                decoration: InputDecoration(
-                  labelText: 'Enter your 24-word phrase',
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter your recovery phrase here',
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Text Widget
+                Text(
+                  "Please enter your 24-word recovery phrase or load a .txt file containing it.",
+                  style: TextStyle(fontSize: 16.0),
+                  textAlign: TextAlign.center,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your recovery phrase';
-                  }
-                  if (!_validateWordCount(value)) {
-                    return 'Recovery phrase must contain exactly 24 words';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20.0),
+                SizedBox(height: 20.0),
 
-              // Submit Button
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _processWords(_textController.text.trim());
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (processing)
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            right:
-                                8.0), // Add spacing between indicator and text
-                        child: SizedBox(
-                          width: 16, // Set width and height for the indicator
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2, // Set color to white
+                // TextField with Validation
+                TextFormField(
+                  controller: _textController,
+                  maxLines: null, // Allows all words to be visible
+                  decoration: InputDecoration(
+                    labelText: 'Enter your 24-word phrase',
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter your recovery phrase here',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your recovery phrase';
+                    }
+                    if (!_validateWordCount(value)) {
+                      return 'Recovery phrase must contain exactly 24 words';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20.0),
+
+                // Submit Button
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _processWords(_textController.text.trim());
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (processing)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              right:
+                                  8.0), // Add spacing between indicator and text
+                          child: SizedBox(
+                            width: 16, // Set width and height for the indicator
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2, // Set color to white
+                            ),
                           ),
                         ),
+                      Text(
+                        'Submit',
+                        style: TextStyle(fontSize: 16.0, color: Colors.black),
                       ),
-                    Text(
-                      'Submit',
-                      style: TextStyle(fontSize: 16.0, color: Colors.black),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 30.0),
+
+                // Separator Line
+                Row(
+                  children: [
+                    Expanded(child: Divider(thickness: 1)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'Or',
+                        style: TextStyle(
+                            fontSize: 14.0, fontWeight: FontWeight.w500),
+                      ),
                     ),
+                    Expanded(child: Divider(thickness: 1)),
                   ],
                 ),
-              ),
-              SizedBox(height: 30.0),
+                SizedBox(height: 20.0),
 
-              // Separator Line
-              Row(
-                children: [
-                  Expanded(child: Divider(thickness: 1)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Or',
-                      style: TextStyle(
-                          fontSize: 14.0, fontWeight: FontWeight.w500),
-                    ),
+                // File Upload Button
+                ElevatedButton.icon(
+                  onPressed: _selectFile,
+                  icon: Icon(Icons.upload_file),
+                  label: Text(
+                    "Select .txt File",
+                    style: TextStyle(color: Colors.black),
                   ),
-                  Expanded(child: Divider(thickness: 1)),
-                ],
-              ),
-              SizedBox(height: 20.0),
-
-              // File Upload Button
-              ElevatedButton.icon(
-                onPressed: _selectFile,
-                icon: Icon(Icons.upload_file),
-                label: Text(
-                  "Select .txt File",
-                  style: TextStyle(color: Colors.black),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

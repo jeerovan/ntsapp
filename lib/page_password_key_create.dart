@@ -106,7 +106,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
         String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
         await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
         await secureStorage.write(key: keyForKeyType, value: "password");
-        if (StorageHive().get(AppString.pushedLocalContentForSync.string,
+        if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
             defaultValue: false)) {
           await SyncUtils.pushLocalChanges();
         }

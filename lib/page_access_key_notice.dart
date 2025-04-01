@@ -51,7 +51,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
       await secureStorage.write(key: keyForAccessKey, value: accessKeyBase64);
       await secureStorage.write(key: keyForKeyType, value: "key");
       // push local content
-      if (StorageHive().get(AppString.pushedLocalContentForSync.string,
+      if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
           defaultValue: false)) {
         await SyncUtils.pushLocalChanges();
       }
