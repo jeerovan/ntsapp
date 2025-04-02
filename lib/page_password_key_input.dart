@@ -22,7 +22,7 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   bool processing = false;
-  SecureStorage storage = SecureStorage();
+  SecureStorage secureStorage = SecureStorage();
 
   @override
   void initState() {
@@ -73,9 +73,9 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
       String keyForMasterKey = '${userId}_mk';
       String keyForKeyType = '${userId}_kt';
       // save keys to secure storage
-      await storage.write(
+      await secureStorage.write(
           key: keyForMasterKey, value: decryptedMasterKeyBase64);
-      await storage.write(key: keyForKeyType, value: "password");
+      await secureStorage.write(key: keyForKeyType, value: "password");
       // push local content
       if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
           defaultValue: false)) {

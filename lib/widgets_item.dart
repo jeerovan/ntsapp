@@ -62,9 +62,12 @@ class WidgetTimeStampPinnedStarred extends StatelessWidget {
     } else if (item.state == SyncState.uploaded.value ||
         item.state == SyncState.downloaded.value ||
         item.state == SyncState.downloadable.value) {
-      return Icon(
-        LucideIcons.check,
-        size: 12,
+      return Opacity(
+        opacity: 0.6,
+        child: Icon(
+          LucideIcons.check,
+          size: 12,
+        ),
       );
     } else {
       return const SizedBox.shrink();

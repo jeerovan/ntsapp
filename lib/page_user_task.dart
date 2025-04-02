@@ -13,6 +13,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'page_access_key_input.dart';
+import 'page_devices.dart';
 import 'page_password_key_input.dart';
 import 'page_select_key_type.dart';
 import 'page_signin.dart';
@@ -43,6 +44,7 @@ class _PageUserTaskState extends State<PageUserTask> {
   bool fetchedFromSupabase = false;
   bool errorFetching = false;
   bool errorUpdating = false;
+  bool deviceLimitExceeded = false;
   Map<String, dynamic>? updatedData;
   String? userId;
 
@@ -210,6 +212,10 @@ class _PageUserTaskState extends State<PageUserTask> {
           e.details is String ? jsonDecode(e.details) : e.details;
       displayMessage = errorDetails["error"];
       buttonText = "Continue";
+      if (displayMessage.contains("limit")) {
+        deviceLimitExceeded = true;
+        buttonText = "Manage";
+      }
     } catch (e, s) {
       logger.error("registerDevice", error: e, stackTrace: s);
       setState(() {
@@ -320,6 +326,12 @@ class _PageUserTaskState extends State<PageUserTask> {
         case AppTask.signOut:
           break;
       }
+    } else if (deviceLimitExceeded) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PageDevices(),
+        ),
+      );
     } else if (displayMessage.isNotEmpty) {
       Navigator.of(context).pop();
     }

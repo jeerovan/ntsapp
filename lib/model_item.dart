@@ -7,7 +7,6 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item_file.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
-import 'service_logger.dart';
 import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 import 'utils_sync.dart';
@@ -425,12 +424,11 @@ class ModelItem {
       }
     }
     // signal item update
-    await StorageHive().put(AppString.changedCategoryId.string, id);
+    await StorageHive().put(AppString.changedItemId.string, id);
     return result;
   }
 
   Future<int> delete({bool withServerSync = false}) async {
-    final logger = AppLogger(prefixes: ["model_item", "delete"]);
     final dbHelper = StorageSqlite.instance;
     int deleteTask = 1;
     if (data != null) {
@@ -439,7 +437,6 @@ class ModelItem {
         String fileHash = path.basename(filePath);
         List<String> fileHashItemIds =
             await ModelItemFile.getFileHashItemIds(fileHash);
-        logger.debug("ItemId:$id,FileItems:$fileHashItemIds");
         File file = File(filePath);
         if (fileHashItemIds.length == 1 && fileHashItemIds[0] == id) {
           if (file.existsSync()) {

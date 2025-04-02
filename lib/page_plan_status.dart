@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_devices.dart';
+import 'package:ntsapp/page_password_key_create.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,8 +20,11 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   bool errorFetching = false;
   int totalStorageBytes = 0;
   int usedStorageBytes = 0;
+  String accessKeyType = "";
+  String keyManagementTitle = "";
 
   SupabaseClient supabaseClient = Supabase.instance.client;
+  SecureStorage secureStorage = SecureStorage();
   final String? email = SyncUtils.getSignedInEmailId();
   final String? userId = SyncUtils.getSignedInUserId();
 
@@ -44,6 +50,16 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
       processing = true;
       errorFetching = false;
     });
+    String keyForKeyType = '${userId}_kt';
+    String? keyType = await secureStorage.read(key: keyForKeyType);
+    if (keyType != null) {
+      accessKeyType = keyType;
+      if (accessKeyType == "key") {
+        keyManagementTitle = "View access key";
+      } else {
+        keyManagementTitle = "Change key password";
+      }
+    }
     try {
       final usedStorageResponse = await supabaseClient
           .from("storage")
@@ -92,6 +108,24 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
         builder: (context) => PageDevices(),
       ),
     );
+  }
+
+  Future<void> manageKey() async {
+    if (accessKeyType == "key") {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PageAccessKey(),
+        ),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PagePasswordKeyCreate(
+            recreate: true,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -166,8 +200,17 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       // Manage Devices Button
                       ListTile(
                         leading: Icon(Icons.devices),
-                        title: Text("Manage Devices"),
+                        title: Text("Manage devices"),
                         onTap: manageDevices,
+                        trailing: Icon(Icons.arrow_forward_ios, size: 18),
+                      ),
+                      Divider(),
+
+                      // Key manage
+                      ListTile(
+                        leading: Icon(Icons.key),
+                        title: Text(keyManagementTitle),
+                        onTap: manageKey,
                         trailing: Icon(Icons.arrow_forward_ios, size: 18),
                       ),
                       Divider(),

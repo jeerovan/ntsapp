@@ -90,10 +90,19 @@ class _PageHomeState extends State<PageHome> {
       for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
         if (categoryGroup.type == "category" &&
             categoryGroup.id == category.id) {
-          setState(() {
-            categoryGroup.category = category;
-          });
-          updated = true;
+          if (categoryGroup.position == category.position) {
+            int categoryIndex =
+                _categoriesGroupsDisplayList.indexOf(categoryGroup);
+            setState(() {
+              _categoriesGroupsDisplayList[categoryIndex].title =
+                  category.title;
+              _categoriesGroupsDisplayList[categoryIndex].color =
+                  category.color;
+              _categoriesGroupsDisplayList[categoryIndex].thumbnail =
+                  category.thumbnail;
+            });
+            updated = true;
+          }
           break;
         }
       }
@@ -109,10 +118,17 @@ class _PageHomeState extends State<PageHome> {
       bool updated = false;
       for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
         if (categoryGroup.type == "group" && categoryGroup.id == group.id) {
-          setState(() {
-            categoryGroup.group = group;
-          });
-          updated = true;
+          if (categoryGroup.position == group.position) {
+            int groupIndex =
+                _categoriesGroupsDisplayList.indexOf(categoryGroup);
+            setState(() {
+              _categoriesGroupsDisplayList[groupIndex].title = group.title;
+              _categoriesGroupsDisplayList[groupIndex].color = group.color;
+              _categoriesGroupsDisplayList[groupIndex].thumbnail =
+                  group.thumbnail;
+            });
+            updated = true;
+          }
           break;
         }
       }
@@ -131,8 +147,10 @@ class _PageHomeState extends State<PageHome> {
         bool updated = false;
         for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
           if (categoryGroup.type == "group" && categoryGroup.id == groupId) {
+            int groupIndex =
+                _categoriesGroupsDisplayList.indexOf(categoryGroup);
             setState(() {
-              categoryGroup.group = group;
+              _categoriesGroupsDisplayList[groupIndex].group = group;
             });
             updated = true;
             break;

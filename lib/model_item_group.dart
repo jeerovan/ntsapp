@@ -136,7 +136,7 @@ class ModelGroup {
 
   static Future<List<ModelGroup>> allInDND() async {
     ModelCategory dndCategory = await ModelCategory.getDND();
-    return allInCategory(dndCategory.id!);
+    return inCategory(dndCategory.id!);
   }
 
   static Future<List<ModelGroup>> getArchived() async {
@@ -151,13 +151,24 @@ class ModelGroup {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
-  static Future<List<ModelGroup>> allInCategory(String categoryId) async {
+  static Future<List<ModelGroup>> inCategory(String categoryId) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("itemgroup",
         where: 'category_id = ? AND archived_at = 0',
         whereArgs: [categoryId],
         orderBy: "position ASC");
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
+  static Future<List<ModelGroup>> allInCategory(String categoryId) async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows = await db.query(
+      "itemgroup",
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+    );
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
@@ -258,7 +269,7 @@ class ModelGroup {
       }
     }
     // signal group update
-    await StorageHive().put(AppString.changedCategoryId.string, id);
+    await StorageHive().put(AppString.changedGroupId.string, id);
     return result;
   }
 

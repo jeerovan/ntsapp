@@ -1116,9 +1116,12 @@ class UploadDownloadIndicatorState extends State<UploadDownloadIndicator>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: Icon(
-        widget.uploading ? Icons.arrow_upward : Icons.arrow_downward,
-        size: widget.size,
+      child: Opacity(
+        opacity: 0.6,
+        child: Icon(
+          widget.uploading ? Icons.arrow_upward : Icons.arrow_downward,
+          size: widget.size,
+        ),
       ),
     );
   }

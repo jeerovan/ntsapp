@@ -73,24 +73,26 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   }
 
   void updateDisplayGroup(ModelGroup group) {
-    int groupIndex = -1;
-    for (ModelGroup displayGroup in categoryGroupsDisplayList) {
-      if (displayGroup.id == group.id) {
-        categoryGroupsDisplayList.indexOf(displayGroup);
+    bool updated = false;
+    for (ModelGroup categoryGroup in categoryGroupsDisplayList) {
+      if (categoryGroup.id == group.id) {
+        if (categoryGroup.position == group.position) {
+          int groupIndex = categoryGroupsDisplayList.indexOf(categoryGroup);
+          setState(() {
+            categoryGroupsDisplayList[groupIndex] = group;
+          });
+          updated = true;
+        }
         break;
       }
     }
-    if (groupIndex > -1) {
-      setState(() {
-        categoryGroupsDisplayList[groupIndex] = group;
-      });
-    } else {
+    if (!updated) {
       loadGroups(true);
     }
   }
 
   Future<void> loadGroups(bool updateHome) async {
-    List<ModelGroup> groups = await ModelGroup.allInCategory(category.id!);
+    List<ModelGroup> groups = await ModelGroup.inCategory(category.id!);
     setState(() {
       categoryGroupsDisplayList.clear();
       categoryGroupsDisplayList.addAll(groups);

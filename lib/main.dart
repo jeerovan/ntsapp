@@ -303,6 +303,12 @@ class DataSync {
   }
 
   Future<void> _startQuickForegroundSync() async {
+    // initial sync on app start
+    try {
+      await performSync();
+    } catch (e, s) {
+      logger.error('Quick sync', error: e, stackTrace: s);
+    }
     // Setup periodic sync
     _quickSyncTimer = Timer.periodic(
         const Duration(minutes: 1), (_) => _handleForegroundSync());
@@ -312,7 +318,7 @@ class DataSync {
     try {
       await performSync();
     } catch (e, s) {
-      logger.error('Quick sync', error: e, stackTrace: s);
+      logger.error('Foreground sync', error: e, stackTrace: s);
     }
   }
 
