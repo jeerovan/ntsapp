@@ -7,6 +7,8 @@ import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:uuid/uuid.dart';
 
+import 'enums.dart';
+import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 import 'model_item.dart';
 import 'utils_sync.dart';
@@ -208,10 +210,14 @@ class ModelGroup {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("itemgroup", map);
-    map["table"] = "itemgroup";
-    SyncUtils.encryptAndPushChange(
-      map,
-    );
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (syncEnabled) {
+      map["table"] = "itemgroup";
+      SyncUtils.encryptAndPushChange(
+        map,
+      );
+    }
     return inserted;
   }
 
@@ -224,7 +230,9 @@ class ModelGroup {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("itemgroup", updatedMap, id);
-    if (pushToSync) {
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (pushToSync && syncEnabled) {
       map["updated_at"] = utcNow;
       map["table"] = "itemgroup";
       bool mediaChanges = attrs.contains("thumbnail");
@@ -249,6 +257,8 @@ class ModelGroup {
         result = 0;
       }
     }
+    // signal group update
+    await StorageHive().put(AppString.changedCategoryId.string, id);
     return result;
   }
 
@@ -264,7 +274,9 @@ class ModelGroup {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("itemgroup", id);
-    if (withServerSync) {
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (withServerSync && syncEnabled) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "itemgroup";
       SyncUtils.encryptAndPushChange(

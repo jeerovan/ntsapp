@@ -333,7 +333,6 @@ Future<void> performSync({bool inBackground = false}) async {
   logger.info("$mode|Sync|------------------START----------------");
   bool canSync = await SyncUtils.canSync();
   if (!canSync) return;
-
   //check if already running
   int startedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
   int? lastRunningAt = StorageHive().get(SyncUtils.keySyncProcessRunning);

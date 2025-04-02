@@ -8,6 +8,7 @@ import 'package:ntsapp/model_item_file.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'service_logger.dart';
+import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 import 'utils_sync.dart';
 
@@ -377,11 +378,14 @@ class ModelItem {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
-
-    map["table"] = "item";
-    SyncUtils.encryptAndPushChange(
-      map,
-    );
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (syncEnabled) {
+      map["table"] = "item";
+      SyncUtils.encryptAndPushChange(
+        map,
+      );
+    }
     return inserted;
   }
 
@@ -394,7 +398,9 @@ class ModelItem {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("item", updatedMap, id);
-    if (pushToSync) {
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (pushToSync && syncEnabled) {
       map["updated_at"] = utcNow;
       map["table"] = "item";
       SyncUtils.encryptAndPushChange(map, mediaChanges: false);
@@ -418,6 +424,8 @@ class ModelItem {
         result = 0;
       }
     }
+    // signal item update
+    await StorageHive().put(AppString.changedCategoryId.string, id);
     return result;
   }
 
@@ -450,7 +458,9 @@ class ModelItem {
     }
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("item", id);
-    if (withServerSync) {
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (withServerSync && syncEnabled) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "item";
       SyncUtils.encryptAndPushChange(

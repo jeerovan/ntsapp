@@ -162,6 +162,7 @@ class CryptoUtils {
           // decrypt file
           String mimeDirectory = data["mime"].split("/").first;
           String fileOutPath = await getFilePath(mimeDirectory, fileName);
+          await checkAndCreateDirectory(fileOutPath);
           String keyCipherBase64 = serverData[AppString.key.string];
           String keyNonceBase64 = serverData[AppString.nonce.string];
           Uint8List? fileEncryptionKeyBytes = getFileEncryptionKeyBytes(

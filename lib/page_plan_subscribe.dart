@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/page_signin.dart';
@@ -20,10 +22,15 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   AppLogger logger = AppLogger(prefixes: ["PagePlan"]);
   List<Package> _packages = [];
   bool processing = true;
+  bool revenueCatSupported =
+      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
   @override
   void initState() {
     super.initState();
-    fetchOfferings();
+    processing = revenueCatSupported;
+    if (revenueCatSupported) {
+      fetchOfferings();
+    }
   }
 
   @override
@@ -146,22 +153,39 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                   SizedBox(height: 20),
 
                   /// ListView inside Expanded to prevent unbounded height issues
-                  _packages.isEmpty
-                      ? Center(child: Text("No plans available"))
-                      : Expanded(
-                          child: ListView.builder(
-                            shrinkWrap: true, // Ensures it works inside Column
-                            physics:
-                                BouncingScrollPhysics(), // Smooth scrolling
-                            itemCount: _packages.length,
-                            itemBuilder: (context, index) {
-                              Package package = _packages[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 15),
-                                child: _buildPlanOption(package),
-                              );
-                            },
-                          ),
+                  revenueCatSupported
+                      ? _packages.isEmpty
+                          ? Center(child: Text("No plans available"))
+                          : Expanded(
+                              child: ListView.builder(
+                                shrinkWrap:
+                                    true, // Ensures it works inside Column
+                                physics:
+                                    BouncingScrollPhysics(), // Smooth scrolling
+                                itemCount: _packages.length,
+                                itemBuilder: (context, index) {
+                                  Package package = _packages[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 15),
+                                    child: _buildPlanOption(package),
+                                  );
+                                },
+                              ),
+                            )
+                      : Column(
+                          children: [
+                            Center(
+                              child: Image.asset(
+                                "assets/app_qr.png",
+                                width: 200.0,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text("Download the app & subscribe"),
+                          ],
                         ),
 
                   /// Privacy Terms

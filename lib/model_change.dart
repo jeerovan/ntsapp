@@ -6,6 +6,7 @@ import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/service_logger.dart';
 
 import 'enums.dart';
+import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 
 class ModelChange {
@@ -237,6 +238,8 @@ class ModelChange {
           if (modelCategory != null) {
             modelCategory.state = newState.value;
             await modelCategory.update(["state"], pushToSync: false);
+            // signal category update
+            await StorageHive().put(AppString.changedCategoryId.string, rowId);
           }
           break;
         case "itemgroup":
@@ -244,6 +247,8 @@ class ModelChange {
           if (modelGroup != null) {
             modelGroup.state = newState.value;
             await modelGroup.update(["state"], pushToSync: false);
+            // signal category update
+            await StorageHive().put(AppString.changedGroupId.string, rowId);
           }
           break;
         case "item":
@@ -251,6 +256,8 @@ class ModelChange {
           if (modelItem != null) {
             modelItem.state = newState.value;
             await modelItem.update(["state"], pushToSync: false);
+            // signal category update
+            await StorageHive().put(AppString.changedItemId.string, rowId);
           }
           break;
       }

@@ -6,6 +6,7 @@ import 'package:ntsapp/model_item_group.dart';
 import 'common_widgets.dart';
 import 'enums.dart';
 import 'model_category.dart';
+import 'model_item.dart';
 import 'page_category_add_edit.dart';
 import 'page_group_add_edit.dart';
 import 'page_items.dart';
@@ -38,8 +39,11 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   void initState() {
     super.initState();
     // update on server fetch
-    StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
-      if (mounted) loadGroups(false);
+    StorageHive().watch(AppString.changedGroupId.string).listen((event) {
+      if (mounted) changedGroup(event.value);
+    });
+    StorageHive().watch(AppString.changedItemId.string).listen((event) {
+      if (mounted) changedItem(event.value);
     });
     category = widget.category;
     loadGroups(false);
@@ -48,6 +52,41 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> changedGroup(String id) async {
+    ModelGroup? group = await ModelGroup.get(id);
+    if (group != null) {
+      updateDisplayGroup(group);
+    }
+  }
+
+  Future<void> changedItem(String id) async {
+    ModelItem? item = await ModelItem.get(id);
+    if (item != null) {
+      String groupId = item.groupId;
+      ModelGroup? group = await ModelGroup.get(groupId);
+      if (group != null) {
+        updateDisplayGroup(group);
+      }
+    }
+  }
+
+  void updateDisplayGroup(ModelGroup group) {
+    int groupIndex = -1;
+    for (ModelGroup displayGroup in categoryGroupsDisplayList) {
+      if (displayGroup.id == group.id) {
+        categoryGroupsDisplayList.indexOf(displayGroup);
+        break;
+      }
+    }
+    if (groupIndex > -1) {
+      setState(() {
+        categoryGroupsDisplayList[groupIndex] = group;
+      });
+    } else {
+      loadGroups(true);
+    }
   }
 
   Future<void> loadGroups(bool updateHome) async {

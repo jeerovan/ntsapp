@@ -100,8 +100,12 @@ enum AppString {
   otpSentAt,
 
   // Sync
+  syncEnabled,
   pushedLocalContentForSync,
   lastChangesFetchedAt,
+  changedItemId,
+  changedGroupId,
+  changedCategoryId,
 
   // Cipher
   key,
@@ -117,6 +121,14 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.syncEnabled:
+        return "sync_enabled";
+      case AppString.changedItemId:
+        return "changed_item_id";
+      case AppString.changedGroupId:
+        return "changed_group_id";
+      case AppString.changedCategoryId:
+        return "changed_category_id";
       case AppString.pushedLocalContentForSync:
         return 'pushed_local_content_for_sync';
       case AppString.planExpired:

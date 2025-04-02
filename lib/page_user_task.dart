@@ -29,6 +29,8 @@ class PageUserTask extends StatefulWidget {
 class _PageUserTaskState extends State<PageUserTask> {
   final logger = AppLogger(prefixes: ["page_onboard_task"]);
   bool processing = true;
+  bool revenueCatSupported =
+      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
   final SupabaseClient supabase = Supabase.instance.client;
 
   SecureStorage secureStorage = SecureStorage();
@@ -73,25 +75,44 @@ class _PageUserTaskState extends State<PageUserTask> {
       processing = true;
       errorFetching = false;
     });
-    bool hasPlanInRC = false;
+    bool hasSubscriptionPlan = false;
+    bool hasValidPlan = false;
     String rcId = "";
     // check signed in
     bool signedIn =
         StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
             null;
-    if (signedIn && Platform.isAndroid) {
+    if (signedIn) {
       String? userId = SyncUtils.getSignedInUserId();
       if (userId != null) {
-        LogInResult loginResult = await Purchases.logIn(userId);
-        logger.info(loginResult.customerInfo.toString());
+        try {
+          final planResponse = await supabase
+              .from("plans")
+              .select("expires_at")
+              .eq("user_id", userId)
+              .order("expires_at", ascending: false) // Get the latest plan
+              .limit(1) // Ensure only one row is returned
+              .maybeSingle();
+          int expiresAt = int.parse(planResponse!["expires_at"].toString());
+          int now = DateTime.now().toUtc().millisecondsSinceEpoch;
+          if (expiresAt > now) {
+            hasValidPlan = true;
+          }
+        } catch (e) {
+          logger.error("Error Fetching Plan:", error: e);
+        }
+        if (revenueCatSupported) {
+          LogInResult loginResult = await Purchases.logIn(userId);
+          logger.info(loginResult.customerInfo.toString());
+        }
       }
     }
     // check plan in rc
-    if (Platform.isAndroid) {
+    if (revenueCatSupported) {
       try {
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
         if (customerInfo.entitlements.active.isNotEmpty) {
-          hasPlanInRC = true;
+          hasSubscriptionPlan = true;
           rcId = customerInfo.originalAppUserId;
         }
       } on PlatformException catch (e) {
@@ -104,13 +125,9 @@ class _PageUserTaskState extends State<PageUserTask> {
         });
         return;
       }
-    } else {
-      // TODO add support for other platforms
-      hasPlanInRC = true;
     }
-
     // check association of rc id with supa user id
-    if (hasPlanInRC && signedIn) {
+    if (hasSubscriptionPlan && rcId.isNotEmpty && signedIn) {
       try {
         await supabase.functions.invoke("set_id_rc", body: {"rc_id": rcId});
       } on FunctionException catch (e) {
@@ -140,7 +157,7 @@ class _PageUserTaskState extends State<PageUserTask> {
     setState(() {
       processing = false;
     });
-    if (!hasPlanInRC && mounted) {
+    if (revenueCatSupported && !hasSubscriptionPlan && mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => PagePlanSubscribe(),
@@ -150,6 +167,12 @@ class _PageUserTaskState extends State<PageUserTask> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => PageSignin(),
+        ),
+      );
+    } else if (!hasValidPlan && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PagePlanSubscribe(),
         ),
       );
     } else if (!deviceRegistered) {

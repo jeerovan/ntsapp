@@ -117,8 +117,10 @@ class _PageItemsState extends State<PageItems> {
     showItemId = widget.loadItemIdOnInit;
     fetchItems(showItemId);
     // update on server fetch
-    StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
-      if (mounted) fetchItems(null);
+    StorageHive().watch(AppString.changedItemId.string).listen((event) {
+      if (mounted) {
+        changedItem(event.value);
+      }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadImageDirectoryPath();
@@ -126,6 +128,27 @@ class _PageItemsState extends State<PageItems> {
         loadSharedContents();
       }
     });
+  }
+
+  Future<void> changedItem(String itemId) async {
+    ModelItem? item = await ModelItem.get(itemId);
+    if (item != null) {
+      if (item.groupId == widget.group.id) {
+        int itemIndex = -1;
+        for (ModelItem displayItem in _displayItemList) {
+          if (displayItem.id == item.id) {
+            itemIndex = _displayItemList.indexOf(displayItem);
+          }
+        }
+        if (itemIndex > -1) {
+          setState(() {
+            _displayItemList[itemIndex] = item;
+          });
+        } else {
+          fetchItems(null);
+        }
+      }
+    }
   }
 
   Future<void> loadGroupSettings(ModelGroup? group) async {

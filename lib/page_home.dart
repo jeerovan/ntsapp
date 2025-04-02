@@ -19,6 +19,7 @@ import 'app_config.dart';
 import 'common.dart';
 import 'model_category.dart';
 import 'model_category_group.dart';
+import 'model_item.dart';
 import 'model_item_group.dart';
 import 'model_setting.dart';
 import 'page_archived.dart';
@@ -64,12 +65,84 @@ class _PageHomeState extends State<PageHome> {
   void initState() {
     super.initState();
     // update on server fetch
-    StorageHive().watch(AppString.lastChangesFetchedAt.string).listen((event) {
+    StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
       if (!requiresAuthentication || isAuthenticated) {
-        if (mounted) loadCategoriesGroups();
+        if (mounted) changedCategory(event.value);
+      }
+    });
+    StorageHive().watch(AppString.changedGroupId.string).listen((event) {
+      if (!requiresAuthentication || isAuthenticated) {
+        if (mounted) changedGroup(event.value);
+      }
+    });
+    StorageHive().watch(AppString.changedItemId.string).listen((event) {
+      if (!requiresAuthentication || isAuthenticated) {
+        if (mounted) changedItem(event.value);
       }
     });
     checkAuthAndLoad();
+  }
+
+  Future<void> changedCategory(String id) async {
+    ModelCategory? category = await ModelCategory.get(id);
+    if (category != null) {
+      bool updated = false;
+      for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
+        if (categoryGroup.type == "category" &&
+            categoryGroup.id == category.id) {
+          setState(() {
+            categoryGroup.category = category;
+          });
+          updated = true;
+          break;
+        }
+      }
+      if (!updated) {
+        loadCategoriesGroups();
+      }
+    }
+  }
+
+  Future<void> changedGroup(String id) async {
+    ModelGroup? group = await ModelGroup.get(id);
+    if (group != null) {
+      bool updated = false;
+      for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
+        if (categoryGroup.type == "group" && categoryGroup.id == group.id) {
+          setState(() {
+            categoryGroup.group = group;
+          });
+          updated = true;
+          break;
+        }
+      }
+      if (!updated) {
+        loadCategoriesGroups();
+      }
+    }
+  }
+
+  Future<void> changedItem(String id) async {
+    ModelItem? item = await ModelItem.get(id);
+    if (item != null) {
+      String groupId = item.groupId;
+      ModelGroup? group = await ModelGroup.get(groupId);
+      if (group != null) {
+        bool updated = false;
+        for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
+          if (categoryGroup.type == "group" && categoryGroup.id == groupId) {
+            setState(() {
+              categoryGroup.group = group;
+            });
+            updated = true;
+            break;
+          }
+        }
+        if (!updated) {
+          loadCategoriesGroups();
+        }
+      }
+    }
   }
 
   Future<void> checkAuthAndLoad() async {

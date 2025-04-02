@@ -12,7 +12,6 @@ import 'package:ntsapp/model_file.dart';
 import 'package:ntsapp/model_item.dart';
 import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_part.dart';
-import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -127,8 +126,11 @@ class SyncUtils {
         await storage.delete(key: keyForAccessKey);
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
+        await StorageHive().delete(AppString.syncEnabled.string);
         await StorageHive().delete(AppString.deviceId.string);
         await StorageHive().delete(AppString.deviceRegistered.string);
+        await StorageHive().delete(AppString.pushedLocalContentForSync.string);
+        await StorageHive().delete(AppString.lastChangesFetchedAt.string);
         if (Platform.isAndroid) {
           await Purchases.logOut();
         }
@@ -145,7 +147,9 @@ class SyncUtils {
     return success;
   }
 
+  // called once when sync is enabled
   static Future<void> pushLocalChanges() async {
+    await StorageHive().put(AppString.syncEnabled.string, true);
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();
@@ -430,7 +434,7 @@ class SyncUtils {
         defaultValue: "2011-11-11 11:11:11.111111+00");
     try {
       // fetch public profile changes
-      logger.info("fetch profile changes");
+      /* logger.info("fetch profile changes");
       final profileChanges = await supabaseClient
           .from("profiles")
           .select()
@@ -438,7 +442,7 @@ class SyncUtils {
       for (Map<String, dynamic> map in profileChanges) {
         ModelProfile profile = await ModelProfile.fromMap(map);
         await profile.upcertChangeFromServer();
-      }
+      } */
       // fetch notes changes
       final response = await supabaseClient.functions.invoke("fetch_changes",
           headers: {"deviceId": deviceId}, body: {"lastAt": lastFetchedAt});
@@ -594,11 +598,11 @@ class SyncUtils {
       dynamic typedModel;
       switch (table) {
         case "category":
-          typedModel = ModelCategory.get(rowId);
+          typedModel = await ModelCategory.get(rowId);
         case "itemgroup":
-          typedModel = ModelGroup.get(rowId);
+          typedModel = await ModelGroup.get(rowId);
         case "item":
-          typedModel = ModelItem.get(rowId);
+          typedModel = await ModelItem.get(rowId);
       }
       if (typedModel == null) {
         // has been deleted already

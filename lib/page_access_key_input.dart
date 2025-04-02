@@ -51,9 +51,16 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
     setState(() {
       processing = true;
     });
+    words = utf8.decode(utf8.encode(words));
+    words = words.trim().replaceAll(RegExp(r'\s+'), ' ');
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
-
+    if (!bip39.validateMnemonic(words)) {
+      if (mounted) {
+        showAlertMessage(context, "Error", "Invalid word list");
+      }
+      return;
+    }
     String accessKeyHex = bip39.mnemonicToEntropy(words);
     Uint8List accessKeyBytes = hexToBytes(accessKeyHex);
 

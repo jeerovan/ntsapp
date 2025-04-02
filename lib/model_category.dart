@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category_group.dart';
+import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:uuid/uuid.dart';
 
@@ -164,11 +166,15 @@ class ModelCategory {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("category", map);
-    // send to sync
-    map["table"] = "category";
-    SyncUtils.encryptAndPushChange(
-      map,
-    );
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (syncEnabled) {
+      // send to sync
+      map["table"] = "category";
+      SyncUtils.encryptAndPushChange(
+        map,
+      );
+    }
     return inserted;
   }
 
@@ -181,7 +187,9 @@ class ModelCategory {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("category", updatedMap, id);
-    if (pushToSync) {
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (pushToSync && syncEnabled) {
       // send to sync
       map["updated_at"] = utcNow;
       map["table"] = "category";
@@ -207,6 +215,8 @@ class ModelCategory {
         result = 0;
       }
     }
+    // signal category update
+    await StorageHive().put(AppString.changedCategoryId.string, id);
     return result;
   }
 
@@ -223,7 +233,9 @@ class ModelCategory {
     Map<String, dynamic> map = toMap();
     if (title == "DND") return 0;
     int deleted = await dbHelper.delete("category", id);
-    if (withServerSync) {
+    bool syncEnabled =
+        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    if (withServerSync && syncEnabled) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "category";
       SyncUtils.encryptAndPushChange(
