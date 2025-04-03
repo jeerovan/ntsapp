@@ -54,7 +54,7 @@ class _PageHomeState extends State<PageHome> {
   bool requiresAuthentication = false;
   bool isAuthenticated = false;
   ModelCategory? category;
-  final List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
+  List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
   bool _isLoading = false;
   bool _hasInitiated = false;
   bool _isReordering = false;
@@ -179,9 +179,10 @@ class _PageHomeState extends State<PageHome> {
   Future<void> loadCategoriesGroups() async {
     try {
       setState(() => _isLoading = true);
-      _categoriesGroupsDisplayList.clear();
       final categoriesGroups = await ModelCategoryGroup.all();
-      _categoriesGroupsDisplayList.addAll(categoriesGroups);
+      setState(() {
+        _categoriesGroupsDisplayList = categoriesGroups;
+      });
     } catch (e, s) {
       logger.error("loadCategoriesGroups", error: e, stackTrace: s);
     } finally {
