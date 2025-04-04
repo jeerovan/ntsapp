@@ -252,7 +252,7 @@ void backgroundTaskDispatcher() {
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
-          await performSync(inBackground: true);
+          SyncUtils.waitAndSyncChanges(inBackground: true);
           break;
       }
       return Future.value(true);
@@ -266,14 +266,13 @@ void backgroundTaskDispatcher() {
 
 class DataSync {
   static const String syncTaskId = 'dataSync';
-  Timer? _quickSyncTimer;
   static final logger = AppLogger(prefixes: ["main", "DataSync"]);
   // Initialize background sync based on platform
   static Future<void> initialize() async {
     if (Platform.isAndroid || Platform.isIOS) {
       await _initializeBackgroundForMobile();
     }
-    await _initializeForegroundForAll();
+    SyncUtils().startAutoSync();
   }
 
   // Mobile-specific initialization using Workmanager
@@ -295,91 +294,8 @@ class DataSync {
     logger.info("Background Task Registered");
   }
 
-  // Foreground initialization using Timer
-  static Future<void> _initializeForegroundForAll() async {
-    logger.info("Foreground sync started");
-    final sync = DataSync();
-    await sync._startQuickForegroundSync();
-  }
-
-  Future<void> _startQuickForegroundSync() async {
-    // initial sync on app start
-    try {
-      await performSync();
-    } catch (e, s) {
-      logger.error('Quick sync', error: e, stackTrace: s);
-    }
-    // Setup periodic sync
-    _quickSyncTimer = Timer.periodic(
-        const Duration(minutes: 1), (_) => _handleForegroundSync());
-  }
-
-  Future<void> _handleForegroundSync() async {
-    try {
-      await performSync();
-    } catch (e, s) {
-      logger.error('Foreground sync', error: e, stackTrace: s);
-    }
-  }
-
   // Cleanup method for timer
   void dispose() {
-    _quickSyncTimer?.cancel();
-    _quickSyncTimer = null;
     logger.info("Foreground sync Stopped");
-  }
-}
-
-Future<void> performSync({bool inBackground = false}) async {
-  final logger = AppLogger(prefixes: [
-    "main",
-    "performSync",
-  ]);
-  String mode = inBackground ? "Background" : "Foreground";
-  logger.info("$mode|Sync|------------------START----------------");
-  bool canSync = await SyncUtils.canSync();
-  if (!canSync) return;
-  //check if already running
-  int startedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
-  int? lastRunningAt = StorageHive().get(SyncUtils.keySyncProcessRunning);
-  if (lastRunningAt != null && (startedAt - lastRunningAt < 6000)) {
-    logger.warning("Already Syncing");
-    return;
-  }
-  // Check connectivity first
-  bool hasInternet = await hasInternetConnection();
-  if (hasInternet) {
-    // Save state
-    await StorageHive().put(SyncUtils.keySyncProcessRunning,
-        DateTime.now().toUtc().millisecondsSinceEpoch);
-    // set timer to update running state every 5 seconds
-    final timer = Timer.periodic(Duration(seconds: 5), (timer) async {
-      await StorageHive().put(SyncUtils.keySyncProcessRunning,
-          DateTime.now().toUtc().millisecondsSinceEpoch);
-    });
-
-    try {
-      bool removed = await SyncUtils.checkDeviceStatus();
-      if (!removed) {
-        await SyncUtils.pushMapChanges();
-
-        await SyncUtils.deleteFiles();
-        await SyncUtils.deleteThumbnails();
-
-        await SyncUtils.pushThumbnails(startedAt, inBackground);
-
-        await SyncUtils.fetchMapChanges();
-        await SyncUtils.fetchThumbnails();
-        // large files over 20 mb are not fetched
-        await SyncUtils.fetchFiles(startedAt, inBackground);
-
-        // pushing files is a time consuming task
-        await SyncUtils.pushFiles(startedAt, inBackground);
-      }
-    } catch (e, s) {
-      logger.error("Sync exception", error: e, stackTrace: s);
-    }
-    logger.info("$mode|Sync|------------------ENDED----------------");
-    timer.cancel();
   }
 }

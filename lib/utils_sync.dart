@@ -27,11 +27,84 @@ import 'package:http/http.dart' as http;
 import 'model_item_file.dart';
 
 class SyncUtils {
+  // Singleton setup
+  static final SyncUtils _instance = SyncUtils._internal();
+  factory SyncUtils() => _instance;
+  SyncUtils._internal();
+
+  Timer? _debounceTimer;
+  Timer? _intervalTimer;
+  bool _hasPendingChanges = false;
+  bool _isSyncing = false;
   // constants
   static String keySyncProcessRunning = "sync_process";
   static final logger = AppLogger(prefixes: [
     "utils_sync",
   ]);
+
+  void startAutoSync() {
+    _handleChange(false);
+    // Starts the 1-minute interval sync
+    _intervalTimer?.cancel();
+    _intervalTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+      _triggerSync(false);
+    });
+  }
+
+  // Static method to trigger change detection
+  static void waitAndSyncChanges({bool inBackground = false}) {
+    _instance._handleChange(inBackground);
+  }
+
+  void _handleChange(bool inBackground) {
+    _hasPendingChanges = true;
+    _debounceTimer?.cancel(); // Cancel any ongoing debounce
+    _debounceTimer = Timer(Duration(seconds: 1), () async {
+      if (_hasPendingChanges) {
+        if (_hasPendingChanges) {
+          _hasPendingChanges = false;
+          _triggerSync(inBackground);
+        }
+      }
+    });
+  }
+
+  Future<void> _triggerSync(bool inBackground) async {
+    bool hasInternet = await hasInternetConnection();
+    if (!hasInternet) return;
+    bool canSync = await SyncUtils.canSync();
+    if (!canSync) return;
+    if (_isSyncing) return; // Prevents race condition
+    _isSyncing = true;
+    String mode = inBackground ? "Background" : "Foreground";
+    logger.info("$mode|Sync|------------------START----------------");
+    int startedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
+    try {
+      bool removed = await SyncUtils.checkDeviceStatus();
+      if (!removed) {
+        await pushMapChanges();
+
+        await deleteFiles();
+        await deleteThumbnails();
+
+        await pushThumbnails(startedAt, inBackground);
+
+        await fetchMapChanges();
+        await fetchThumbnails();
+        // large files over 20 mb are not fetched
+        await fetchFiles(startedAt, inBackground);
+
+        // pushing files is a time consuming task
+        await pushFiles(startedAt, inBackground);
+      }
+    } catch (e) {
+      logger.error("⚠ Sync failed: $e");
+    } finally {
+      _isSyncing = false;
+    }
+    logger.info("$mode|Sync|------------------ENDED----------------");
+  }
+
   static String? getSignedInUserId() {
     if (StorageHive().get("supabase_initialized")) {
       SupabaseClient supabaseClient = Supabase.instance.client;
@@ -256,6 +329,7 @@ class SyncUtils {
           thumbnail: thumbnail, dataMap: dataMap);
       logger.info("encryptAndPushChange:$table|$changeId|${changeTask.value}");
       await ModelChange.updateTypeState(changeId, SyncState.uploading);
+      waitAndSyncChanges();
     }
   }
 
