@@ -98,7 +98,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
             ),
             SizedBox(height: 20),
             Text(
-              'It is YOUR responsibility to store it in a safe place outside of $appName app.',
+              'We do not store the key. It is YOUR responsibility to store it in a safe place outside of $appName app.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),

@@ -235,12 +235,12 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
     return Row(
       children: [
         Icon(isValid ? Icons.check_circle : Icons.cancel,
-            color: isValid ? Colors.green : Colors.red),
+            size: 16.0, color: isValid ? Colors.green : Colors.red),
         SizedBox(width: 8),
         Text(
           text,
           style: TextStyle(
-              fontSize: 16, color: isValid ? Colors.green : Colors.red),
+              fontSize: 12, color: isValid ? Colors.green : Colors.red),
         ),
       ],
     );

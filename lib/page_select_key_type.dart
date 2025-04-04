@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/app_config.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_access_key_notice.dart';
 import 'package:ntsapp/page_password_key_create.dart';
 
@@ -14,6 +15,7 @@ class PageSelectKeyType extends StatefulWidget {
 
 class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
   bool welcomed = false;
+  bool agreedTerms = false;
   String appName = AppConfig.get(AppString.appName.string);
   @override
   Widget build(BuildContext context) {
@@ -43,38 +45,73 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                   Text(
                     'There are 2 options - either you create a key yourself (similar to password) or we create it for you.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'In either case, you’ll be responsible for keeping it safe. If it’s lost/forgotten, it cannot be recovered and you’ll lose all your data.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                   ),
                   SizedBox(height: 30),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: agreedTerms,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            agreedTerms = value ?? false;
+                          });
+                        },
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'I understand that if I lose/forget encryption key, I may lose the data.',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w400),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Spacer(),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => PageAccessKeyNotice(),
-                        ),
-                      );
+                      if (agreedTerms) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => PageAccessKeyNotice(),
+                          ),
+                        );
+                      } else {
+                        displaySnackBar(context,
+                            message: "Please acknowledge!", seconds: 2);
+                      }
                     },
-                    child: Text(
-                      'Create the key for me',
-                      style: TextStyle(color: Colors.black),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Create the key for me',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        Text('(Recommended)',
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: const Color.fromARGB(255, 53, 53, 53))),
+                      ],
                     ),
                   ),
                   SizedBox(height: 15),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => PagePasswordKeyCreate(
-                            recreate: false,
+                      if (agreedTerms) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => PagePasswordKeyCreate(
+                              recreate: false,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        displaySnackBar(context,
+                            message: "Please acknowledge!", seconds: 2);
+                      }
                     },
                     child: Text(
                       'I’ll create the key myself',
