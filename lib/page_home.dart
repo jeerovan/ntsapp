@@ -7,11 +7,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_category_groups.dart';
-import 'package:ntsapp/page_db.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_plan_status.dart';
-import 'package:ntsapp/page_select_key_type.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:path/path.dart' as path;
@@ -33,7 +31,7 @@ import 'page_settings.dart';
 import 'storage_hive.dart';
 import 'utils_sync.dart';
 
-bool debug = true;
+bool debug = false;
 
 class PageHome extends StatefulWidget {
   final List<String> sharedContents;
@@ -459,7 +457,7 @@ class _PageHomeState extends State<PageHome> {
         IconButton(
           onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PageSelectKeyType(),
+              builder: (context) => PageDummy(),
               settings: const RouteSettings(name: "DummyPage"),
             ));
           },
