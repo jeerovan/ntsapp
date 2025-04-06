@@ -58,7 +58,7 @@ class _PageHomeState extends State<PageHome> {
   bool _isLoading = false;
   bool _hasInitiated = false;
   bool _isReordering = false;
-
+  bool _syncEnabled = false;
   bool loadedSharedContents = false;
 
   @override
@@ -177,6 +177,7 @@ class _PageHomeState extends State<PageHome> {
   }
 
   Future<void> loadCategoriesGroups() async {
+    _syncEnabled = await SyncUtils.canSync();
     try {
       setState(() => _isLoading = true);
       final categoriesGroups = await ModelCategoryGroup.all();
@@ -466,18 +467,26 @@ class _PageHomeState extends State<PageHome> {
           ),
         ),
       if (StorageHive().get(AppString.supabaseInitialzed.string) &&
-          (!requiresAuthentication || isAuthenticated))
-        IconButton(
-          onPressed: () async {
-            bool canSync = await SyncUtils.canSync();
-            if (canSync) {
-              navigateToPlanStatus();
-            } else {
+          (!requiresAuthentication || isAuthenticated) &&
+          !_syncEnabled)
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.cyan,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            ),
+            onPressed: () {
               navigateToOnboardCheck();
-            }
-          },
-          icon: const Icon(
-            LucideIcons.refreshCcw,
+            },
+            child: Text(
+              "Sync",
+              style: TextStyle(
+                  color: const Color.fromARGB(255, 78, 78, 78), fontSize: 12),
+            ),
           ),
         ),
       if (!requiresAuthentication || isAuthenticated)
@@ -559,9 +568,27 @@ class _PageHomeState extends State<PageHome> {
                 }
               });
               break;
+            case 3:
+              SyncUtils.waitAndSyncChanges();
+              break;
+            case 4:
+              navigateToPlanStatus();
+              break;
           }
         },
         itemBuilder: (context) => [
+          if (_syncEnabled)
+            PopupMenuItem<int>(
+              value: 3,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.refreshCcw, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Sync'),
+                ],
+              ),
+            ),
           if (!requiresAuthentication || isAuthenticated)
             PopupMenuItem<int>(
               value: 2,
@@ -597,6 +624,18 @@ class _PageHomeState extends State<PageHome> {
               ],
             ),
           ),
+          if (_syncEnabled)
+            PopupMenuItem<int>(
+              value: 4,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.shield, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Account'),
+                ],
+              ),
+            ),
         ],
       ),
     ];
