@@ -33,12 +33,6 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
     }
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
   Future<void> fetchOfferings() async {
     try {
       Offerings? offerings = await Purchases.getOfferings();

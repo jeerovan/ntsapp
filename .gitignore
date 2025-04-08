@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 android/app/notetoselfkey
+android/app/google-services.json
+firebase.json
+lib/firebase_options.dart
 
 # IntelliJ related
 *.iml

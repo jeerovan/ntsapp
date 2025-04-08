@@ -20,11 +20,12 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'app_config.dart';
 import 'service_logger.dart';
+import 'service_notification.dart';
 import 'storage_sqlite.dart';
 import 'model_setting.dart';
 import 'page_home.dart';
 import 'themes.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -34,6 +35,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await initializeDependencies();
+  //initialize notificatins
+  await Firebase.initializeApp();
+  await NotificationService.instance.initialize();
   //initialize sync
   DataSync.initialize();
   // initialize purchases -- not required in background tasks
@@ -67,7 +71,7 @@ Future<void> initializeDependencies() async {
   // Load the configuration before running the app
   await AppConfig.load();
   logger.info("Initializing Hive");
-  await StorageHive().initialize(); // sets deviceId
+  await StorageHive().initialize();
   logger.info("Initializing Sqlite");
   if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)

@@ -168,7 +168,10 @@ class SyncUtils {
         // wipe out local data
         await ModelCategory.deleteAll();
         removed = true;
-        // TODO send signal to update UI
+        // Send Signal to update home with DND category
+        ModelCategory dndCategory = await ModelCategory.getDND();
+        await StorageHive()
+            .put(AppString.changedCategoryId.string, dndCategory.id);
       }
       logger.info("device Status Checked");
     } catch (e, s) {

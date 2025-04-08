@@ -81,6 +81,7 @@ enum AppString {
   // app
   appName,
   deviceId,
+  fcmId,
   installedAt,
   reviewDialogShown,
   deviceRegistered,
@@ -121,6 +122,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.fcmId:
+        return "fcm_id";
       case AppString.syncEnabled:
         return "sync_enabled";
       case AppString.changedItemId:

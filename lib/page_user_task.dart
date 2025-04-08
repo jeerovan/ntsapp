@@ -196,8 +196,10 @@ class _PageUserTaskState extends State<PageUserTask> {
       if (userId != null) {
         String deviceId = StorageHive().get(AppString.deviceId.string);
         String deviceTitle = await getDeviceName();
+        String fcmId =
+            StorageHive().get(AppString.fcmId.string, defaultValue: null);
         await supabase.functions.invoke("register_device",
-            body: {"deviceId": deviceId, "title": deviceTitle});
+            body: {"deviceId": deviceId, "title": deviceTitle, "fcmId": fcmId});
         await StorageHive().put(AppString.deviceRegistered.string, true);
         bool canSync = await SyncUtils.canSync();
         if (!canSync) {
