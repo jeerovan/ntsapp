@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
         status: plan.status,
       });
     }
-    const { deviceId, title } = await req.json();
+    const { deviceId, title, fcmId } = await req.json();
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
           "user_id": plan.userId,
           "title": title,
           "last_at": now,
+          "fcm_id": fcmId,
           "status": 1,
         });
         return new Response("", { status: 200 });

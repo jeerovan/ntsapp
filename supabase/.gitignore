@@ -7,3 +7,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+service-account.json
+*.py

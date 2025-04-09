@@ -35,9 +35,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await initializeDependencies();
-  //initialize notificatins
-  await Firebase.initializeApp();
-  await NotificationService.instance.initialize();
+  if (runningOnMobile) {
+    //initialize notificatins
+    await Firebase.initializeApp();
+    await NotificationService.instance.initialize();
+  }
   //initialize sync
   DataSync.initialize();
   // initialize purchases -- not required in background tasks

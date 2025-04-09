@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
     }
     return new Response(JSON.stringify(changes), { status: 200 });
   } catch (error) {
+    console.log(error);
     return new Response(JSON.stringify({ error: error }), { status: 400 });
   }
 });

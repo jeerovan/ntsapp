@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/utils_sync.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'service_logger.dart';
 
@@ -35,6 +38,22 @@ class NotificationService {
     final token = await _messaging.getToken();
     if (token != null) {
       await StorageHive().put(AppString.fcmId.string, token);
+      String? deviceId =
+          StorageHive().get(AppString.deviceId.string, defaultValue: null);
+      if (deviceId != null) {
+        try {
+          SupabaseClient supabase = Supabase.instance.client;
+          await supabase.functions.invoke("update_fcm",
+              body: {"deviceId": deviceId, "fcmId": token});
+        } on FunctionException catch (e) {
+          Map<String, dynamic> errorDetails =
+              e.details is String ? jsonDecode(e.details) : e.details;
+          String error = errorDetails["error"];
+          logger.error("Update FCM", error: error);
+        } catch (e, s) {
+          logger.error("Update FCM", error: e, stackTrace: s);
+        }
+      }
     }
     logger.info('FCM Token: $token');
   }
@@ -88,6 +107,10 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
+    if (message.data['type'] == 'Sync') {
+      SyncUtils.waitAndSyncChanges();
+      return;
+    }
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
     if (notification != null && android != null) {
@@ -133,6 +156,10 @@ class NotificationService {
   }
 
   void _handleBackgroundMessage(RemoteMessage message) {
+    if (message.data['type'] == 'Sync') {
+      SyncUtils.waitAndSyncChanges();
+      return;
+    }
     String payload = message.data.toString();
     logger.info("Background|$payload");
   }

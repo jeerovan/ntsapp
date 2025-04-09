@@ -6,6 +6,31 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getUserPlanStatus } from "../_shared/supabase.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { JWT } from "npm:google-auth-library@9";
+import serviceAccount from "../service-account.json" with { type: "json" };
+
+const getAccessToken = ({
+  clientEmail,
+  privateKey,
+}: {
+  clientEmail: string;
+  privateKey: string;
+}): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const jwtClient = new JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
+    });
+    jwtClient.authorize((err, tokens) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(tokens!.access_token!);
+    });
+  });
+};
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -35,6 +60,50 @@ Deno.serve(async (req) => {
             "id",
             id,
           ).eq("user_id", user_id).lt("updated_at", updated_at);
+      }
+    }
+    const userId = plan.userId;
+    // send push notification of sync
+    // Query devices table for valid FCM tokens
+    const { data, error } = await supabaseClient
+      .from("devices")
+      .select("fcm_id")
+      .eq("user_id", userId)
+      .not("fcm_id", "is", null)
+      .neq("fcm_id", "")
+      .neq("id", deviceId);
+
+    if (error) {
+      throw error;
+    }
+
+    // Extract just the FCM tokens
+    const fcmTokens = data.map((device) => device.fcm_id).filter(Boolean);
+    if (fcmTokens.length > 0) {
+      const accessToken = await getAccessToken({
+        clientEmail: serviceAccount.client_email,
+        privateKey: serviceAccount.private_key,
+      });
+
+      for (const fcmToken of fcmTokens) {
+        await fetch(
+          `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              message: {
+                token: fcmToken,
+                data: {
+                  type: `Sync`,
+                },
+              },
+            }),
+          },
+        );
       }
     }
     return new Response("", { status: 200 });
