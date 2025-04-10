@@ -8,20 +8,15 @@ import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_media_migration.dart';
-import 'package:ntsapp/storage_hive.dart';
-import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'app_config.dart';
 import 'service_logger.dart';
 import 'service_notification.dart';
-import 'storage_sqlite.dart';
 import 'model_setting.dart';
 import 'page_home.dart';
 import 'themes.dart';
@@ -67,40 +62,6 @@ Future<void> main() async {
     },
     appRunner: () => runApp(const MainApp()),
   );
-}
-
-Future<void> initializeDependencies() async {
-  // Load the configuration before running the app
-  await AppConfig.load();
-  logger.info("Initializing Hive");
-  await StorageHive().initialize();
-  logger.info("Initializing Sqlite");
-  if (!runningOnMobile) {
-    // Initialize sqflite for FFI (non-mobile platforms)
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-  // initialize sqlite
-  StorageSqlite dbSqlite = StorageSqlite.instance;
-  await dbSqlite.ensureInitialized();
-
-  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
-  ModelSetting.appJson = {
-    for (var pair in keyValuePairs) pair['id']: pair['value']
-  };
-
-  await initializeDirectories();
-  logger.info("Initializing Crypto");
-  CryptoUtils.init();
-
-  final String? supaUrl = AppConfig.get(AppString.supabaseUrl.string, null);
-  final String? supaKey = AppConfig.get(AppString.supabaseKey.string, null);
-  if (supaUrl != null && supaKey != null) {
-    await Supabase.initialize(url: supaUrl, anonKey: supaKey);
-    await StorageHive().put(AppString.supabaseInitialzed.string, true);
-  } else {
-    await StorageHive().put(AppString.supabaseInitialzed.string, false);
-  }
 }
 
 class MainApp extends StatefulWidget {

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -12,8 +14,10 @@ import 'service_logger.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
   await NotificationService.instance.setupFlutterNotifications();
-  await NotificationService.instance.showNotification(message);
+  await NotificationService.instance
+      .showNotification(message, fromBackground: true);
 }
 
 class NotificationService {
@@ -106,9 +110,13 @@ class NotificationService {
     _isFlutterLocalNotificationsInitialized = true;
   }
 
-  Future<void> showNotification(RemoteMessage message) async {
+  Future<void> showNotification(RemoteMessage message,
+      {bool fromBackground = false}) async {
     if (message.data['type'] == 'Sync') {
-      SyncUtils.waitAndSyncChanges();
+      if (fromBackground) {
+        await initializeDependencies();
+      }
+      SyncUtils.waitAndSyncChanges(inBackground: fromBackground);
       return;
     }
     RemoteNotification? notification = message.notification;

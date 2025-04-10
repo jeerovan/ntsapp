@@ -16,6 +16,8 @@ import 'package:mime/mime.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/storage_sqlite.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -24,6 +26,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'app_config.dart';
+import 'utils_crypto.dart';
+
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
@@ -841,5 +846,37 @@ Future<bool> hasInternetConnection() async {
     return result.isNotEmpty;
   } catch (_) {
     return false;
+  }
+}
+
+Future<void> initializeDependencies() async {
+  bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
+  // Load the configuration before running the app
+  await AppConfig.load();
+  await StorageHive().initialize();
+  if (!runningOnMobile) {
+    // Initialize sqflite for FFI (non-mobile platforms)
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  // initialize sqlite
+  StorageSqlite dbSqlite = StorageSqlite.instance;
+  await dbSqlite.ensureInitialized();
+
+  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
+  ModelSetting.appJson = {
+    for (var pair in keyValuePairs) pair['id']: pair['value']
+  };
+
+  await initializeDirectories();
+  CryptoUtils.init();
+
+  final String? supaUrl = AppConfig.get(AppString.supabaseUrl.string, null);
+  final String? supaKey = AppConfig.get(AppString.supabaseKey.string, null);
+  if (supaUrl != null && supaKey != null) {
+    await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+    await StorageHive().put(AppString.supabaseInitialzed.string, true);
+  } else {
+    await StorageHive().put(AppString.supabaseInitialzed.string, false);
   }
 }
