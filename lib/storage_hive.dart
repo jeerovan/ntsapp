@@ -12,10 +12,14 @@ class StorageHive {
 
   StorageHive._internal();
 
+  static bool _initialized = false;
+
   Future<void> initialize() async {
+    if (_initialized) return;
     final appDocumentDirectory = await getApplicationDocumentsDirectory();
     Hive.init(appDocumentDirectory.path);
     Box box = await Hive.openBox(boxName);
+    _initialized = true;
     int? installedAt = box.get(AppString.installedAt.string);
     if (installedAt == null) {
       // app installed at

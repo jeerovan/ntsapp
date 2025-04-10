@@ -4,8 +4,9 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getUserPlanStatus } from "../_shared/supabase.ts";
+import { getFcmAccessToken, getUserPlanStatus } from "../_shared/supabase.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import serviceAccount from "../service-account.json" with { type: "json" };
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -33,6 +34,39 @@ Deno.serve(async (req) => {
         "id",
         deviceId,
       ).eq("user_id", plan.userId);
+      // send fcm
+      const { data: device, error } = await supabaseClient
+        .from("devices")
+        .select("fcm_id")
+        .eq("user_id", plan.userId)
+        .not("fcm_id", "is", null)
+        .neq("fcm_id", "")
+        .neq("id", deviceId).maybeSingle();
+      if (device && !error) {
+        const fcmToken = device.fcm_id;
+        const accessToken = await getFcmAccessToken({
+          clientEmail: serviceAccount.client_email,
+          privateKey: serviceAccount.private_key,
+        });
+        await fetch(
+          `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              message: {
+                token: fcmToken,
+                data: {
+                  type: `Sync`,
+                },
+              },
+            }),
+          },
+        );
+      }
     } else {
       return new Response(JSON.stringify({ error: "Missing deviceId" }), {
         status: 400,

@@ -4,33 +4,9 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getUserPlanStatus } from "../_shared/supabase.ts";
+import { getFcmAccessToken, getUserPlanStatus } from "../_shared/supabase.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { JWT } from "npm:google-auth-library@9";
 import serviceAccount from "../service-account.json" with { type: "json" };
-
-const getAccessToken = ({
-  clientEmail,
-  privateKey,
-}: {
-  clientEmail: string;
-  privateKey: string;
-}): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const jwtClient = new JWT({
-      email: clientEmail,
-      key: privateKey,
-      scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
-    });
-    jwtClient.authorize((err, tokens) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(tokens!.access_token!);
-    });
-  });
-};
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -80,7 +56,7 @@ Deno.serve(async (req) => {
     // Extract just the FCM tokens
     const fcmTokens = data.map((device) => device.fcm_id).filter(Boolean);
     if (fcmTokens.length > 0) {
-      const accessToken = await getAccessToken({
+      const accessToken = await getFcmAccessToken({
         clientEmail: serviceAccount.client_email,
         privateKey: serviceAccount.private_key,
       });
@@ -99,6 +75,7 @@ Deno.serve(async (req) => {
                 token: fcmToken,
                 data: {
                   type: `Sync`,
+                  at: Date.now().toString(),
                 },
               },
             }),

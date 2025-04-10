@@ -1,4 +1,5 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { JWT } from "npm:google-auth-library@9";
 
 export async function getUser(authorization: string) {
   const supabaseClient = createClient(
@@ -211,3 +212,26 @@ export async function setB2FileId(userFileId: string, b2FileId: string) {
     .update({ b2_id: b2FileId })
     .eq("id", userFileId).is("b2_id", null);
 }
+
+export const getFcmAccessToken = ({
+  clientEmail,
+  privateKey,
+}: {
+  clientEmail: string;
+  privateKey: string;
+}): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const jwtClient = new JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
+    });
+    jwtClient.authorize((err, tokens) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(tokens!.access_token!);
+    });
+  });
+};

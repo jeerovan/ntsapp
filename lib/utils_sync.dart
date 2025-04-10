@@ -36,8 +36,6 @@ class SyncUtils {
   Timer? _intervalTimer;
   bool _hasPendingChanges = false;
   bool _isSyncing = false;
-  // constants
-  static String keySyncProcessRunning = "sync_process";
   static final logger = AppLogger(prefixes: [
     "utils_sync",
   ]);
@@ -47,12 +45,14 @@ class SyncUtils {
     // Starts the 1-minute interval sync
     _intervalTimer?.cancel();
     _intervalTimer = Timer.periodic(Duration(minutes: 1), (timer) {
-      _triggerSync(false);
+      triggerSync(false);
     });
   }
 
   // Static method to trigger change detection
   static void waitAndSyncChanges({bool inBackground = false}) {
+    String mode = inBackground ? "Background" : "Foreground";
+    logger.info("sync request from:$mode");
     _instance._handleChange(inBackground);
   }
 
@@ -61,22 +61,23 @@ class SyncUtils {
     _debounceTimer?.cancel(); // Cancel any ongoing debounce
     _debounceTimer = Timer(Duration(seconds: 1), () async {
       if (_hasPendingChanges) {
-        if (_hasPendingChanges) {
-          _hasPendingChanges = false;
-          _triggerSync(inBackground);
-        }
+        _hasPendingChanges = false;
+        triggerSync(inBackground);
       }
     });
   }
 
-  Future<void> _triggerSync(bool inBackground) async {
-    bool hasInternet = await hasInternetConnection();
-    if (!hasInternet) return;
+  Future<void> triggerSync(bool inBackground) async {
+    String mode = inBackground ? "Background" : "Foreground";
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
-    if (_isSyncing) return; // Prevents race condition
+    bool hasInternet = await hasInternetConnection();
+    if (!hasInternet) return;
+    if (_isSyncing) {
+      logger.info("$mode|Already syncing");
+      return;
+    }
     _isSyncing = true;
-    String mode = inBackground ? "Background" : "Foreground";
     logger.info("$mode|Sync|------------------START----------------");
     int startedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
     try {
@@ -99,9 +100,8 @@ class SyncUtils {
       }
     } catch (e) {
       logger.error("⚠ Sync failed: $e");
-    } finally {
-      _isSyncing = false;
     }
+    _isSyncing = false;
     logger.info("$mode|Sync|------------------ENDED----------------");
   }
 
@@ -156,12 +156,12 @@ class SyncUtils {
       SupabaseClient supabaseClient = Supabase.instance.client;
       String deviceId =
           StorageHive().get(AppString.deviceId.string, defaultValue: "");
-      Map<String, dynamic> row = await supabaseClient
+      Map<String, dynamic>? row = await supabaseClient
           .from("devices")
           .select("status")
           .eq("id", deviceId)
-          .single();
-      int status = row.isEmpty ? 1 : row["status"];
+          .maybeSingle();
+      int status = row == null ? 0 : row["status"];
       if (status == 0) {
         // signout
         await signout();
@@ -208,8 +208,16 @@ class SyncUtils {
         await StorageHive().delete(AppString.pushedLocalContentForSync.string);
         await StorageHive().delete(AppString.lastChangesFetchedAt.string);
         if (Platform.isAndroid) {
-          await Purchases.logOut();
+          // purchases are configured in foreground only
+          bool purchaseConfigured = await Purchases.isConfigured;
+          if (purchaseConfigured) {
+            await Purchases.logOut();
+          }
         }
+        // Send Signal to update home with DND category
+        ModelCategory dndCategory = await ModelCategory.getDND();
+        await StorageHive()
+            .put(AppString.changedCategoryId.string, dndCategory.id);
         success = true;
       } on FunctionException catch (e) {
         Map<String, dynamic> errorMap =

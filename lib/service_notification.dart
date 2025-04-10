@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
@@ -12,12 +13,29 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'service_logger.dart';
 
+bool _fcmBgInitialized = false;
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  await NotificationService.instance.setupFlutterNotifications();
-  await NotificationService.instance
-      .showNotification(message, fromBackground: true);
+  try {
+    debugPrint("FcmBG: Handler START");
+
+    if (!_fcmBgInitialized) {
+      await Firebase.initializeApp();
+      debugPrint("FcmBG: Firebase initialized");
+      debugPrint("FcmBG: Initializing dependencies...");
+      await initializeDependencies();
+      _fcmBgInitialized = true;
+      debugPrint("FcmBG: Dependencies initialized");
+    }
+    await NotificationService.instance
+        .showNotification(message, inBackground: true);
+
+    debugPrint("FcmBG: Handler END");
+  } catch (e, stack) {
+    debugPrint("FcmBG: Handler ERROR: $e");
+    debugPrint("FcmBG: Stack: $stack");
+  }
 }
 
 class NotificationService {
@@ -30,6 +48,7 @@ class NotificationService {
   bool _isFlutterLocalNotificationsInitialized = false;
 
   Future<void> initialize() async {
+    logger.info("set firebase background handler");
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // Request permission
@@ -111,12 +130,20 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message,
-      {bool fromBackground = false}) async {
+      {bool inBackground = false}) async {
+    debugPrint("FcmBG: >>> showNotification() called");
+    if (!_isFlutterLocalNotificationsInitialized) {
+      debugPrint(
+          "FcmBG: Reinitializing flutter notifications from showNotification");
+      await setupFlutterNotifications();
+    }
+    final RemoteMessage? notificationData =
+        await _messaging.getInitialMessage();
+    if (notificationData != null) {
+      logger.info("Received:${notificationData.data.toString()}");
+    }
     if (message.data['type'] == 'Sync') {
-      if (fromBackground) {
-        await initializeDependencies();
-      }
-      SyncUtils.waitAndSyncChanges(inBackground: fromBackground);
+      SyncUtils.waitAndSyncChanges(inBackground: inBackground);
       return;
     }
     RemoteNotification? notification = message.notification;
@@ -164,10 +191,6 @@ class NotificationService {
   }
 
   void _handleBackgroundMessage(RemoteMessage message) {
-    if (message.data['type'] == 'Sync') {
-      SyncUtils.waitAndSyncChanges();
-      return;
-    }
     String payload = message.data.toString();
     logger.info("Background|$payload");
   }

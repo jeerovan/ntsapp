@@ -102,6 +102,7 @@ enum AppString {
 
   // Sync
   syncEnabled,
+  syncInProgress,
   pushedLocalContentForSync,
   lastChangesFetchedAt,
   changedItemId,
@@ -122,6 +123,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.syncInProgress:
+        return "sync_in_progress";
       case AppString.fcmId:
         return "fcm_id";
       case AppString.syncEnabled:

@@ -29,13 +29,17 @@ final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
+  logger.info("initialize dependencies");
   await initializeDependencies();
   if (runningOnMobile) {
     //initialize notificatins
+    logger.info("initialize firebase");
     await Firebase.initializeApp();
+    logger.info("initialize notification service");
     await NotificationService.instance.initialize();
   }
   //initialize sync
+  logger.info("initialize datasync");
   DataSync.initialize();
   // initialize purchases -- not required in background tasks
 
@@ -219,7 +223,7 @@ void backgroundTaskDispatcher() {
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
-          SyncUtils.waitAndSyncChanges(inBackground: true);
+          await SyncUtils().triggerSync(true);
           break;
       }
       return Future.value(true);
