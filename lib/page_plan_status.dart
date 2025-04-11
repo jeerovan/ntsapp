@@ -31,7 +31,9 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   @override
   void initState() {
     super.initState();
-    fetchPlanDetails();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchPlanDetails();
+    });
   }
 
   String formatStorage(int bytes) {

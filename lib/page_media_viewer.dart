@@ -40,7 +40,9 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
     _pageController = PageController(initialPage: widget.index);
     currentId = widget.id;
     currentIndex = widget.index;
-    loadItems();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadItems();
+    });
   }
 
   @override

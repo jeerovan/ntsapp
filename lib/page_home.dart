@@ -12,10 +12,10 @@ import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_plan_status.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import 'app_config.dart';
 import 'common.dart';
 import 'model_category.dart';
 import 'model_category_group.dart';
@@ -51,9 +51,11 @@ class PageHome extends StatefulWidget {
 class _PageHomeState extends State<PageHome> {
   final logger = AppLogger(prefixes: ["page_home"]);
   final LocalAuthentication _auth = LocalAuthentication();
+  SecureStorage secureStorage = SecureStorage();
   bool requiresAuthentication = false;
   bool isAuthenticated = false;
   ModelCategory? category;
+  String? appName = "";
   List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
   bool _isLoading = false;
   bool _hasInitiated = false;
@@ -80,7 +82,9 @@ class _PageHomeState extends State<PageHome> {
         if (mounted) changedItem(event.value);
       }
     });
-    checkAuthAndLoad();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkAuthAndLoad();
+    });
   }
 
   Future<void> changedCategory(String id) async {
@@ -164,6 +168,7 @@ class _PageHomeState extends State<PageHome> {
   }
 
   Future<void> checkAuthAndLoad() async {
+    appName = await secureStorage.read(key: AppString.appName.string);
     try {
       if (ModelSetting.getForKey("local_auth", "no") == "no") {
         await loadCategoriesGroups();
@@ -387,7 +392,6 @@ class _PageHomeState extends State<PageHome> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          String appName = AppConfig.get(AppString.appName.string);
           return AlertDialog(
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -526,7 +530,7 @@ class _PageHomeState extends State<PageHome> {
                 // remove backup file if exists
                 String todayDate = getTodayDate();
                 Directory baseDir = await getApplicationDocumentsDirectory();
-                String backupDir = AppConfig.get("backup_dir");
+                String? backupDir = await secureStorage.read(key: "backup_dir");
                 final String zipFilePath =
                     path.join(baseDir.path, '${backupDir}_$todayDate.zip');
                 File backupFile = File(zipFilePath);
@@ -704,7 +708,7 @@ class _PageHomeState extends State<PageHome> {
               _isReordering
                   ? "Reorder"
                   : loadedSharedContents || widget.sharedContents.isEmpty
-                      ? AppConfig.get(AppString.appName.string)
+                      ? appName!
                       : "Select...",
               style: TextStyle(fontSize: 18)),
           actions: _buildDefaultActions(),

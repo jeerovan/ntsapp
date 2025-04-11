@@ -17,7 +17,9 @@ class _PageContactsState extends State<PageContacts> {
   @override
   void initState() {
     super.initState();
-    _fetchContacts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchContacts();
+    });
   }
 
   Future _fetchContacts() async {

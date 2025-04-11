@@ -46,7 +46,9 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       if (mounted) changedItem(event.value);
     });
     category = widget.category;
-    loadGroups(false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadGroups(false);
+    });
   }
 
   @override

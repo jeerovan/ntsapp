@@ -45,7 +45,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   @override
   void initState() {
     super.initState();
-    init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      init();
+    });
   }
 
   @override

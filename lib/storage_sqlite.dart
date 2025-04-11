@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:ntsapp/app_config.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -19,6 +19,7 @@ class StorageSqlite {
   static Database? _database;
   static Completer<Database>? _databaseCompleter;
   final logger = AppLogger(prefixes: ["StorageSqlite"]);
+  SecureStorage secureStorage = SecureStorage();
   StorageSqlite._init();
 
   Future<Database> get database async {
@@ -26,8 +27,8 @@ class StorageSqlite {
     if (_databaseCompleter != null) return _databaseCompleter!.future;
     _databaseCompleter = Completer();
     try {
-      String dbFileName = AppConfig.get("db_file");
-      _database = await _initDB(dbFileName);
+      String? dbFileName = await secureStorage.read(key: "db_file");
+      _database = await _initDB(dbFileName!);
       _databaseCompleter!.complete(_database);
     } catch (e) {
       _databaseCompleter!.completeError(e);

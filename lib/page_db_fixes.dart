@@ -27,7 +27,9 @@ class _PageDbFixesState extends State<PageDbFixes> {
   @override
   void initState() {
     super.initState();
-    applyDbFixes(widget.task);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      applyDbFixes(widget.task);
+    });
   }
 
   void navigateToPageGroup() {

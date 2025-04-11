@@ -17,6 +17,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/storage_sqlite.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
@@ -25,7 +26,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import 'app_config.dart';
 import 'utils_crypto.dart';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -412,8 +412,9 @@ Future<File?> getFile(String fileType, String fileName) async {
 }
 
 Future<String> getFilePath(String mimeDirectory, String fileName) async {
+  SecureStorage secureStorage = SecureStorage();
   final directory = await getApplicationDocumentsDirectory();
-  String mediaDir = AppConfig.get("media_dir");
+  String? mediaDir = await secureStorage.read(key: "media_dir");
   return path.join(directory.path, mediaDir, mimeDirectory, fileName);
 }
 
@@ -433,14 +434,15 @@ Future<void> checkAndCreateDirectory(String filePath) async {
 }
 
 Future<void> initializeDirectories() async {
+  SecureStorage secureStorage = SecureStorage();
   final directory = await getApplicationDocumentsDirectory();
-  String mediaDir = AppConfig.get("media_dir");
+  String? mediaDir = await secureStorage.read(key: "media_dir");
   String mediaDirPath = path.join(directory.path, mediaDir);
   final mediaDirectory = Directory(mediaDirPath);
   if (!mediaDirectory.existsSync()) {
     await mediaDirectory.create(recursive: true);
   }
-  String backupDir = AppConfig.get("backup_dir");
+  String? backupDir = await secureStorage.read(key: "backup_dir");
   String backupDirPath = path.join(directory.path, backupDir);
   final backupDirectory = Directory(backupDirPath);
   if (!backupDirectory.existsSync()) {
@@ -851,8 +853,7 @@ Future<bool> hasInternetConnection() async {
 
 Future<void> initializeDependencies() async {
   bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
-  // Load the configuration before running the app
-  await AppConfig.load();
+  SecureStorage secureStorage = SecureStorage();
   await StorageHive().initialize();
   if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
@@ -871,11 +872,17 @@ Future<void> initializeDependencies() async {
   await initializeDirectories();
   CryptoUtils.init();
 
-  final String? supaUrl = AppConfig.get(AppString.supabaseUrl.string, null);
-  final String? supaKey = AppConfig.get(AppString.supabaseKey.string, null);
+  final String? supaUrl =
+      await secureStorage.read(key: AppString.supabaseUrl.string);
+  final String? supaKey =
+      await secureStorage.read(key: AppString.supabaseKey.string);
   if (supaUrl != null && supaKey != null) {
-    await Supabase.initialize(url: supaUrl, anonKey: supaKey);
-    await StorageHive().put(AppString.supabaseInitialzed.string, true);
+    try {
+      Supabase _ = Supabase.instance;
+    } catch (e) {
+      await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+      await StorageHive().put(AppString.supabaseInitialzed.string, true);
+    }
   } else {
     await StorageHive().put(AppString.supabaseInitialzed.string, false);
   }

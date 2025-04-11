@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ntsapp/app_config.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
@@ -23,7 +22,21 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
   SupabaseClient supabaseClient = Supabase.instance.client;
   SecureStorage secureStorage = SecureStorage();
   bool processing = false;
+  String? appName = "";
   AppLogger logger = AppLogger(prefixes: ["PageAccessKeyNotice"]);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initialize();
+    });
+  }
+
+  Future<void> initialize() async {
+    appName = await secureStorage.read(key: AppString.appName.string);
+    setState(() {});
+  }
 
   Future<void> generateKeys() async {
     String? userId = SyncUtils.getSignedInUserId();
@@ -74,7 +87,6 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
 
   @override
   Widget build(BuildContext context) {
-    String appName = AppConfig.get(AppString.appName.string);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

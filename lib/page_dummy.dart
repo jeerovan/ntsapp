@@ -17,7 +17,6 @@ class _PageDummyState extends State<PageDummy> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {});
   }
 
   @override

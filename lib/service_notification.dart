@@ -1,42 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'service_logger.dart';
-
-bool _fcmBgInitialized = false;
-
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  try {
-    debugPrint("FcmBG: Handler START");
-
-    if (!_fcmBgInitialized) {
-      await Firebase.initializeApp();
-      debugPrint("FcmBG: Firebase initialized");
-      debugPrint("FcmBG: Initializing dependencies...");
-      await initializeDependencies();
-      _fcmBgInitialized = true;
-      debugPrint("FcmBG: Dependencies initialized");
-    }
-    await NotificationService.instance
-        .showNotification(message, inBackground: true);
-
-    debugPrint("FcmBG: Handler END");
-  } catch (e, stack) {
-    debugPrint("FcmBG: Handler ERROR: $e");
-    debugPrint("FcmBG: Stack: $stack");
-  }
-}
 
 class NotificationService {
   NotificationService._();
@@ -48,11 +20,11 @@ class NotificationService {
   bool _isFlutterLocalNotificationsInitialized = false;
 
   Future<void> initialize() async {
-    logger.info("set firebase background handler");
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
     // Request permission
     await _requestPermission();
+
+    // Setup notifications
+    await setupFlutterNotifications();
 
     // Setup message handlers
     await _setupMessageHandlers();
@@ -60,25 +32,11 @@ class NotificationService {
     // Get FCM token
     final token = await _messaging.getToken();
     if (token != null) {
-      await StorageHive().put(AppString.fcmId.string, token);
-      String? deviceId =
-          StorageHive().get(AppString.deviceId.string, defaultValue: null);
-      if (deviceId != null) {
-        try {
-          SupabaseClient supabase = Supabase.instance.client;
-          await supabase.functions.invoke("update_fcm",
-              body: {"deviceId": deviceId, "fcmId": token});
-        } on FunctionException catch (e) {
-          Map<String, dynamic> errorDetails =
-              e.details is String ? jsonDecode(e.details) : e.details;
-          String error = errorDetails["error"];
-          logger.error("Update FCM", error: error);
-        } catch (e, s) {
-          logger.error("Update FCM", error: e, stackTrace: s);
-        }
-      }
+      await _saveFcmToken(token);
     }
     logger.info('FCM Token: $token');
+    // Listen for token refreshes
+    _messaging.onTokenRefresh.listen(_saveFcmToken);
   }
 
   Future<void> _requestPermission() async {
@@ -129,12 +87,9 @@ class NotificationService {
     _isFlutterLocalNotificationsInitialized = true;
   }
 
-  Future<void> showNotification(RemoteMessage message,
-      {bool inBackground = false}) async {
-    debugPrint("FcmBG: >>> showNotification() called");
+  Future<void> handleForegroundNotification(RemoteMessage message) async {
     if (!_isFlutterLocalNotificationsInitialized) {
-      debugPrint(
-          "FcmBG: Reinitializing flutter notifications from showNotification");
+      debugPrint("FcmFG: Reinitializing flutter notifications");
       await setupFlutterNotifications();
     }
     final RemoteMessage? notificationData =
@@ -143,7 +98,7 @@ class NotificationService {
       logger.info("Received:${notificationData.data.toString()}");
     }
     if (message.data['type'] == 'Sync') {
-      SyncUtils.waitAndSyncChanges(inBackground: inBackground);
+      SyncUtils.waitAndSyncChanges();
       return;
     }
     RemoteNotification? notification = message.notification;
@@ -177,21 +132,40 @@ class NotificationService {
   Future<void> _setupMessageHandlers() async {
     //foreground message
     FirebaseMessaging.onMessage.listen((message) {
-      showNotification(message);
+      handleForegroundNotification(message);
     });
 
-    // background message
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);
+    // Handle message when app is in background and user taps notification
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      logger.info("Tapped notification:${message.data.toString()}");
+    });
 
     // opened app
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
-      _handleBackgroundMessage(initialMessage);
+      logger.info(
+          "Tapped notification initial message:${initialMessage.data.toString()}");
     }
   }
 
-  void _handleBackgroundMessage(RemoteMessage message) {
-    String payload = message.data.toString();
-    logger.info("Background|$payload");
+  // Save FCM token to Supabase
+  Future<void> _saveFcmToken(String token) async {
+    await StorageHive().put(AppString.fcmId.string, token);
+    String? deviceId =
+        StorageHive().get(AppString.deviceId.string, defaultValue: null);
+    if (deviceId != null) {
+      try {
+        SupabaseClient supabase = Supabase.instance.client;
+        await supabase.functions
+            .invoke("update_fcm", body: {"deviceId": deviceId, "fcmId": token});
+      } on FunctionException catch (e) {
+        Map<String, dynamic> errorDetails =
+            e.details is String ? jsonDecode(e.details) : e.details;
+        String error = errorDetails["error"];
+        logger.error("Update FCM", error: error);
+      } catch (e, s) {
+        logger.error("Update FCM", error: e, stackTrace: s);
+      }
+    }
   }
 }

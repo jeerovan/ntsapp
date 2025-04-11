@@ -27,7 +27,9 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
   @override
   void initState() {
     super.initState();
-    fetchArchivedCategoriesOnInit();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchArchivedCategoriesOnInit();
+    });
     widget.setDeleteCallback(() {
       setState(() {
         deleteSelectedItems();

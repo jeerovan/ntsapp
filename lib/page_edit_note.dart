@@ -15,8 +15,10 @@ class _PageEditNoteState extends State<PageEditNote> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      controller.text = widget.noteText;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        controller.text = widget.noteText;
+      });
     });
   }
 

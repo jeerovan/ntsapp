@@ -8,13 +8,13 @@ import 'package:ntsapp/backup_restore.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import 'app_config.dart';
 import 'common.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -35,6 +35,7 @@ class SettingsPage extends StatefulWidget {
 class SettingsPageState extends State<SettingsPage> {
   final logger = AppLogger(prefixes: ["page_settings"]);
   final LocalAuthentication _auth = LocalAuthentication();
+  SecureStorage secureStorage = SecureStorage();
   bool isAuthSupported = false;
   bool isAuthEnabled = false;
 
@@ -90,7 +91,7 @@ class SettingsPageState extends State<SettingsPage> {
     Directory directory = await getApplicationDocumentsDirectory();
     String dirPath = directory.path;
     String today = getTodayDate();
-    String backupDir = AppConfig.get("backup_dir");
+    String? backupDir = await secureStorage.read(key: "backup_dir");
     String backupFilePath = path.join(dirPath, "${backupDir}_$today.zip");
     File backupFile = File(backupFilePath);
     if (!backupFile.existsSync()) {
@@ -130,7 +131,7 @@ class SettingsPageState extends State<SettingsPage> {
         Directory directory = await getApplicationDocumentsDirectory();
         String dirPath = directory.path;
         PlatformFile selectedFile = result.files[0];
-        String backupDir = AppConfig.get("backup_dir");
+        String? backupDir = await secureStorage.read(key: "backup_dir");
         String zipFilePath = selectedFile.path!;
         String error = "";
         if (selectedFile.name.startsWith("${backupDir}_")) {
@@ -314,8 +315,9 @@ class SettingsPageState extends State<SettingsPage> {
     openURL(url);
   }
 
-  void _share() {
-    String appName = AppConfig.get(AppString.appName.string);
+  Future<void> _share() async {
+    String? appName = await secureStorage.read(key: AppString.appName.string);
+    appName = appName ?? "";
     const String appLink =
         'https://play.google.com/store/apps/details?id=com.makenotetoself';
     Share.share("Make a $appName: $appLink");

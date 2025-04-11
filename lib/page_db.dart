@@ -21,7 +21,9 @@ class _DatabasePageState extends State<DatabasePage> {
   @override
   void initState() {
     super.initState();
-    _initDatabase();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initDatabase();
+    });
   }
 
   Future<void> _initDatabase() async {

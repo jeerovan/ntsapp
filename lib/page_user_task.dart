@@ -55,20 +55,22 @@ class _PageUserTaskState extends State<PageUserTask> {
     if (user != null) {
       userId = user.id;
     }
-    switch (widget.task) {
-      case AppTask.registerDevice:
-        registerDevice();
-        break;
-      case AppTask.checkEncryptionKeys:
-        checkEncryptionKeys();
-        break;
-      case AppTask.checkCloudSync:
-        checkCloudSync();
-        break;
-      case AppTask.signOut:
-        signOut();
-        break;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      switch (widget.task) {
+        case AppTask.registerDevice:
+          registerDevice();
+          break;
+        case AppTask.checkEncryptionKeys:
+          checkEncryptionKeys();
+          break;
+        case AppTask.checkCloudSync:
+          checkCloudSync();
+          break;
+        case AppTask.signOut:
+          signOut();
+          break;
+      }
+    });
   }
 
   Future<void> checkCloudSync() async {
@@ -359,12 +361,14 @@ class _PageUserTaskState extends State<PageUserTask> {
                     SizedBox(
                       height: 30,
                     ),
-                    ElevatedButton(
-                        onPressed: takeAction,
-                        child: Text(
-                          buttonText,
-                          style: TextStyle(color: Colors.black),
-                        ))
+                    buttonText.isEmpty
+                        ? const SizedBox.shrink()
+                        : ElevatedButton(
+                            onPressed: takeAction,
+                            child: Text(
+                              buttonText,
+                              style: TextStyle(color: Colors.black),
+                            ))
                   ],
                 ),
               ));

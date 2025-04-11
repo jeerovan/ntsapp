@@ -21,7 +21,9 @@ class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
   @override
   void initState() {
     super.initState();
-    fetchCategories();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchCategories();
+    });
   }
 
   @override

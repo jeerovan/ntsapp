@@ -29,7 +29,9 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
   @override
   void initState() {
     super.initState();
-    fetchArchivedItemsOnInit();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchArchivedItemsOnInit();
+    });
     widget.setDeleteCallback(() {
       setState(() {
         deleteSelectedItems();

@@ -22,7 +22,9 @@ class _LocationPickerState extends State<LocationPicker> {
   void initState() {
     super.initState();
     _mapController = MapController();
-    _getLastLocation();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getLastLocation();
+    });
   }
 
   Future<void> _getLastLocation() async {

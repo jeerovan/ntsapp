@@ -28,7 +28,9 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   @override
   void initState() {
     super.initState();
-    fetchStarredItemsOnInit();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchStarredItemsOnInit();
+    });
   }
 
   @override

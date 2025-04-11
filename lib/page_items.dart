@@ -111,11 +111,9 @@ class _PageItemsState extends State<PageItems> {
     super.initState();
 
     noteGroup = widget.group;
-
     loadGroupSettings(noteGroup);
     _audioRecorder = AudioRecorder();
     showItemId = widget.loadItemIdOnInit;
-    fetchItems(showItemId);
     // update on server fetch
     StorageHive().watch(AppString.changedItemId.string).listen((event) {
       if (mounted) {
@@ -123,6 +121,7 @@ class _PageItemsState extends State<PageItems> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchItems(showItemId);
       loadImageDirectoryPath();
       if (widget.sharedContents.isNotEmpty) {
         loadSharedContents();

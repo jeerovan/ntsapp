@@ -31,7 +31,9 @@ class _PageAccessKeyState extends State<PageAccessKey> {
   @override
   void initState() {
     super.initState();
-    loadAccessKey();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadAccessKey();
+    });
   }
 
   Future<void> loadAccessKey() async {

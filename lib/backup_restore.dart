@@ -5,10 +5,10 @@ import 'dart:ui';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'app_config.dart';
 import 'common.dart';
 import 'storage_sqlite.dart';
 import 'enums.dart';
@@ -18,9 +18,10 @@ import 'model_item_group.dart';
 import 'model_setting.dart';
 
 Future<String> createBackup(String baseDirPath) async {
+  SecureStorage secureStorage = SecureStorage();
   String error = "";
   // empty db backup directory
-  String backupDir = AppConfig.get("backup_dir");
+  String? backupDir = await secureStorage.read(key: "backup_dir");
   final String dbFilesDirPath = path.join(baseDirPath, backupDir);
   error = await emptyDir(dbFilesDirPath);
   if (error.isNotEmpty) {
@@ -48,12 +49,13 @@ Future<String> createBackup(String baseDirPath) async {
       break;
     }
   }
+  String? mediaDir = await secureStorage.read(key: "media_dir");
   // create zip file
   if (error.isEmpty) {
     Map<String, String> data = {
       "base": baseDirPath,
-      "media": AppConfig.get("media_dir"),
-      "backup": AppConfig.get("backup_dir")
+      "media": mediaDir!,
+      "backup": backupDir!
     };
     error = await compute(zipDbFiles, data);
   }
@@ -83,10 +85,11 @@ Future<String> zipDbFiles(Map<String, String> data) async {
 }
 
 Future<String> restoreBackup(Map<String, String> data) async {
+  SecureStorage secureStorage = SecureStorage();
   String error = "";
   String baseDirPath = data["dir"]!;
   //empty db files dir
-  String backupDir = AppConfig.get("backup_dir");
+  String? backupDir = await secureStorage.read(key: "backup_dir");
   final String dbFilesDirPath = path.join(baseDirPath, backupDir);
   error = await emptyDir(dbFilesDirPath);
   if (error.isNotEmpty) {
@@ -133,13 +136,14 @@ Future<String> unZipFiles(Map<String, String> data) async {
 
 Future<String> restoreDbFiles(String baseDirPath) async {
   final logger = AppLogger(prefixes: ["backup_restore", "restoreDbFiles"]);
+  SecureStorage secureStorage = SecureStorage();
   String error = "";
 
   // load db backup files
   List<String> tables = ["category", "itemgroup", "item", "setting"];
   for (String table in tables) {
     try {
-      String backupDir = AppConfig.get("backup_dir");
+      String? backupDir = await secureStorage.read(key: "backup_dir");
       final file = File(path.join(baseDirPath, backupDir, '$table.txt'));
       if (file.existsSync()) {
         final lines = await file.readAsLines();

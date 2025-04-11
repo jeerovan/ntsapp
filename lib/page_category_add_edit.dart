@@ -36,7 +36,9 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
   void initState() {
     super.initState();
     category = widget.category;
-    init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      init();
+    });
   }
 
   Future<void> init() async {

@@ -1,9 +1,12 @@
 // main.dart
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
@@ -14,27 +17,75 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import 'app_config.dart';
 import 'service_logger.dart';
 import 'service_notification.dart';
 import 'model_setting.dart';
 import 'page_home.dart';
+import 'storage_secure.dart';
 import 'themes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  // Process the sync message
+  if (message.data['type'] == 'Sync') {
+    try {
+      await initializeDependencies();
+    } catch (e, s) {
+      AppLogger(prefixes: ["FcmBg"])
+          .error("Sync error", error: e, stackTrace: s);
+    }
+    try {
+      await SyncUtils().triggerSync(true);
+    } catch (e, s) {
+      AppLogger(prefixes: ["FcmBg"])
+          .error("Sync error", error: e, stackTrace: s);
+    }
+  }
+}
 
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
+  //load config from file
+  SecureStorage secureStorage = SecureStorage();
+  try {
+    // Read the config file from assets
+    final jsonString = await rootBundle.loadString('assets/config.txt');
+    final credentials = jsonDecode(jsonString);
+    // Store each credential securely
+    for (final service in credentials.keys) {
+      if (credentials[service] is String) {
+        // Simple key-value pair
+        await secureStorage.write(
+          key: service,
+          value: credentials[service],
+        );
+      } else if (credentials[service] is Map) {
+        // Nested credentials (like Firebase)
+        for (final key in (credentials[service] as Map).keys) {
+          await secureStorage.write(
+            key: '$service.$key',
+            value: credentials[service][key].toString(),
+          );
+        }
+      }
+    }
+  } catch (e, s) {
+    logger.error("Exception", error: e, stackTrace: s);
+  }
   logger.info("initialize dependencies");
   await initializeDependencies();
   if (runningOnMobile) {
     //initialize notificatins
     logger.info("initialize firebase");
     await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     logger.info("initialize notification service");
     await NotificationService.instance.initialize();
   }
@@ -44,7 +95,8 @@ Future<void> main() async {
   // initialize purchases -- not required in background tasks
 
   if (Platform.isAndroid) {
-    String? rcKeyAndroid = AppConfig.get(AppString.rcKeyAndroid.string, null);
+    String? rcKeyAndroid =
+        await secureStorage.read(key: AppString.rcKeyAndroid.string);
     if (rcKeyAndroid != null) {
       if (kDebugMode) {
         await Purchases.setLogLevel(LogLevel.debug);
@@ -54,9 +106,10 @@ Future<void> main() async {
       await Purchases.configure(configuration);
     }
   }
+  String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
   await SentryFlutter.init(
     (options) {
-      options.dsn = AppConfig.get("sentry_dsn");
+      options.dsn = sentryDsn;
       // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
       // We recommend adjusting this value in production.
       options.tracesSampleRate = 1.0;
@@ -212,10 +265,12 @@ class _MainAppState extends State<MainApp> {
 @pragma('vm:entry-point')
 void backgroundTaskDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    SecureStorage secureStorage = SecureStorage();
+    String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
     await initializeDependencies();
     await SentryFlutter.init(
       (options) {
-        options.dsn = AppConfig.get("sentry_dsn");
+        options.dsn = sentryDsn;
         options.tracesSampleRate = 1.0;
         options.profilesSampleRate = 1.0;
       },

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ntsapp/app_config.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_access_key_notice.dart';
 import 'package:ntsapp/page_password_key_create.dart';
+import 'package:ntsapp/storage_secure.dart';
 
 import 'enums.dart';
 
@@ -14,9 +14,24 @@ class PageSelectKeyType extends StatefulWidget {
 }
 
 class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
+  SecureStorage secureStorage = SecureStorage();
   bool welcomed = false;
   bool agreedTerms = false;
-  String appName = AppConfig.get(AppString.appName.string);
+  String? appName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initialize();
+    });
+  }
+
+  Future<void> initialize() async {
+    appName = await secureStorage.read(key: AppString.appName.string);
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
