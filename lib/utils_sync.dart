@@ -50,24 +50,25 @@ class SyncUtils {
   }
 
   // Static method to trigger change detection
-  static void waitAndSyncChanges({bool inBackground = false}) {
+  static void waitAndSyncChanges(
+      {bool inBackground = false, bool manual = false}) {
     String mode = inBackground ? "Background" : "Foreground";
     logger.info("sync request from:$mode");
-    _instance._handleChange(inBackground);
+    _instance._handleChange(inBackground, manual: manual);
   }
 
-  void _handleChange(bool inBackground) {
+  void _handleChange(bool inBackground, {bool manual = false}) {
     _hasPendingChanges = true;
     _debounceTimer?.cancel(); // Cancel any ongoing debounce
     _debounceTimer = Timer(Duration(seconds: 1), () async {
       if (_hasPendingChanges) {
         _hasPendingChanges = false;
-        triggerSync(inBackground);
+        triggerSync(inBackground, manual: manual);
       }
     });
   }
 
-  Future<void> triggerSync(bool inBackground) async {
+  Future<void> triggerSync(bool inBackground, {bool manual = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
@@ -102,6 +103,12 @@ class SyncUtils {
       logger.error("⚠ Sync failed: $e");
     }
     _isSyncing = false;
+    if (manual) {
+      // Send Signal to update home with DND category
+      ModelCategory dndCategory = await ModelCategory.getDND();
+      await StorageHive()
+          .put(AppString.changedCategoryId.string, dndCategory.id);
+    }
     logger.info("$mode|Sync|------------------ENDED----------------");
   }
 
