@@ -61,6 +61,7 @@ Deno.serve(async (req) => {
                 token: fcmToken,
                 data: {
                   type: `Sync`,
+                  timestamp: Date.now().toString(),
                 },
               },
             }),
