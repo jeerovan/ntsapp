@@ -31,11 +31,11 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
   SecureStorage secureStorage = SecureStorage();
   bool processing = false;
 
-  bool hasMinOneWord = false;
-  bool hasMinTwoUppercase = false;
-  bool hasMinTwoLowercase = false;
-  bool hasMinTwoDigits = false;
-  bool hasMinTwoSpecialChars = false;
+  bool hasTenChars = false;
+  bool hasUppercase = false;
+  bool hasLowercase = false;
+  bool hasDigits = false;
+  bool hasSpecialChars = false;
 
   @override
   void initState() {
@@ -48,28 +48,89 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
     super.dispose();
   }
 
+  bool _checkForSequences(String input) {
+    bool found = false;
+
+    // Check for sequences of 3+ consecutive letters or numbers
+    for (int i = 0; i < input.length - 2; i++) {
+      // Check numeric sequences (123, 234, etc.)
+      if (isNumeric(input[i]) &&
+          isNumeric(input[i + 1]) &&
+          isNumeric(input[i + 2])) {
+        int first = int.parse(input[i]);
+        int second = int.parse(input[i + 1]);
+        int third = int.parse(input[i + 2]);
+
+        if ((second == first + 1 && third == second + 1) ||
+            (second == first - 1 && third == second - 1)) {
+          found = true;
+          break;
+        }
+      }
+
+      // Check alphabetical sequences (abc, xyz, etc.)
+      if (isLetter(input[i]) &&
+          isLetter(input[i + 1]) &&
+          isLetter(input[i + 2])) {
+        int first = input[i].toLowerCase().codeUnitAt(0);
+        int second = input[i + 1].toLowerCase().codeUnitAt(0);
+        int third = input[i + 2].toLowerCase().codeUnitAt(0);
+
+        if ((second == first + 1 && third == second + 1) ||
+            (second == first - 1 && third == second - 1)) {
+          found = true;
+          break;
+        }
+      }
+    }
+
+    return found;
+  }
+
+  bool isNumeric(String s) {
+    return s.codeUnitAt(0) >= '0'.codeUnitAt(0) &&
+        s.codeUnitAt(0) <= '9'.codeUnitAt(0);
+  }
+
+  bool isLetter(String s) {
+    var code = s.toLowerCase().codeUnitAt(0);
+    return code >= 'a'.codeUnitAt(0) && code <= 'z'.codeUnitAt(0);
+  }
+
   String? _validatePassword(String? password) {
     if (password == null || password.isEmpty) {
       setState(() {
-        hasMinOneWord = false;
+        hasTenChars = false;
+        hasUppercase = false;
+        hasLowercase = false;
+        hasDigits = false;
+        hasSpecialChars = false;
       });
       return 'Please enter key';
     }
     setState(() {
-      List<String> words = password.trim().split(RegExp(r'\s+'));
-      hasMinOneWord = words.isNotEmpty && words[0].isNotEmpty;
-      hasMinTwoUppercase = RegExp(r'[A-Z]').allMatches(password).length >= 2;
-      hasMinTwoLowercase = RegExp(r'[a-z]').allMatches(password).length >= 2;
-      hasMinTwoDigits = RegExp(r'\d').allMatches(password).length >= 2;
-      hasMinTwoSpecialChars =
-          RegExp(r'[!@#\$%^&*(),.?":{}|<>]').allMatches(password).length >= 2;
+      hasTenChars = password.replaceAll(' ', '').length >= 10;
+      hasUppercase = RegExp(r'[A-Z]').allMatches(password).isNotEmpty;
+      hasLowercase = RegExp(r'[a-z]').allMatches(password).isNotEmpty;
+      hasDigits = RegExp(r'\d').allMatches(password).isNotEmpty;
+      hasSpecialChars =
+          RegExp(r'[!@#\$%^&*(),.?":{}|<>]').allMatches(password).isNotEmpty;
     });
-    if (!hasMinOneWord ||
-        !hasMinTwoUppercase ||
-        !hasMinTwoLowercase ||
-        !hasMinTwoDigits ||
-        !hasMinTwoSpecialChars) {
+    if (!hasTenChars ||
+        !hasUppercase ||
+        !hasLowercase ||
+        !hasDigits ||
+        !hasSpecialChars) {
       return '';
+    }
+    if (_checkForSequences(password)) {
+      return 'Sequence not accepted';
+    }
+    if (password == 'I would love 2 have @ll ...' ||
+        password == '(A6r4K4D46r4)' ||
+        password == 'Mykey@2025' ||
+        password == 'C0ffee !s great f0r pr0ductivity') {
+      return 'Examples not accepted';
     }
     return null;
   }
@@ -126,6 +187,34 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
     });
   }
 
+  void _showExamplesPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Examples'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('I would love 2 have @ll ...'),
+            Divider(),
+            Text('(A6r4K4D46r4)'),
+            Divider(),
+            Text('Mykey@2025'),
+            Divider(),
+            Text('C0ffee !s great f0r pr0ductivity'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +243,13 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                     labelText: 'Enter key',
                     border: OutlineInputBorder(),
                     hintText: 'Enter key',
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.info_outline),
+                      tooltip: 'See examples',
+                      onPressed: () {
+                        _showExamplesPopup(context);
+                      },
+                    ),
                   ),
                   validator: (value) {
                     return _validatePassword(value);
@@ -182,14 +278,11 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                   },
                 ),
                 SizedBox(height: 20),
-                _buildRuleItem("At least one word", hasMinOneWord),
-                _buildRuleItem(
-                    "At least 2 uppercase letters", hasMinTwoUppercase),
-                _buildRuleItem(
-                    "At least 2 lowercase letters", hasMinTwoLowercase),
-                _buildRuleItem("At least 2 numeric letters", hasMinTwoDigits),
-                _buildRuleItem(
-                    "At least 2 special characters", hasMinTwoSpecialChars),
+                _buildRuleItem("1 uppercase letter", hasUppercase),
+                _buildRuleItem("1 lowercase letter", hasLowercase),
+                _buildRuleItem("1 numeric letter", hasDigits),
+                _buildRuleItem("1 special character", hasSpecialChars),
+                _buildRuleItem("min 10 characters", hasTenChars),
                 SizedBox(height: 20.0),
 
                 // Submit Button

@@ -96,7 +96,9 @@ class ModelCategory {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
     List<Map<String, dynamic>> rows = await db.query("category",
-        where: "title != ?", whereArgs: ["DND"], orderBy: "position ASC");
+        where: "title != ? AND archived_at = ?",
+        whereArgs: ["DND", 0],
+        orderBy: "position ASC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
