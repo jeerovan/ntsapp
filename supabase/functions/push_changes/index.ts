@@ -74,8 +74,21 @@ Deno.serve(async (req) => {
               message: {
                 token: fcmToken,
                 data: {
-                  type: `Sync`,
+                  type: "Sync",
                   timestamp: Date.now().toString(),
+                },
+                apns: {
+                  headers: {
+                    "apns-expiration": "0",
+                  },
+                },
+                android: {
+                  ttl: "0s",
+                },
+                webpush: {
+                  headers: {
+                    "TTL": "0",
+                  },
                 },
               },
             }),

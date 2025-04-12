@@ -42,7 +42,7 @@ class SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    isAuthEnabled = ModelSetting.getForKey("local_auth", "no") == "yes";
+    isAuthEnabled = ModelSetting.get("local_auth", "no") == "yes";
   }
 
   Future<void> checkDeviceAuth() async {
@@ -52,9 +52,9 @@ class SettingsPageState extends State<SettingsPage> {
   Future<void> setAuthSetting() async {
     isAuthEnabled = !isAuthEnabled;
     if (isAuthEnabled) {
-      ModelSetting.update("local_auth", "yes");
+      await ModelSetting.set("local_auth", "yes");
     } else {
-      ModelSetting.update("local_auth", "no");
+      await ModelSetting.set("local_auth", "no");
     }
     if (mounted) setState(() {});
   }

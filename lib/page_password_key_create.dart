@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_plan_status.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'model_preferences.dart';
 
 class PagePasswordKeyCreate extends StatefulWidget {
   final bool recreate;
@@ -167,8 +168,11 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
         String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
         await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
         await secureStorage.write(key: keyForKeyType, value: "password");
-        if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
-            defaultValue: false)) {
+        bool pushedLocalContent = await ModelPreferences.get(
+                AppString.pushedLocalContentForSync.string,
+                defaultValue: "no") ==
+            "yes";
+        if (!pushedLocalContent) {
           await SyncUtils.pushLocalChanges();
         }
         if (mounted) {

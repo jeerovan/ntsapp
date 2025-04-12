@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PageDevices extends StatefulWidget {
@@ -62,13 +62,15 @@ class _PageDevicesState extends State<PageDevices> {
     }
   }
 
-  void showDisableDialog(String deviceId) {
-    String thisDeviceId = StorageHive().get(AppString.deviceId.string);
-    if (deviceId == thisDeviceId) {
+  Future<void> showDisableDialog(String deviceId) async {
+    String? thisDeviceId =
+        await ModelPreferences.get(AppString.deviceId.string);
+    if (thisDeviceId != null && deviceId == thisDeviceId && mounted) {
       displaySnackBar(context,
           message: "Can't remove this device!", seconds: 2);
       return;
     }
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

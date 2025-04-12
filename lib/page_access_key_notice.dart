@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
@@ -7,7 +8,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'common.dart';
 import 'enums.dart';
 import 'page_access_key.dart';
-import 'storage_hive.dart';
 import 'storage_secure.dart';
 import 'utils_crypto.dart';
 
@@ -64,8 +64,11 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
       await secureStorage.write(key: keyForAccessKey, value: accessKeyBase64);
       await secureStorage.write(key: keyForKeyType, value: "key");
       // push local content
-      if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
-          defaultValue: false)) {
+      bool pushedLocalContent = await ModelPreferences.get(
+              AppString.pushedLocalContentForSync.string,
+              defaultValue: "no") ==
+          "yes";
+      if (!pushedLocalContent) {
         await SyncUtils.pushLocalChanges();
       }
       // navigate to display key

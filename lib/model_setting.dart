@@ -1,17 +1,15 @@
 import 'storage_sqlite.dart';
 
 class ModelSetting {
-  static Map<String, dynamic> appJson = {};
+  static Map<String, dynamic> settingJson = {};
 
-  static Future<void> update(String key, dynamic value) async {
-    appJson[key] = value;
-
-    // Optional: Update the value in the database if needed
+  static Future<void> set(String key, dynamic value) async {
+    settingJson[key] = value;
     final dbHelper = StorageSqlite.instance;
     await dbHelper.insert('setting', {'id': key, 'value': value});
   }
 
-  static dynamic getForKey(String key, dynamic defaultValue) {
-    return appJson.containsKey(key) ? appJson[key] : defaultValue;
+  static dynamic get(String key, dynamic defaultValue) {
+    return settingJson.containsKey(key) ? settingJson[key] : defaultValue;
   }
 }

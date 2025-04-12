@@ -11,7 +11,7 @@ import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 
 import 'enums.dart';
-import 'storage_hive.dart';
+import 'model_preferences.dart';
 import 'utils_sync.dart';
 
 class PageAccessKeyInput extends StatefulWidget {
@@ -93,8 +93,11 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
           key: keyForAccessKey, value: base64Encode(accessKeyBytes));
       await storage.write(key: keyForKeyType, value: "key");
       // push local content
-      if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
-          defaultValue: false)) {
+      bool pushedLocalContent = await ModelPreferences.get(
+              AppString.pushedLocalContentForSync.string,
+              defaultValue: "no") ==
+          "yes";
+      if (!pushedLocalContent) {
         await SyncUtils.pushLocalChanges();
       }
       if (mounted) {

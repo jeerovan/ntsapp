@@ -3,14 +3,14 @@ import 'package:sqflite/sqflite.dart';
 
 import 'storage_sqlite.dart';
 
-class DatabasePage extends StatefulWidget {
-  const DatabasePage({super.key});
+class PageSqlite extends StatefulWidget {
+  const PageSqlite({super.key});
 
   @override
-  State<DatabasePage> createState() => _DatabasePageState();
+  State<PageSqlite> createState() => _PageSqliteState();
 }
 
-class _DatabasePageState extends State<DatabasePage> {
+class _PageSqliteState extends State<PageSqlite> {
   StorageSqlite dbHelper = StorageSqlite.instance;
   Database? _database;
   List<String> _tables = [];

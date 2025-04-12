@@ -238,7 +238,7 @@ class WidgetMediaKitPlayer extends StatefulWidget {
 
 class _WidgetMediaKitPlayerState extends State<WidgetMediaKitPlayer> {
   // Create a [Player] to control playback.
-  late final player = Player();
+  final player = Player();
   // Create a [VideoController] to handle video output from [Player].
   late final controller = VideoController(player);
 

@@ -77,7 +77,7 @@ class _PageDbFixesState extends State<PageDbFixes> {
             }
           }
         }
-        ModelSetting.update(task, "yes");
+        await ModelSetting.set(task, "yes");
         break;
       default:
         break;

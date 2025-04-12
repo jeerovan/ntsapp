@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item_file.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'storage_hive.dart';
@@ -88,7 +89,7 @@ class ModelItem {
         thumbnail = map["thumbnail"];
       }
     }
-    late ItemType mediaType;
+    ItemType mediaType = ItemType.text;
     if (map.containsKey('type')) {
       if (map['type'] is ItemType) {
         mediaType = map['type'];
@@ -377,8 +378,9 @@ class ModelItem {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
-    bool syncEnabled =
-        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
     if (syncEnabled) {
       map["table"] = "item";
       SyncUtils.encryptAndPushChange(
@@ -397,8 +399,9 @@ class ModelItem {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("item", updatedMap, id);
-    bool syncEnabled =
-        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
     if (pushToSync && syncEnabled) {
       map["updated_at"] = utcNow;
       map["table"] = "item";
@@ -455,8 +458,9 @@ class ModelItem {
     }
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("item", id);
-    bool syncEnabled =
-        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
     if (withServerSync && syncEnabled) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "item";

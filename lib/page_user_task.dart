@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_plan_subscribe.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,7 +36,7 @@ class _PageUserTaskState extends State<PageUserTask> {
 
   SecureStorage secureStorage = SecureStorage();
 
-  late String taskTitle;
+  String taskTitle = "";
   String displayMessage = "";
   String buttonText = "";
 
@@ -84,8 +84,7 @@ class _PageUserTaskState extends State<PageUserTask> {
     String rcId = "";
     // check signed in
     bool signedIn =
-        StorageHive().get(AppString.deviceId.string, defaultValue: null) !=
-            null;
+        await ModelPreferences.get(AppString.deviceId.string) != null;
     if (signedIn) {
       String? userId = SyncUtils.getSignedInUserId();
       if (userId != null) {
@@ -155,8 +154,10 @@ class _PageUserTaskState extends State<PageUserTask> {
         return;
       }
     }
-    bool deviceRegistered = StorageHive()
-        .get(AppString.deviceRegistered.string, defaultValue: false);
+    bool deviceRegistered = await ModelPreferences.get(
+            AppString.deviceRegistered.string,
+            defaultValue: "no") ==
+        "yes";
     bool canSync = await SyncUtils.canSync();
     setState(() {
       processing = false;
@@ -196,13 +197,13 @@ class _PageUserTaskState extends State<PageUserTask> {
     });
     try {
       if (userId != null) {
-        String deviceId = StorageHive().get(AppString.deviceId.string);
+        String? deviceId =
+            await ModelPreferences.get(AppString.deviceId.string);
         String deviceTitle = await getDeviceName();
-        String fcmId =
-            StorageHive().get(AppString.fcmId.string, defaultValue: null);
+        String? fcmId = await ModelPreferences.get(AppString.fcmId.string);
         await supabase.functions.invoke("register_device",
             body: {"deviceId": deviceId, "title": deviceTitle, "fcmId": fcmId});
-        await StorageHive().put(AppString.deviceRegistered.string, true);
+        await ModelPreferences.set(AppString.deviceRegistered.string, "yes");
         bool canSync = await SyncUtils.canSync();
         if (!canSync) {
           checkEncryptionKeys();

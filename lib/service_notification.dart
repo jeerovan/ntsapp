@@ -4,7 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ntsapp/enums.dart';
-import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -150,9 +150,8 @@ class NotificationService {
 
   // Save FCM token to Supabase
   Future<void> _saveFcmToken(String token) async {
-    await StorageHive().put(AppString.fcmId.string, token);
-    String? deviceId =
-        StorageHive().get(AppString.deviceId.string, defaultValue: null);
+    await ModelPreferences.set(AppString.fcmId.string, token);
+    String? deviceId = await ModelPreferences.get(AppString.deviceId.string);
     if (deviceId != null) {
       try {
         SupabaseClient supabase = Supabase.instance.client;

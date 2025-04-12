@@ -38,6 +38,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   @override
   void initState() {
     super.initState();
+    category = widget.category;
     // update on server fetch
     StorageHive().watch(AppString.changedGroupId.string).listen((event) {
       if (mounted) changedGroup(event.value);
@@ -45,7 +46,6 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     StorageHive().watch(AppString.changedItemId.string).listen((event) {
       if (mounted) changedItem(event.value);
     });
-    category = widget.category;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadGroups(false);
     });

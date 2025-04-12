@@ -28,7 +28,7 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchArchivedGroupsOnInit();
+      fetchArchivedGroups();
     });
     widget.setDeleteCallback(() {
       setState(() {
@@ -50,7 +50,7 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
     super.dispose();
   }
 
-  Future<void> fetchArchivedGroupsOnInit() async {
+  Future<void> fetchArchivedGroups() async {
     _archivedGroups.clear();
     final groups = await ModelGroup.getArchived();
     _archivedGroups.addAll(groups);
@@ -83,10 +83,10 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
+      clearSelection();
       displaySnackBar(context, message: "Restored.", seconds: 1);
     }
-    clearSelection();
-    fetchArchivedGroupsOnInit();
+    fetchArchivedGroups();
   }
 
   Future<void> deleteSelectedItems() async {
@@ -95,10 +95,10 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
       await group.deleteCascade(withServerSync: true);
     }
     if (mounted) {
+      clearSelection();
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
-    clearSelection();
-    fetchArchivedGroupsOnInit();
+    fetchArchivedGroups();
   }
 
   void clearSelection() {

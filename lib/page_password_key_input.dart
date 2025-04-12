@@ -7,7 +7,7 @@ import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 
 import 'enums.dart';
-import 'storage_hive.dart';
+import 'model_preferences.dart';
 import 'utils_sync.dart';
 
 class PagePasswordKeyInput extends StatefulWidget {
@@ -77,8 +77,11 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
           key: keyForMasterKey, value: decryptedMasterKeyBase64);
       await secureStorage.write(key: keyForKeyType, value: "password");
       // push local content
-      if (!StorageHive().get(AppString.pushedLocalContentForSync.string,
-          defaultValue: false)) {
+      bool pushedLocalContent = await ModelPreferences.get(
+              AppString.pushedLocalContentForSync.string,
+              defaultValue: "no") ==
+          "yes";
+      if (!pushedLocalContent) {
         await SyncUtils.pushLocalChanges();
       }
       if (mounted) {

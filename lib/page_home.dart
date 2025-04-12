@@ -9,7 +9,9 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
+import 'package:ntsapp/page_hive.dart';
 import 'package:ntsapp/page_plan_status.dart';
+import 'package:ntsapp/page_sqlite.dart';
 import 'package:ntsapp/page_starred.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -170,7 +172,7 @@ class _PageHomeState extends State<PageHome> {
   Future<void> checkAuthAndLoad() async {
     appName = await secureStorage.read(key: AppString.appName.string);
     try {
-      if (ModelSetting.getForKey("local_auth", "no") == "no") {
+      if (ModelSetting.get("local_auth", "no") == "no") {
         await loadCategoriesGroups();
       } else {
         requiresAuthentication = true;
@@ -458,19 +460,7 @@ class _PageHomeState extends State<PageHome> {
 
   List<Widget> _buildDefaultActions() {
     return [
-      if (debug)
-        IconButton(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PageDummy(),
-              settings: const RouteSettings(name: "DummyPage"),
-            ));
-          },
-          icon: const Icon(
-            LucideIcons.database,
-          ),
-        ),
-      if (StorageHive().get(AppString.supabaseInitialzed.string) &&
+      if (supabaseInitialized() &&
           (!requiresAuthentication || isAuthenticated) &&
           !_syncEnabled)
         Padding(
@@ -540,7 +530,7 @@ class _PageHomeState extends State<PageHome> {
                   logger.error("DeleteBackupOnExitSettings",
                       error: e, stackTrace: s);
                 }
-                if (ModelSetting.getForKey("local_auth", "no") == "no") {
+                if (ModelSetting.get("local_auth", "no") == "no") {
                   requiresAuthentication = false;
                   await loadCategoriesGroups();
                 } else if (!requiresAuthentication || isAuthenticated) {
@@ -577,6 +567,24 @@ class _PageHomeState extends State<PageHome> {
               break;
             case 4:
               navigateToPlanStatus();
+              break;
+            case 11:
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PageDummy(),
+                settings: const RouteSettings(name: "DummyPage"),
+              ));
+              break;
+            case 12:
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PageSqlite(),
+                settings: const RouteSettings(name: "SqlitePage"),
+              ));
+              break;
+            case 13:
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PageHive(),
+                settings: const RouteSettings(name: "HivePage"),
+              ));
               break;
           }
         },
@@ -637,6 +645,42 @@ class _PageHomeState extends State<PageHome> {
                   Container(width: 8),
                   const SizedBox(width: 5),
                   const Text('Account'),
+                ],
+              ),
+            ),
+          if (debug)
+            PopupMenuItem<int>(
+              value: 11,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.file, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Page'),
+                ],
+              ),
+            ),
+          if (debug)
+            PopupMenuItem<int>(
+              value: 12,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.database, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Sqlite'),
+                ],
+              ),
+            ),
+          if (debug)
+            PopupMenuItem<int>(
+              value: 13,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.columns, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Hive'),
                 ],
               ),
             ),

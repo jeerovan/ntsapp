@@ -44,7 +44,7 @@ class StorageSqlite {
       final dbPath = join(dbDir, dbFileName);
       logger.info("DbPath:$dbPath");
       return await openDatabase(dbPath,
-          version: 12,
+          version: 13,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
@@ -93,15 +93,21 @@ class StorageSqlite {
       await dbMigration_10(db);
       await dbMigration_11(db);
       await dbMigration_12(db);
+      await dbMigration_13(db);
     } else if (oldVersion == 9) {
       await dbMigration_10(db);
       await dbMigration_11(db);
       await dbMigration_12(db);
+      await dbMigration_13(db);
     } else if (oldVersion == 10) {
       await dbMigration_11(db);
       await dbMigration_12(db);
+      await dbMigration_13(db);
     } else if (oldVersion == 11) {
       await dbMigration_12(db);
+      await dbMigration_13(db);
+    } else if (oldVersion == 12) {
+      await dbMigration_13(db);
     }
     logger.info('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -238,7 +244,12 @@ class StorageSqlite {
         FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
       )
     ''');
-
+    await db.execute('''
+      CREATE TABLE preferences (
+        id TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
     logger.info("Tables Created");
   }
 
@@ -699,6 +710,15 @@ class StorageSqlite {
       await db
           .execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
     }
+  }
+
+  Future<void> dbMigration_13(Database db) async {
+    await db.execute('''
+      CREATE TABLE preferences (
+        id TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<bool> _checkColumnExists(

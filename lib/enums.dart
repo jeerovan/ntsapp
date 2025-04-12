@@ -89,7 +89,6 @@ enum AppString {
   // Supabase
   supabaseKey,
   supabaseUrl,
-  supabaseInitialzed,
 
   // RevenueCat
   rcKeyAndroid,
@@ -157,8 +156,6 @@ extension AppStringExtension on AppString {
         return "supabase_key";
       case AppString.supabaseUrl:
         return "supabase_url";
-      case AppString.supabaseInitialzed:
-        return "supabase_initialized";
       case AppString.lastChangesFetchedAt:
         return "last_changes_fetched_at";
       case AppString.otpSentTo:

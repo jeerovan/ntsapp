@@ -12,6 +12,7 @@ import 'package:ntsapp/model_file.dart';
 import 'package:ntsapp/model_item.dart';
 import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_part.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -33,18 +34,19 @@ class SyncUtils {
   SyncUtils._internal();
 
   Timer? _debounceTimer;
-  Timer? _intervalTimer;
+  Timer? _syncTimer;
+  Timer? _processTimer;
   bool _hasPendingChanges = false;
-  bool _isSyncing = false;
   static final logger = AppLogger(prefixes: [
     "utils_sync",
   ]);
+  static final String processRunningAt = "sync_running_at";
 
   void startAutoSync() {
     _handleChange(false);
-    // Starts the 1-minute interval sync
-    _intervalTimer?.cancel();
-    _intervalTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    // Starts the interval sync
+    _syncTimer?.cancel();
+    _syncTimer = Timer.periodic(Duration(minutes: 1), (timer) {
       triggerSync(false);
     });
   }
@@ -63,24 +65,32 @@ class SyncUtils {
     _debounceTimer = Timer(Duration(seconds: 1), () async {
       if (_hasPendingChanges) {
         _hasPendingChanges = false;
-        triggerSync(inBackground, manual: manual);
+        triggerSync(inBackground, manualSync: manual);
       }
     });
   }
 
-  Future<void> triggerSync(bool inBackground, {bool manual = false}) async {
+  Future<void> triggerSync(bool inBackground, {bool manualSync = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
     bool hasInternet = await hasInternetConnection();
     if (!hasInternet) return;
-    if (_isSyncing) {
-      logger.info("$mode|Already syncing");
+    int startedAt = DateTime.now().millisecondsSinceEpoch;
+    String? lastRunningAtString = await ModelPreferences.get(processRunningAt);
+    int? lastRunningAt =
+        lastRunningAtString == null ? null : int.parse(lastRunningAtString);
+    if (lastRunningAt != null && (startedAt - lastRunningAt < 2000)) {
+      logger.warning("Already Syncing");
       return;
     }
-    _isSyncing = true;
+    await ModelPreferences.set(processRunningAt, startedAt);
+    // set timer to update running state every seconds
+    _processTimer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      await ModelPreferences.set(
+          processRunningAt, DateTime.now().millisecondsSinceEpoch);
+    });
     logger.info("$mode|Sync|------------------START----------------");
-    int startedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
     try {
       bool removed = await SyncUtils.checkDeviceStatus();
       if (!removed) {
@@ -93,17 +103,18 @@ class SyncUtils {
 
         await fetchMapChanges();
         await fetchThumbnails();
-        // large files over 20 mb are not fetched
-        await fetchFiles(startedAt, inBackground);
 
         // pushing files is a time consuming task
         await pushFiles(startedAt, inBackground);
+        // large files over 20 mb are not fetched
+        await fetchFiles(startedAt, inBackground);
       }
     } catch (e) {
       logger.error("⚠ Sync failed: $e");
     }
-    _isSyncing = false;
-    if (manual) {
+    _processTimer?.cancel();
+    _processTimer = null;
+    if (manualSync) {
       // Send Signal to update home with DND category
       ModelCategory dndCategory = await ModelCategory.getDND();
       await StorageHive()
@@ -113,7 +124,7 @@ class SyncUtils {
   }
 
   static String? getSignedInUserId() {
-    if (StorageHive().get("supabase_initialized")) {
+    if (supabaseInitialized()) {
       SupabaseClient supabaseClient = Supabase.instance.client;
       User? currentUser = supabaseClient.auth.currentUser;
       if (currentUser != null) {
@@ -127,7 +138,7 @@ class SyncUtils {
   }
 
   static String? getSignedInEmailId() {
-    if (StorageHive().get("supabase_initialized")) {
+    if (supabaseInitialized()) {
       SupabaseClient supabaseClient = Supabase.instance.client;
       User? currentUser = supabaseClient.auth.currentUser;
       if (currentUser != null) {
@@ -161,8 +172,8 @@ class SyncUtils {
     bool removed = false;
     try {
       SupabaseClient supabaseClient = Supabase.instance.client;
-      String deviceId =
-          StorageHive().get(AppString.deviceId.string, defaultValue: "");
+      String deviceId = await ModelPreferences.get(AppString.deviceId.string,
+          defaultValue: "");
       Map<String, dynamic>? row = await supabaseClient
           .from("devices")
           .select("status")
@@ -191,8 +202,7 @@ class SyncUtils {
     bool success = false;
     String? userId = SyncUtils.getSignedInUserId();
     if (userId != null) {
-      String? deviceId =
-          StorageHive().get(AppString.deviceId.string, defaultValue: null);
+      String? deviceId = await ModelPreferences.get(AppString.deviceId.string);
       SecureStorage storage = SecureStorage();
       SupabaseClient supabase = Supabase.instance.client;
       try {
@@ -209,11 +219,12 @@ class SyncUtils {
         await storage.delete(key: keyForAccessKey);
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
-        await StorageHive().delete(AppString.syncEnabled.string);
-        await StorageHive().delete(AppString.deviceId.string);
-        await StorageHive().delete(AppString.deviceRegistered.string);
-        await StorageHive().delete(AppString.pushedLocalContentForSync.string);
-        await StorageHive().delete(AppString.lastChangesFetchedAt.string);
+        await ModelPreferences.delete(AppString.syncEnabled.string);
+        await ModelPreferences.delete(AppString.deviceId.string);
+        await ModelPreferences.delete(AppString.deviceRegistered.string);
+        await ModelPreferences.delete(
+            AppString.pushedLocalContentForSync.string);
+        await ModelPreferences.delete(AppString.lastChangesFetchedAt.string);
         if (Platform.isAndroid) {
           // purchases are configured in foreground only
           bool purchaseConfigured = await Purchases.isConfigured;
@@ -240,7 +251,7 @@ class SyncUtils {
 
   // called once when sync is enabled
   static Future<void> pushLocalChanges() async {
-    await StorageHive().put(AppString.syncEnabled.string, true);
+    await ModelPreferences.set(AppString.syncEnabled.string, "yes");
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();
@@ -273,7 +284,8 @@ class SyncUtils {
         item,
       );
     }
-    StorageHive().put(AppString.pushedLocalContentForSync.string, true);
+    await ModelPreferences.set(
+        AppString.pushedLocalContentForSync.string, "yes");
   }
 
   static Future<void> encryptAndPushChange(
@@ -284,7 +296,7 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     String? userId = getSignedInUserId();
     if (masterKeyBase64 != null && userId != null) {
-      String deviceId = await StorageHive().get(AppString.deviceId.string);
+      String deviceId = await ModelPreferences.get(AppString.deviceId.string);
 
       // fetch thumbnail and set it as boolean
       String? thumbnail =
@@ -354,7 +366,7 @@ class SyncUtils {
   static Future<void> pushMapChanges() async {
     if (!await canSync()) return;
     logger.info("Push Map Changes");
-    String deviceId = StorageHive().get(AppString.deviceId.string);
+    String deviceId = await ModelPreferences.get(AppString.deviceId.string);
     SupabaseClient supabaseClient = Supabase.instance.client;
     List<Map<String, dynamic>> allChanges = [];
     List<String> changeIds = [];
@@ -375,12 +387,12 @@ class SyncUtils {
         await supabaseClient.functions.invoke("push_changes",
             headers: {"deviceId": deviceId}, body: {"allChanges": allChanges});
         await ModelChange.upgradeTypeForIds(changeIds);
-        StorageHive().put(AppString.planExpired.string, false);
+        await ModelPreferences.set(AppString.planExpired.string, "no");
         logger.info("Pushed Map Changes");
       } on FunctionException catch (e) {
         String error = jsonDecode(e.details)["error"];
         if (error == "Plan expired") {
-          StorageHive().put(AppString.planExpired.string, true);
+          await ModelPreferences.set(AppString.planExpired.string, "yes");
           logger.error("pushMapChanges|Supabase", error: "Plan Expired");
         }
       } catch (e, s) {
@@ -516,12 +528,12 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");
-    String deviceId = await StorageHive().get(AppString.deviceId.string);
+    String deviceId = await ModelPreferences.get(AppString.deviceId.string);
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
     SupabaseClient supabaseClient = Supabase.instance.client;
-    String lastFetchedAt = await StorageHive().get(
+    String lastFetchedAt = await ModelPreferences.get(
         AppString.lastChangesFetchedAt.string,
         defaultValue: "2011-11-11 11:11:11.111111+00");
     try {
@@ -656,15 +668,15 @@ class SyncUtils {
       // update last fetched at iso time
       if (hadChanges) {
         String nowUtcCurrent = nowUtcInISO();
-        await StorageHive()
-            .put(AppString.lastChangesFetchedAt.string, nowUtcCurrent);
+        await ModelPreferences.set(
+            AppString.lastChangesFetchedAt.string, nowUtcCurrent);
       }
-      StorageHive().put(AppString.planExpired.string, false);
+      await ModelPreferences.set(AppString.planExpired.string, "no");
       logger.info("Fetched Map Changes");
     } on FunctionException catch (e) {
       String error = jsonDecode(e.details)["error"];
       if (error == "Plan expired") {
-        StorageHive().put(AppString.planExpired.string, true);
+        await ModelPreferences.set(AppString.planExpired.string, "yes");
         logger.error("fetchMapChanges|Supabase", error: "Plan Expired");
       }
     } catch (e, s) {

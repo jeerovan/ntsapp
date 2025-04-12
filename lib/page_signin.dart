@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
@@ -118,10 +119,10 @@ class _PageSigninState extends State<PageSignin> {
           await ModelCategory.associateWithProfile(user.id);
           // assign a device Id
           String? existingDeviceId =
-              StorageHive().get(AppString.deviceId.string);
+              await ModelPreferences.get(AppString.deviceId.string);
           if (existingDeviceId == null) {
             String newDeviceId = Uuid().v4();
-            await StorageHive().put(AppString.deviceId.string, newDeviceId);
+            await ModelPreferences.set(AppString.deviceId.string, newDeviceId);
           }
           //If subscribed to plan, associate
           if (Platform.isAndroid) {

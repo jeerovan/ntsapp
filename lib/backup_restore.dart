@@ -163,7 +163,7 @@ Future<String> restoreDbFiles(String baseDirPath) async {
               await item.insert();
               break;
             case "setting":
-              await ModelSetting.update(row["id"], row["value"]);
+              await ModelSetting.set(row["id"], row["value"]);
               break;
           }
         }

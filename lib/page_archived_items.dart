@@ -30,7 +30,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchArchivedItemsOnInit();
+      fetchArchivedItems();
     });
     widget.setDeleteCallback(() {
       setState(() {
@@ -52,12 +52,11 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
     super.dispose();
   }
 
-  Future<void> fetchArchivedItemsOnInit() async {
+  Future<void> fetchArchivedItems() async {
     _items.clear();
     final topItems = await ModelItem.getArchived();
-    setState(() {
-      _items.addAll(topItems);
-    });
+    _items.addAll(topItems);
+    if (mounted) setState(() {});
   }
 
   void onItemTapped(ModelItem item) {
@@ -92,10 +91,10 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
+      clearSelection();
       displaySnackBar(context, message: "Restored.", seconds: 1);
     }
-    clearSelection();
-    fetchArchivedItemsOnInit();
+    fetchArchivedItems();
   }
 
   Future<void> deleteSelectedItems() async {
@@ -104,10 +103,10 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
       await item.delete(withServerSync: true);
     }
     if (mounted) {
+      clearSelection();
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
-    clearSelection();
-    fetchArchivedItemsOnInit();
+    fetchArchivedItems();
   }
 
   void clearSelection() {

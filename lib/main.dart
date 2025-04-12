@@ -10,7 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
-import 'package:ntsapp/page_media_migration.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -81,6 +80,7 @@ Future<void> main() async {
   }
   logger.info("initialize dependencies");
   await initializeDependencies();
+  await loadSettings();
   if (runningOnMobile) {
     //initialize notificatins
     logger.info("initialize firebase");
@@ -134,7 +134,6 @@ class _MainAppState extends State<MainApp> {
 
   // sharing intent
   late StreamSubscription _intentSub;
-  late StreamSubscription _supaSessionSub;
   final List<String> _sharedContents = [];
 
   final logger = AppLogger(prefixes: ["main", "MainApp"]);
@@ -143,7 +142,7 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     super.initState();
     // Load the theme from saved preferences
-    String? savedTheme = ModelSetting.getForKey("theme", null);
+    String? savedTheme = ModelSetting.get("theme", null);
     switch (savedTheme) {
       case "light":
         _themeMode = ThemeMode.light;
@@ -187,23 +186,11 @@ class _MainAppState extends State<MainApp> {
         });
       });
     }
-    /* if (supabaseInitialized) {
-      SupabaseClient supabase = Supabase.instance.client;
-      _supaSessionSub = supabase.auth.onAuthStateChange.listen((data) {
-        final AuthChangeEvent event = data.event;
-        debugPrint('event: $event');
-        /* final Session? session = data.session;
-        debugPrint('session: $session');
-        final User? user = supabase.auth.currentUser;
-        debugPrint('User:$user'); */
-      });
-    } */
   }
 
   @override
   void dispose() {
     _intentSub.cancel();
-    _supaSessionSub.cancel();
     DataSync().dispose();
     super.dispose();
   }
@@ -213,24 +200,17 @@ class _MainAppState extends State<MainApp> {
     setState(() {
       _themeMode = isDark ? ThemeMode.light : ThemeMode.dark;
       isDark = !isDark;
-      ModelSetting.update("theme", isDark ? "dark" : "light");
     });
+    await ModelSetting.set("theme", isDark ? "dark" : "light");
   }
 
   @override
   Widget build(BuildContext context) {
-    String processMedia = ModelSetting.getForKey("process_media", "no");
     Widget page = PageHome(
       sharedContents: _sharedContents,
       isDarkMode: isDark,
       onThemeToggle: _toggleTheme,
     );
-    if (processMedia == "yes") {
-      page = PageMediaMigration(
-        isDarkMode: isDark,
-        onThemeToggle: _toggleTheme,
-      );
-    }
     return ChangeNotifierProvider(
       create: (_) => FontSizeController(),
       child: Builder(builder: (context) {
@@ -267,7 +247,6 @@ void backgroundTaskDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     SecureStorage secureStorage = SecureStorage();
     String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
-    await initializeDependencies();
     await SentryFlutter.init(
       (options) {
         options.dsn = sentryDsn;
@@ -278,7 +257,11 @@ void backgroundTaskDispatcher() {
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
-          await SyncUtils().triggerSync(true);
+          bool canSync = await SyncUtils.canSync();
+          if (canSync) {
+            await initializeDependencies();
+            await SyncUtils().triggerSync(true);
+          }
           break;
       }
       return Future.value(true);

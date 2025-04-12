@@ -677,8 +677,7 @@ Future<void> openLocationInMap(double lat, double lng) async {
 }
 
 class FontSizeController extends ChangeNotifier {
-  double _scaleFactor =
-      double.parse(ModelSetting.getForKey("fontScale", "1.2"));
+  double _scaleFactor = double.parse(ModelSetting.get("fontScale", "1.2"));
 
   double get scaleFactor => _scaleFactor;
 
@@ -691,7 +690,7 @@ class FontSizeController extends ChangeNotifier {
   void increaseFontSize() {
     if (_scaleFactor < 1.8) {
       _scaleFactor += 0.1;
-      ModelSetting.update("fontScale", _scaleFactor);
+      ModelSetting.set("fontScale", _scaleFactor);
       notifyListeners();
     }
   }
@@ -701,7 +700,7 @@ class FontSizeController extends ChangeNotifier {
     if (_scaleFactor > 0.7) {
       // Prevent text from becoming too small
       _scaleFactor -= 0.1;
-      ModelSetting.update("fontScale", _scaleFactor);
+      ModelSetting.set("fontScale", _scaleFactor);
       notifyListeners();
     }
   }
@@ -709,7 +708,7 @@ class FontSizeController extends ChangeNotifier {
   // Reset to default size
   void resetFontSize() {
     _scaleFactor = 1.2;
-    ModelSetting.update("fontScale", _scaleFactor);
+    ModelSetting.set("fontScale", _scaleFactor);
     notifyListeners();
   }
 }
@@ -851,6 +850,25 @@ Future<bool> hasInternetConnection() async {
   }
 }
 
+bool supabaseInitialized() {
+  try {
+    Supabase _ = Supabase.instance;
+    return true;
+  } catch (e) {
+    debugPrint(e.toString());
+    return false;
+  }
+}
+
+Future<void> loadSettings() async {
+  // initialize sqlite
+  StorageSqlite dbSqlite = StorageSqlite.instance;
+  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
+  ModelSetting.settingJson = {
+    for (var pair in keyValuePairs) pair['id']: pair['value']
+  };
+}
+
 Future<void> initializeDependencies() async {
   bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
   SecureStorage secureStorage = SecureStorage();
@@ -864,11 +882,6 @@ Future<void> initializeDependencies() async {
   StorageSqlite dbSqlite = StorageSqlite.instance;
   await dbSqlite.ensureInitialized();
 
-  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
-  ModelSetting.appJson = {
-    for (var pair in keyValuePairs) pair['id']: pair['value']
-  };
-
   await initializeDirectories();
   CryptoUtils.init();
 
@@ -877,13 +890,8 @@ Future<void> initializeDependencies() async {
   final String? supaKey =
       await secureStorage.read(key: AppString.supabaseKey.string);
   if (supaUrl != null && supaKey != null) {
-    try {
-      Supabase _ = Supabase.instance;
-    } catch (e) {
+    if (!supabaseInitialized()) {
       await Supabase.initialize(url: supaUrl, anonKey: supaKey);
-      await StorageHive().put(AppString.supabaseInitialzed.string, true);
     }
-  } else {
-    await StorageHive().put(AppString.supabaseInitialzed.string, false);
   }
 }

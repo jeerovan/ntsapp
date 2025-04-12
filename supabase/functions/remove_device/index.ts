@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     const headerDeviceId = req.headers.get("deviceId") ?? "";
     const plan = await getUserPlanStatus(authorization, 0, headerDeviceId);
     const { deviceId = null } = await req.json();
+    console.log(deviceId);
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -60,8 +61,21 @@ Deno.serve(async (req) => {
               message: {
                 token: fcmToken,
                 data: {
-                  type: `Sync`,
+                  type: "Sync",
                   timestamp: Date.now().toString(),
+                },
+                apns: {
+                  headers: {
+                    "apns-expiration": "0",
+                  },
+                },
+                android: {
+                  ttl: "0s",
+                },
+                webpush: {
+                  headers: {
+                    "TTL": "0",
+                  },
                 },
               },
             }),

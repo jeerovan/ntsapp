@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -9,7 +10,6 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'enums.dart';
 import 'page_user_task.dart';
-import 'storage_hive.dart';
 
 class PagePlanSubscribe extends StatefulWidget {
   const PagePlanSubscribe({super.key});
@@ -22,20 +22,24 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   AppLogger logger = AppLogger(prefixes: ["PagePlan"]);
   List<Package> _packages = [];
   bool processing = true;
+  bool hasDeviceId =
+      true; // build will not show login button at first, show after initializing
   bool revenueCatSupported =
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+
   @override
   void initState() {
     super.initState();
     processing = revenueCatSupported;
     if (revenueCatSupported) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        fetchOfferings();
+        initialize();
       });
     }
   }
 
-  Future<void> fetchOfferings() async {
+  Future<void> initialize() async {
+    hasDeviceId = await ModelPreferences.get(AppString.deviceId.string) != null;
     try {
       Offerings? offerings = await Purchases.getOfferings();
       if (offerings.current != null) {
@@ -99,9 +103,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          if (StorageHive()
-                  .get(AppString.deviceId.string, defaultValue: null) ==
-              null)
+          if (!hasDeviceId)
             TextButton(
               onPressed: () {
                 Navigator.of(context).pushReplacement(

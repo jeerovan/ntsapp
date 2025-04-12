@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category_group.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:uuid/uuid.dart';
@@ -168,8 +169,9 @@ class ModelCategory {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("category", map);
-    bool syncEnabled =
-        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
     if (syncEnabled) {
       // send to sync
       map["table"] = "category";
@@ -189,8 +191,9 @@ class ModelCategory {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("category", updatedMap, id);
-    bool syncEnabled =
-        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
     if (pushToSync && syncEnabled) {
       // send to sync
       map["updated_at"] = utcNow;
@@ -235,8 +238,9 @@ class ModelCategory {
     Map<String, dynamic> map = toMap();
     if (title == "DND") return 0;
     int deleted = await dbHelper.delete("category", id);
-    bool syncEnabled =
-        StorageHive().get(AppString.syncEnabled.string, defaultValue: false);
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
     if (withServerSync && syncEnabled) {
       map["updated_at"] = DateTime.now().toUtc().millisecondsSinceEpoch;
       map["table"] = "category";

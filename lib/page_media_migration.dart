@@ -80,7 +80,7 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
         }
       }
     }
-    ModelSetting.update("process_media", "no");
+    ModelSetting.set("process_media", "no");
     navigateToPageGroup();
   }
 
