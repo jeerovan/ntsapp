@@ -32,7 +32,7 @@ class _PageUserTaskState extends State<PageUserTask> {
   bool processing = true;
   bool revenueCatSupported =
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
-  late SupabaseClient supabaseClient;
+  SupabaseClient supabaseClient = Supabase.instance.client;
 
   SecureStorage secureStorage = SecureStorage();
 
@@ -51,31 +51,23 @@ class _PageUserTaskState extends State<PageUserTask> {
   @override
   void initState() {
     super.initState();
-    SupabaseClient? supaClient = getSupabaseClient();
-    if (supaClient != null) {
-      supabaseClient = supaClient;
-      User? user = supabaseClient.auth.currentUser;
-      if (user != null) {
-        userId = user.id;
-      }
-      switch (widget.task) {
-        case AppTask.registerDevice:
-          registerDevice();
-          break;
-        case AppTask.checkEncryptionKeys:
-          checkEncryptionKeys();
-          break;
-        case AppTask.checkCloudSync:
-          checkCloudSync();
-          break;
-        case AppTask.signOut:
-          signOut();
-          break;
-      }
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop();
-      });
+    User? user = supabaseClient.auth.currentUser;
+    if (user != null) {
+      userId = user.id;
+    }
+    switch (widget.task) {
+      case AppTask.registerDevice:
+        registerDevice();
+        break;
+      case AppTask.checkEncryptionKeys:
+        checkEncryptionKeys();
+        break;
+      case AppTask.checkCloudSync:
+        checkCloudSync();
+        break;
+      case AppTask.signOut:
+        signOut();
+        break;
     }
   }
 

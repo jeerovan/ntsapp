@@ -462,7 +462,8 @@ class _PageHomeState extends State<PageHome> {
 
   List<Widget> _buildDefaultActions() {
     return [
-      if (supabaseInitialized() &&
+      if (ModelSetting.get(AppString.supabaseInitialized.string, "no") ==
+              "yes" &&
           (!requiresAuthentication || isAuthenticated) &&
           !_syncEnabled)
         Padding(

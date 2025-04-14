@@ -47,6 +47,45 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
+// Mobile-specific callback - must be top-level function
+@pragma('vm:entry-point')
+void backgroundTaskDispatcher() {
+  Workmanager().executeTask((taskName, inputData) async {
+    WidgetsFlutterBinding.ensureInitialized();
+    try {
+      await initializeDependencies(mode: "Background");
+    } catch (e, s) {
+      AppLogger(prefixes: ["BG"])
+          .error("Initialize failed", error: e, stackTrace: s);
+      return Future.value(false);
+    }
+    SecureStorage secureStorage = SecureStorage();
+    String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        options.tracesSampleRate = 1.0;
+        options.profilesSampleRate = 1.0;
+      },
+    );
+    try {
+      switch (taskName) {
+        case DataSync.syncTaskId:
+          bool canSync = await SyncUtils.canSync();
+          if (canSync) {
+            await SyncUtils().triggerSync(true);
+          }
+          break;
+      }
+      return Future.value(true);
+    } catch (e, s) {
+      // Capture exceptions with Sentry
+      await Sentry.captureException(e, stackTrace: s);
+      return Future.value(false);
+    }
+  });
+}
+
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
@@ -253,40 +292,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       }),
     );
   }
-}
-
-// DATA SYNC
-// Mobile-specific callback - must be top-level function
-@pragma('vm:entry-point')
-void backgroundTaskDispatcher() {
-  Workmanager().executeTask((taskName, inputData) async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await initializeDependencies(mode: "Background");
-    SecureStorage secureStorage = SecureStorage();
-    String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = sentryDsn;
-        options.tracesSampleRate = 1.0;
-        options.profilesSampleRate = 1.0;
-      },
-    );
-    try {
-      switch (taskName) {
-        case DataSync.syncTaskId:
-          bool canSync = await SyncUtils.canSync();
-          if (canSync) {
-            await SyncUtils().triggerSync(true);
-          }
-          break;
-      }
-      return Future.value(true);
-    } catch (e, s) {
-      // Capture exceptions with Sentry
-      await Sentry.captureException(e, stackTrace: s);
-      return Future.value(false);
-    }
-  });
 }
 
 class DataSync {

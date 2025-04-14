@@ -89,6 +89,7 @@ enum AppString {
   // Supabase
   supabaseKey,
   supabaseUrl,
+  supabaseInitialized,
 
   // RevenueCat
   rcKeyAndroid,
@@ -122,6 +123,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.supabaseInitialized:
+        return "supabase_initialized";
       case AppString.syncInProgress:
         return "sync_in_progress";
       case AppString.fcmId:

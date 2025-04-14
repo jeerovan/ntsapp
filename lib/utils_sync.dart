@@ -127,28 +127,20 @@ class SyncUtils {
   }
 
   static String? getSignedInUserId() {
-    if (supabaseInitialized()) {
-      SupabaseClient supabaseClient = Supabase.instance.client;
-      User? currentUser = supabaseClient.auth.currentUser;
-      if (currentUser != null) {
-        return currentUser.id;
-      } else {
-        return null;
-      }
+    SupabaseClient supabaseClient = Supabase.instance.client;
+    User? currentUser = supabaseClient.auth.currentUser;
+    if (currentUser != null) {
+      return currentUser.id;
     } else {
       return null;
     }
   }
 
   static String? getSignedInEmailId() {
-    if (supabaseInitialized()) {
-      SupabaseClient supabaseClient = Supabase.instance.client;
-      User? currentUser = supabaseClient.auth.currentUser;
-      if (currentUser != null) {
-        return currentUser.email;
-      } else {
-        return null;
-      }
+    SupabaseClient supabaseClient = Supabase.instance.client;
+    User? currentUser = supabaseClient.auth.currentUser;
+    if (currentUser != null) {
+      return currentUser.email;
     } else {
       return null;
     }

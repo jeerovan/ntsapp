@@ -854,16 +854,6 @@ Future<bool> hasInternetConnection() async {
   }
 }
 
-bool supabaseInitialized() {
-  try {
-    Supabase _ = Supabase.instance;
-    return true;
-  } catch (e) {
-    debugPrint(e.toString());
-    return false;
-  }
-}
-
 SupabaseClient? getSupabaseClient() {
   try {
     return Supabase.instance.client;
@@ -890,7 +880,7 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
   ModelSetting.settingJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
   };
-
+  await ModelSetting.set(AppString.supabaseInitialized.string, "no");
   await initializeDirectories();
   CryptoUtils.init();
 
@@ -899,10 +889,9 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
   final String? supaKey =
       await secureStorage.read(key: AppString.supabaseKey.string);
   if (supaUrl != null && supaKey != null) {
-    if (!supabaseInitialized()) {
-      Supabase _ = await Supabase.initialize(url: supaUrl, anonKey: supaKey);
-      AppLogger(prefixes: [mode]).info("Initialized Supabase");
-    }
+    Supabase _ = await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+    await ModelSetting.set(AppString.supabaseInitialized.string, "yes");
+    AppLogger(prefixes: [mode]).info("Initialized Supabase");
   }
   AppLogger(prefixes: [mode]).info("Initialized Dependencies");
 }
