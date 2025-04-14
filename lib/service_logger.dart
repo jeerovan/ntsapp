@@ -1,6 +1,10 @@
 import 'dart:developer' as dev;
 import 'dart:io';
 
+import 'package:ntsapp/model_log.dart';
+
+import 'common.dart';
+
 // Custom Logger Class
 class AppLogger {
   final List<String> prefixes;
@@ -59,6 +63,14 @@ class AppLogger {
       final coloredMessage = "${_getColor(level)}$logMessage$_reset";
       stdout.writeln(coloredMessage);
     }
+    if (debugApp()) {
+      insertToDb(logMessage);
+    }
+  }
+
+  Future<void> insertToDb(String logMessage) async {
+    ModelLog log = await ModelLog.fromMap({"log": logMessage});
+    await log.insert();
   }
 
   /// Convenience methods

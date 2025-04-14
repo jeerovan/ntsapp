@@ -27,21 +27,20 @@ class _PageArchivedGroupsState extends State<PageArchivedGroups> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchArchivedGroups();
-    });
     widget.setDeleteCallback(() {
       setState(() {
         deleteSelectedItems();
         widget.onSelectionChange(false);
       });
     });
-
     widget.setRestoreCallback(() {
       setState(() {
         restoreSelectedItems();
         widget.onSelectionChange(false);
       });
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchArchivedGroups();
     });
   }
 

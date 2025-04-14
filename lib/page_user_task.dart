@@ -32,7 +32,7 @@ class _PageUserTaskState extends State<PageUserTask> {
   bool processing = true;
   bool revenueCatSupported =
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
-  final SupabaseClient supabase = Supabase.instance.client;
+  late SupabaseClient supabaseClient;
 
   SecureStorage secureStorage = SecureStorage();
 
@@ -51,11 +51,13 @@ class _PageUserTaskState extends State<PageUserTask> {
   @override
   void initState() {
     super.initState();
-    User? user = supabase.auth.currentUser;
-    if (user != null) {
-      userId = user.id;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    SupabaseClient? supaClient = getSupabaseClient();
+    if (supaClient != null) {
+      supabaseClient = supaClient;
+      User? user = supabaseClient.auth.currentUser;
+      if (user != null) {
+        userId = user.id;
+      }
       switch (widget.task) {
         case AppTask.registerDevice:
           registerDevice();
@@ -70,7 +72,11 @@ class _PageUserTaskState extends State<PageUserTask> {
           signOut();
           break;
       }
-    });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+      });
+    }
   }
 
   Future<void> checkCloudSync() async {
@@ -89,7 +95,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       String? userId = SyncUtils.getSignedInUserId();
       if (userId != null) {
         try {
-          final planResponse = await supabase
+          final planResponse = await supabaseClient
               .from("plans")
               .select("expires_at")
               .eq("user_id", userId)
@@ -132,7 +138,8 @@ class _PageUserTaskState extends State<PageUserTask> {
     // check association of rc id with supa user id
     if (hasSubscriptionPlan && rcId.isNotEmpty && signedIn) {
       try {
-        await supabase.functions.invoke("set_id_rc", body: {"rc_id": rcId});
+        await supabaseClient.functions
+            .invoke("set_id_rc", body: {"rc_id": rcId});
       } on FunctionException catch (e) {
         errorFetching = false;
         Map<String, dynamic> errorDetails =
@@ -201,7 +208,7 @@ class _PageUserTaskState extends State<PageUserTask> {
             await ModelPreferences.get(AppString.deviceId.string);
         String deviceTitle = await getDeviceName();
         String? fcmId = await ModelPreferences.get(AppString.fcmId.string);
-        await supabase.functions.invoke("register_device",
+        await supabaseClient.functions.invoke("register_device",
             body: {"deviceId": deviceId, "title": deviceTitle, "fcmId": fcmId});
         await ModelPreferences.set(AppString.deviceRegistered.string, "yes");
         bool canSync = await SyncUtils.canSync();
@@ -245,7 +252,7 @@ class _PageUserTaskState extends State<PageUserTask> {
     //check where to navigate
     try {
       final List<Map<String, dynamic>> keyRows =
-          await supabase.from("keys").select().eq("id", userId);
+          await supabaseClient.from("keys").select().eq("id", userId);
       if (keyRows.isEmpty && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(

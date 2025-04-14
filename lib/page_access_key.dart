@@ -24,16 +24,14 @@ class PageAccessKey extends StatefulWidget {
 }
 
 class _PageAccessKeyState extends State<PageAccessKey> {
-  SecureStorage storage = SecureStorage();
+  SecureStorage secureStorage = SecureStorage();
   AppLogger logger = AppLogger(prefixes: ["PageAccessKey"]);
   String sentence = "";
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadAccessKey();
-    });
+    loadAccessKey();
   }
 
   Future<void> loadAccessKey() async {
@@ -41,7 +39,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
     if (user == null) return;
     String userId = user.id;
     String keyForAccessKey = '${userId}_ak';
-    String? accessKeyBase64 = await storage.read(key: keyForAccessKey);
+    String? accessKeyBase64 = await secureStorage.read(key: keyForAccessKey);
     Uint8List accessKeyBytes = base64Decode(accessKeyBase64!);
     String accessKeyHex = bytesToHex(accessKeyBytes);
     if (mounted) {

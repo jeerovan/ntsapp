@@ -22,9 +22,7 @@ class _PageDevicesState extends State<PageDevices> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchDevices();
-    });
+    fetchDevices();
   }
 
   Future<void> fetchDevices() async {

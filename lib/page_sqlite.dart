@@ -21,9 +21,7 @@ class _PageSqliteState extends State<PageSqlite> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initDatabase();
-    });
+    _initDatabase();
   }
 
   Future<void> _initDatabase() async {

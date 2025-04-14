@@ -10,6 +10,7 @@ import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_hive.dart';
+import 'package:ntsapp/page_logs.dart';
 import 'package:ntsapp/page_plan_status.dart';
 import 'package:ntsapp/page_sqlite.dart';
 import 'package:ntsapp/page_starred.dart';
@@ -33,8 +34,6 @@ import 'page_settings.dart';
 import 'storage_hive.dart';
 import 'utils_sync.dart';
 
-bool debug = false;
-
 class PageHome extends StatefulWidget {
   final List<String> sharedContents;
   final bool isDarkMode;
@@ -51,7 +50,7 @@ class PageHome extends StatefulWidget {
 }
 
 class _PageHomeState extends State<PageHome> {
-  final logger = AppLogger(prefixes: ["page_home"]);
+  final logger = AppLogger(prefixes: ["Home"]);
   final LocalAuthentication _auth = LocalAuthentication();
   SecureStorage secureStorage = SecureStorage();
   bool requiresAuthentication = false;
@@ -84,9 +83,8 @@ class _PageHomeState extends State<PageHome> {
         if (mounted) changedItem(event.value);
       }
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkAuthAndLoad();
-    });
+    logger.info("Monitoring changes");
+    checkAuthAndLoad();
   }
 
   Future<void> changedCategory(String id) async {
@@ -170,11 +168,14 @@ class _PageHomeState extends State<PageHome> {
   }
 
   Future<void> checkAuthAndLoad() async {
+    logger.info("Checking auth and load");
     appName = await secureStorage.read(key: AppString.appName.string);
+    setState(() {});
     try {
       if (ModelSetting.get("local_auth", "no") == "no") {
         await loadCategoriesGroups();
       } else {
+        logger.info("Requires authentication");
         requiresAuthentication = true;
         await _authenticateOnStart();
       }
@@ -191,6 +192,7 @@ class _PageHomeState extends State<PageHome> {
       setState(() {
         _categoriesGroupsDisplayList = categoriesGroups;
       });
+      logger.info("Loaded categoriesGroups");
     } catch (e, s) {
       logger.error("loadCategoriesGroups", error: e, stackTrace: s);
     } finally {
@@ -586,6 +588,12 @@ class _PageHomeState extends State<PageHome> {
                 settings: const RouteSettings(name: "HivePage"),
               ));
               break;
+            case 14:
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => PageLogs(),
+                settings: const RouteSettings(name: "PageLogs"),
+              ));
+              break;
           }
         },
         itemBuilder: (context) => [
@@ -648,7 +656,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debug)
+          if (debugApp())
             PopupMenuItem<int>(
               value: 11,
               child: Row(
@@ -660,7 +668,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debug)
+          if (debugApp())
             PopupMenuItem<int>(
               value: 12,
               child: Row(
@@ -672,7 +680,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debug)
+          if (debugApp())
             PopupMenuItem<int>(
               value: 13,
               child: Row(
@@ -681,6 +689,18 @@ class _PageHomeState extends State<PageHome> {
                   Container(width: 8),
                   const SizedBox(width: 5),
                   const Text('Hive'),
+                ],
+              ),
+            ),
+          if (debugApp())
+            PopupMenuItem<int>(
+              value: 14,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.list, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Logs'),
                 ],
               ),
             ),

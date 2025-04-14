@@ -27,21 +27,20 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchArchivedCategoriesOnInit();
-    });
     widget.setDeleteCallback(() {
       setState(() {
         deleteSelectedItems();
         widget.onSelectionChange(false);
       });
     });
-
     widget.setRestoreCallback(() {
       setState(() {
         restoreSelectedItems();
         widget.onSelectionChange(false);
       });
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchArchivedCategories();
     });
   }
 
@@ -50,7 +49,7 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
     super.dispose();
   }
 
-  Future<void> fetchArchivedCategoriesOnInit() async {
+  Future<void> fetchArchivedCategories() async {
     _archivedCategories.clear();
     final categories = await ModelCategory.getArchived();
     setState(() {
@@ -85,7 +84,7 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
       displaySnackBar(context, message: "Restored.", seconds: 1);
     }
     clearSelection();
-    fetchArchivedCategoriesOnInit();
+    fetchArchivedCategories();
   }
 
   Future<void> deleteSelectedItems() async {
@@ -97,7 +96,7 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
     clearSelection();
-    fetchArchivedCategoriesOnInit();
+    fetchArchivedCategories();
   }
 
   void clearSelection() {

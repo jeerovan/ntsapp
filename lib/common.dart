@@ -33,6 +33,10 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
+bool debugApp() {
+  return true;
+}
+
 final List<Color> predefinedColors = [
   "#06b6d4",
   "#0ea5e9",
@@ -860,16 +864,17 @@ bool supabaseInitialized() {
   }
 }
 
-Future<void> loadSettings() async {
-  // initialize sqlite
-  StorageSqlite dbSqlite = StorageSqlite.instance;
-  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
-  ModelSetting.settingJson = {
-    for (var pair in keyValuePairs) pair['id']: pair['value']
-  };
+SupabaseClient? getSupabaseClient() {
+  try {
+    return Supabase.instance.client;
+  } catch (e, s) {
+    AppLogger(prefixes: ["Common"])
+        .error("Supaclient", error: e, stackTrace: s);
+    return null;
+  }
 }
 
-Future<void> initializeDependencies() async {
+Future<void> initializeDependencies({String mode = "Common"}) async {
   bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
   SecureStorage secureStorage = SecureStorage();
   await StorageHive().initialize();
@@ -881,6 +886,10 @@ Future<void> initializeDependencies() async {
   // initialize sqlite
   StorageSqlite dbSqlite = StorageSqlite.instance;
   await dbSqlite.ensureInitialized();
+  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
+  ModelSetting.settingJson = {
+    for (var pair in keyValuePairs) pair['id']: pair['value']
+  };
 
   await initializeDirectories();
   CryptoUtils.init();
@@ -891,7 +900,9 @@ Future<void> initializeDependencies() async {
       await secureStorage.read(key: AppString.supabaseKey.string);
   if (supaUrl != null && supaKey != null) {
     if (!supabaseInitialized()) {
-      await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+      Supabase _ = await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+      AppLogger(prefixes: [mode]).info("Initialized Supabase");
     }
   }
+  AppLogger(prefixes: [mode]).info("Initialized Dependencies");
 }

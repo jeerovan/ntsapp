@@ -32,9 +32,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
     super.initState();
     processing = revenueCatSupported;
     if (revenueCatSupported) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        initialize();
-      });
+      initialize();
     }
   }
 

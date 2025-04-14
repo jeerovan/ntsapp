@@ -250,6 +250,9 @@ class StorageSqlite {
         value TEXT NOT NULL
       )
     ''');
+    await db.execute(
+      'CREATE TABLE logs(id INTEGER PRIMARY KEY AUTOINCREMENT, log TEXT)',
+    );
     logger.info("Tables Created");
   }
 
@@ -719,6 +722,9 @@ class StorageSqlite {
         value TEXT NOT NULL
       )
     ''');
+    await db.execute(
+      'CREATE TABLE logs(id INTEGER PRIMARY KEY AUTOINCREMENT, log TEXT)',
+    );
   }
 
   Future<bool> _checkColumnExists(

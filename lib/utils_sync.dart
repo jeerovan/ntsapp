@@ -43,7 +43,6 @@ class SyncUtils {
   static final String processRunningAt = "sync_running_at";
 
   void startAutoSync() {
-    _handleChange(false);
     // Starts the interval sync
     _syncTimer?.cancel();
     _syncTimer = Timer.periodic(Duration(minutes: 1), (timer) {
@@ -51,11 +50,14 @@ class SyncUtils {
     });
   }
 
+  void stopAutoSync() {
+    _syncTimer?.cancel();
+    _syncTimer = null;
+  }
+
   // Static method to trigger change detection
   static void waitAndSyncChanges(
       {bool inBackground = false, bool manual = false}) {
-    String mode = inBackground ? "Background" : "Foreground";
-    logger.info("sync request from:$mode");
     _instance._handleChange(inBackground, manual: manual);
   }
 
@@ -72,6 +74,7 @@ class SyncUtils {
 
   Future<void> triggerSync(bool inBackground, {bool manualSync = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
+    logger.info("sync request from:$mode");
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
     bool hasInternet = await hasInternetConnection();
@@ -164,8 +167,10 @@ class SyncUtils {
 
   // to sync, one must have masterKey with an active plan
   static Future<bool> canSync() async {
-    String? masterKeyBase64 = await getMasterKey();
-    return masterKeyBase64 != null;
+    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+            defaultValue: "no") ==
+        "yes";
+    return syncEnabled;
   }
 
   static Future<bool> checkDeviceStatus() async {

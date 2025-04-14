@@ -19,7 +19,6 @@ Deno.serve(async (req) => {
     const headerDeviceId = req.headers.get("deviceId") ?? "";
     const plan = await getUserPlanStatus(authorization, 0, headerDeviceId);
     const { deviceId = null } = await req.json();
-    console.log(deviceId);
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -31,56 +30,54 @@ Deno.serve(async (req) => {
         plan.userId,
       );
     } else if (deviceId) {
-      await supabaseClient.from("devices").update({ "status": 0 }).eq(
-        "id",
-        deviceId,
-      ).eq("user_id", plan.userId);
+      const { data: device, error } = await supabaseClient.from("devices")
+        .update({ "status": 0 }).eq(
+          "id",
+          deviceId,
+        ).eq("user_id", plan.userId).select().maybeSingle();
       // send fcm
-      const { data: device, error } = await supabaseClient
-        .from("devices")
-        .select("fcm_id")
-        .eq("user_id", plan.userId)
-        .not("fcm_id", "is", null)
-        .neq("fcm_id", "")
-        .neq("id", deviceId).maybeSingle();
       if (device && !error) {
         const fcmToken = device.fcm_id;
-        const accessToken = await getFcmAccessToken({
-          clientEmail: serviceAccount.client_email,
-          privateKey: serviceAccount.private_key,
-        });
-        await fetch(
-          `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              message: {
-                token: fcmToken,
-                data: {
-                  type: "Sync",
-                  timestamp: Date.now().toString(),
-                },
-                apns: {
-                  headers: {
-                    "apns-expiration": "0",
-                  },
-                },
-                android: {
-                  ttl: "0s",
-                },
-                webpush: {
-                  headers: {
-                    "TTL": "0",
-                  },
-                },
+        if (fcmToken) {
+          const accessToken = await getFcmAccessToken({
+            clientEmail: serviceAccount.client_email,
+            privateKey: serviceAccount.private_key,
+          });
+          await fetch(
+            `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
               },
-            }),
-          },
-        );
+              body: JSON.stringify({
+                message: {
+                  token: fcmToken,
+                  data: {
+                    type: "Sync",
+                    timestamp: Date.now().toString(),
+                  },
+                  apns: {
+                    headers: {
+                      "apns-expiration": "0",
+                    },
+                  },
+                  android: {
+                    ttl: "0s",
+                  },
+                  webpush: {
+                    headers: {
+                      "TTL": "0",
+                    },
+                  },
+                },
+              }),
+            },
+          );
+        } else {
+          console.error(`FcmId not found ${deviceId}`);
+        }
       }
     } else {
       return new Response(JSON.stringify({ error: "Missing deviceId" }), {

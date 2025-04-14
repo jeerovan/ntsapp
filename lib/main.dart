@@ -28,11 +28,12 @@ import 'package:workmanager/workmanager.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   // Process the sync message
   if (message.data['type'] == 'Sync') {
     try {
-      await initializeDependencies();
+      await initializeDependencies(mode: "FcmBG");
     } catch (e, s) {
       AppLogger(prefixes: ["FcmBg"])
           .error("Sync error", error: e, stackTrace: s);
@@ -75,25 +76,26 @@ Future<void> main() async {
         }
       }
     }
-  } catch (e, s) {
-    logger.error("Exception", error: e, stackTrace: s);
+  } catch (e) {
+    debugPrint(
+      "Exception:${e.toString()}",
+    );
   }
-  logger.info("initialize dependencies");
-  await initializeDependencies();
-  await loadSettings();
+  await initializeDependencies(mode: "Foreground");
+  logger.info("initialized dependencies");
   if (runningOnMobile) {
     //initialize notificatins
-    logger.info("initialize firebase");
     await Firebase.initializeApp();
+    logger.info("initialized firebase");
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    logger.info("initialize notification service");
+    logger.info("initialized firebase background handler");
     await NotificationService.instance.initialize();
+    logger.info("initialized notification service");
   }
   //initialize sync
-  logger.info("initialize datasync");
-  DataSync.initialize();
+  await DataSync.initialize();
+  logger.info("initialized datasync");
   // initialize purchases -- not required in background tasks
-
   if (Platform.isAndroid) {
     String? rcKeyAndroid =
         await secureStorage.read(key: AppString.rcKeyAndroid.string);
@@ -128,15 +130,15 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
   late bool isDark;
 
   // sharing intent
-  late StreamSubscription _intentSub;
+  StreamSubscription? _intentSub;
   final List<String> _sharedContents = [];
 
-  final logger = AppLogger(prefixes: ["main", "MainApp"]);
+  final logger = AppLogger(prefixes: ["MainApp"]);
 
   @override
   void initState() {
@@ -186,12 +188,25 @@ class _MainAppState extends State<MainApp> {
         });
       });
     }
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    logger.info("App State:$state");
+    if (state == AppLifecycleState.resumed) {
+      SyncUtils().startAutoSync();
+      logger.info("Started autosync");
+    } else if (state == AppLifecycleState.paused) {
+      SyncUtils().stopAutoSync();
+      logger.info("Stopped autosync");
+    }
   }
 
   @override
   void dispose() {
-    _intentSub.cancel();
-    DataSync().dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _intentSub?.cancel();
     super.dispose();
   }
 
@@ -245,6 +260,8 @@ class _MainAppState extends State<MainApp> {
 @pragma('vm:entry-point')
 void backgroundTaskDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await initializeDependencies(mode: "Background");
     SecureStorage secureStorage = SecureStorage();
     String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
     await SentryFlutter.init(
@@ -259,7 +276,6 @@ void backgroundTaskDispatcher() {
         case DataSync.syncTaskId:
           bool canSync = await SyncUtils.canSync();
           if (canSync) {
-            await initializeDependencies();
             await SyncUtils().triggerSync(true);
           }
           break;
@@ -275,13 +291,15 @@ void backgroundTaskDispatcher() {
 
 class DataSync {
   static const String syncTaskId = 'dataSync';
-  static final logger = AppLogger(prefixes: ["main", "DataSync"]);
+  static final logger = AppLogger(prefixes: ["DataSync"]);
   // Initialize background sync based on platform
   static Future<void> initialize() async {
     if (Platform.isAndroid || Platform.isIOS) {
       await _initializeBackgroundForMobile();
     }
+    // sync on app start
     SyncUtils().startAutoSync();
+    logger.info("Started autosync");
   }
 
   // Mobile-specific initialization using Workmanager
@@ -301,10 +319,5 @@ class DataSync {
       backoffPolicyDelay: Duration(minutes: 15),
     );
     logger.info("Background Task Registered");
-  }
-
-  // Cleanup method for timer
-  void dispose() {
-    logger.info("Foreground sync Stopped");
   }
 }
