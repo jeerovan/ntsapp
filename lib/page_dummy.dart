@@ -4,8 +4,6 @@ import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'page_select_key_type.dart';
-
 class PageDummy extends StatefulWidget {
   const PageDummy({super.key});
 

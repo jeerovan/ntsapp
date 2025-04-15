@@ -235,10 +235,10 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     logger.info("App State:$state");
     if (state == AppLifecycleState.resumed) {
       SyncUtils().startAutoSync();
-      logger.info("Started autosync");
+      logger.info("Started Foreground Sync");
     } else if (state == AppLifecycleState.paused) {
       SyncUtils().stopAutoSync();
-      logger.info("Stopped autosync");
+      logger.info("Stopped Foreground Sync");
     }
   }
 

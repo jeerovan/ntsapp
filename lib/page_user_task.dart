@@ -12,6 +12,8 @@ import 'package:ntsapp/storage_secure.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'model_category.dart';
+import 'model_profile.dart';
 import 'page_access_key_input.dart';
 import 'page_devices.dart';
 import 'page_password_key_input.dart';
@@ -45,6 +47,7 @@ class _PageUserTaskState extends State<PageUserTask> {
   bool errorFetching = false;
   bool errorUpdating = false;
   bool deviceLimitExceeded = false;
+  bool userIdMismatch = false;
   Map<String, dynamic>? updatedData;
 
   Session? currentSession = Supabase.instance.client.auth.currentSession;
@@ -141,6 +144,11 @@ class _PageUserTaskState extends State<PageUserTask> {
         setState(() {
           processing = false;
           displayMessage = errorDetails["error"];
+          if (displayMessage.contains("mismatch")) {
+            displayMessage =
+                "Your subscription is associated with another email. Please use that to gain storage access.";
+            userIdMismatch = true;
+          }
           buttonText = "Continue";
         });
         return;
@@ -205,6 +213,13 @@ class _PageUserTaskState extends State<PageUserTask> {
         await supabaseClient.functions.invoke("register_device",
             body: {"deviceId": deviceId, "title": deviceTitle, "fcmId": fcmId});
         await ModelPreferences.set(AppString.deviceRegistered.string, "yes");
+        User user = currentSession!.user;
+        ModelProfile profile =
+            await ModelProfile.fromMap({"id": user.id, "email": user.email!});
+        // if exists, update no fields.
+        await profile.upcertChangeFromServer();
+        // associate existing categories with this profile if not already associated
+        await ModelCategory.associateWithProfile(user.id);
         bool canSync = await SyncUtils.canSync();
         if (!canSync) {
           checkEncryptionKeys();
@@ -338,6 +353,9 @@ class _PageUserTaskState extends State<PageUserTask> {
           builder: (context) => PageDevices(),
         ),
       );
+    } else if (userIdMismatch) {
+      await supabaseClient.auth.signOut();
+      if (mounted) Navigator.of(context).pop();
     } else if (displayMessage.isNotEmpty) {
       Navigator.of(context).pop();
     }
@@ -356,9 +374,12 @@ class _PageUserTaskState extends State<PageUserTask> {
             : Center(
                 child: Column(
                   children: [
-                    Text(
-                      displayMessage,
-                      style: TextStyle(fontSize: 15),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        displayMessage,
+                        style: TextStyle(fontSize: 15),
+                      ),
                     ),
                     SizedBox(
                       height: 30,

@@ -26,6 +26,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import 'model_category.dart';
 import 'utils_crypto.dart';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -34,7 +35,7 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 bool debugApp() {
-  return false;
+  return true;
 }
 
 final List<Color> predefinedColors = [
@@ -894,4 +895,9 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
     AppLogger(prefixes: [mode]).info("Initialized Supabase");
   }
   AppLogger(prefixes: [mode]).info("Initialized Dependencies");
+}
+
+Future<void> signalToUpdateHome() async {
+  ModelCategory dndCategory = await ModelCategory.getDND();
+  await StorageHive().put(AppString.changedCategoryId.string, dndCategory.id);
 }

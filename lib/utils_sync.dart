@@ -14,12 +14,10 @@ import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_part.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
@@ -119,9 +117,7 @@ class SyncUtils {
     _processTimer = null;
     if (manualSync) {
       // Send Signal to update home with DND category
-      ModelCategory dndCategory = await ModelCategory.getDND();
-      await StorageHive()
-          .put(AppString.changedCategoryId.string, dndCategory.id);
+      await signalToUpdateHome();
     }
     logger.info("$mode|Sync|------------------ENDED----------------");
   }
@@ -187,9 +183,7 @@ class SyncUtils {
         await ModelCategory.deleteAll();
         removed = true;
         // Send Signal to update home with DND category
-        ModelCategory dndCategory = await ModelCategory.getDND();
-        await StorageHive()
-            .put(AppString.changedCategoryId.string, dndCategory.id);
+        await signalToUpdateHome();
       }
       logger.info("device Status Checked");
     } catch (e, s) {
@@ -226,17 +220,8 @@ class SyncUtils {
         await ModelPreferences.delete(
             AppString.pushedLocalContentForSync.string);
         await ModelPreferences.delete(AppString.lastChangesFetchedAt.string);
-        if (Platform.isAndroid) {
-          // purchases are configured in foreground only
-          bool purchaseConfigured = await Purchases.isConfigured;
-          if (purchaseConfigured) {
-            await Purchases.logOut();
-          }
-        }
         // Send Signal to update home with DND category
-        ModelCategory dndCategory = await ModelCategory.getDND();
-        await StorageHive()
-            .put(AppString.changedCategoryId.string, dndCategory.id);
+        await signalToUpdateHome();
         success = true;
       } on FunctionException catch (e) {
         Map<String, dynamic> errorMap =
@@ -388,12 +373,12 @@ class SyncUtils {
         await supabaseClient.functions.invoke("push_changes",
             headers: {"deviceId": deviceId}, body: {"allChanges": allChanges});
         await ModelChange.upgradeTypeForIds(changeIds);
-        await ModelPreferences.set(AppString.hasValidPlan.string, "no");
+        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
         logger.info("Pushed Map Changes");
       } on FunctionException catch (e) {
         String error = jsonDecode(e.details)["error"];
         if (error == "Plan expired") {
-          await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+          await ModelPreferences.set(AppString.hasValidPlan.string, "no");
           logger.error("pushMapChanges|Supabase", error: "Plan Expired");
         }
       } catch (e, s) {
@@ -672,12 +657,12 @@ class SyncUtils {
         await ModelPreferences.set(
             AppString.lastChangesFetchedAt.string, nowUtcCurrent);
       }
-      await ModelPreferences.set(AppString.hasValidPlan.string, "no");
+      await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
       logger.info("Fetched Map Changes");
     } on FunctionException catch (e) {
       String error = jsonDecode(e.details)["error"];
       if (error == "Plan expired") {
-        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+        await ModelPreferences.set(AppString.hasValidPlan.string, "no");
         logger.error("fetchMapChanges|Supabase", error: "Plan Expired");
       }
     } catch (e, s) {

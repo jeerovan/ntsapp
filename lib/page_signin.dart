@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
-import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_preferences.dart';
-import 'package:ntsapp/model_profile.dart';
 import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
@@ -106,13 +104,6 @@ class _PageSigninState extends State<PageSignin> {
         if (session != null) {
           await StorageHive().delete(AppString.otpSentTo.string);
           await StorageHive().delete(AppString.otpSentAt.string);
-          User user = session.user;
-          ModelProfile profile =
-              await ModelProfile.fromMap({"id": user.id, "email": user.email!});
-          // if exists, update no fields.
-          await profile.upcertChangeFromServer();
-          // associate existing categories with this profile if not already associated
-          await ModelCategory.associateWithProfile(user.id);
           // assign a device Id
           String? existingDeviceId =
               await ModelPreferences.get(AppString.deviceId.string);
@@ -190,6 +181,7 @@ class _PageSigninState extends State<PageSignin> {
                                   16, // Set width and height for the indicator
                               height: 16,
                               child: CircularProgressIndicator(
+                                color: Colors.black,
                                 strokeWidth: 2, // Set color to white
                               ),
                             ),
@@ -227,6 +219,7 @@ class _PageSigninState extends State<PageSignin> {
                             width: 16, // Set width and height for the indicator
                             height: 16,
                             child: CircularProgressIndicator(
+                              color: Colors.black,
                               strokeWidth: 2, // Set color to white
                             ),
                           ),
