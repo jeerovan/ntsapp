@@ -566,7 +566,7 @@ class _PageHomeState extends State<PageHome> {
               });
               break;
             case 3:
-              SyncUtils.waitAndSyncChanges(manual: true);
+              SyncUtils.waitAndSyncChanges(manualSync: true);
               break;
             case 4:
               navigateToPlanStatus();

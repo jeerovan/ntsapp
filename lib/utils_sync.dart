@@ -55,17 +55,17 @@ class SyncUtils {
 
   // Static method to trigger change detection
   static void waitAndSyncChanges(
-      {bool inBackground = false, bool manual = false}) {
-    _instance._handleChange(inBackground, manual: manual);
+      {bool inBackground = false, bool manualSync = false}) {
+    _instance._handleChange(inBackground, manualSync: manualSync);
   }
 
-  void _handleChange(bool inBackground, {bool manual = false}) {
+  void _handleChange(bool inBackground, {bool manualSync = false}) {
     _hasPendingChanges = true;
     _debounceTimer?.cancel(); // Cancel any ongoing debounce
-    _debounceTimer = Timer(Duration(seconds: 1), () async {
+    _debounceTimer = Timer(Duration(seconds: 2), () async {
       if (_hasPendingChanges) {
         _hasPendingChanges = false;
-        triggerSync(inBackground, manualSync: manual);
+        triggerSync(inBackground, manualSync: manualSync);
       }
     });
   }
@@ -92,6 +92,7 @@ class SyncUtils {
           processRunningAt, DateTime.now().millisecondsSinceEpoch);
     });
     logger.info("$mode|Sync|------------------START----------------");
+    bool hasPendingUploads = false;
     try {
       bool removed = await SyncUtils.checkDeviceStatus();
       if (!removed) {
@@ -106,7 +107,7 @@ class SyncUtils {
         await fetchThumbnails();
 
         // pushing files is a time consuming task
-        await pushFiles(startedAt, inBackground);
+        hasPendingUploads = await pushFiles(startedAt, inBackground);
         // large files over 20 mb are not fetched
         await fetchFiles(startedAt, inBackground);
       }
@@ -118,6 +119,10 @@ class SyncUtils {
     if (manualSync) {
       // Send Signal to update home with DND category
       await signalToUpdateHome();
+    }
+    if (!inBackground && hasPendingUploads) {
+      logger.info("$mode|Sync| will run again to upload");
+      _handleChange(inBackground, manualSync: manualSync);
     }
     logger.info("$mode|Sync|------------------ENDED----------------");
   }
@@ -773,8 +778,9 @@ class SyncUtils {
     }
   }
 
-  static Future<void> pushFiles(int startedAt, bool inBackground) async {
+  static Future<bool> pushFiles(int startedAt, bool inBackground) async {
     logger.info("Push Files");
+    bool hasPendingUploads = false;
     SupabaseClient supabaseClient = Supabase.instance.client;
     // push uploaded files state to supabase if left due to network failures
     // where uploadedAt > 0 but still exists,
@@ -810,6 +816,7 @@ class SyncUtils {
     List<ModelFile> pendingUploads = await ModelFile.pendingUploads();
     for (ModelFile pendingFile in pendingUploads) {
       await pushFile(pendingFile);
+      hasPendingUploads = true;
     }
     logger.info(
         "pushed Pending Uploads. Spent: ${DateTime.now().toUtc().millisecondsSinceEpoch - startedAt}");
@@ -817,9 +824,11 @@ class SyncUtils {
     List<ModelChange> changes = await ModelChange.requiresFilePush();
     for (ModelChange change in changes) {
       await checkPushFile(change);
+      hasPendingUploads = true;
     }
     logger.info(
-        "Creating New Uploads. Spent: ${DateTime.now().toUtc().millisecondsSinceEpoch - startedAt}");
+        "Created New Uploads. Spent: ${DateTime.now().toUtc().millisecondsSinceEpoch - startedAt}");
+    return hasPendingUploads;
   }
 
   static Future<void> checkPushFile(ModelChange change) async {

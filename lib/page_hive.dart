@@ -14,9 +14,7 @@ class _PageHiveState extends State<PageHive> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initHiveAndLoad();
-    });
+    _initHiveAndLoad();
   }
 
   Future<void> _initHiveAndLoad() async {
