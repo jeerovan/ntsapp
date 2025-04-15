@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/utils_sync.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'enums.dart';
@@ -62,13 +61,8 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
     try {
       CustomerInfo customerInfo = await Purchases.purchasePackage(package);
       if (customerInfo.entitlements.active.isNotEmpty) {
-        logger.info("Purchased:${package.storeProduct.title}");
-        //if signed in, associate
-        String? userId = SyncUtils.getSignedInUserId();
-        if (userId != null) {
-          LogInResult result = await Purchases.logIn(userId);
-          logger.info(result.toString());
-        }
+        logger.info("Purchased Plan:${customerInfo.toString()}");
+        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
         navigateToOnboardingChecks();
       }
     } on PlatformException catch (e) {

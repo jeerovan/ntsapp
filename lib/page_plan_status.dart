@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_devices.dart';
 import 'package:ntsapp/page_password_key_create.dart';
+import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_sync.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
@@ -16,14 +22,17 @@ class PagePlanStatus extends StatefulWidget {
 }
 
 class _PagePlanStatusState extends State<PagePlanStatus> {
+  final AppLogger logger = AppLogger(prefixes: ["Account"]);
   bool processing = true;
   bool errorFetching = false;
   int totalStorageBytes = 0;
   int usedStorageBytes = 0;
   String accessKeyType = "";
   String keyManagementTitle = "";
+  String? subscriptionManagementUrl;
 
   SupabaseClient supabaseClient = Supabase.instance.client;
+  Session? currentSession = Supabase.instance.client.auth.currentSession;
   SecureStorage secureStorage = SecureStorage();
   final String? email = SyncUtils.getSignedInEmailId();
   final String? userId = SyncUtils.getSignedInUserId();
@@ -47,11 +56,19 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   }
 
   Future<void> fetchPlanDetails() async {
-    if (userId == null) return;
+    if (currentSession == null) return;
     setState(() {
       processing = true;
       errorFetching = false;
     });
+    if (Platform.isAndroid || Platform.isIOS) {
+      try {
+        CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+        subscriptionManagementUrl = customerInfo.managementURL;
+      } catch (e) {
+        logger.error("Error fetching customer info from purchases");
+      }
+    }
     String keyForKeyType = '${userId}_kt';
     String? keyType = await secureStorage.read(key: keyForKeyType);
     if (keyType != null) {
@@ -201,7 +218,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
                       // Manage Devices Button
                       ListTile(
-                        leading: Icon(Icons.devices),
+                        leading: Icon(LucideIcons.monitorSmartphone),
                         title: Text("Manage devices"),
                         onTap: manageDevices,
                         trailing: Icon(Icons.arrow_forward_ios, size: 18),
@@ -210,16 +227,28 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
                       // Key manage
                       ListTile(
-                        leading: Icon(Icons.key),
+                        leading: Icon(LucideIcons.key),
                         title: Text(keyManagementTitle),
                         onTap: manageKey,
                         trailing: Icon(Icons.arrow_forward_ios, size: 18),
                       ),
                       Divider(),
 
+                      // Subscription manage
+                      if (subscriptionManagementUrl != null)
+                        ListTile(
+                          leading: Icon(LucideIcons.receipt),
+                          title: Text("Manage subscription"),
+                          onTap: () {
+                            openURL(subscriptionManagementUrl!);
+                          },
+                          trailing: Icon(Icons.arrow_forward_ios, size: 18),
+                        ),
+                      if (subscriptionManagementUrl != null) Divider(),
+
                       // Sign Out Button
                       ListTile(
-                        leading: Icon(Icons.logout, color: Colors.red),
+                        leading: Icon(LucideIcons.logOut, color: Colors.red),
                         title: Text("Sign Out",
                             style: TextStyle(color: Colors.red)),
                         onTap: signOut,

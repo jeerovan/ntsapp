@@ -46,15 +46,12 @@ class _PageUserTaskState extends State<PageUserTask> {
   bool errorUpdating = false;
   bool deviceLimitExceeded = false;
   Map<String, dynamic>? updatedData;
-  String? userId;
+
+  Session? currentSession = Supabase.instance.client.auth.currentSession;
 
   @override
   void initState() {
     super.initState();
-    User? user = supabaseClient.auth.currentUser;
-    if (user != null) {
-      userId = user.id;
-    }
     switch (widget.task) {
       case AppTask.registerDevice:
         registerDevice();
@@ -81,15 +78,14 @@ class _PageUserTaskState extends State<PageUserTask> {
     bool hasValidPlan = false;
     String rcId = "";
     // check signed in
-    bool signedIn =
-        await ModelPreferences.get(AppString.deviceId.string) != null;
+    bool signedIn = currentSession != null;
     if (signedIn) {
       String? userId = SyncUtils.getSignedInUserId();
       if (userId != null) {
         try {
           final planResponse = await supabaseClient
               .from("plans")
-              .select("expires_at")
+              .select("expires_at,rc_id")
               .eq("user_id", userId)
               .order("expires_at", ascending: false) // Get the latest plan
               .limit(1) // Ensure only one row is returned
@@ -98,23 +94,28 @@ class _PageUserTaskState extends State<PageUserTask> {
           int now = DateTime.now().toUtc().millisecondsSinceEpoch;
           if (expiresAt > now) {
             hasValidPlan = true;
+            rcId = planResponse["rc_id"];
+            await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
           }
         } catch (e) {
           logger.error("Error Fetching Plan:", error: e);
         }
-        if (revenueCatSupported) {
-          LogInResult loginResult = await Purchases.logIn(userId);
-          logger.info(loginResult.customerInfo.toString());
+        if (revenueCatSupported && hasValidPlan) {
+          LogInResult loginResult = await Purchases.logIn(rcId);
+          hasSubscriptionPlan = true;
+          logger.info("Has valid plan:${loginResult.customerInfo.toString()}");
         }
       }
     }
     // check plan in rc
-    if (revenueCatSupported) {
+    if (revenueCatSupported && !hasValidPlan) {
       try {
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
         if (customerInfo.entitlements.active.isNotEmpty) {
           hasSubscriptionPlan = true;
           rcId = customerInfo.originalAppUserId;
+          await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+          logger.info("Has subscription plan:${customerInfo.toString()}");
         }
       } on PlatformException catch (e) {
         logger.error("checkRcPlan", error: e);
@@ -128,10 +129,11 @@ class _PageUserTaskState extends State<PageUserTask> {
       }
     }
     // check association of rc id with supa user id
-    if (hasSubscriptionPlan && rcId.isNotEmpty && signedIn) {
+    if (hasSubscriptionPlan && signedIn) {
       try {
         await supabaseClient.functions
             .invoke("set_id_rc", body: {"rc_id": rcId});
+        hasValidPlan = true;
       } on FunctionException catch (e) {
         errorFetching = false;
         Map<String, dynamic> errorDetails =
@@ -195,7 +197,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       errorFetching = false;
     });
     try {
-      if (userId != null) {
+      if (currentSession != null) {
         String? deviceId =
             await ModelPreferences.get(AppString.deviceId.string);
         String deviceTitle = await getDeviceName();

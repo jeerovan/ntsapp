@@ -378,7 +378,8 @@ class ModelItem {
     final dbHelper = StorageSqlite.instance;
     Map<String, dynamic> map = toMap();
     int inserted = await dbHelper.insert("item", map);
-    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+    bool syncEnabled = await ModelPreferences.get(
+            AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
     if (syncEnabled) {
@@ -399,7 +400,8 @@ class ModelItem {
       updatedMap[attr] = map[attr];
     }
     int updated = await dbHelper.update("item", updatedMap, id);
-    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+    bool syncEnabled = await ModelPreferences.get(
+            AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
     if (pushToSync && syncEnabled) {
@@ -458,7 +460,8 @@ class ModelItem {
     }
     Map<String, dynamic> map = toMap();
     int deleted = await dbHelper.delete("item", id);
-    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+    bool syncEnabled = await ModelPreferences.get(
+            AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
     if (withServerSync && syncEnabled) {

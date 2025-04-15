@@ -61,7 +61,7 @@ class _PageHomeState extends State<PageHome> {
   bool _isLoading = false;
   bool _hasInitiated = false;
   bool _isReordering = false;
-  bool _syncEnabled = false;
+  bool _canSync = false;
   bool loadedSharedContents = false;
 
   @override
@@ -185,7 +185,7 @@ class _PageHomeState extends State<PageHome> {
   }
 
   Future<void> loadCategoriesGroups() async {
-    _syncEnabled = await SyncUtils.canSync();
+    _canSync = await SyncUtils.canSync();
     try {
       setState(() => _isLoading = true);
       final categoriesGroups = await ModelCategoryGroup.all();
@@ -465,7 +465,7 @@ class _PageHomeState extends State<PageHome> {
       if (ModelSetting.get(AppString.supabaseInitialized.string, "no") ==
               "yes" &&
           (!requiresAuthentication || isAuthenticated) &&
-          !_syncEnabled)
+          !_canSync)
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: ElevatedButton(
@@ -598,7 +598,7 @@ class _PageHomeState extends State<PageHome> {
           }
         },
         itemBuilder: (context) => [
-          if (_syncEnabled)
+          if (_canSync)
             PopupMenuItem<int>(
               value: 3,
               child: Row(
@@ -645,7 +645,7 @@ class _PageHomeState extends State<PageHome> {
               ],
             ),
           ),
-          if (_syncEnabled)
+          if (_canSync)
             PopupMenuItem<int>(
               value: 4,
               child: Row(

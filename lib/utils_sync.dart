@@ -159,10 +159,13 @@ class SyncUtils {
 
   // to sync, one must have masterKey with an active plan
   static Future<bool> canSync() async {
-    bool syncEnabled = await ModelPreferences.get(AppString.syncEnabled.string,
+    Session? currentSession = Supabase.instance.client.auth.currentSession;
+    bool loggedIn = currentSession != null;
+    bool hasKeys = await ModelPreferences.get(
+            AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
-    return syncEnabled;
+    return loggedIn && hasKeys;
   }
 
   static Future<bool> checkDeviceStatus() async {
@@ -216,7 +219,8 @@ class SyncUtils {
         await storage.delete(key: keyForAccessKey);
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
-        await ModelPreferences.delete(AppString.syncEnabled.string);
+        await ModelPreferences.delete(AppString.hasEncryptionKeys.string);
+        await ModelPreferences.delete(AppString.hasValidPlan.string);
         await ModelPreferences.delete(AppString.deviceId.string);
         await ModelPreferences.delete(AppString.deviceRegistered.string);
         await ModelPreferences.delete(
@@ -248,7 +252,7 @@ class SyncUtils {
 
   // called once when sync is enabled
   static Future<void> pushLocalChanges() async {
-    await ModelPreferences.set(AppString.syncEnabled.string, "yes");
+    await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();
@@ -384,12 +388,12 @@ class SyncUtils {
         await supabaseClient.functions.invoke("push_changes",
             headers: {"deviceId": deviceId}, body: {"allChanges": allChanges});
         await ModelChange.upgradeTypeForIds(changeIds);
-        await ModelPreferences.set(AppString.planExpired.string, "no");
+        await ModelPreferences.set(AppString.hasValidPlan.string, "no");
         logger.info("Pushed Map Changes");
       } on FunctionException catch (e) {
         String error = jsonDecode(e.details)["error"];
         if (error == "Plan expired") {
-          await ModelPreferences.set(AppString.planExpired.string, "yes");
+          await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
           logger.error("pushMapChanges|Supabase", error: "Plan Expired");
         }
       } catch (e, s) {
@@ -668,12 +672,12 @@ class SyncUtils {
         await ModelPreferences.set(
             AppString.lastChangesFetchedAt.string, nowUtcCurrent);
       }
-      await ModelPreferences.set(AppString.planExpired.string, "no");
+      await ModelPreferences.set(AppString.hasValidPlan.string, "no");
       logger.info("Fetched Map Changes");
     } on FunctionException catch (e) {
       String error = jsonDecode(e.details)["error"];
       if (error == "Plan expired") {
-        await ModelPreferences.set(AppString.planExpired.string, "yes");
+        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
         logger.error("fetchMapChanges|Supabase", error: "Plan Expired");
       }
     } catch (e, s) {

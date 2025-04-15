@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_preferences.dart';
@@ -10,7 +7,6 @@ import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -123,17 +119,6 @@ class _PageSigninState extends State<PageSignin> {
           if (existingDeviceId == null) {
             String newDeviceId = Uuid().v4();
             await ModelPreferences.set(AppString.deviceId.string, newDeviceId);
-          }
-          //If subscribed to plan, associate
-          if (Platform.isAndroid) {
-            try {
-              CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-              if (customerInfo.entitlements.active.isNotEmpty) {
-                await Purchases.logIn(user.id);
-              }
-            } on PlatformException catch (e) {
-              logger.error("purchaseAssociationAfterSignin", error: e);
-            }
           }
           navigateToOnboardCheck();
         }

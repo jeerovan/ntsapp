@@ -93,7 +93,7 @@ enum AppString {
 
   // RevenueCat
   rcKeyAndroid,
-  planExpired,
+  hasValidPlan,
   planFull,
 
   //sign-in
@@ -101,7 +101,7 @@ enum AppString {
   otpSentAt,
 
   // Sync
-  syncEnabled,
+  hasEncryptionKeys,
   syncInProgress,
   pushedLocalContentForSync,
   lastChangesFetchedAt,
@@ -129,8 +129,8 @@ extension AppStringExtension on AppString {
         return "sync_in_progress";
       case AppString.fcmId:
         return "fcm_id";
-      case AppString.syncEnabled:
-        return "sync_enabled";
+      case AppString.hasEncryptionKeys:
+        return "has_encryption_keys";
       case AppString.changedItemId:
         return "changed_item_id";
       case AppString.changedGroupId:
@@ -139,8 +139,8 @@ extension AppStringExtension on AppString {
         return "changed_category_id";
       case AppString.pushedLocalContentForSync:
         return 'pushed_local_content_for_sync';
-      case AppString.planExpired:
-        return 'rc_plan_expired';
+      case AppString.hasValidPlan:
+        return 'has_valid_plan';
       case AppString.planFull:
         return 'rc_plan_full';
       case AppString.rcKeyAndroid:

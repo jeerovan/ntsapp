@@ -14,6 +14,8 @@ class _PageDummyState extends State<PageDummy> {
   bool processing = true;
   String response = "";
   String text = "";
+  SupabaseClient supabaseClient = Supabase.instance.client;
+
   @override
   void initState() {
     super.initState();
@@ -24,16 +26,7 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
-  Future<void> simulate() async {
-    SupabaseClient supabaseClient = Supabase.instance.client;
-    try {
-      final res =
-          await supabaseClient.from("storage").select("b2_size").single();
-      logger.info('Result:${res.toString()}');
-    } catch (e, s) {
-      logger.error("Exception", error: e, stackTrace: s);
-    }
-  }
+  Future<void> simulate() async {}
 
   @override
   Widget build(BuildContext context) {

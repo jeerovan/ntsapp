@@ -34,7 +34,7 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 bool debugApp() {
-  return true;
+  return false;
 }
 
 final List<Color> predefinedColors = [
