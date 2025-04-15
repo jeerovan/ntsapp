@@ -18,6 +18,7 @@ import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'common.dart';
 import 'model_category.dart';
@@ -648,7 +649,7 @@ class _PageHomeState extends State<PageHome> {
               ],
             ),
           ),
-          if (_canSync)
+          if (Supabase.instance.client.auth.currentSession != null)
             PopupMenuItem<int>(
               value: 4,
               child: Row(

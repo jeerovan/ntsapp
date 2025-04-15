@@ -94,14 +94,16 @@ class _PageUserTaskState extends State<PageUserTask> {
               .order("expires_at", ascending: false) // Get the latest plan
               .limit(1) // Ensure only one row is returned
               .maybeSingle();
-          int expiresAt = int.parse(planResponse!["expires_at"].toString());
-          int now = DateTime.now().toUtc().millisecondsSinceEpoch;
-          if (expiresAt > now) {
-            hasValidPlan = true;
-            rcId = planResponse["rc_id"];
-            await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
-          } else {
-            logger.info("User signed-in but no valid plan");
+          if (planResponse != null) {
+            int expiresAt = int.parse(planResponse["expires_at"].toString());
+            int now = DateTime.now().toUtc().millisecondsSinceEpoch;
+            if (expiresAt > now) {
+              hasValidPlan = true;
+              rcId = planResponse["rc_id"];
+              await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+            } else {
+              logger.info("User signed-in but no valid plan");
+            }
           }
         } catch (e) {
           logger.error("Error Fetching Plan:", error: e);

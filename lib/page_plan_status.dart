@@ -27,6 +27,8 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   bool errorFetching = false;
   int totalStorageBytes = 0;
   int usedStorageBytes = 0;
+  bool hasPlan = false;
+  bool planExpired = false;
   String accessKeyType = "";
   String keyManagementTitle = "";
   String? subscriptionManagementUrl;
@@ -45,6 +47,10 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
     });
   }
 
+  void refresh() {
+    if (mounted) setState(() {});
+  }
+
   String formatStorage(int bytes) {
     if (bytes < 1024) return "$bytes B";
     double kb = bytes / 1024;
@@ -57,10 +63,9 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   Future<void> fetchPlanDetails() async {
     if (currentSession == null) return;
-    setState(() {
-      processing = true;
-      errorFetching = false;
-    });
+    processing = true;
+    errorFetching = false;
+    refresh();
     if (Platform.isAndroid || Platform.isIOS) {
       try {
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
@@ -86,9 +91,9 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
           .eq("id", userId!)
           .single(); // Fetches row
 
-      final totalStorageResponse = await supabaseClient
+      final planResponse = await supabaseClient
           .from("plans")
-          .select("b2_limit")
+          .select("b2_limit,expires_at")
           .eq("user_id", userId!)
           .order("expires_at", ascending: false) // Get the latest plan
           .limit(1) // Ensure only one row is returned
@@ -96,19 +101,24 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
       setState(() {
         usedStorageBytes = int.parse(usedStorageResponse["b2_size"].toString());
-        totalStorageBytes =
-            int.parse(totalStorageResponse!["b2_limit"].toString());
-        totalStorageBytes = totalStorageBytes > 0 ? totalStorageBytes : 1;
+        if (planResponse != null) {
+          hasPlan = true;
+          totalStorageBytes = int.parse(planResponse["b2_limit"].toString());
+          totalStorageBytes = totalStorageBytes > 0 ? totalStorageBytes : 1;
+
+          int expiresAt = int.parse(planResponse["expires_at"].toString());
+          int now = DateTime.now().toUtc().millisecondsSinceEpoch;
+          if (expiresAt < now) {
+            planExpired = true;
+          }
+        }
       });
     } catch (e) {
-      setState(() {
-        errorFetching = true;
-      });
+      errorFetching = true;
     } finally {
-      setState(() {
-        processing = false;
-      });
+      processing = false;
     }
+    refresh();
   }
 
   Future<void> signOut() async {
@@ -145,6 +155,16 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
         ),
       );
     }
+  }
+
+  Future<void> navigateToOnboardCheck() async {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => PageUserTask(
+          task: AppTask.checkCloudSync,
+        ),
+      ),
+    );
   }
 
   @override
@@ -196,26 +216,49 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       Divider(height: 30),
 
                       // Storage Usage
-                      Text(
-                        "Storage Usage",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: 8),
-                      LinearProgressIndicator(
-                        value: usedStorageBytes / totalStorageBytes,
-                        backgroundColor: Colors.grey[300],
-                        color: Colors.blueAccent,
-                        minHeight: 10,
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "${formatStorage(usedStorageBytes)} / ${formatStorage(totalStorageBytes)}",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      if (hasPlan) ...[
+                        Text(
+                          "Storage Usage",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: usedStorageBytes / totalStorageBytes,
+                          backgroundColor: Colors.grey[300],
+                          color: Colors.blueAccent,
+                          minHeight: 10,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "${formatStorage(usedStorageBytes)} / ${formatStorage(totalStorageBytes)}",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ] else ...[
+                        ListTile(
+                          leading: Icon(LucideIcons.creditCard),
+                          title: Text("Subscribe"),
+                          onTap: navigateToOnboardCheck,
+                          trailing: Icon(Icons.arrow_forward_ios, size: 18),
+                        ),
+                      ],
                       Divider(height: 30),
 
+                      if (planExpired) ...[
+                        ListTile(
+                          leading: Icon(
+                            LucideIcons.alertTriangle,
+                            color: Colors.red,
+                          ),
+                          title: Text(
+                            "Plan expired! Renew",
+                          ),
+                          onTap: navigateToOnboardCheck,
+                          trailing: Icon(Icons.arrow_forward_ios, size: 18),
+                        ),
+                        Divider()
+                      ],
                       // Manage Devices Button
                       ListTile(
                         leading: Icon(LucideIcons.monitorSmartphone),
@@ -226,16 +269,18 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       Divider(),
 
                       // Key manage
-                      ListTile(
-                        leading: Icon(LucideIcons.key),
-                        title: Text(keyManagementTitle),
-                        onTap: manageKey,
-                        trailing: Icon(Icons.arrow_forward_ios, size: 18),
-                      ),
-                      Divider(),
+                      if (accessKeyType.isNotEmpty) ...[
+                        ListTile(
+                          leading: Icon(LucideIcons.key),
+                          title: Text(keyManagementTitle),
+                          onTap: manageKey,
+                          trailing: Icon(Icons.arrow_forward_ios, size: 18),
+                        ),
+                        Divider()
+                      ],
 
                       // Subscription manage
-                      if (subscriptionManagementUrl != null)
+                      if (subscriptionManagementUrl != null) ...[
                         ListTile(
                           leading: Icon(LucideIcons.receipt),
                           title: Text("Manage subscription"),
@@ -244,7 +289,8 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                           },
                           trailing: Icon(Icons.arrow_forward_ios, size: 18),
                         ),
-                      if (subscriptionManagementUrl != null) Divider(),
+                        Divider()
+                      ],
 
                       // Sign Out Button
                       ListTile(
