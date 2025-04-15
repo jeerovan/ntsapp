@@ -28,9 +28,8 @@ class ModelLog {
   static Future<List<ModelLog>> all() async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    List<Map<String, dynamic>> rows = await db.query(
-      "logs",
-    );
+    List<Map<String, dynamic>> rows =
+        await db.query("logs", orderBy: "id DESC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 

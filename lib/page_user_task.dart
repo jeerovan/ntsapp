@@ -11,6 +11,7 @@ import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import 'model_category.dart';
 import 'model_profile.dart';
@@ -99,6 +100,8 @@ class _PageUserTaskState extends State<PageUserTask> {
             hasValidPlan = true;
             rcId = planResponse["rc_id"];
             await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+          } else {
+            logger.info("User signed-in but no valid plan");
           }
         } catch (e) {
           logger.error("Error Fetching Plan:", error: e);
@@ -109,6 +112,8 @@ class _PageUserTaskState extends State<PageUserTask> {
           logger.info("Has valid plan:${loginResult.customerInfo.toString()}");
         }
       }
+    } else {
+      logger.info("Not signed-in");
     }
     // check plan in rc
     if (revenueCatSupported && !hasValidPlan) {
@@ -208,6 +213,10 @@ class _PageUserTaskState extends State<PageUserTask> {
       if (currentSession != null) {
         String? deviceId =
             await ModelPreferences.get(AppString.deviceId.string);
+        if (deviceId == null) {
+          deviceId = Uuid().v4();
+          await ModelPreferences.set(AppString.deviceId.string, deviceId);
+        }
         String deviceTitle = await getDeviceName();
         String? fcmId = await ModelPreferences.get(AppString.fcmId.string);
         await supabaseClient.functions.invoke("register_device",

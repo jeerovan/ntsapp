@@ -22,6 +22,11 @@ Deno.serve(async (req) => {
       });
     }
     const { deviceId, title, fcmId } = await req.json();
+    if (!deviceId || !title) {
+      return new Response(JSON.stringify({ error: "deviceId required" }), {
+        status: 400,
+      });
+    }
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
