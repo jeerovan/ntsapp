@@ -129,7 +129,8 @@ class _PageItemsState extends State<PageItems> {
     });
   }
 
-  Future<void> changedItem(String itemId) async {
+  Future<void> changedItem(String? itemId) async {
+    if (itemId == null) return;
     ModelItem? item = await ModelItem.get(itemId);
     if (item != null) {
       if (item.groupId == widget.group.id) {

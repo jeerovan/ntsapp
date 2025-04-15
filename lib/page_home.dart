@@ -87,7 +87,8 @@ class _PageHomeState extends State<PageHome> {
     checkAuthAndLoad();
   }
 
-  Future<void> changedCategory(String id) async {
+  Future<void> changedCategory(String? id) async {
+    if (id == null) return;
     ModelCategory? category = await ModelCategory.get(id);
     if (category != null) {
       bool updated = false;
@@ -116,7 +117,8 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
-  Future<void> changedGroup(String id) async {
+  Future<void> changedGroup(String? id) async {
+    if (id == null) return;
     ModelGroup? group = await ModelGroup.get(id);
     if (group != null) {
       bool updated = false;
@@ -142,7 +144,8 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
-  Future<void> changedItem(String id) async {
+  Future<void> changedItem(String? id) async {
+    if (id == null) return;
     ModelItem? item = await ModelItem.get(id);
     if (item != null) {
       String groupId = item.groupId;

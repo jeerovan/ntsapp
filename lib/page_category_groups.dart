@@ -56,14 +56,16 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     super.dispose();
   }
 
-  Future<void> changedGroup(String id) async {
+  Future<void> changedGroup(String? id) async {
+    if (id == null) return;
     ModelGroup? group = await ModelGroup.get(id);
     if (group != null) {
       updateDisplayGroup(group);
     }
   }
 
-  Future<void> changedItem(String id) async {
+  Future<void> changedItem(String? id) async {
+    if (id == null) return;
     ModelItem? item = await ModelItem.get(id);
     if (item != null) {
       String groupId = item.groupId;
