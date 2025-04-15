@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'page_select_key_type.dart';
 
 class PageDummy extends StatefulWidget {
   const PageDummy({super.key});
@@ -26,7 +30,15 @@ class _PageDummyState extends State<PageDummy> {
     super.dispose();
   }
 
-  Future<void> simulate() async {}
+  Future<void> simulate() async {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => PageUserTask(
+          task: AppTask.checkEncryptionKeys,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

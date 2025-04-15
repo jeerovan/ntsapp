@@ -308,6 +308,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                             width: 16, // Set width and height for the indicator
                             height: 16,
                             child: CircularProgressIndicator(
+                              color: Colors.black,
                               strokeWidth: 2, // Set color to white
                             ),
                           ),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -202,6 +203,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                             width: 16, // Set width and height for the indicator
                             height: 16,
                             child: CircularProgressIndicator(
+                              color: Colors.black,
                               strokeWidth: 2, // Set color to white
                             ),
                           ),
@@ -235,7 +237,10 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                 // File Upload Button
                 ElevatedButton.icon(
                   onPressed: _selectFile,
-                  icon: Icon(Icons.upload_file),
+                  icon: Icon(
+                    LucideIcons.upload,
+                    color: Colors.black,
+                  ),
                   label: Text(
                     "Select .txt File",
                     style: TextStyle(color: Colors.black),
