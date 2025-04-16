@@ -62,6 +62,10 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
       CustomerInfo customerInfo = await Purchases.purchasePackage(package);
       if (customerInfo.entitlements.active.isNotEmpty) {
         logger.info("Purchased Plan:${customerInfo.toString()}");
+        // login should not be required
+        await Purchases.logIn(customerInfo.originalAppUserId);
+        await ModelPreferences.set(
+            AppString.planRcId.string, customerInfo.originalAppUserId);
         await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
         navigateToOnboardingChecks();
       }

@@ -25,11 +25,27 @@ class ModelLog {
     return 'Log(id: $id, log: $log)';
   }
 
-  static Future<List<ModelLog>> all() async {
+  static Future<List<ModelLog>> all(List<String> words) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    List<Map<String, dynamic>> rows =
-        await db.query("logs", orderBy: "id DESC");
+    List<String> searches = [];
+    for (String word in words) {
+      if (word != 'All') {
+        searches.add(word);
+      }
+    }
+    if (searches.isEmpty) {
+      List<Map<String, dynamic>> rows =
+          await db.query("logs", orderBy: "id DESC");
+      return await Future.wait(rows.map((map) => fromMap(map)));
+    }
+
+    // Build WHERE clause with OR conditions for each search term
+    final where = searches.map((word) => 'log LIKE ?').join(' AND ');
+    final args = searches.map((word) => '%$word%').toList();
+
+    List<Map<String, dynamic>> rows = await db.query('logs',
+        where: where, whereArgs: args, orderBy: "id DESC");
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 

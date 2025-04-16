@@ -92,9 +92,10 @@ enum AppString {
   supabaseInitialized,
 
   // RevenueCat
-  rcKeyAndroid,
+  rcApiKey,
   hasValidPlan,
-  planFull,
+  planStorageFull,
+  planRcId,
 
   //sign-in
   otpSentTo,
@@ -123,6 +124,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.planRcId:
+        return "plan_rc_id";
       case AppString.supabaseInitialized:
         return "supabase_initialized";
       case AppString.syncInProgress:
@@ -141,9 +144,9 @@ extension AppStringExtension on AppString {
         return 'pushed_local_content_for_sync';
       case AppString.hasValidPlan:
         return 'has_valid_plan';
-      case AppString.planFull:
+      case AppString.planStorageFull:
         return 'rc_plan_full';
-      case AppString.rcKeyAndroid:
+      case AppString.rcApiKey:
         return "rc_key_android";
       case AppString.deviceRegistered:
         return "device_registered";

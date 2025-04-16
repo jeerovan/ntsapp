@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_category_groups.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
@@ -64,6 +66,9 @@ class _PageHomeState extends State<PageHome> {
   bool _isReordering = false;
   bool _canSync = false;
   bool loadedSharedContents = false;
+  Timer? _debounceTimer;
+
+  bool hasValidPlan = false;
 
   @override
   void initState() {
@@ -86,6 +91,13 @@ class _PageHomeState extends State<PageHome> {
     });
     logger.info("Monitoring changes");
     checkAuthAndLoad();
+  }
+
+  void _loadCategoriesGroups() {
+    _debounceTimer?.cancel(); // Cancel any ongoing debounce
+    _debounceTimer = Timer(Duration(seconds: 1), () async {
+      loadCategoriesGroups();
+    });
   }
 
   Future<void> changedCategory(String? id) async {
@@ -113,7 +125,7 @@ class _PageHomeState extends State<PageHome> {
         }
       }
       if (!updated) {
-        loadCategoriesGroups();
+        _loadCategoriesGroups();
       }
     }
   }
@@ -140,7 +152,7 @@ class _PageHomeState extends State<PageHome> {
         }
       }
       if (!updated) {
-        loadCategoriesGroups();
+        _loadCategoriesGroups();
       }
     }
   }
@@ -165,7 +177,7 @@ class _PageHomeState extends State<PageHome> {
           }
         }
         if (!updated) {
-          loadCategoriesGroups();
+          _loadCategoriesGroups();
         }
       }
     }
@@ -190,6 +202,9 @@ class _PageHomeState extends State<PageHome> {
 
   Future<void> loadCategoriesGroups() async {
     _canSync = await SyncUtils.canSync();
+    hasValidPlan = await ModelPreferences.get(AppString.hasValidPlan.string,
+            defaultValue: "yes") ==
+        "yes";
     try {
       setState(() => _isLoading = true);
       final categoriesGroups = await ModelCategoryGroup.all();
@@ -509,6 +524,24 @@ class _PageHomeState extends State<PageHome> {
         width: 10,
       ),
       PopupMenuButton<int>(
+        icon: Stack(
+          children: [
+            const Icon(Icons.more_vert),
+            if (!hasValidPlan)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
         onSelected: (value) {
           switch (value) {
             case 0:
@@ -654,7 +687,9 @@ class _PageHomeState extends State<PageHome> {
               value: 4,
               child: Row(
                 children: [
-                  Icon(LucideIcons.shield, color: Colors.grey),
+                  hasValidPlan
+                      ? Icon(LucideIcons.shield, color: Colors.grey)
+                      : Icon(LucideIcons.alertTriangle, color: Colors.red),
                   Container(width: 8),
                   const SizedBox(width: 5),
                   const Text('Account'),
@@ -801,9 +836,12 @@ class _PageHomeState extends State<PageHome> {
                                 showCategorySign: false,
                               ),
                               onTap: () {
+                                String dragTitle = "Drag handle to re-order";
+                                if (Platform.isAndroid || Platform.isIOS) {
+                                  dragTitle = "Hold and drag to re-order";
+                                }
                                 displaySnackBar(context,
-                                    message: 'Drag handle to re-order',
-                                    seconds: 1);
+                                    message: dragTitle, seconds: 1);
                               },
                             );
                           },

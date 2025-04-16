@@ -82,7 +82,7 @@ class SyncUtils {
     int? lastRunningAt =
         lastRunningAtString == null ? null : int.parse(lastRunningAtString);
     if (lastRunningAt != null && (startedAt - lastRunningAt < 2000)) {
-      logger.warning("Already Syncing");
+      logger.warning("$mode|Sync|Already Syncing");
       return;
     }
     await ModelPreferences.set(processRunningAt, startedAt);
@@ -219,6 +219,7 @@ class SyncUtils {
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
         await ModelPreferences.delete(AppString.hasEncryptionKeys.string);
+        await ModelPreferences.delete(AppString.planRcId.string);
         await ModelPreferences.delete(AppString.hasValidPlan.string);
         await ModelPreferences.delete(AppString.deviceId.string);
         await ModelPreferences.delete(AppString.deviceRegistered.string);

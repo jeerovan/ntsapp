@@ -137,7 +137,7 @@ Future<void> main() async {
   // initialize purchases -- not required in background tasks
   if (Platform.isAndroid) {
     String? rcKeyAndroid =
-        await secureStorage.read(key: AppString.rcKeyAndroid.string);
+        await secureStorage.read(key: AppString.rcApiKey.string);
     if (rcKeyAndroid != null) {
       if (kDebugMode) {
         await Purchases.setLogLevel(LogLevel.debug);

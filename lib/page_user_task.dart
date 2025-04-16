@@ -119,13 +119,27 @@ class _PageUserTaskState extends State<PageUserTask> {
     }
     // check plan in rc
     if (revenueCatSupported && !hasValidPlan) {
+      String? savedPlanRcId = await ModelPreferences.get(
+          AppString.planRcId.string); // set only after a purchase
       try {
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-        if (customerInfo.entitlements.active.isNotEmpty) {
+        if (savedPlanRcId != null &&
+            savedPlanRcId != customerInfo.originalAppUserId) {
+          logger.warning("Purchase:PurchaserId and CustomerId do not match");
+          LogInResult logInResult = await Purchases.logIn(savedPlanRcId);
+          if (logInResult.customerInfo.entitlements.active.isNotEmpty) {
+            hasSubscriptionPlan = true;
+            rcId = savedPlanRcId;
+            await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+            logger.info(
+                "Purchaser has subscription plan:${logInResult.customerInfo.toString()}");
+          }
+        } else if (customerInfo.entitlements.active.isNotEmpty) {
           hasSubscriptionPlan = true;
           rcId = customerInfo.originalAppUserId;
           await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
-          logger.info("Has subscription plan:${customerInfo.toString()}");
+          logger.info(
+              "Customer has subscription plan:${customerInfo.toString()}");
         }
       } on PlatformException catch (e) {
         logger.error("checkRcPlan", error: e);
@@ -141,6 +155,7 @@ class _PageUserTaskState extends State<PageUserTask> {
     // check association of rc id with supa user id
     if (hasSubscriptionPlan && signedIn) {
       try {
+        logger.info("Setting userId for rcId:$rcId");
         await supabaseClient.functions
             .invoke("set_id_rc", body: {"rc_id": rcId});
         hasValidPlan = true;
@@ -201,7 +216,8 @@ class _PageUserTaskState extends State<PageUserTask> {
     } else if (!canSync) {
       checkEncryptionKeys();
     } else if (mounted) {
-      Navigator.of(context).pop();
+      await signalToUpdateHome();
+      if (mounted) Navigator.of(context).pop();
     }
   }
 
