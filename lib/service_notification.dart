@@ -30,11 +30,14 @@ class NotificationService {
     await _setupMessageHandlers();
 
     // Get FCM token
-    final token = await _messaging.getToken();
-    if (token != null) {
-      await _saveFcmToken(token);
+    try {
+      final token = await _messaging.getToken();
+      if (token != null) {
+        await _saveFcmToken(token);
+      }
+    } catch (e) {
+      logger.error("FCM Fetch Failed", error: e);
     }
-    logger.info('FCM Token: $token');
     // Listen for token refreshes
     _messaging.onTokenRefresh.listen(_saveFcmToken);
   }
@@ -150,6 +153,7 @@ class NotificationService {
 
   // Save FCM token to Supabase
   Future<void> _saveFcmToken(String token) async {
+    logger.info("Received FCM Token:$token");
     await ModelPreferences.set(AppString.fcmId.string, token);
     String? deviceId = await ModelPreferences.get(AppString.deviceId.string);
     if (deviceId != null) {
