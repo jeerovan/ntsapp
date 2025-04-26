@@ -1003,15 +1003,16 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> _stopRecording() async {
     _recordingTimer?.cancel();
-    final path = await _audioRecorder.stop();
+    String? path = await _audioRecorder.stop();
     setState(() {
       _isRecording = false;
       _recordingState = 0;
     });
     if (path != null) {
       await processFiles([path]);
-      File tempFile = File(path);
-      tempFile.delete();
+      await _audioRecorder.cancel();
+    } else {
+      logger.error("Recording path is null");
     }
   }
 

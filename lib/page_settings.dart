@@ -315,7 +315,7 @@ class SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              leading: const Icon(LucideIcons.lock, color: Colors.grey),
+              leading: const Icon(LucideIcons.list, color: Colors.grey),
               title: const Text("Logging"),
               horizontalTitleGap: 24.0,
               trailing: Transform.scale(
