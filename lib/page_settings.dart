@@ -8,6 +8,7 @@ import 'package:ntsapp/backup_restore.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
@@ -188,7 +189,9 @@ class SettingsPageState extends State<SettingsPage> {
           title: const Text("Settings"),
           leading: widget.runningOnDesktop
               ? BackButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await StorageHive().put(AppString.eventName.string,
+                        EventName.onExitSettings.string);
                     widget.setShowHidePage!(
                         PageType.settings, false, PageParams());
                   },

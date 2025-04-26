@@ -81,6 +81,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   late StreamSubscription categoryStream;
   late StreamSubscription groupStream;
   late StreamSubscription itemStream;
+  late StreamSubscription eventStream;
 
   @override
   void initState() {
@@ -107,6 +108,10 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         if (mounted) changedItem(event.value);
       }
     });
+    eventStream =
+        StorageHive().watch(AppString.eventName.string).listen((event) {
+      changedEvent(event.value);
+    });
     logger.info("Monitoring changes");
     checkAuthAndLoad();
   }
@@ -123,6 +128,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     categoryStream.cancel();
     groupStream.cancel();
     itemStream.cancel();
+    eventStream.cancel();
     super.dispose();
   }
 
@@ -208,6 +214,13 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           _loadCategoriesGroups();
         }
       }
+    }
+  }
+
+  Future<void> changedEvent(String? eventName) async {
+    if (eventName == null) return;
+    if (eventName == EventName.onExitSettings.string) {
+      onExitSettings();
     }
   }
 

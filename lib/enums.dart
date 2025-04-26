@@ -133,9 +133,12 @@ enum AppString {
   syncInProgress,
   pushedLocalContentForSync,
   lastChangesFetchedAt,
+
+  //Events
   changedItemId,
   changedGroupId,
   changedCategoryId,
+  eventName,
 
   // Cipher
   key,
@@ -152,6 +155,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.eventName:
+        return "event_name";
       case AppString.loggingEnabled:
         return "logging_enabled";
       case AppString.planRcId:
@@ -314,6 +319,19 @@ extension SyncChangeTaskExtension on SyncChangeTask {
         return SyncChangeTask.deleteThumbnail;
       default:
         return null;
+    }
+  }
+}
+
+enum EventName {
+  onExitSettings,
+}
+
+extension EventNameExtension on EventName {
+  String get string {
+    switch (this) {
+      case EventName.onExitSettings:
+        return "on_exit_settings";
     }
   }
 }
