@@ -202,7 +202,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           if (categoryGroup.type == "group" && categoryGroup.id == groupId) {
             int groupIndex =
                 _categoriesGroupsDisplayList.indexOf(categoryGroup);
-            logger.info("found group index: $groupIndex");
             setState(() {
               _categoriesGroupsDisplayList[groupIndex].group = group;
             });

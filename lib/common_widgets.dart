@@ -507,7 +507,11 @@ class _WidgetAudioState extends State<WidgetAudio> {
     _audioPlayer.onPositionChanged.listen((position) {
       if (mounted) {
         setState(() {
-          _currentPosition = position;
+          if (_totalDuration != Duration.zero && position > _totalDuration) {
+            _currentPosition = _totalDuration;
+          } else {
+            _currentPosition = position;
+          }
         });
       }
     });
@@ -597,7 +601,11 @@ class _WidgetAudioState extends State<WidgetAudio> {
             value: _currentPosition.inMilliseconds.toDouble(),
             onChanged: (value) async {
               // Seek to the new position in the audio
-              final newPosition = Duration(milliseconds: value.toInt() - 1);
+              Duration newPosition = Duration(milliseconds: value.toInt() - 1);
+              if (_totalDuration != Duration.zero &&
+                  newPosition > _totalDuration) {
+                newPosition = _totalDuration;
+              }
               await _audioPlayer.seek(newPosition);
             },
           ),
