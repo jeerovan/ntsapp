@@ -10,16 +10,19 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/page_home.dart';
+import 'package:ntsapp/page_desktop_categories_groups.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:window_size/window_size.dart';
 
+import 'page_media_migration.dart';
 import 'service_logger.dart';
 import 'service_notification.dart';
 import 'model_setting.dart';
-import 'page_home.dart';
 import 'storage_secure.dart';
 import 'themes.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -90,6 +93,9 @@ bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    setWindowMinSize(const Size(600, 600));
+  }
   MediaKit.ensureInitialized();
   //load config from file
   SecureStorage secureStorage = SecureStorage();
@@ -171,7 +177,7 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   ThemeMode _themeMode = ThemeMode.system;
-  late bool isDark;
+  late bool _isDarkMode;
 
   // sharing intent
   StreamSubscription? _intentSub;
@@ -187,16 +193,16 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     switch (savedTheme) {
       case "light":
         _themeMode = ThemeMode.light;
-        isDark = false;
+        _isDarkMode = false;
         break;
       case "dark":
         _themeMode = ThemeMode.dark;
-        isDark = true;
+        _isDarkMode = true;
         break;
       default:
         // Default to system theme
         _themeMode = ThemeMode.system;
-        isDark =
+        _isDarkMode =
             PlatformDispatcher.instance.platformBrightness == Brightness.dark;
         break;
     }
@@ -250,21 +256,44 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   // Toggle between light and dark modes
-  Future<void> _toggleTheme() async {
+  Future<void> _onThemeToggle() async {
     setState(() {
-      _themeMode = isDark ? ThemeMode.light : ThemeMode.dark;
-      isDark = !isDark;
+      _themeMode = _isDarkMode ? ThemeMode.light : ThemeMode.dark;
+      _isDarkMode = !_isDarkMode;
     });
-    await ModelSetting.set("theme", isDark ? "dark" : "light");
+    await ModelSetting.set("theme", _isDarkMode ? "dark" : "light");
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget page = PageHome(
+    bool isLargeScreen = false;
+    if (isDebugEnabled()) {
+      isLargeScreen = MediaQuery.of(context).size.width > 600;
+    } else {
+      isLargeScreen =
+          Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+    }
+    Widget page = PageCategoriesGroups(
+      runningOnDesktop: false,
+      setShowHidePage: null,
       sharedContents: _sharedContents,
-      isDarkMode: isDark,
-      onThemeToggle: _toggleTheme,
+      isDarkMode: _isDarkMode,
+      onThemeToggle: _onThemeToggle,
     );
+    if (isLargeScreen) {
+      page = PageCategoriesGroupsPane(
+          sharedContents: _sharedContents,
+          isDarkMode: _isDarkMode,
+          onThemeToggle: _onThemeToggle);
+    }
+    String processMedia = ModelSetting.get("process_media", "no");
+    if (processMedia == "yes") {
+      page = PageMediaMigration(
+        runningOnDesktop: !runningOnMobile,
+        isDarkMode: _isDarkMode,
+        onThemeToggle: _onThemeToggle,
+      );
+    }
     return ChangeNotifierProvider(
       create: (_) => FontSizeController(),
       child: Builder(builder: (context) {

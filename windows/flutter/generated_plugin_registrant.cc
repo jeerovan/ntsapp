@@ -22,6 +22,7 @@
 #include <sodium_libs/sodium_libs_plugin_c_api.h>
 #include <url_launcher_windows/url_launcher_windows.h>
 #include <volume_controller/volume_controller_plugin_c_api.h>
+#include <window_size/window_size_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   AppLinksPluginCApiRegisterWithRegistrar(
@@ -56,4 +57,6 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("UrlLauncherWindows"));
   VolumeControllerPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("VolumeControllerPluginCApi"));
+  WindowSizePluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("WindowSizePlugin"));
 }

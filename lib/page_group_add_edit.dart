@@ -1,26 +1,29 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/page_add_select_category.dart';
+import 'package:ntsapp/storage_hive.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
 import 'model_item_group.dart';
 
 class PageGroupAddEdit extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final ModelGroup? group;
-  final Function() onUpdate;
-  final Function() onDelete;
   final ModelCategory? category;
 
-  const PageGroupAddEdit(
-      {super.key,
-      this.group,
-      required this.onUpdate,
-      this.category,
-      required this.onDelete});
+  const PageGroupAddEdit({
+    super.key,
+    this.group,
+    this.category,
+    required this.runningOnDesktop,
+    required this.setShowHidePage,
+  });
 
   @override
   PageGroupAddEditState createState() => PageGroupAddEditState();
@@ -42,6 +45,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   String dateTitle = getNoteGroupDateTitle();
   Map<String, dynamic>? groupData;
 
+  ModelCategory? previousCategory;
+
   @override
   void initState() {
     super.initState();
@@ -56,17 +61,10 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   Future<void> init() async {
     if (widget.group == null) {
       itemChanged = true;
-      int positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
-      if (widget.category == null) {
-        category = await ModelCategory.getDND();
-      } else {
-        category = widget.category;
-        positionCount = await ModelGroup.getCountInCategory(category!.id!);
-      }
-      Color color = getIndexedColor(positionCount);
-      colorCode = colorToHex(color);
+      await setColorCode();
     } else {
       category = await ModelCategory.get(widget.group!.categoryId);
+      previousCategory = category;
       colorCode = widget.group!.color;
       groupData = widget.group!.data;
       if (groupData != null) {
@@ -80,13 +78,38 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         }
       }
     }
-    title = widget.group == null ? dateTitle : widget.group!.title;
-    titleController.text = title;
-    thumbnail = widget.group?.thumbnail;
-    if (mounted) setState(() {});
+
+    if (mounted) {
+      setState(() {
+        title = widget.group == null ? dateTitle : widget.group!.title;
+        titleController.text = title;
+        thumbnail = widget.group?.thumbnail;
+      });
+    }
   }
 
-  Future<void> saveGroup() async {
+  Future<void> setColorCode() async {
+    itemChanged = true;
+    int positionCount = await ModelCategoryGroup.getCategoriesGroupsCount();
+    if (widget.category == null) {
+      category = await ModelCategory.getDND();
+    } else {
+      category = widget.category;
+      positionCount = await ModelGroup.getCountInCategory(category!.id!);
+    }
+    previousCategory = category;
+    Color color = getIndexedColor(positionCount);
+
+    if (mounted) {
+      setState(() {
+        colorCode = colorToHex(color);
+      });
+    }
+  }
+
+  Future<void> saveGroup(String text) async {
+    title = text.trim();
+    if (title.isEmpty) return;
     if (category == null) return;
     String categoryId = category!.id!;
     ModelGroup? newGroup;
@@ -100,7 +123,13 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           "color": colorCode,
         });
         await newGroup.insert();
+        await StorageHive().put(AppString.changedGroupId.string, newGroup.id);
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(
+              PageType.items, true, PageParams(group: newGroup));
+        }
       } else {
+        bool shouldUpdateHome = widget.group!.categoryId != categoryId;
         widget.group!.thumbnail = thumbnail;
         widget.group!.title = title;
         widget.group!.categoryId = categoryId;
@@ -108,39 +137,62 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         widget.group!.data = groupData;
         await widget.group!
             .update(["thumbnail", "title", "category_id", "color", "data"]);
+        await StorageHive()
+            .put(AppString.changedGroupId.string, widget.group!.id);
+        if (shouldUpdateHome) {
+          await signalToUpdateHome();
+        }
       }
-      widget.onUpdate();
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.addEditGroup, false, PageParams());
+      }
     }
-    if (mounted) Navigator.of(context).pop(newGroup);
+    if (!widget.runningOnDesktop && mounted) {
+      Navigator.of(context).pop(newGroup);
+    }
   }
 
   void addToCategory() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-      builder: (context) => PageAddSelectCategory(),
-      settings: const RouteSettings(name: "SelectGroupCategory"),
-    ))
-        .then((value) async {
-      String? categoryId = value;
-      if (categoryId != null) {
-        category = await ModelCategory.get(categoryId);
-        itemChanged = true;
-        if (mounted) setState(() {});
-      }
-    });
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.categories, true, PageParams());
+    } else {
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+        builder: (context) => PageAddSelectCategory(
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+        ),
+        settings: const RouteSettings(name: "SelectGroupCategory"),
+      ))
+          .then((value) async {
+        String? categoryId = value;
+        if (categoryId != null) {
+          category = await ModelCategory.get(categoryId);
+          itemChanged = true;
+          if (mounted) setState(() {});
+        }
+      });
+    }
   }
 
   Future<void> removeCategory() async {
     category = await ModelCategory.getDND();
-    itemChanged = true;
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        itemChanged = true;
+      });
+    }
   }
 
   Future<void> archiveGroup(ModelGroup group) async {
     group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
     await group.update(["archived_at"]);
-    widget.onDelete();
-    if (mounted) Navigator.of(context).pop();
+    await StorageHive().put(AppString.changedGroupId.string, group.id);
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.addEditGroup, false, PageParams());
+    } else {
+      if (mounted) Navigator.of(context).pop();
+    }
   }
 
   Future<void> setShowDateTime(bool show) async {
@@ -171,6 +223,11 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.category != null &&
+        widget.category != previousCategory &&
+        category != widget.category) {
+      setColorCode();
+    }
     String pageTitle = widget.group == null ? "Add group" : "Edit group";
     return Scaffold(
       appBar: AppBar(
@@ -180,6 +237,14 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
             fontSize: 18,
           ),
         ),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.addEditGroup, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -195,6 +260,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               textCapitalization: TextCapitalization.sentences,
               autofocus: widget.group == null ? false : true,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              textInputAction: TextInputAction.done,
+              onSubmitted: saveGroup,
               decoration: InputDecoration(
                 hintText: 'Group title',
                 // Placeholder
@@ -408,9 +475,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        key: const Key("done_note_group"),
+        heroTag: "save_new_group",
         onPressed: () async {
-          saveGroup();
+          saveGroup(titleController.text);
         },
         shape: const CircleBorder(),
         child: Icon(widget.group == null ? Icons.arrow_forward : Icons.check),

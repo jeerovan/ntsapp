@@ -19,6 +19,8 @@ import 'common.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final VoidCallback onThemeToggle;
   final bool canShowBackupRestore;
 
@@ -26,7 +28,9 @@ class SettingsPage extends StatefulWidget {
       {super.key,
       required this.isDarkMode,
       required this.onThemeToggle,
-      required this.canShowBackupRestore});
+      required this.canShowBackupRestore,
+      required this.runningOnDesktop,
+      required this.setShowHidePage});
 
   @override
   SettingsPageState createState() => SettingsPageState();
@@ -167,6 +171,14 @@ class SettingsPageState extends State<SettingsPage> {
     return Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
+          leading: widget.runningOnDesktop
+              ? BackButton(
+                  onPressed: () {
+                    widget.setShowHidePage!(
+                        PageType.settings, false, PageParams());
+                  },
+                )
+              : null,
         ),
         body: ListView(
           padding: const EdgeInsets.all(8.0),

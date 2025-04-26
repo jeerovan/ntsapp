@@ -13,6 +13,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import 'common_widgets.dart';
 import 'model_category.dart';
 import 'model_profile.dart';
 import 'page_access_key_input.dart';
@@ -23,8 +24,14 @@ import 'page_signin.dart';
 import 'utils_sync.dart';
 
 class PageUserTask extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final AppTask task;
-  const PageUserTask({super.key, required this.task});
+  const PageUserTask(
+      {super.key,
+      required this.task,
+      required this.runningOnDesktop,
+      this.setShowHidePage});
 
   @override
   State<PageUserTask> createState() => _PageUserTaskState();
@@ -52,6 +59,8 @@ class _PageUserTaskState extends State<PageUserTask> {
   Map<String, dynamic>? updatedData;
 
   Session? currentSession = Supabase.instance.client.auth.currentSession;
+
+  int debugExceptionCount = 0;
 
   @override
   void initState() {
@@ -82,10 +91,12 @@ class _PageUserTaskState extends State<PageUserTask> {
     bool hasValidPlan = false;
     String rcId = "";
     // check signed in
-    bool signedIn = currentSession != null;
+    bool signedIn = isDebugEnabled()
+        ? await ModelPreferences.get(AppString.deviceId.string) != null
+        : currentSession != null;
     if (signedIn) {
       String? userId = SyncUtils.getSignedInUserId();
-      if (userId != null) {
+      if (userId != null && !isDebugEnabled()) {
         try {
           final planResponse = await supabaseClient
               .from("plans")
@@ -190,34 +201,81 @@ class _PageUserTaskState extends State<PageUserTask> {
             defaultValue: "no") ==
         "yes";
     bool canSync = await SyncUtils.canSync();
+    // set debug params
+    if (isDebugEnabled()) {
+      await Future.delayed(const Duration(seconds: 1));
+      bool plansShown =
+          await ModelPreferences.get(AppString.plansShown.string) == "yes";
+      if (plansShown) {
+        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+      }
+      hasValidPlan =
+          await ModelPreferences.get(AppString.hasValidPlan.string) == "yes";
+    }
     setState(() {
       processing = false;
     });
     if (revenueCatSupported && !hasSubscriptionPlan && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PagePlanSubscribe(),
-        ),
-      );
+      if (isDebugEnabled()) {
+        await ModelPreferences.set(AppString.plansShown.string, "yes");
+      }
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.planSubscribe, true, PageParams());
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+      } else if (mounted) {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: PagePlanSubscribe(
+              runningOnDesktop: widget.runningOnDesktop,
+              setShowHidePage: widget.setShowHidePage,
+            ),
+          ),
+        );
+      }
     } else if (!signedIn && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PageSignin(),
-        ),
-      );
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.signIn, true, PageParams());
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+      } else {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: PageSignin(
+              runningOnDesktop: widget.runningOnDesktop,
+              setShowHidePage: widget.setShowHidePage,
+            ),
+          ),
+        );
+      }
     } else if (!hasValidPlan && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PagePlanSubscribe(),
-        ),
-      );
+      if (isDebugEnabled()) {
+        await ModelPreferences.set(AppString.plansShown.string, "yes");
+      }
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.planSubscribe, true, PageParams());
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+      } else if (mounted) {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: PagePlanSubscribe(
+              runningOnDesktop: widget.runningOnDesktop,
+              setShowHidePage: widget.setShowHidePage,
+            ),
+          ),
+        );
+      }
     } else if (!deviceRegistered) {
       registerDevice();
-    } else if (!canSync) {
+    } else if (!canSync || isDebugEnabled()) {
       checkEncryptionKeys();
     } else if (mounted) {
       await signalToUpdateHome();
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(PageType.userTask, false, PageParams());
+        } else {
+          Navigator.of(context).pop();
+        }
+      }
     }
   }
 
@@ -228,7 +286,25 @@ class _PageUserTaskState extends State<PageUserTask> {
       errorFetching = false;
     });
     try {
-      if (currentSession != null) {
+      if (isDebugEnabled()) {
+        await Future.delayed(const Duration(seconds: 1));
+        if (debugExceptionCount == 0) {
+          debugExceptionCount = 1;
+          throw Exception("Debug Exception Register Device");
+        } else {
+          await ModelPreferences.set(AppString.deviceRegistered.string, "yes");
+          bool canSync = await SyncUtils.canSync();
+          if (!canSync) {
+            checkEncryptionKeys();
+          } else if (mounted) {
+            if (widget.runningOnDesktop) {
+              widget.setShowHidePage!(PageType.userTask, false, PageParams());
+            } else {
+              Navigator.of(context).pop();
+            }
+          }
+        }
+      } else if (currentSession != null) {
         String? deviceId =
             await ModelPreferences.get(AppString.deviceId.string);
         if (deviceId == null) {
@@ -251,7 +327,11 @@ class _PageUserTaskState extends State<PageUserTask> {
         if (!canSync) {
           checkEncryptionKeys();
         } else if (mounted) {
-          Navigator.of(context).pop();
+          if (widget.runningOnDesktop) {
+            widget.setShowHidePage!(PageType.userTask, false, PageParams());
+          } else {
+            Navigator.of(context).pop();
+          }
         }
       }
     } on FunctionException catch (e) {
@@ -283,36 +363,74 @@ class _PageUserTaskState extends State<PageUserTask> {
       processing = true;
       errorFetching = false;
     });
+    if (isDebugEnabled()) {
+      await Future.delayed(const Duration(seconds: 1));
+    }
     String? userId = SyncUtils.getSignedInUserId();
-    if (userId == null) return;
+    if (userId == null && !isDebugEnabled()) return;
     //check where to navigate
     try {
-      final List<Map<String, dynamic>> keyRows =
-          await supabaseClient.from("keys").select().eq("id", userId);
+      List<Map<String, dynamic>> keyRows = [];
+      if (isDebugEnabled()) {
+        if (await ModelPreferences.get(AppString.hasEncryptionKeys.string,
+                defaultValue: "no") ==
+            "yes") {
+          keyRows = [
+            jsonDecode(
+                await ModelPreferences.get(AppString.debugCipherData.string))
+          ];
+        }
+      } else {
+        keyRows = await supabaseClient.from("keys").select().eq("id", userId!);
+      }
       if (keyRows.isEmpty && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => PageSelectKeyType(),
-          ),
-        );
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(PageType.selectKeyType, true, PageParams());
+          widget.setShowHidePage!(PageType.userTask, false, PageParams());
+        } else {
+          Navigator.of(context).pushReplacement(
+            AnimatedPageRoute(
+              child: PageSelectKeyType(
+                runningOnDesktop: widget.runningOnDesktop,
+                setShowHidePage: widget.setShowHidePage,
+              ),
+            ),
+          );
+        }
       } else if (mounted) {
         Map<String, dynamic> keyRow = keyRows.first;
         if (keyRow["salt"] != null) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PagePasswordKeyInput(
-                cipherData: keyRow,
+          if (widget.runningOnDesktop) {
+            widget.setShowHidePage!(
+                PageType.passwordInput, true, PageParams(cipherData: keyRow));
+            widget.setShowHidePage!(PageType.userTask, false, PageParams());
+          } else {
+            Navigator.of(context).pushReplacement(
+              AnimatedPageRoute(
+                child: PagePasswordKeyInput(
+                  runningOnDesktop: widget.runningOnDesktop,
+                  setShowHidePage: widget.setShowHidePage,
+                  cipherData: keyRow,
+                ),
               ),
-            ),
-          );
+            );
+          }
         } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PageAccessKeyInput(
-                cipherData: keyRow,
+          if (widget.runningOnDesktop) {
+            widget.setShowHidePage!(
+                PageType.accessKeyInput, true, PageParams(cipherData: keyRow));
+            widget.setShowHidePage!(PageType.userTask, false, PageParams());
+          } else {
+            Navigator.of(context).pushReplacement(
+              AnimatedPageRoute(
+                child: PageAccessKeyInput(
+                  cipherData: keyRow,
+                  runningOnDesktop: widget.runningOnDesktop,
+                  setShowHidePage: widget.setShowHidePage,
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
       }
     } catch (e, s) {
@@ -346,7 +464,12 @@ class _PageUserTaskState extends State<PageUserTask> {
     }
     bool success = await SyncUtils.signout();
     if (success && mounted) {
-      Navigator.of(context).pop();
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+        widget.setShowHidePage!(PageType.planStatus, false, PageParams());
+      } else {
+        Navigator.of(context).pop();
+      }
     } else {
       setState(() {
         errorFetching = true;
@@ -375,16 +498,32 @@ class _PageUserTaskState extends State<PageUserTask> {
           break;
       }
     } else if (deviceLimitExceeded) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PageDevices(),
-        ),
-      );
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.devices, true, PageParams());
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+      } else {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: PageDevices(
+              runningOnDesktop: widget.runningOnDesktop,
+              setShowHidePage: widget.setShowHidePage,
+            ),
+          ),
+        );
+      }
     } else if (userIdMismatch) {
       await supabaseClient.auth.signOut();
-      if (mounted) Navigator.of(context).pop();
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+      } else {
+        if (mounted) Navigator.of(context).pop();
+      }
     } else if (displayMessage.isNotEmpty) {
-      Navigator.of(context).pop();
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.userTask, false, PageParams());
+      } else {
+        if (mounted) Navigator.of(context).pop();
+      }
     }
   }
 
@@ -393,6 +532,14 @@ class _PageUserTaskState extends State<PageUserTask> {
     return Scaffold(
         appBar: AppBar(
           title: Text(taskTitle),
+          leading: widget.runningOnDesktop
+              ? BackButton(
+                  onPressed: () {
+                    widget.setShowHidePage!(
+                        PageType.userTask, false, PageParams());
+                  },
+                )
+              : null,
         ),
         body: processing
             ? Center(

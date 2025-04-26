@@ -63,7 +63,7 @@ class AppLogger {
       final coloredMessage = "${_getColor(level)}$logMessage$_reset";
       stdout.writeln(coloredMessage);
     }
-    if (debugApp()) {
+    if (isDebugEnabled()) {
       insertToDb(logMessage);
     }
   }

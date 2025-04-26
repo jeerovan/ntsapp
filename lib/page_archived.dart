@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_archived_category.dart';
 
 import 'page_archived_groups.dart';
 import 'page_archived_items.dart';
 
 class PageArchived extends StatefulWidget {
-  const PageArchived({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PageArchived(
+      {super.key,
+      required this.runningOnDesktop,
+      required this.setShowHidePage});
 
   @override
   State<PageArchived> createState() => _PageArchivedState();
@@ -37,6 +44,14 @@ class _PageArchivedState extends State<PageArchived> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Trash"),
+          leading: widget.runningOnDesktop
+              ? BackButton(
+                  onPressed: () {
+                    widget.setShowHidePage!(
+                        PageType.archive, false, PageParams());
+                  },
+                )
+              : null,
           actions: [
             ValueListenableBuilder<bool>(
               valueListenable: _isAnyItemSelected,

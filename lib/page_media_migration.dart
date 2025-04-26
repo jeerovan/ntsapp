@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/page_desktop_categories_groups.dart';
 
 import 'common.dart';
 import 'model_item.dart';
@@ -10,11 +11,15 @@ import 'model_setting.dart';
 import 'page_home.dart';
 
 class PageMediaMigration extends StatefulWidget {
+  final bool runningOnDesktop;
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
 
   const PageMediaMigration(
-      {super.key, required this.isDarkMode, required this.onThemeToggle});
+      {super.key,
+      required this.isDarkMode,
+      required this.onThemeToggle,
+      required this.runningOnDesktop});
 
   @override
   State<PageMediaMigration> createState() => _PageMediaMigrationState();
@@ -27,14 +32,23 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
     migrateMedia();
   }
 
-  void navigateToPageGroup() {
+  void navigateToCategoriesGroups() {
+    Widget page = PageCategoriesGroups(
+      sharedContents: const [],
+      isDarkMode: widget.isDarkMode,
+      onThemeToggle: widget.onThemeToggle,
+      runningOnDesktop: false,
+      setShowHidePage: null,
+    );
+    if (widget.runningOnDesktop) {
+      page = PageCategoriesGroupsPane(
+          sharedContents: const [],
+          isDarkMode: widget.isDarkMode,
+          onThemeToggle: widget.onThemeToggle);
+    }
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (_) => PageHome(
-        sharedContents: const [],
-        isDarkMode: widget.isDarkMode,
-        onThemeToggle: widget.onThemeToggle,
-      ),
-      settings: const RouteSettings(name: "NoteGroups"),
+      builder: (_) => page,
+      settings: const RouteSettings(name: "CategoriesGroupsFromMediaMigration"),
     ));
   }
 
@@ -81,7 +95,7 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
       }
     }
     ModelSetting.set("process_media", "no");
-    navigateToPageGroup();
+    navigateToCategoriesGroups();
   }
 
   @override

@@ -4,19 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
+import 'package:ntsapp/utils_sync.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'common.dart';
 import 'page_plan_status.dart';
 
 class PageAccessKey extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   const PageAccessKey({
     super.key,
+    required this.runningOnDesktop,
+    this.setShowHidePage,
   });
 
   @override
@@ -35,9 +40,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
   }
 
   Future<void> loadAccessKey() async {
-    User? user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-    String userId = user.id;
+    String? userId = SyncUtils.getSignedInUserId();
     String keyForAccessKey = '${userId}_ak';
     String? accessKeyBase64 = await secureStorage.read(key: keyForAccessKey);
     Uint8List accessKeyBytes = base64Decode(accessKeyBase64!);
@@ -75,11 +78,19 @@ class _PageAccessKeyState extends State<PageAccessKey> {
   }
 
   void navigateToPlanStatus() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PagePlanStatus(),
-      ),
-    );
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+      widget.setShowHidePage!(PageType.accessKey, false, PageParams());
+    } else {
+      Navigator.of(context).pushReplacement(
+        AnimatedPageRoute(
+          child: PagePlanStatus(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowChildWidget: widget.setShowHidePage,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -87,7 +98,14 @@ class _PageAccessKeyState extends State<PageAccessKey> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Access Key'),
-        centerTitle: true,
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.accessKey, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -120,7 +138,10 @@ class _PageAccessKeyState extends State<PageAccessKey> {
             // Button to copy
             ElevatedButton.icon(
               onPressed: () => copyToClipboard(),
-              icon: Icon(LucideIcons.copy),
+              icon: Icon(
+                LucideIcons.copy,
+                color: Colors.black,
+              ),
               label: Text(
                 "Copy",
                 style: TextStyle(color: Colors.black),
@@ -130,7 +151,10 @@ class _PageAccessKeyState extends State<PageAccessKey> {
             // Button to Download and Save as Text File
             ElevatedButton.icon(
               onPressed: () => _downloadTextFile(sentence),
-              icon: Icon(LucideIcons.download),
+              icon: Icon(
+                LucideIcons.download,
+                color: Colors.black,
+              ),
               label: Text(
                 "Download as Text File",
                 style: TextStyle(color: Colors.black),

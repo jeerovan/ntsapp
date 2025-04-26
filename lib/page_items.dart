@@ -36,17 +36,20 @@ import 'storage_hive.dart';
 bool isMobile = Platform.isAndroid || Platform.isIOS;
 
 class PageItems extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final List<String> sharedContents;
   final ModelGroup group;
   final String? loadItemIdOnInit;
-  final Function() onGroupDeleted;
 
-  const PageItems(
-      {super.key,
-      required this.sharedContents,
-      required this.group,
-      this.loadItemIdOnInit,
-      required this.onGroupDeleted});
+  const PageItems({
+    super.key,
+    required this.sharedContents,
+    required this.group,
+    this.loadItemIdOnInit,
+    required this.runningOnDesktop,
+    required this.setShowHidePage,
+  });
 
   @override
   State<PageItems> createState() => _PageItemsState();
@@ -65,12 +68,13 @@ class _PageItemsState extends State<PageItems> {
   bool selectionHasOnlyTextOrTaskItem = true;
 
   final TextEditingController _textController = TextEditingController();
+  final FocusNode _textControllerFocus = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
   final GlobalKey<TooltipState> _recordtooltipKey = GlobalKey<TooltipState>();
 
-  late ModelGroup noteGroup;
+  ModelGroup? noteGroup;
 
   bool _isTyping = false;
   bool _isRecording = false;
@@ -106,44 +110,72 @@ class _PageItemsState extends State<PageItems> {
 
   bool _shouldBlinkItem = false;
 
+  late StreamSubscription groupStream;
+  late StreamSubscription itemStream;
+
   @override
   void initState() {
     super.initState();
 
-    noteGroup = widget.group;
-    loadGroupSettings(noteGroup);
     _audioRecorder = AudioRecorder();
-    showItemId = widget.loadItemIdOnInit;
-    // update on server fetch
-    StorageHive().watch(AppString.changedItemId.string).listen((event) {
+
+    groupStream =
+        StorageHive().watch(AppString.changedGroupId.string).listen((event) {
+      if (mounted) {
+        changedGroup(event.value);
+      }
+    });
+    itemStream =
+        StorageHive().watch(AppString.changedItemId.string).listen((event) {
       if (mounted) {
         changedItem(event.value);
       }
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchItems(showItemId);
-      loadImageDirectoryPath();
-      if (widget.sharedContents.isNotEmpty) {
-        loadSharedContents();
+  }
+
+  Future<void> changedGroup(String? groupId) async {
+    if (groupId == null) return;
+    if (widget.group.id == groupId) {
+      ModelGroup? group = await ModelGroup.get(groupId);
+      if (group != null) {
+        if (group.archivedAt != null && group.archivedAt! > 0) {
+          if (widget.runningOnDesktop) {
+            widget.setShowHidePage!(PageType.items, false, PageParams());
+          } else {
+            if (mounted) Navigator.of(context).pop();
+          }
+        } else {
+          await loadGroupSettings(group);
+        }
       }
-    });
+    }
   }
 
   Future<void> changedItem(String? itemId) async {
     if (itemId == null) return;
     ModelItem? item = await ModelItem.get(itemId);
+    ModelItem? oldItem;
     if (item != null) {
+      int itemIndex = -1;
       if (item.groupId == widget.group.id) {
-        int itemIndex = -1;
         for (ModelItem displayItem in _displayItemList) {
           if (displayItem.id == item.id) {
+            oldItem = displayItem;
             itemIndex = _displayItemList.indexOf(displayItem);
+            break;
           }
         }
-        if (itemIndex > -1) {
-          setState(() {
-            _displayItemList[itemIndex] = item;
-          });
+        if (oldItem != null) {
+          if (item.archivedAt! > 0) {
+            _removeItemsFromDisplayList([oldItem]);
+          } else {
+            setState(() {
+              _displayItemList[itemIndex] = item;
+            });
+            if (oldItem.text != item.text) {
+              checkFetchUrlMetadata(item);
+            }
+          }
         } else {
           fetchItems(null);
         }
@@ -151,39 +183,41 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
-  Future<void> loadGroupSettings(ModelGroup? group) async {
-    group ??= await ModelGroup.get(noteGroup.id!);
-    Map<String, dynamic>? data = noteGroup.data;
-    if (data != null) {
-      if (data.containsKey("date_time")) {
-        showDateTime = data["date_time"] == 1 ? true : false;
-      }
-      if (data.containsKey("note_border")) {
-        showNoteBorder = data["note_border"] == 1 ? true : false;
-      }
-      if (data.containsKey("task_mode")) {
-        _isCreatingTask = data["task_mode"] == 1 ? true : false;
-      }
+  Future<void> loadGroupSettings(ModelGroup group) async {
+    Map<String, dynamic>? data = group.data;
+    if (data != null && mounted) {
+      setState(() {
+        if (data.containsKey("date_time")) {
+          showDateTime = data["date_time"] == 1 ? true : false;
+        }
+        if (data.containsKey("note_border")) {
+          showNoteBorder = data["note_border"] == 1 ? true : false;
+        }
+        if (data.containsKey("task_mode")) {
+          _isCreatingTask = data["task_mode"] == 1 ? true : false;
+        }
+      });
     }
   }
 
   @override
   void dispose() {
+    itemStream.cancel();
     _recordingTimer?.cancel();
     _textController.dispose();
+    _textControllerFocus.dispose();
     _audioRecorder.dispose();
     super.dispose();
   }
 
   Future<void> fetchItems(String? itemId) async {
     List<ModelItem> newItems =
-        await ModelItem.getInGroup(noteGroup.id!, _filters);
+        await ModelItem.getInGroup(noteGroup!.id!, _filters);
     if (itemId != null) {
       canScrollToBottom = true;
     } else {
       canScrollToBottom = false;
     }
-    if (newItems.isEmpty) return;
     _displayItemList.clear();
     await _addItemsToDisplayList(newItems, true);
     setState(() {
@@ -200,16 +234,19 @@ class _PageItemsState extends State<PageItems> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _itemScrollController.jumpTo(index: indexOfItem);
             triggerItemBlink();
-            Future.delayed(Duration(seconds: 1), () {});
           });
         }
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _itemScrollController.jumpTo(index: 0);
-          Future.delayed(Duration(seconds: 1), () {});
         });
       }
     });
+    if (newItems.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _textControllerFocus.requestFocus();
+      });
+    }
   }
 
   Future<void> loadImageDirectoryPath() async {
@@ -240,7 +277,7 @@ class _PageItemsState extends State<PageItems> {
         if (lastDate != null) {
           if (currentDate != lastDate) {
             final ModelItem dateItem = await ModelItem.fromMap({
-              "group_id": noteGroup.id,
+              "group_id": noteGroup!.id,
               "text": getReadableDate(lastDate),
               "type": 170000,
               "at": lastItemAt! - 1
@@ -254,7 +291,7 @@ class _PageItemsState extends State<PageItems> {
       }
       if (lastDate != null) {
         final ModelItem dateItem = await ModelItem.fromMap({
-          "group_id": noteGroup.id,
+          "group_id": noteGroup!.id,
           "text": getReadableDate(lastDate),
           "type": 170000,
           "at": lastItemAt! - 1
@@ -270,7 +307,7 @@ class _PageItemsState extends State<PageItems> {
         if (lastDate != null) {
           if (currentDate != lastDate) {
             final ModelItem dateItem = await ModelItem.fromMap({
-              "group_id": noteGroup.id,
+              "group_id": noteGroup!.id,
               "text": getReadableDate(currentDate),
               "type": 170000,
               "at": item.at! - 1
@@ -279,7 +316,7 @@ class _PageItemsState extends State<PageItems> {
           }
         } else {
           final ModelItem dateItem = await ModelItem.fromMap({
-            "group_id": noteGroup.id,
+            "group_id": noteGroup!.id,
             "text": getReadableDate(currentDate),
             "type": 170000,
             "at": item.at! - 1
@@ -290,6 +327,30 @@ class _PageItemsState extends State<PageItems> {
         lastDate = currentDate;
       }
     }
+  }
+
+  void _removeItemsFromDisplayList(List<ModelItem> items) {
+    setState(() {
+      for (ModelItem item in items) {
+        int itemIndex = _displayItemList.indexOf(item);
+        if (itemIndex == -1) continue;
+        // check if the next item is date
+        ModelItem nextItem = _displayItemList.elementAt(itemIndex + 1);
+        if (nextItem.type == ItemType.date) {
+          // check the previous item
+          if (itemIndex > 0) {
+            ModelItem previousItem = _displayItemList.elementAt(itemIndex - 1);
+            if (previousItem.type == ItemType.date) {
+              _displayItemList.removeAt(itemIndex + 1);
+            }
+          } else {
+            // if removing the first item, remove the date
+            _displayItemList.removeAt(itemIndex + 1);
+          }
+        }
+        _displayItemList.remove(item);
+      }
+    });
   }
 
   ModelItem? getLastItemFromDisplayList() {
@@ -725,27 +786,8 @@ class _PageItemsState extends State<PageItems> {
     for (ModelItem item in _selectedItems) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
       await item.update(["archived_at"]);
+      await StorageHive().put(AppString.changedItemId.string, item.id);
     }
-    setState(() {
-      for (ModelItem item in _selectedItems) {
-        int itemIndex = _displayItemList.indexOf(item);
-        // check if the next item is date
-        ModelItem nextItem = _displayItemList.elementAt(itemIndex + 1);
-        if (nextItem.type == ItemType.date) {
-          // check the previous item
-          if (itemIndex > 0) {
-            ModelItem previousItem = _displayItemList.elementAt(itemIndex - 1);
-            if (previousItem.type == ItemType.date) {
-              _displayItemList.removeAt(itemIndex + 1);
-            }
-          } else {
-            // if removing the first item, remove the date
-            _displayItemList.removeAt(itemIndex + 1);
-          }
-        }
-        _displayItemList.remove(item);
-      }
-    });
     if (mounted) {
       displaySnackBar(context, message: "Moved to trash", seconds: 1);
     }
@@ -876,71 +918,21 @@ class _PageItemsState extends State<PageItems> {
     clearSelection();
   }
 
-  Future<void> updateNoteText(ModelItem item, String newText) async {
-    item.text = newText;
-    await item.update(["text"]);
-    checkFetchUrlMetadata(item);
-  }
-
   void editNote() {
     ModelItem item = _selectedItems.first;
-
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-      builder: (context) => PageEditNote(
-        noteText: item.text,
-      ),
-      settings: const RouteSettings(name: "EditNote"),
-    ))
-        .then((noteText) {
-      if (noteText != null) {
-        setState(() {
-          item.text = noteText;
-          updateNoteText(item, noteText);
-        });
-      }
-    });
-
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.editNote, true, PageParams(id: item.id));
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageEditNote(
+          itemId: item.id!,
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+        ),
+        settings: const RouteSettings(name: "EditNote"),
+      ));
+    }
     clearSelection();
-  }
-
-  void showEditNotePopup(BuildContext context, Function(String) onSubmit,
-      [String initialText = ""]) {
-    final TextEditingController controller =
-        TextEditingController(text: initialText);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Edit note"),
-          content: TextField(
-            minLines: 1,
-            maxLines: null,
-            textCapitalization: TextCapitalization.sentences,
-            controller: controller,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Save'),
-              onPressed: () {
-                onSubmit(controller.text);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> updateSelectedItemsTaskType() async {
@@ -1055,7 +1047,7 @@ class _PageItemsState extends State<PageItems> {
 
         final text = "$dateString, $messageCount";
         final ModelItem item = await ModelItem.fromMap({
-          "group_id": noteGroup.id,
+          "group_id": noteGroup!.id,
           "text": text,
           "type": ItemType.text,
           "at": timestamp
@@ -1084,13 +1076,14 @@ class _PageItemsState extends State<PageItems> {
       }
     }
     ModelItem item = await ModelItem.fromMap({
-      "group_id": noteGroup.id,
+      "group_id": noteGroup!.id,
       "text": text,
       "type": type,
       "thumbnail": thumbnail,
       "data": data,
     });
     await item.insert();
+    await StorageHive().put(AppString.changedItemId.string, item.id);
     await checkAddItemFileHash(item);
     setState(() {
       _addItemsToDisplayList([item], false);
@@ -1126,33 +1119,38 @@ class _PageItemsState extends State<PageItems> {
       break;
     }
     if (link.isNotEmpty) {
-      final Metadata? metaData = await MetadataFetch.extract(link);
-      if (metaData != null) {
-        int portrait = 1;
-        // download the url image if available
-        if (metaData.image != null) {
-          portrait = await checkDownloadNetworkImage(item.id!, metaData.image!);
-        }
-        Map<String, dynamic> urlInfo = {
-          "url": link,
-          "title": metaData.title,
-          "desc": metaData.description,
-          "image": metaData.image,
-          "portrait": portrait
-        };
-        Map<String, dynamic>? data = item.data;
-        if (data != null) {
-          data["url_info"] = urlInfo;
-          item.data = data;
-          await item.update(["data"]);
-        } else {
-          item.data = {"url_info": urlInfo};
-          await item.update(["data"]);
-        }
+      try {
+        final Metadata? metaData = await MetadataFetch.extract(link);
+        if (metaData != null) {
+          int portrait = 1;
+          // download the url image if available
+          if (metaData.image != null) {
+            portrait =
+                await checkDownloadNetworkImage(item.id!, metaData.image!);
+          }
+          Map<String, dynamic> urlInfo = {
+            "url": link,
+            "title": metaData.title,
+            "desc": metaData.description,
+            "image": metaData.image,
+            "portrait": portrait
+          };
+          Map<String, dynamic>? data = item.data;
+          if (data != null) {
+            data["url_info"] = urlInfo;
+            item.data = data;
+            await item.update(["data"]);
+          } else {
+            item.data = {"url_info": urlInfo};
+            await item.update(["data"]);
+          }
 
-        if (mounted) {
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         }
+      } catch (e) {
+        logger.error("error fetch metadata", error: e);
       }
     } else {
       // may happen after editing note
@@ -1347,21 +1345,31 @@ class _PageItemsState extends State<PageItems> {
     }
   }
 
+  void _handleTextInput(String text) {
+    text = text.trim();
+    if (text.isNotEmpty) {
+      ItemType itemType = _isCreatingTask ? ItemType.task : ItemType.text;
+      _addItemToDbAndDisplayList(text, itemType, null, null);
+      _textController.clear();
+      _onInputTextChanged("");
+      _textControllerFocus.requestFocus();
+    }
+  }
+
   void navigateToPageGroupEdit() {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => PageGroupAddEdit(
-        group: noteGroup,
-        onUpdate: () async {
-          await loadGroupSettings(null);
-          setState(() {});
-        },
-        onDelete: () {
-          widget.onGroupDeleted();
-          Navigator.of(context).pop(false);
-        },
-      ),
-      settings: const RouteSettings(name: "EditNoteGroup"),
-    ));
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.addEditGroup, true, PageParams(group: noteGroup));
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageGroupAddEdit(
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+          group: noteGroup,
+        ),
+        settings: const RouteSettings(name: "EditNoteGroup"),
+      ));
+    }
   }
 
   Future<void> setTaskMode() async {
@@ -1370,14 +1378,14 @@ class _PageItemsState extends State<PageItems> {
       canScrollToBottom = false;
     });
     int taskMode = _isCreatingTask ? 1 : 0;
-    Map<String, dynamic>? data = noteGroup.data;
+    Map<String, dynamic>? data = noteGroup!.data;
     if (data != null) {
       data["task_mode"] = taskMode;
-      noteGroup.data = data;
-      await noteGroup.update(["data"]);
+      noteGroup!.data = data;
+      await noteGroup!.update(["data"]);
     } else {
-      noteGroup.data = {"task_mode": taskMode};
-      await noteGroup.update(["data"]);
+      noteGroup!.data = {"task_mode": taskMode};
+      await noteGroup!.update(["data"]);
     }
   }
 
@@ -1456,11 +1464,27 @@ class _PageItemsState extends State<PageItems> {
 
   @override
   Widget build(BuildContext context) {
+    if (noteGroup != widget.group) {
+      noteGroup = widget.group;
+      loadGroupSettings(noteGroup!);
+      if (showItemId != widget.loadItemIdOnInit) {
+        showItemId = widget.loadItemIdOnInit;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        fetchItems(showItemId);
+        loadImageDirectoryPath();
+        if (widget.sharedContents.isNotEmpty) {
+          loadSharedContents();
+        }
+      });
+    }
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.runningOnDesktop,
         actions: _buildAppbarDefaultOptions(),
         title: Text(
-          noteGroup.title,
+          noteGroup == null ? "" : noteGroup!.title,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 18,
@@ -1604,7 +1628,7 @@ class _PageItemsState extends State<PageItems> {
                     bottom: 10, // Adjust for FAB height and margin
                     right: 20,
                     child: FloatingActionButton(
-                      heroTag: "scrollToBottom",
+                      heroTag: "scroll_to_bottom",
                       mini: true,
                       onPressed: () {
                         clearSelection();
@@ -1708,15 +1732,27 @@ class _PageItemsState extends State<PageItems> {
       int index = await ModelItem.mediaIndexInGroup(groupId, id);
       int count = await ModelItem.mediaCountInGroup(groupId);
       if (mounted) {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => PageMediaViewer(
-            id: id,
-            groupId: groupId,
-            index: index,
-            count: count,
-          ),
-          settings: const RouteSettings(name: "NoteGroupMedia"),
-        ));
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(
+              PageType.mediaViewer,
+              true,
+              PageParams(
+                  group: noteGroup,
+                  id: id,
+                  mediaIndexInGroup: index,
+                  mediaCountInGroup: count));
+        } else {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => PageMediaViewer(
+              runningOnDesktop: widget.runningOnDesktop,
+              id: id,
+              groupId: groupId,
+              index: index,
+              count: count,
+            ),
+            settings: const RouteSettings(name: "NoteGroupMedia"),
+          ));
+        }
       }
     }
   }
@@ -1932,10 +1968,13 @@ class _PageItemsState extends State<PageItems> {
                           ),
                         TextField(
                           controller: _textController,
+                          focusNode: _textControllerFocus,
                           maxLines: 10,
                           minLines: 1,
                           keyboardType: TextInputType.multiline,
                           textCapitalization: TextCapitalization.sentences,
+                          textInputAction: TextInputAction.go,
+                          onSubmitted: _handleTextInput,
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.onSurface),
                           decoration: InputDecoration(
@@ -2003,7 +2042,7 @@ class _PageItemsState extends State<PageItems> {
               onLongPress: () async {
                 if (!_isTyping) {
                   _recordtooltipKey.currentState?.ensureTooltipVisible();
-                  Future.delayed(Duration(seconds: 1), () {
+                  await Future.delayed(Duration(seconds: 1), () {
                     if (mounted) {
                       Tooltip.dismissAllToolTips();
                     }
@@ -2017,14 +2056,8 @@ class _PageItemsState extends State<PageItems> {
                 if (_isRecording) {
                   await _stopRecording();
                 } else if (_isTyping) {
-                  final String text = _textController.text.trim();
-                  if (text.isNotEmpty) {
-                    ItemType itemType =
-                        _isCreatingTask ? ItemType.task : ItemType.text;
-                    _addItemToDbAndDisplayList(text, itemType, null, null);
-                    _textController.clear();
-                    _onInputTextChanged("");
-                  }
+                  final String text = _textController.text;
+                  _handleTextInput(text);
                 } else if (!_isTyping && !_isRecording) {
                   if (mounted) {
                     displaySnackBar(context,

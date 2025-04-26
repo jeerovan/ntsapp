@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 
@@ -9,8 +10,13 @@ import 'page_items.dart';
 import 'widgets_item.dart';
 
 class PageStarredItems extends StatefulWidget {
-  final Function() onChanges;
-  const PageStarredItems({super.key, required this.onChanges});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PageStarredItems({
+    super.key,
+    required this.runningOnDesktop,
+    required this.setShowHidePage,
+  });
 
   @override
   State<PageStarredItems> createState() => _PageStarredItemsState();
@@ -86,11 +92,6 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     });
   }
 
-  Future<void> onNoteGroupDeleted() async {
-    fetchStarredItemsOnInit();
-    widget.onChanges();
-  }
-
   Future<void> onItemTapped(ModelItem item) async {
     ModelGroup? group = await ModelGroup.get(item.groupId);
     if (_isSelecting) {
@@ -106,15 +107,21 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       });
     } else {
       if (!mounted || group == null) return;
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => PageItems(
-          group: group,
-          sharedContents: const [],
-          loadItemIdOnInit: item.id,
-          onGroupDeleted: onNoteGroupDeleted,
-        ),
-        settings: const RouteSettings(name: "Notes"),
-      ));
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(
+            PageType.items, true, PageParams(group: group, id: item.id));
+      } else {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => PageItems(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+            group: group,
+            sharedContents: const [],
+            loadItemIdOnInit: item.id,
+          ),
+          settings: const RouteSettings(name: "Notes"),
+        ));
+      }
     }
   }
 
@@ -176,9 +183,18 @@ class _PageStarredItemsState extends State<PageStarredItems> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: _isSelecting
-              ? _buildSelectionOptions()
-              : const Text("Starred notes")),
+        title: _isSelecting
+            ? _buildSelectionOptions()
+            : const Text("Starred notes"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.starred, false, PageParams());
+                },
+              )
+            : null,
+      ),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
           if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
@@ -228,6 +244,16 @@ class _PageStarredItemsState extends State<PageStarredItems> {
     switch (item.type) {
       case ItemType.text:
         return ItemWidgetText(
+          item: item,
+          showTimestamp: false,
+        );
+      case ItemType.task:
+        return ItemWidgetTask(
+          item: item,
+          showTimestamp: false,
+        );
+      case ItemType.completedTask:
+        return ItemWidgetTask(
           item: item,
           showTimestamp: false,
         );

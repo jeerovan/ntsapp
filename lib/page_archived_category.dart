@@ -3,6 +3,8 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
 
+import 'common.dart';
+
 class PageArchivedCategories extends StatefulWidget {
   final Function(bool) onSelectionChange;
   final Function(VoidCallback) setDeleteCallback;
@@ -81,10 +83,11 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
       await category.update(["archived_at"]);
     }
     if (mounted) {
+      clearSelection();
       displaySnackBar(context, message: "Restored.", seconds: 1);
     }
-    clearSelection();
-    fetchArchivedCategories();
+    await fetchArchivedCategories();
+    await signalToUpdateHome();
   }
 
   Future<void> deleteSelectedItems() async {
@@ -93,10 +96,10 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
       await category.deleteCascade(withServerSync: true);
     }
     if (mounted) {
+      clearSelection();
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
-    clearSelection();
-    fetchArchivedCategories();
+    await fetchArchivedCategories();
   }
 
   void clearSelection() {

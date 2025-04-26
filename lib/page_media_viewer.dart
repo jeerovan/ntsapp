@@ -10,6 +10,8 @@ import 'package:video_player/video_player.dart';
 import 'model_item.dart';
 
 class PageMediaViewer extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final String id;
   final String groupId;
   final int index;
@@ -20,7 +22,9 @@ class PageMediaViewer extends StatefulWidget {
       required this.id,
       required this.groupId,
       required this.index,
-      required this.count});
+      required this.count,
+      required this.runningOnDesktop,
+      this.setShowHidePage});
 
   @override
   State<PageMediaViewer> createState() => _PageMediaViewerState();
@@ -33,6 +37,8 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
   ModelItem? nextItem;
   late String currentId;
   late int currentIndex;
+  late int mediaCount;
+  late String groupId;
 
   @override
   void initState() {
@@ -40,6 +46,8 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
     _pageController = PageController(initialPage: widget.index);
     currentId = widget.id;
     currentIndex = widget.index;
+    mediaCount = widget.count;
+    groupId = widget.groupId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadItems();
     });
@@ -54,9 +62,8 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
   void loadItems() async {
     ModelItem? currentModelItem = await ModelItem.get(currentId);
     previousItem =
-        await ModelItem.getPreviousMediaItemInGroup(widget.groupId, currentId);
-    nextItem =
-        await ModelItem.getNextMediaItemInGroup(widget.groupId, currentId);
+        await ModelItem.getPreviousMediaItemInGroup(groupId, currentId);
+    nextItem = await ModelItem.getNextMediaItemInGroup(groupId, currentId);
     setState(() {
       currentItem = currentModelItem;
     });
@@ -69,7 +76,7 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
       currentItem = nextItem;
       currentId = currentItem!.id!;
       ModelItem? item =
-          await ModelItem.getNextMediaItemInGroup(widget.groupId, currentId);
+          await ModelItem.getNextMediaItemInGroup(groupId, currentId);
       if (item != null) {
         nextItem = item;
       }
@@ -78,8 +85,8 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
       nextItem = currentItem;
       currentItem = previousItem;
       currentId = currentItem!.id!;
-      ModelItem? item = await ModelItem.getPreviousMediaItemInGroup(
-          widget.groupId, currentId);
+      ModelItem? item =
+          await ModelItem.getPreviousMediaItemInGroup(groupId, currentId);
       if (item != null) {
         previousItem = item;
       }
@@ -107,9 +114,17 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Media"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.mediaViewer, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: PageView.builder(
-        itemCount: widget.count,
+        itemCount: mediaCount,
         controller: _pageController,
         scrollDirection: Axis.vertical,
         onPageChanged: (value) => {indexChanged(value)},

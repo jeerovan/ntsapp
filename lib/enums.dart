@@ -1,3 +1,27 @@
+enum PageType {
+  settings,
+  categories,
+  addEditCategory,
+  addEditGroup,
+  items,
+  editNote,
+  archive,
+  starred,
+  search,
+  mediaViewer,
+  userTask,
+  planStatus,
+  planSubscribe,
+  signIn,
+  selectKeyType,
+  accessKey,
+  accessKeyInput,
+  accessKeyCreate,
+  passwordInput,
+  passwordCreate,
+  devices,
+}
+
 enum ItemType {
   text,
   image,
@@ -96,12 +120,14 @@ enum AppString {
   hasValidPlan,
   planStorageFull,
   planRcId,
+  plansShown,
 
   //sign-in
   otpSentTo,
   otpSentAt,
 
   // Sync
+  encryptionKeyType,
   hasEncryptionKeys,
   syncInProgress,
   pushedLocalContentForSync,
@@ -119,6 +145,7 @@ enum AppString {
   keyNonce,
   cipherText,
   cipherNonce,
+  debugCipherData,
 }
 
 extension AppStringExtension on AppString {
@@ -132,6 +159,8 @@ extension AppStringExtension on AppString {
         return "sync_in_progress";
       case AppString.fcmId:
         return "fcm_id";
+      case AppString.encryptionKeyType:
+        return "encryption_key_type";
       case AppString.hasEncryptionKeys:
         return "has_encryption_keys";
       case AppString.changedItemId:
@@ -144,6 +173,8 @@ extension AppStringExtension on AppString {
         return 'pushed_local_content_for_sync';
       case AppString.hasValidPlan:
         return 'has_valid_plan';
+      case AppString.plansShown:
+        return 'plans_shown';
       case AppString.planStorageFull:
         return 'rc_plan_full';
       case AppString.rcApiKey:
@@ -184,6 +215,8 @@ extension AppStringExtension on AppString {
         return "encrypted";
       case AppString.decrypted:
         return "decrypted";
+      case AppString.debugCipherData:
+        return "debug_cipher_data";
     }
   }
 }

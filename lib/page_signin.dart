@@ -8,10 +8,14 @@ import 'package:ntsapp/storage_secure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import 'common.dart';
 import 'enums.dart';
 
 class PageSignin extends StatefulWidget {
-  const PageSignin({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PageSignin(
+      {super.key, required this.runningOnDesktop, this.setShowHidePage});
 
   @override
   State<PageSignin> createState() => _PageSigninState();
@@ -31,6 +35,7 @@ class _PageSigninState extends State<PageSignin> {
       StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = false;
+  int debugExceptionCount = 0;
 
   @override
   void initState() {
@@ -54,18 +59,26 @@ class _PageSigninState extends State<PageSignin> {
     super.dispose();
   }
 
-  // OTP expire after 15min
-  Future<void> sendOtp() async {
+  // OTP expire after 5min
+  Future<void> sendOtp(String text) async {
     if (processing) return;
-    email = emailController.text;
+    email = text.trim();
     if (email.isNotEmpty) {
       setState(() {
         processing = true;
       });
       try {
-        await supabase.auth.signInWithOtp(
-          email: email,
-        );
+        if (isDebugEnabled()) {
+          await Future.delayed(const Duration(seconds: 1));
+          if (debugExceptionCount == 0) {
+            debugExceptionCount = 1;
+            throw Exception("Debug SignIn Exception");
+          }
+        } else {
+          await supabase.auth.signInWithOtp(
+            email: email,
+          );
+        }
         int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
         await StorageHive().put(AppString.otpSentTo.string, email);
         await StorageHive().put(AppString.otpSentAt.string, nowUtc);
@@ -88,9 +101,9 @@ class _PageSigninState extends State<PageSignin> {
   }
 
   // cases: First time, Re-login
-  Future<void> verifyOtp() async {
+  Future<void> verifyOtp(String text) async {
     if (processing) return;
-    final otp = otpController.text;
+    final otp = text.trim();
     final String email =
         StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
     if (email.isNotEmpty && otp.isNotEmpty) {
@@ -98,10 +111,19 @@ class _PageSigninState extends State<PageSignin> {
         processing = true;
       });
       try {
-        AuthResponse response = await supabase.auth
-            .verifyOTP(email: email, token: otp, type: OtpType.email);
-        Session? session = response.session;
-        if (session != null) {
+        Session? session;
+        if (isDebugEnabled()) {
+          await Future.delayed(const Duration(seconds: 1));
+          if (debugExceptionCount == 1) {
+            debugExceptionCount = 2;
+            throw Exception("Debug OTP Exception");
+          }
+        } else {
+          AuthResponse response = await supabase.auth
+              .verifyOTP(email: email, token: otp, type: OtpType.email);
+          session = response.session;
+        }
+        if (session != null || isDebugEnabled()) {
           await StorageHive().delete(AppString.otpSentTo.string);
           await StorageHive().delete(AppString.otpSentAt.string);
           // assign a device Id
@@ -130,13 +152,21 @@ class _PageSigninState extends State<PageSignin> {
   }
 
   Future<void> navigateToOnboardCheck() async {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PageUserTask(
-          task: AppTask.checkCloudSync,
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.userTask, true, PageParams(appTask: AppTask.checkCloudSync));
+      widget.setShowHidePage!(PageType.signIn, false, PageParams());
+    } else {
+      Navigator.of(context).pushReplacement(
+        AnimatedPageRoute(
+          child: PageUserTask(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+            task: AppTask.checkCloudSync,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> changeEmail() async {
@@ -150,7 +180,16 @@ class _PageSigninState extends State<PageSignin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(otpSent ? 'Verify OTP' : 'Email SignIn')),
+      appBar: AppBar(
+        title: Text(otpSent ? 'Verify OTP' : 'Email SignIn'),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(PageType.signIn, false, PageParams());
+                },
+              )
+            : null,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
@@ -160,14 +199,19 @@ class _PageSigninState extends State<PageSignin> {
             children: [
               if (!signedIn && !otpSent)
                 TextField(
+                  autofocus: true,
                   controller: emailController,
                   decoration: InputDecoration(labelText: 'Enter Email'),
                   keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: sendOtp,
                 ),
               SizedBox(height: 20),
               if (!signedIn && !otpSent)
                 ElevatedButton(
-                    onPressed: sendOtp,
+                    onPressed: () {
+                      sendOtp(emailController.text);
+                    },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -201,14 +245,19 @@ class _PageSigninState extends State<PageSignin> {
               SizedBox(height: 20),
               if (!signedIn && otpSent)
                 TextField(
+                  autofocus: true,
                   controller: otpController,
                   decoration: InputDecoration(labelText: 'Enter OTP'),
                   keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: verifyOtp,
                 ),
               SizedBox(height: 20),
               if (!signedIn && otpSent)
                 ElevatedButton(
-                    onPressed: verifyOtp,
+                    onPressed: () {
+                      verifyOtp(otpController.text);
+                    },
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       if (processing)
                         Padding(

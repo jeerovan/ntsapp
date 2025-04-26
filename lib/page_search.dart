@@ -12,10 +12,12 @@ import 'model_search_item.dart';
 import 'page_items.dart';
 
 class SearchPage extends StatefulWidget {
-  final Function() onChanges;
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   const SearchPage({
     super.key,
-    required this.onChanges,
+    required this.runningOnDesktop,
+    required this.setShowHidePage,
   });
 
   @override
@@ -82,18 +84,6 @@ class SearchPageState extends State<SearchPage> {
     });
   }
 
-  Future<void> showMovedToTrash() async {
-    if (mounted) {
-      setState(() {});
-      displaySnackBar(context, message: "Moved to trash", seconds: 1);
-    }
-  }
-
-  Future<void> onNoteGroupDeleted() async {
-    widget.onChanges();
-    showMovedToTrash();
-  }
-
   @override
   void dispose() {
     _textController.removeListener(_checkPerformSearch);
@@ -107,6 +97,13 @@ class SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Search notes"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(PageType.search, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -131,14 +128,23 @@ class SearchPageState extends State<SearchPage> {
                       onTap: () {
                         if (item.item.archivedAt == 0 &&
                             item.group!.archivedAt == 0) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => PageItems(
-                                    group: item.group!,
-                                    sharedContents: const [],
-                                    loadItemIdOnInit: item.item.id!,
-                                    onGroupDeleted: onNoteGroupDeleted,
-                                  ),
-                              settings: const RouteSettings(name: "Notes")));
+                          if (widget.runningOnDesktop) {
+                            widget.setShowHidePage!(
+                                PageType.items,
+                                true,
+                                PageParams(
+                                    group: item.group, id: item.item.id));
+                          } else {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => PageItems(
+                                      runningOnDesktop: widget.runningOnDesktop,
+                                      setShowHidePage: widget.setShowHidePage,
+                                      group: item.group!,
+                                      sharedContents: const [],
+                                      loadItemIdOnInit: item.item.id!,
+                                    ),
+                                settings: const RouteSettings(name: "Notes")));
+                          }
                         }
                       },
                       child: Container(
@@ -157,27 +163,25 @@ class SearchPageState extends State<SearchPage> {
               ),
             ),
             const SizedBox(height: 20),
-            _buildSearchInputBox()
+            TextField(
+              controller: _textController,
+              textCapitalization: TextCapitalization.sentences,
+              autofocus: true,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(LucideIcons.search),
+                hintText: "query, #document etc..",
+                hintStyle:
+                    TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25.0),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              ),
+            )
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSearchInputBox() {
-    return TextField(
-      controller: _textController,
-      textCapitalization: TextCapitalization.sentences,
-      autofocus: true,
-      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-      decoration: InputDecoration(
-        prefixIcon: const Icon(LucideIcons.search),
-        hintText: "query, #document etc..",
-        hintStyle: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25.0),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       ),
     );
   }

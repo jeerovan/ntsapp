@@ -27,6 +27,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'model_category.dart';
+import 'model_item_group.dart';
 import 'utils_crypto.dart';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -34,7 +35,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
-bool debugApp() {
+bool isDebugEnabled() {
   return false;
 }
 
@@ -790,6 +791,30 @@ class ExecutionResult<T> {
       return 'ExecutionResult(${status.name}): ${failureReason ?? "No reason provided"}${failureKey != null ? " (Key: $failureKey)" : ""}';
     }
   }
+}
+
+class PageParams {
+  ModelGroup? group;
+  ModelCategory? category;
+  String? id;
+  bool? isAuthenticated;
+  int? mediaIndexInGroup;
+  int? mediaCountInGroup;
+  AppTask? appTask;
+  Map<String, dynamic>? cipherData;
+  bool? recreatePassword;
+
+  PageParams({
+    this.group,
+    this.category,
+    this.id,
+    this.isAuthenticated,
+    this.mediaCountInGroup,
+    this.mediaIndexInGroup,
+    this.appTask,
+    this.cipherData,
+    this.recreatePassword,
+  });
 }
 
 /* hexadecimal from/to conversions */

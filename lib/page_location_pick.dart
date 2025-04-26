@@ -180,6 +180,7 @@ class _LocationPickerState extends State<LocationPicker> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "get_current_location",
         onPressed: _getCurrentLocation,
         tooltip: "Use current location",
         child: const Icon(LucideIcons.locate),

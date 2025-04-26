@@ -7,11 +7,16 @@ import 'package:ntsapp/page_signin.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
+import 'common.dart';
+import 'common_widgets.dart';
 import 'enums.dart';
 import 'page_user_task.dart';
 
 class PagePlanSubscribe extends StatefulWidget {
-  const PagePlanSubscribe({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PagePlanSubscribe(
+      {super.key, required this.runningOnDesktop, this.setShowHidePage});
 
   @override
   State<PagePlanSubscribe> createState() => _PagePlanSubscribeState();
@@ -81,32 +86,50 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   }
 
   Future<void> navigateToOnboardingChecks() async {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PageUserTask(
-          task: AppTask.checkCloudSync,
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.userTask, true, PageParams(appTask: AppTask.checkCloudSync));
+    } else {
+      Navigator.of(context).pushReplacement(
+        AnimatedPageRoute(
+          child: PageUserTask(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+            task: AppTask.checkCloudSync,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.planSubscribe, false, PageParams());
+                },
+              )
+            : null,
         actions: [
           if (!hasDeviceId)
             TextButton(
               onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => PageSignin(),
-                  ),
-                );
+                if (widget.runningOnDesktop) {
+                  widget.setShowHidePage!(PageType.signIn, true, PageParams());
+                } else {
+                  Navigator.of(context).pushReplacement(
+                    AnimatedPageRoute(
+                      child: PageSignin(
+                        runningOnDesktop: widget.runningOnDesktop,
+                        setShowHidePage: widget.setShowHidePage,
+                      ),
+                    ),
+                  );
+                }
               },
               child: Text(
                 'Login',

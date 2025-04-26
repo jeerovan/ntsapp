@@ -8,7 +8,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_preferences.dart';
-import 'package:ntsapp/page_category_groups.dart';
+import 'package:ntsapp/page_desktop_category_groups.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
 import 'package:ntsapp/page_hive.dart';
@@ -20,7 +20,6 @@ import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'common.dart';
 import 'model_category.dart';
@@ -30,6 +29,7 @@ import 'model_item_group.dart';
 import 'model_setting.dart';
 import 'page_archived.dart';
 import 'page_category_add_edit.dart';
+import 'page_category_groups.dart';
 import 'page_items.dart';
 import 'page_user_task.dart';
 import 'page_search.dart';
@@ -37,28 +37,35 @@ import 'page_settings.dart';
 import 'storage_hive.dart';
 import 'utils_sync.dart';
 
-class PageHome extends StatefulWidget {
+class PageCategoriesGroups extends StatefulWidget {
   final List<String> sharedContents;
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  final ModelGroup? selectedGroup;
 
-  const PageHome(
+  const PageCategoriesGroups(
       {super.key,
       required this.sharedContents,
       required this.isDarkMode,
-      required this.onThemeToggle});
+      required this.onThemeToggle,
+      required this.runningOnDesktop,
+      required this.setShowHidePage,
+      this.selectedGroup});
 
   @override
-  State<PageHome> createState() => _PageHomeState();
+  State<PageCategoriesGroups> createState() => _PageCategoriesGroupsState();
 }
 
-class _PageHomeState extends State<PageHome> {
-  final logger = AppLogger(prefixes: ["Home"]);
+class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
+  final logger = AppLogger(prefixes: ["CategoriesGroups"]);
   final LocalAuthentication _auth = LocalAuthentication();
   SecureStorage secureStorage = SecureStorage();
   bool requiresAuthentication = false;
   bool isAuthenticated = false;
   ModelCategory? category;
+  ModelGroup? selectedGroup;
   String? appName = "";
   List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
   bool _isLoading = false;
@@ -70,21 +77,29 @@ class _PageHomeState extends State<PageHome> {
 
   bool hasValidPlan = false;
 
+  late StreamSubscription categoryStream;
+  late StreamSubscription groupStream;
+  late StreamSubscription itemStream;
+
   @override
   void initState() {
     super.initState();
+    selectedGroup = widget.selectedGroup;
     // update on server fetch
-    StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
+    categoryStream =
+        StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
       if (!requiresAuthentication || isAuthenticated) {
         if (mounted) changedCategory(event.value);
       }
     });
-    StorageHive().watch(AppString.changedGroupId.string).listen((event) {
+    groupStream =
+        StorageHive().watch(AppString.changedGroupId.string).listen((event) {
       if (!requiresAuthentication || isAuthenticated) {
         if (mounted) changedGroup(event.value);
       }
     });
-    StorageHive().watch(AppString.changedItemId.string).listen((event) {
+    itemStream =
+        StorageHive().watch(AppString.changedItemId.string).listen((event) {
       if (!requiresAuthentication || isAuthenticated) {
         if (mounted) changedItem(event.value);
       }
@@ -98,6 +113,14 @@ class _PageHomeState extends State<PageHome> {
     _debounceTimer = Timer(Duration(seconds: 1), () async {
       loadCategoriesGroups();
     });
+  }
+
+  @override
+  void dispose() {
+    categoryStream.cancel();
+    groupStream.cancel();
+    itemStream.cancel();
+    super.dispose();
   }
 
   Future<void> changedCategory(String? id) async {
@@ -169,6 +192,7 @@ class _PageHomeState extends State<PageHome> {
           if (categoryGroup.type == "group" && categoryGroup.id == groupId) {
             int groupIndex =
                 _categoriesGroupsDisplayList.indexOf(categoryGroup);
+            logger.info("found group index: $groupIndex");
             setState(() {
               _categoriesGroupsDisplayList[groupIndex].group = group;
             });
@@ -215,8 +239,11 @@ class _PageHomeState extends State<PageHome> {
     } catch (e, s) {
       logger.error("loadCategoriesGroups", error: e, stackTrace: s);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
       _hasInitiated = true;
+    }
+    if (_categoriesGroupsDisplayList.isEmpty && widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.items, false, PageParams());
     }
   }
 
@@ -253,21 +280,23 @@ class _PageHomeState extends State<PageHome> {
   }
 
   void createNoteGroup() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-      builder: (context) => PageGroupAddEdit(
-        onUpdate: () {
-          loadCategoriesGroups();
-        },
-        onDelete: () {},
-      ),
-      settings: const RouteSettings(name: "CreateNoteGroup"),
-    ))
-        .then((value) {
-      if (value is ModelGroup) {
-        navigateToNotes(value, []);
-      }
-    });
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.addEditGroup, true, PageParams());
+    } else {
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+        builder: (context) => PageGroupAddEdit(
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+        ),
+        settings: const RouteSettings(name: "CreateNoteGroup"),
+      ))
+          .then((value) {
+        if (value is ModelGroup) {
+          navigateToNotes(value, []);
+        }
+      });
+    }
   }
 
   void navigateToNotesOrGroups(ModelCategoryGroup categoryGroup) {
@@ -280,20 +309,7 @@ class _PageHomeState extends State<PageHome> {
       loadedSharedContents = true;
       navigateToNotes(categoryGroup.group!, sharedContents);
     } else {
-      Navigator.of(context).push(AnimatedPageRoute(
-        child: PageCategoryGroups(
-          category: categoryGroup.category!,
-          sharedContents: sharedContents,
-          onSharedContentsLoaded: () {
-            setState(() {
-              loadedSharedContents = true;
-            });
-          },
-          onUpdate: () {
-            loadCategoriesGroups();
-          },
-        ),
-      ));
+      navigateToGroups(categoryGroup.category!, sharedContents);
     }
   }
 
@@ -310,30 +326,53 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
-  Future<void> updateOnGroupDelete() async {
-    loadCategoriesGroups();
-    if (mounted) {
-      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+  void navigateToGroups(ModelCategory category, List<String> sharedContents) {
+    if (widget.runningOnDesktop) {
+      Navigator.of(context).push(AnimatedPageRoute(
+        child: PageCategoryGroupsPane(
+            sharedContents: sharedContents, category: category),
+      ));
+    } else {
+      Navigator.of(context).push(AnimatedPageRoute(
+        child: PageCategoryGroups(
+            onSharedContentsLoaded: () {
+              setState(() {
+                loadedSharedContents = true;
+              });
+            },
+            runningOnDesktop: false,
+            setShowHidePage: null,
+            sharedContents: sharedContents,
+            category: category),
+      ));
     }
   }
 
   void navigateToNotes(ModelGroup group, List<String> sharedContents) {
-    Navigator.of(context)
-        .push(AnimatedPageRoute(
-      child: PageItems(
-        group: group,
-        sharedContents: sharedContents,
-        onGroupDeleted: updateOnGroupDelete,
-      ),
-    ))
-        .then((value) {
-      if (value != false) {
-        setState(() {
-          updateGroupInDisplayList(group.id!);
-        });
-      }
-      checkShowReviewDialog();
-    });
+    if (widget.runningOnDesktop) {
+      setState(() {
+        selectedGroup = group;
+      });
+      widget.setShowHidePage!(PageType.items, true, PageParams(group: group));
+    } else {
+      Navigator.of(context)
+          .push(AnimatedPageRoute(
+        child: PageItems(
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+          group: group,
+          sharedContents: sharedContents,
+        ),
+      ))
+          .then((value) {
+        if (value != false) {
+          setState(() {
+            updateGroupInDisplayList(group.id!);
+          });
+        }
+        checkShowReviewDialog();
+      });
+    }
   }
 
   Future<void> archiveCategoryGroup(ModelCategoryGroup categoryGroup) async {
@@ -341,6 +380,10 @@ class _PageHomeState extends State<PageHome> {
       categoryGroup.group!.archivedAt =
           DateTime.now().toUtc().millisecondsSinceEpoch;
       await categoryGroup.group!.update(["archived_at"]);
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(
+            PageType.items, false, PageParams(group: categoryGroup.group));
+      }
     } else {
       categoryGroup.category!.archivedAt =
           DateTime.now().toUtc().millisecondsSinceEpoch;
@@ -353,30 +396,40 @@ class _PageHomeState extends State<PageHome> {
         displaySnackBar(context, message: "Moved to trash", seconds: 1);
       }
     }
+    await signalToUpdateHome();
   }
 
   Future<void> editCategoryGroup(ModelCategoryGroup categoryGroup) async {
     if (categoryGroup.type == "group") {
       ModelGroup group = categoryGroup.group!;
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => PageGroupAddEdit(
-          group: group,
-          onUpdate: loadCategoriesGroups,
-          onDelete: updateOnGroupDelete,
-        ),
-        settings: const RouteSettings(name: "EditNoteGroup"),
-      ));
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(
+            PageType.addEditGroup, true, PageParams(group: group));
+      } else {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => PageGroupAddEdit(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+            group: group,
+          ),
+          settings: const RouteSettings(name: "EditNoteGroup"),
+        ));
+      }
     } else {
       ModelCategory category = categoryGroup.category!;
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => PageCategoryAddEdit(
-          category: category,
-          onUpdate: () {
-            loadCategoriesGroups();
-          },
-        ),
-        settings: const RouteSettings(name: "EditCategory"),
-      ));
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(
+            PageType.addEditCategory, true, PageParams(category: category));
+      } else {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => PageCategoryAddEdit(
+            category: category,
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+          ),
+          settings: const RouteSettings(name: "EditCategory"),
+        ));
+      }
     }
   }
 
@@ -462,21 +515,56 @@ class _PageHomeState extends State<PageHome> {
   }
 
   Future<void> navigateToOnboardCheck() async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PageUserTask(
-          task: AppTask.checkCloudSync,
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.userTask, true, PageParams(appTask: AppTask.checkCloudSync));
+    } else {
+      Navigator.of(context).push(
+        AnimatedPageRoute(
+          child: PageUserTask(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+            task: AppTask.checkCloudSync,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> navigateToPlanStatus() async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PagePlanStatus(),
-      ),
-    );
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PagePlanStatus(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowChildWidget: widget.setShowHidePage,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> onExitSettings() async {
+    // remove backup file if exists
+    String todayDate = getTodayDate();
+    Directory baseDir = await getApplicationDocumentsDirectory();
+    String? backupDir = await secureStorage.read(key: "backup_dir");
+    final String zipFilePath =
+        path.join(baseDir.path, '${backupDir}_$todayDate.zip');
+    File backupFile = File(zipFilePath);
+    try {
+      if (backupFile.existsSync()) backupFile.deleteSync();
+    } catch (e, s) {
+      logger.error("DeleteBackupOnExitSettings", error: e, stackTrace: s);
+    }
+    if (ModelSetting.get("local_auth", "no") == "no") {
+      requiresAuthentication = false;
+      await loadCategoriesGroups();
+    } else if (!requiresAuthentication || isAuthenticated) {
+      await loadCategoriesGroups();
+    }
   }
 
   List<Widget> _buildDefaultActions() {
@@ -484,7 +572,7 @@ class _PageHomeState extends State<PageHome> {
       if (ModelSetting.get(AppString.supabaseInitialized.string, "no") ==
               "yes" &&
           (!requiresAuthentication || isAuthenticated) &&
-          !_canSync)
+          (!_canSync || isDebugEnabled()))
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: ElevatedButton(
@@ -509,20 +597,22 @@ class _PageHomeState extends State<PageHome> {
         IconButton(
           tooltip: "Search notes",
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => SearchPage(
-                onChanges: loadCategoriesGroups,
-              ),
-              settings: const RouteSettings(name: "SearchNotes"),
-            ));
+            if (widget.runningOnDesktop) {
+              widget.setShowHidePage!(PageType.search, true, PageParams());
+            } else {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => SearchPage(
+                  runningOnDesktop: widget.runningOnDesktop,
+                  setShowHidePage: widget.setShowHidePage,
+                ),
+                settings: const RouteSettings(name: "SearchNotes"),
+              ));
+            }
           },
           icon: const Icon(
             LucideIcons.search,
           ),
         ),
-      const SizedBox(
-        width: 10,
-      ),
       PopupMenuButton<int>(
         icon: Stack(
           children: [
@@ -545,62 +635,63 @@ class _PageHomeState extends State<PageHome> {
         onSelected: (value) {
           switch (value) {
             case 0:
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SettingsPage(
-                    isDarkMode: widget.isDarkMode,
-                    onThemeToggle: widget.onThemeToggle,
-                    canShowBackupRestore:
-                        !requiresAuthentication || isAuthenticated,
+              if (widget.runningOnDesktop) {
+                widget.setShowHidePage!(
+                    PageType.settings,
+                    true,
+                    PageParams(
+                        isAuthenticated:
+                            !requiresAuthentication || isAuthenticated));
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SettingsPage(
+                      runningOnDesktop: widget.runningOnDesktop,
+                      setShowHidePage: widget.setShowHidePage,
+                      isDarkMode: widget.isDarkMode,
+                      onThemeToggle: widget.onThemeToggle,
+                      canShowBackupRestore:
+                          !requiresAuthentication || isAuthenticated,
+                    ),
+                    settings: const RouteSettings(name: "Settings"),
                   ),
-                  settings: const RouteSettings(name: "Settings"),
-                ),
-              ).then((_) async {
-                // remove backup file if exists
-                String todayDate = getTodayDate();
-                Directory baseDir = await getApplicationDocumentsDirectory();
-                String? backupDir = await secureStorage.read(key: "backup_dir");
-                final String zipFilePath =
-                    path.join(baseDir.path, '${backupDir}_$todayDate.zip');
-                File backupFile = File(zipFilePath);
-                try {
-                  if (backupFile.existsSync()) backupFile.deleteSync();
-                } catch (e, s) {
-                  logger.error("DeleteBackupOnExitSettings",
-                      error: e, stackTrace: s);
-                }
-                if (ModelSetting.get("local_auth", "no") == "no") {
-                  requiresAuthentication = false;
-                  await loadCategoriesGroups();
-                } else if (!requiresAuthentication || isAuthenticated) {
-                  await loadCategoriesGroups();
-                }
-              });
+                ).then((_) {
+                  onExitSettings();
+                });
+              }
               break;
             case 1:
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PageStarredItems(
-                    onChanges: updateOnGroupDelete,
+              if (widget.runningOnDesktop) {
+                widget.setShowHidePage!(PageType.starred, true, PageParams());
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PageStarredItems(
+                      runningOnDesktop: widget.runningOnDesktop,
+                      setShowHidePage: widget.setShowHidePage,
+                    ),
+                    settings: const RouteSettings(name: "StarredNotes"),
                   ),
-                  settings: const RouteSettings(name: "StarredNotes"),
-                ),
-              );
+                );
+              }
               break;
             case 2:
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PageArchived(),
-                  settings: const RouteSettings(name: "Trash"),
-                ),
-              ).then((_) async {
-                if (!requiresAuthentication || isAuthenticated) {
-                  await loadCategoriesGroups();
-                }
-              });
+              if (widget.runningOnDesktop) {
+                widget.setShowHidePage!(PageType.archive, true, PageParams());
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PageArchived(
+                      runningOnDesktop: widget.runningOnDesktop,
+                      setShowHidePage: widget.setShowHidePage,
+                    ),
+                    settings: const RouteSettings(name: "Trash"),
+                  ),
+                );
+              }
               break;
             case 3:
               SyncUtils.waitAndSyncChanges(manualSync: true);
@@ -682,7 +773,7 @@ class _PageHomeState extends State<PageHome> {
               ],
             ),
           ),
-          if (Supabase.instance.client.auth.currentSession != null)
+          if (SyncUtils.getSignedInUserId() != null)
             PopupMenuItem<int>(
               value: 4,
               child: Row(
@@ -696,7 +787,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debugApp())
+          if (isDebugEnabled())
             PopupMenuItem<int>(
               value: 11,
               child: Row(
@@ -708,7 +799,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debugApp())
+          if (isDebugEnabled())
             PopupMenuItem<int>(
               value: 12,
               child: Row(
@@ -720,7 +811,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debugApp())
+          if (isDebugEnabled())
             PopupMenuItem<int>(
               value: 13,
               child: Row(
@@ -732,7 +823,7 @@ class _PageHomeState extends State<PageHome> {
                 ],
               ),
             ),
-          if (debugApp())
+          if (isDebugEnabled())
             PopupMenuItem<int>(
               value: 14,
               child: Row(
@@ -797,6 +888,9 @@ class _PageHomeState extends State<PageHome> {
 
   @override
   Widget build(BuildContext context) {
+    if (selectedGroup != widget.selectedGroup) {
+      selectedGroup = widget.selectedGroup;
+    }
     return PopScope(
       canPop: !_isReordering,
       onPopInvokedWithResult: (didPop, result) {
@@ -810,7 +904,7 @@ class _PageHomeState extends State<PageHome> {
         appBar: AppBar(
           title: Text(
               _isReordering
-                  ? "Reorder"
+                  ? "Reordering"
                   : loadedSharedContents || widget.sharedContents.isEmpty
                       ? appName!
                       : "Select...",
@@ -870,17 +964,32 @@ class _PageHomeState extends State<PageHome> {
                           itemBuilder: (context, index) {
                             final ModelCategoryGroup item =
                                 _categoriesGroupsDisplayList[index];
-                            return GestureDetector(
+                            return InkWell(
+                              hoverColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerLow,
+                              focusColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainer,
                               onTap: () {
                                 navigateToNotesOrGroups(item);
                               },
                               onLongPress: () {
                                 _showOptions(context, item);
                               },
-                              child: WidgetCategoryGroup(
-                                categoryGroup: item,
-                                showSummary: true,
-                                showCategorySign: true,
+                              child: Container(
+                                color: item.type == "group" &&
+                                        selectedGroup != null &&
+                                        selectedGroup!.id == item.group!.id
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainer
+                                    : Colors.transparent,
+                                child: WidgetCategoryGroup(
+                                  categoryGroup: item,
+                                  showSummary: true,
+                                  showCategorySign: true,
+                                ),
                               ),
                             );
                           }),
@@ -920,7 +1029,7 @@ class _PageHomeState extends State<PageHome> {
         ),
         floatingActionButton: !requiresAuthentication || isAuthenticated
             ? FloatingActionButton(
-                key: const Key("add_note_group"),
+                heroTag: "add_group_or_mark_reordering_complete",
                 onPressed: () {
                   if (_isReordering) {
                     setState(() {

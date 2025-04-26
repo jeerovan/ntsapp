@@ -11,8 +11,14 @@ import 'model_preferences.dart';
 import 'utils_sync.dart';
 
 class PagePasswordKeyInput extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final Map<String, dynamic> cipherData;
-  const PagePasswordKeyInput({super.key, required this.cipherData});
+  const PagePasswordKeyInput(
+      {super.key,
+      required this.cipherData,
+      required this.runningOnDesktop,
+      this.setShowHidePage});
 
   @override
   State<PagePasswordKeyInput> createState() => _PagePasswordKeyInputState();
@@ -84,8 +90,12 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
       if (!pushedLocalContent) {
         await SyncUtils.pushLocalChanges();
       }
-      if (mounted) {
-        Navigator.of(context).pop();
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.passwordInput, false, PageParams());
+      } else {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       }
     }
     setState(() {
@@ -98,6 +108,14 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Enable Sync'),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.passwordInput, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -107,6 +125,11 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(
+                  "Please enter the key (password) you had created. Its a min 10 characters long with minimum 1 numeric, 1 lowercase, 1 uppercase and 1 special character."),
+              SizedBox(
+                height: 40,
+              ),
               // TextField with Validation
               TextFormField(
                 controller: _textController,

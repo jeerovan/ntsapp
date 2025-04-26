@@ -73,6 +73,7 @@ class SyncUtils {
   Future<void> triggerSync(bool inBackground, {bool manualSync = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
     logger.info("sync request from:$mode");
+    if (isDebugEnabled()) return;
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
     bool hasInternet = await hasInternetConnection();
@@ -128,6 +129,9 @@ class SyncUtils {
   }
 
   static String? getSignedInUserId() {
+    if (isDebugEnabled()) {
+      return "debug";
+    }
     SupabaseClient supabaseClient = Supabase.instance.client;
     User? currentUser = supabaseClient.auth.currentUser;
     if (currentUser != null) {
@@ -138,6 +142,9 @@ class SyncUtils {
   }
 
   static String? getSignedInEmailId() {
+    if (isDebugEnabled()) {
+      return "dummy@debug.com";
+    }
     SupabaseClient supabaseClient = Supabase.instance.client;
     User? currentUser = supabaseClient.auth.currentUser;
     if (currentUser != null) {
@@ -160,12 +167,15 @@ class SyncUtils {
 
   // to sync, one must have masterKey with an active plan
   static Future<bool> canSync() async {
-    Session? currentSession = Supabase.instance.client.auth.currentSession;
-    bool loggedIn = currentSession != null;
     bool hasKeys = await ModelPreferences.get(
             AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
+    if (isDebugEnabled() && hasKeys) {
+      return true;
+    }
+    Session? currentSession = Supabase.instance.client.auth.currentSession;
+    bool loggedIn = currentSession != null;
     return loggedIn && hasKeys;
   }
 
@@ -205,11 +215,15 @@ class SyncUtils {
       SecureStorage storage = SecureStorage();
       SupabaseClient supabase = Supabase.instance.client;
       try {
-        if (deviceId != null) {
-          await supabase.functions.invoke("remove_device",
-              headers: {"deviceId": deviceId}, body: {});
+        if (isDebugEnabled()) {
+          await Future.delayed(const Duration(seconds: 1));
+        } else {
+          if (deviceId != null) {
+            await supabase.functions.invoke("remove_device",
+                headers: {"deviceId": deviceId}, body: {});
+          }
+          await supabase.auth.signOut();
         }
-        await supabase.auth.signOut();
         String keyForMasterKey = '${userId}_mk';
         String keyForAccessKey = '{$userId}_ak';
         String keyForPasswordKey = '{$userId}_pk';
@@ -218,11 +232,14 @@ class SyncUtils {
         await storage.delete(key: keyForAccessKey);
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
-        await ModelPreferences.delete(AppString.hasEncryptionKeys.string);
+        await ModelPreferences.delete(AppString.plansShown.string);
         await ModelPreferences.delete(AppString.planRcId.string);
         await ModelPreferences.delete(AppString.hasValidPlan.string);
         await ModelPreferences.delete(AppString.deviceId.string);
         await ModelPreferences.delete(AppString.deviceRegistered.string);
+        await ModelPreferences.delete(AppString.hasEncryptionKeys.string);
+        await ModelPreferences.delete(AppString.debugCipherData.string);
+        await ModelPreferences.delete(AppString.encryptionKeyType.string);
         await ModelPreferences.delete(
             AppString.pushedLocalContentForSync.string);
         await ModelPreferences.delete(AppString.lastChangesFetchedAt.string);
@@ -244,6 +261,12 @@ class SyncUtils {
   // called once when sync is enabled
   static Future<void> pushLocalChanges() async {
     await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
+    await signalToUpdateHome();
+    if (isDebugEnabled()) {
+      await ModelPreferences.set(
+          AppString.pushedLocalContentForSync.string, "yes");
+      return;
+    }
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();

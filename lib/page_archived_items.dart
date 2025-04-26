@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/storage_hive.dart';
 
 import 'model_item.dart';
 import 'widgets_item.dart';
@@ -88,12 +89,13 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
     for (ModelItem item in _selection) {
       item.archivedAt = 0;
       await item.update(["archived_at"]);
+      await StorageHive().put(AppString.changedItemId.string, item.id);
     }
     if (mounted) {
       clearSelection();
       displaySnackBar(context, message: "Restored.", seconds: 1);
     }
-    fetchArchivedItems();
+    await fetchArchivedItems();
   }
 
   Future<void> deleteSelectedItems() async {
@@ -105,7 +107,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
       clearSelection();
       displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
     }
-    fetchArchivedItems();
+    await fetchArchivedItems();
   }
 
   void clearSelection() {

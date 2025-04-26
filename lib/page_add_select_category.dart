@@ -1,14 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category_group.dart';
 
 import 'common_widgets.dart';
+import 'enums.dart';
 import 'model_category.dart';
 import 'page_category_add_edit.dart';
+import 'storage_hive.dart';
 
 class PageAddSelectCategory extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   const PageAddSelectCategory({
     super.key,
+    required this.runningOnDesktop,
+    this.setShowHidePage,
   });
 
   @override
@@ -18,9 +27,15 @@ class PageAddSelectCategory extends StatefulWidget {
 class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
   List<ModelCategory> categories = [];
 
+  late StreamSubscription categoryStream;
+
   @override
   void initState() {
     super.initState();
+    categoryStream =
+        StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
+      fetchCategories();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchCategories();
     });
@@ -28,6 +43,7 @@ class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
 
   @override
   void dispose() {
+    categoryStream.cancel();
     super.dispose();
   }
 
@@ -37,27 +53,43 @@ class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
   }
 
   void addCategory() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-      builder: (context) => PageCategoryAddEdit(
-        onUpdate: () {},
-      ),
-      settings: const RouteSettings(name: "AddCategory"),
-    ))
-        .then((_) {
-      fetchCategories();
-    });
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.addEditCategory, true, PageParams());
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageCategoryAddEdit(
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+        ),
+        settings: const RouteSettings(name: "AddCategory"),
+      ));
+    }
   }
 
-  void selectCategory(String categoryId) {
-    Navigator.of(context).pop(categoryId);
+  Future<void> selectCategory(String categoryId) async {
+    if (widget.runningOnDesktop) {
+      ModelCategory? category = await ModelCategory.get(categoryId);
+      widget.setShowHidePage!(
+          PageType.categories, false, PageParams(category: category));
+    } else {
+      Navigator.of(context).pop(categoryId);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.runningOnDesktop,
         title: const Text("Select category"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.categories, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 8.0),
@@ -86,6 +118,7 @@ class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
             }),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "add_new_category",
         onPressed: () {
           addCategory();
         },

@@ -11,13 +11,18 @@ import 'package:ntsapp/utils_sync.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'common_widgets.dart';
 import 'model_preferences.dart';
 
 class PagePasswordKeyCreate extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final bool recreate;
   const PagePasswordKeyCreate({
     super.key,
     required this.recreate,
+    required this.runningOnDesktop,
+    this.setShowHidePage,
   });
 
   @override
@@ -163,7 +168,12 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       serverKeys["id"] = userId;
       // save keys to server
       try {
-        await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
+        if (isDebugEnabled()) {
+          await ModelPreferences.set(
+              AppString.debugCipherData.string, jsonEncode(serverKeys));
+        } else {
+          await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
+        }
         // save locally
         String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
         await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
@@ -176,11 +186,20 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
           await SyncUtils.pushLocalChanges();
         }
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PagePlanStatus(),
-            ),
-          );
+          if (widget.runningOnDesktop) {
+            widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+            widget.setShowHidePage!(
+                PageType.passwordCreate, false, PageParams());
+          } else {
+            Navigator.of(context).pushReplacement(
+              AnimatedPageRoute(
+                child: PagePlanStatus(
+                  runningOnDesktop: widget.runningOnDesktop,
+                  setShowChildWidget: widget.setShowHidePage,
+                ),
+              ),
+            );
+          }
         }
       } catch (e) {
         debugPrint(e.toString());
@@ -224,7 +243,14 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Encryption key'),
-        centerTitle: true,
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.passwordCreate, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -242,6 +268,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                 ),
                 TextFormField(
                   controller: _passwordController,
+                  autofocus: true,
                   maxLines: null, // Allows all words to be visible
                   decoration: InputDecoration(
                     labelText: 'Enter key',

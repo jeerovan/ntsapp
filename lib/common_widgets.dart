@@ -67,12 +67,14 @@ class FloatingActionButtonWithBadge extends StatelessWidget {
   final int filterCount;
   final VoidCallback onPressed;
   final Icon icon;
+  final String heroTag;
 
   const FloatingActionButtonWithBadge({
     super.key,
     required this.filterCount,
     required this.onPressed,
     required this.icon,
+    required this.heroTag,
   });
 
   @override
@@ -83,6 +85,7 @@ class FloatingActionButtonWithBadge extends StatelessWidget {
           Clip.none, // Allows the badge to be positioned outside the FAB
       children: [
         FloatingActionButton(
+          heroTag: heroTag,
           shape: const CircleBorder(),
           onPressed: onPressed,
           child: icon,
@@ -976,7 +979,7 @@ class _AnimatedWidgetSwapState extends State<AnimatedWidgetSwap>
 
     _slideOutAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(-1.0, 0.0),
+      end: const Offset(1.0, 0.0),
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _slideInAnimation = Tween<Offset>(

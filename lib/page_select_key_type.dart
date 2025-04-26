@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_access_key_notice.dart';
 import 'package:ntsapp/page_password_key_create.dart';
 import 'package:ntsapp/storage_secure.dart';
+import 'package:path/path.dart';
 
+import 'common.dart';
 import 'enums.dart';
 
 class PageSelectKeyType extends StatefulWidget {
-  const PageSelectKeyType({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PageSelectKeyType(
+      {super.key, required this.runningOnDesktop, this.setShowHidePage});
 
   @override
   State<PageSelectKeyType> createState() => _PageSelectKeyTypeState();
@@ -36,10 +42,14 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.selectKeyType, false, PageParams());
+                },
+              )
+            : null,
         title: Text(welcomed ? 'Important' : 'Hello'),
         centerTitle: false,
         elevation: 0,
@@ -89,11 +99,23 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                   ElevatedButton(
                     onPressed: () {
                       if (agreedTerms) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => PageAccessKeyNotice(),
-                          ),
-                        );
+                        ModelPreferences.set(
+                            AppString.encryptionKeyType.string, "key");
+                        if (widget.runningOnDesktop) {
+                          widget.setShowHidePage!(
+                              PageType.accessKeyCreate, true, PageParams());
+                          widget.setShowHidePage!(
+                              PageType.selectKeyType, false, PageParams());
+                        } else {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => PageAccessKeyNotice(
+                                runningOnDesktop: widget.runningOnDesktop,
+                                setShowHidePage: widget.setShowHidePage,
+                              ),
+                            ),
+                          );
+                        }
                       } else {
                         displaySnackBar(context,
                             message: "Please acknowledge!", seconds: 2);
@@ -116,13 +138,23 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                   TextButton(
                     onPressed: () {
                       if (agreedTerms) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => PagePasswordKeyCreate(
-                              recreate: false,
+                        ModelPreferences.set(
+                            AppString.encryptionKeyType.string, "password");
+                        if (widget.runningOnDesktop) {
+                          widget.setShowHidePage!(PageType.passwordCreate, true,
+                              PageParams(recreatePassword: false));
+                          widget.setShowHidePage!(
+                              PageType.selectKeyType, false, PageParams());
+                        } else {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => PagePasswordKeyCreate(
+                                runningOnDesktop: false,
+                                recreate: false,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        }
                       } else {
                         displaySnackBar(context,
                             message: "Please acknowledge!", seconds: 2);

@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category_group.dart';
+import 'package:ntsapp/storage_hive.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
@@ -9,12 +11,14 @@ import 'model_category.dart';
 
 class PageCategoryAddEdit extends StatefulWidget {
   final ModelCategory? category;
-  final Function() onUpdate;
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
 
   const PageCategoryAddEdit({
     super.key,
     this.category,
-    required this.onUpdate,
+    required this.runningOnDesktop,
+    this.setShowHidePage,
   });
 
   @override
@@ -59,22 +63,29 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
     }
   }
 
-  void saveCategory() async {
-    if (title == null) return;
+  void saveCategory(String text) async {
+    title = text.trim();
+    if (title!.isEmpty) return;
     if (itemChanged) {
       if (category == null) {
         ModelCategory newCategory = await ModelCategory.fromMap(
             {"title": title, "color": colorCode, "thumbnail": thumbnail});
         await newCategory.insert();
+        await signalToUpdateHome(); // update home list widget
       } else {
         category!.thumbnail = thumbnail;
         category!.title = title!;
         category!.color = colorCode ?? category!.color;
         await category!.update(["thumbnail", "title", "color"]);
+        await StorageHive()
+            .put(AppString.changedCategoryId.string, category!.id);
       }
-      widget.onUpdate();
     }
-    if (mounted) Navigator.of(context).pop();
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.addEditCategory, false, PageParams());
+    } else {
+      if (mounted) Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -87,10 +98,20 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
     String task = category == null ? "Add" : "Edit";
     return Scaffold(
       appBar: AppBar(
-        title: Text("$task category",
-            style: const TextStyle(
-              fontSize: 20,
-            )),
+        title: Text(
+          "$task category",
+          style: const TextStyle(
+            fontSize: 20,
+          ),
+        ),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.addEditCategory, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -103,6 +124,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
               textCapitalization: TextCapitalization.sentences,
               autofocus: true,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              textInputAction: TextInputAction.done,
+              onSubmitted: saveCategory,
               decoration: InputDecoration(
                 hintText: 'Category title',
                 // Placeholder
@@ -176,8 +199,9 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "save_new_category",
         onPressed: () {
-          saveCategory();
+          saveCategory(categoryController.text);
         },
         shape: const CircleBorder(),
         child: const Icon(LucideIcons.check),

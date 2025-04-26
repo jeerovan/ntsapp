@@ -1,7 +1,12 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_item_group.dart';
+import 'package:ntsapp/service_logger.dart';
 
 import 'common_widgets.dart';
 import 'enums.dart';
@@ -13,53 +18,77 @@ import 'page_items.dart';
 import 'storage_hive.dart';
 
 class PageCategoryGroups extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final ModelCategory category;
   final List<String> sharedContents;
-  final Function() onUpdate;
   final Function() onSharedContentsLoaded;
+  final ModelGroup? selectedGroup;
 
   const PageCategoryGroups(
       {super.key,
       required this.category,
       required this.sharedContents,
-      required this.onUpdate,
-      required this.onSharedContentsLoaded});
+      required this.onSharedContentsLoaded,
+      required this.runningOnDesktop,
+      required this.setShowHidePage,
+      this.selectedGroup});
 
   @override
   State<PageCategoryGroups> createState() => _PageCategoryGroupsState();
 }
 
 class _PageCategoryGroupsState extends State<PageCategoryGroups> {
-  final List<ModelGroup> categoryGroupsDisplayList = [];
+  final AppLogger logger = AppLogger(prefixes: ["CategoryGroups"]);
+  List<ModelGroup> categoryGroupsDisplayList = [];
   late ModelCategory category;
+  ModelGroup? selectedGroup;
   bool loadedSharedContents = false;
   bool _isReordering = false;
+
+  late StreamSubscription categoryStream;
+  late StreamSubscription groupStream;
+  late StreamSubscription itemStream;
 
   @override
   void initState() {
     super.initState();
     category = widget.category;
-    // update on server fetch
-    StorageHive().watch(AppString.changedGroupId.string).listen((event) {
+    selectedGroup = widget.selectedGroup;
+    categoryStream =
+        StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
+      if (mounted) changedCategory(event.value);
+    });
+    groupStream =
+        StorageHive().watch(AppString.changedGroupId.string).listen((event) {
       if (mounted) changedGroup(event.value);
     });
-    StorageHive().watch(AppString.changedItemId.string).listen((event) {
+    itemStream =
+        StorageHive().watch(AppString.changedItemId.string).listen((event) {
       if (mounted) changedItem(event.value);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadGroups(false);
+      loadGroups();
     });
   }
 
   @override
   void dispose() {
+    categoryStream.cancel();
+    groupStream.cancel();
+    itemStream.cancel();
     super.dispose();
+  }
+
+  Future<void> changedCategory(String? id) async {
+    if (id == null) return;
+    loadGroups();
   }
 
   Future<void> changedGroup(String? id) async {
     if (id == null) return;
     ModelGroup? group = await ModelGroup.get(id);
-    if (group != null) {
+    if (group != null && group.categoryId == category.id) {
       updateDisplayGroup(group);
     }
   }
@@ -70,7 +99,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     if (item != null) {
       String groupId = item.groupId;
       ModelGroup? group = await ModelGroup.get(groupId);
-      if (group != null) {
+      if (group != null && group.categoryId == category.id) {
         updateDisplayGroup(group);
       }
     }
@@ -91,17 +120,15 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       }
     }
     if (!updated) {
-      loadGroups(true);
+      loadGroups();
     }
   }
 
-  Future<void> loadGroups(bool updateHome) async {
+  Future<void> loadGroups() async {
     List<ModelGroup> groups = await ModelGroup.inCategory(category.id!);
     setState(() {
-      categoryGroupsDisplayList.clear();
-      categoryGroupsDisplayList.addAll(groups);
+      categoryGroupsDisplayList = groups;
     });
-    if (updateHome) widget.onUpdate();
   }
 
   Future<void> reloadCategory() async {
@@ -134,22 +161,30 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
             : widget.sharedContents;
     widget.onSharedContentsLoaded();
     loadedSharedContents = true;
-    Navigator.of(context)
-        .push(AnimatedPageRoute(
-            child: PageItems(
-      group: group,
-      sharedContents: sharedContents,
-      onGroupDeleted: onNoteGroupDeleted,
-    )))
-        .then((value) {
-      if (value != false) {
-        if (updateGroupList) {
-          loadGroups(false);
-        } else {
-          updateGroupInDisplayList(group.id!);
+    if (widget.runningOnDesktop) {
+      setState(() {
+        selectedGroup = group;
+      });
+      widget.setShowHidePage!(PageType.items, true, PageParams(group: group));
+    } else {
+      Navigator.of(context)
+          .push(AnimatedPageRoute(
+              child: PageItems(
+        group: group,
+        sharedContents: sharedContents,
+        runningOnDesktop: widget.runningOnDesktop,
+        setShowHidePage: widget.setShowHidePage,
+      )))
+          .then((value) {
+        if (value != false) {
+          if (updateGroupList) {
+            loadGroups();
+          } else {
+            updateGroupInDisplayList(group.id!);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   Future<void> archiveGroup(ModelGroup group) async {
@@ -159,20 +194,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     if (mounted) {
       displaySnackBar(context, message: "Moved to trash", seconds: 1);
     }
-    widget.onUpdate();
-  }
-
-  void editGroup(ModelGroup group) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => PageGroupAddEdit(
-        group: group,
-        onUpdate: () {
-          loadGroups(true);
-        },
-        onDelete: onNoteGroupDeleted,
-      ),
-      settings: const RouteSettings(name: "EditNoteGroup"),
-    ));
+    await signalToUpdateHome();
   }
 
   Future<void> _saveGroupPositions() async {
@@ -184,29 +206,49 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   }
 
   Future<void> onNoteGroupDeleted() async {
-    loadGroups(true);
+    loadGroups();
     if (mounted) {
       displaySnackBar(context, message: "Moved to trash", seconds: 1);
     }
   }
 
-  void navigateToGroupAddEdit() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-      builder: (context) => PageGroupAddEdit(
-        category: category,
-        onUpdate: () {
-          loadGroups(true);
-        },
-        onDelete: onNoteGroupDeleted,
-      ),
-      settings: const RouteSettings(name: "CreateNoteGroup"),
-    ))
-        .then((value) {
-      if (value is ModelGroup) {
-        navigateToNotes(value, true);
-      }
-    });
+  void navigateToGroupAddEdit(ModelGroup? group, ModelCategory category) {
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.addEditGroup, true, PageParams(group: group));
+    } else {
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+        builder: (context) => PageGroupAddEdit(
+          category: category,
+          group: group,
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+        ),
+        settings: const RouteSettings(name: "AddEditCategoryGroup"),
+      ))
+          .then((value) {
+        if (value is ModelGroup) {
+          navigateToNotes(value, true);
+        }
+      });
+    }
+  }
+
+  void navigateToCategoryAddEdit() {
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.addEditCategory, true, PageParams(category: category));
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PageCategoryAddEdit(
+          category: category,
+          runningOnDesktop: widget.runningOnDesktop,
+          setShowHidePage: widget.setShowHidePage,
+        ),
+        settings: const RouteSettings(name: "EditCategory"),
+      ));
+    }
   }
 
   void _showOptions(BuildContext context, ModelGroup group) {
@@ -235,7 +277,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                 title: const Text('Edit'),
                 onTap: () {
                   Navigator.pop(context);
-                  editGroup(group);
+                  navigateToGroupAddEdit(group, category);
                 },
               ),
               ListTile(
@@ -268,30 +310,22 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: loadedSharedContents || widget.sharedContents.isEmpty
-              ? Text(
-                  category.title,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                )
-              : Text("Select..."),
+          title: Text(
+            _isReordering
+                ? "Reordering"
+                : loadedSharedContents || widget.sharedContents.isEmpty
+                    ? category.title
+                    : "Select...",
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
           actions: [
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PageCategoryAddEdit(
-                        category: category,
-                        onUpdate: () {
-                          reloadCategory();
-                        },
-                      ),
-                      settings: const RouteSettings(name: "EditCategory"),
-                    ));
-                  },
+                  onPressed: navigateToCategoryAddEdit,
                   icon: Icon(LucideIcons.edit2)),
             )
           ],
@@ -311,13 +345,21 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                         thumbnail: group.thumbnail,
                         color: group.color,
                         title: group.title);
-                    return Container(
+                    return GestureDetector(
                       key: ValueKey(group.id),
                       child: WidgetCategoryGroup(
                         categoryGroup: categoryGroup,
                         showSummary: true,
                         showCategorySign: false,
                       ),
+                      onTap: () {
+                        String dragTitle = "Drag handle to re-order";
+                        if (Platform.isAndroid || Platform.isIOS) {
+                          dragTitle = "Hold and drag to re-order";
+                        }
+                        displaySnackBar(context,
+                            message: dragTitle, seconds: 1);
+                      },
                     );
                   },
                   onReorder: (int oldIndex, int newIndex) {
@@ -350,31 +392,41 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                         thumbnail: group.thumbnail,
                         color: group.color,
                         title: group.title);
-                    return GestureDetector(
+                    return InkWell(
+                      hoverColor:
+                          Theme.of(context).colorScheme.surfaceContainerLow,
+                      focusColor:
+                          Theme.of(context).colorScheme.surfaceContainer,
                       onTap: () {
                         navigateToNotes(group, false);
                       },
                       onLongPress: () {
                         _showOptions(context, group);
                       },
-                      child: WidgetCategoryGroup(
-                        categoryGroup: categoryGroup,
-                        showSummary: true,
-                        showCategorySign: false,
+                      child: Container(
+                        color: selectedGroup != null &&
+                                selectedGroup!.id == group.id
+                            ? Theme.of(context).colorScheme.surfaceContainer
+                            : Colors.transparent,
+                        child: WidgetCategoryGroup(
+                          categoryGroup: categoryGroup,
+                          showSummary: true,
+                          showCategorySign: false,
+                        ),
                       ),
                     );
                   },
                 ),
         ),
         floatingActionButton: FloatingActionButton(
-          key: const Key("add_category"),
+          heroTag: "add_category_group_or_mark_reordering_complete",
           onPressed: () {
             if (_isReordering) {
               setState(() {
                 _isReordering = false;
               });
             } else {
-              navigateToGroupAddEdit();
+              navigateToGroupAddEdit(null, category);
             }
           },
           shape: const CircleBorder(),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common.dart';
+import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_devices.dart';
 import 'package:ntsapp/page_password_key_create.dart';
@@ -16,7 +17,10 @@ import 'enums.dart';
 import 'page_user_task.dart';
 
 class PagePlanStatus extends StatefulWidget {
-  const PagePlanStatus({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowChildWidget;
+  const PagePlanStatus(
+      {super.key, required this.runningOnDesktop, this.setShowChildWidget});
   @override
   State<PagePlanStatus> createState() => _PagePlanStatusState();
 }
@@ -62,7 +66,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   }
 
   Future<void> fetchPlanDetails() async {
-    if (currentSession == null) return;
+    if (currentSession == null && !isDebugEnabled()) return;
     processing = true;
     errorFetching = false;
     refresh();
@@ -85,19 +89,26 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
       }
     }
     try {
-      final usedStorageResponse = await supabaseClient
-          .from("storage")
-          .select("b2_size")
-          .eq("id", userId!)
-          .single(); // Fetches row
+      Map<String, dynamic> usedStorageResponse = {"b2_size": 12345678};
+      Map<String, dynamic>? planResponse = {
+        "b2_limit": 53687091200,
+        "expires_at": 1749969096241
+      };
+      if (!isDebugEnabled()) {
+        usedStorageResponse = await supabaseClient
+            .from("storage")
+            .select("b2_size")
+            .eq("id", userId!)
+            .single(); // Fetches row
 
-      final planResponse = await supabaseClient
-          .from("plans")
-          .select("b2_limit,expires_at")
-          .eq("user_id", userId!)
-          .order("expires_at", ascending: false) // Get the latest plan
-          .limit(1) // Ensure only one row is returned
-          .maybeSingle();
+        planResponse = await supabaseClient
+            .from("plans")
+            .select("b2_limit,expires_at")
+            .eq("user_id", userId!)
+            .order("expires_at", ascending: false) // Get the latest plan
+            .limit(1) // Ensure only one row is returned
+            .maybeSingle();
+      }
 
       setState(() {
         usedStorageBytes = int.parse(usedStorageResponse["b2_size"].toString());
@@ -122,49 +133,83 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   }
 
   Future<void> signOut() async {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PageUserTask(
-          task: AppTask.signOut,
-        ),
-      ),
-    );
-  }
-
-  Future<void> manageDevices() async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PageDevices(),
-      ),
-    );
-  }
-
-  Future<void> manageKey() async {
-    if (accessKeyType == "key") {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PageAccessKey(),
-        ),
-      );
+    if (widget.runningOnDesktop) {
+      widget.setShowChildWidget!(
+          PageType.userTask, true, PageParams(appTask: AppTask.signOut));
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PagePasswordKeyCreate(
-            recreate: true,
+        AnimatedPageRoute(
+          child: PageUserTask(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowChildWidget,
+            task: AppTask.signOut,
           ),
         ),
       );
     }
   }
 
-  Future<void> navigateToOnboardCheck() async {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => PageUserTask(
-          task: AppTask.checkCloudSync,
+  Future<void> manageDevices() async {
+    if (widget.runningOnDesktop) {
+      widget.setShowChildWidget!(PageType.devices, true, PageParams());
+    } else {
+      Navigator.of(context).push(
+        AnimatedPageRoute(
+          child: PageDevices(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowChildWidget,
+          ),
         ),
-      ),
-    );
+      );
+    }
+  }
+
+  Future<void> manageKey() async {
+    if (accessKeyType == "key") {
+      if (widget.runningOnDesktop) {
+        widget.setShowChildWidget!(PageType.accessKey, true, PageParams());
+      } else {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: PageAccessKey(
+              runningOnDesktop: widget.runningOnDesktop,
+              setShowHidePage: widget.setShowChildWidget,
+            ),
+          ),
+        );
+      }
+    } else {
+      if (widget.runningOnDesktop) {
+        widget.setShowChildWidget!(
+            PageType.passwordCreate, true, PageParams(recreatePassword: true));
+      } else {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: PagePasswordKeyCreate(
+              runningOnDesktop: widget.runningOnDesktop,
+              setShowHidePage: widget.setShowChildWidget,
+              recreate: true,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> navigateToOnboardCheck() async {
+    if (widget.runningOnDesktop) {
+      widget.setShowChildWidget!(PageType.userTask, true, PageParams());
+    } else {
+      Navigator.of(context).pushReplacement(
+        AnimatedPageRoute(
+          child: PageUserTask(
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowChildWidget,
+            task: AppTask.checkCloudSync,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -172,6 +217,14 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Account"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowChildWidget!(
+                      PageType.planStatus, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

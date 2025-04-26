@@ -7,7 +7,10 @@ import 'package:ntsapp/service_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PageDevices extends StatefulWidget {
-  const PageDevices({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PageDevices(
+      {super.key, required this.runningOnDesktop, this.setShowHidePage});
 
   @override
   State<PageDevices> createState() => _PageDevicesState();
@@ -95,7 +98,17 @@ class _PageDevicesState extends State<PageDevices> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Registered Devices")),
+      appBar: AppBar(
+        title: Text("Registered Devices"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.devices, false, PageParams());
+                },
+              )
+            : null,
+      ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : devices.isEmpty

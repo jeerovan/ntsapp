@@ -16,8 +16,14 @@ import 'model_preferences.dart';
 import 'utils_sync.dart';
 
 class PageAccessKeyInput extends StatefulWidget {
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   final Map<String, dynamic> cipherData;
-  const PageAccessKeyInput({super.key, required this.cipherData});
+  const PageAccessKeyInput(
+      {super.key,
+      required this.cipherData,
+      required this.runningOnDesktop,
+      this.setShowHidePage});
 
   @override
   State<PageAccessKeyInput> createState() => _PageAccessKeyInputState();
@@ -49,6 +55,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
 
   /// Processes the validated 24 words further
   Future<void> _processWords(String words) async {
+    words = words.trim();
     setState(() {
       processing = true;
     });
@@ -59,6 +66,9 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
     if (!bip39.validateMnemonic(words)) {
       if (mounted) {
         showAlertMessage(context, "Error", "Invalid word list");
+        setState(() {
+          processing = false;
+        });
       }
       return;
     }
@@ -101,8 +111,12 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
       if (!pushedLocalContent) {
         await SyncUtils.pushLocalChanges();
       }
-      if (mounted) {
-        Navigator.of(context).pop();
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.accessKeyInput, false, PageParams());
+      } else {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       }
     }
     setState(() {
@@ -144,7 +158,14 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Enable Sync'),
-        centerTitle: true,
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.accessKeyInput, false, PageParams());
+                },
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -166,7 +187,9 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                 // TextField with Validation
                 TextFormField(
                   controller: _textController,
+                  autofocus: true,
                   maxLines: null, // Allows all words to be visible
+                  textInputAction: TextInputAction.done,
                   decoration: InputDecoration(
                     labelText: 'Enter your 24-word phrase',
                     border: OutlineInputBorder(),
@@ -181,6 +204,9 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                     }
                     return null;
                   },
+                  onEditingComplete: () {
+                    _processWords(_textController.text);
+                  },
                 ),
                 SizedBox(height: 20.0),
 
@@ -188,7 +214,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      _processWords(_textController.text.trim());
+                      _processWords(_textController.text);
                     }
                   },
                   child: Row(

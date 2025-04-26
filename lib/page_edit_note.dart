@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_item.dart';
+import 'package:ntsapp/storage_hive.dart';
+
+import 'common.dart';
 
 class PageEditNote extends StatefulWidget {
-  final String noteText;
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  final String itemId;
 
-  const PageEditNote({super.key, required this.noteText});
+  const PageEditNote(
+      {super.key,
+      required this.itemId,
+      required this.runningOnDesktop,
+      this.setShowHidePage});
 
   @override
   State<PageEditNote> createState() => _PageEditNoteState();
@@ -11,15 +22,40 @@ class PageEditNote extends StatefulWidget {
 
 class _PageEditNoteState extends State<PageEditNote> {
   final TextEditingController controller = TextEditingController();
-
+  ModelItem? item;
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    loadText();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> loadText() async {
+    ModelItem? dbItem = await ModelItem.get(widget.itemId);
+    if (dbItem != null) {
+      item = dbItem;
       setState(() {
-        controller.text = widget.noteText;
+        controller.text = dbItem.text;
       });
-    });
+    }
+  }
+
+  Future<void> saveItem(String text) async {
+    if (item != null) {
+      item!.text = text.trim();
+      await item!.update(["text"]);
+      await StorageHive().put(AppString.changedItemId.string, item!.id);
+      if (widget.runningOnDesktop) {
+        widget.setShowHidePage!(PageType.editNote, false, PageParams());
+      } else {
+        if (mounted) Navigator.of(context).pop();
+      }
+    }
   }
 
   @override
@@ -27,12 +63,20 @@ class _PageEditNoteState extends State<PageEditNote> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Edit"),
+        leading: widget.runningOnDesktop
+            ? BackButton(
+                onPressed: () {
+                  widget.setShowHidePage!(
+                      PageType.editNote, false, PageParams());
+                },
+              )
+            : null,
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop(controller.text);
+                saveItem(controller.text);
               },
               child: const Text(
                 'Save',
@@ -53,6 +97,7 @@ class _PageEditNoteState extends State<PageEditNote> {
               autofocus: true,
               maxLines: null,
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              onSubmitted: saveItem,
               decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding:

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/service_logger.dart';
@@ -6,13 +8,17 @@ import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'common.dart';
+import 'common_widgets.dart';
 import 'enums.dart';
 import 'page_access_key.dart';
 import 'storage_secure.dart';
 import 'utils_crypto.dart';
 
 class PageAccessKeyNotice extends StatefulWidget {
-  const PageAccessKeyNotice({super.key});
+  final bool runningOnDesktop;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
+  const PageAccessKeyNotice(
+      {super.key, required this.runningOnDesktop, this.setShowHidePage});
 
   @override
   State<PageAccessKeyNotice> createState() => _PageAccessKeyNoticeState();
@@ -54,7 +60,12 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
     Map<String, dynamic> serverKeys = keys["server_keys"];
     serverKeys['id'] = userId;
     try {
-      await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
+      if (isDebugEnabled()) {
+        await ModelPreferences.set(
+            AppString.debugCipherData.string, jsonEncode(serverKeys));
+      } else {
+        await supabaseClient.from("keys").upsert(serverKeys).eq("id", userId);
+      }
       String keyForMasterKey = '${userId}_mk';
       String keyForAccessKey = '${userId}_ak';
       String keyForKeyType = '${userId}_kt';
@@ -73,12 +84,20 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
       }
       // navigate to display key
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => PageAccessKey(),
-            settings: const RouteSettings(name: "PageAcessKey"),
-          ),
-        );
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(PageType.accessKey, true, PageParams());
+          widget.setShowHidePage!(
+              PageType.accessKeyCreate, false, PageParams());
+        } else {
+          Navigator.of(context).pushReplacement(
+            AnimatedPageRoute(
+              child: PageAccessKey(
+                runningOnDesktop: widget.runningOnDesktop,
+                setShowHidePage: widget.setShowHidePage,
+              ),
+            ),
+          );
+        }
       }
     } catch (e, s) {
       logger.error("generateKeys", error: e, stackTrace: s);
@@ -92,14 +111,15 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text('Important'),
-        centerTitle: false,
-        elevation: 0,
-      ),
+          title: Text('Important'),
+          leading: widget.runningOnDesktop
+              ? BackButton(
+                  onPressed: () {
+                    widget.setShowHidePage!(
+                        PageType.accessKeyCreate, false, PageParams());
+                  },
+                )
+              : null),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
