@@ -4,7 +4,6 @@ import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_access_key_notice.dart';
 import 'package:ntsapp/page_password_key_create.dart';
 import 'package:ntsapp/storage_secure.dart';
-import 'package:path/path.dart';
 
 import 'common.dart';
 import 'enums.dart';

@@ -1086,7 +1086,10 @@ class _PageItemsState extends State<PageItems> {
     await StorageHive().put(AppString.changedItemId.string, item.id);
     await checkAddItemFileHash(item);
     setState(() {
-      _addItemsToDisplayList([item], false);
+      int existingIndex = _displayItemList.indexOf(item);
+      if (existingIndex == -1) {
+        _addItemsToDisplayList([item], false);
+      }
       replyOnItem = null;
     });
     if (type == ItemType.text) {
