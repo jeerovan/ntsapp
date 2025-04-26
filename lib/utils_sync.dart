@@ -73,7 +73,7 @@ class SyncUtils {
   Future<void> triggerSync(bool inBackground, {bool manualSync = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
     logger.info("sync request from:$mode");
-    if (isDebugEnabled()) return;
+    if (simulateOnboarding()) return;
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
     bool hasInternet = await hasInternetConnection();
@@ -129,7 +129,7 @@ class SyncUtils {
   }
 
   static String? getSignedInUserId() {
-    if (isDebugEnabled()) {
+    if (simulateOnboarding()) {
       return "debug";
     }
     SupabaseClient supabaseClient = Supabase.instance.client;
@@ -142,7 +142,7 @@ class SyncUtils {
   }
 
   static String? getSignedInEmailId() {
-    if (isDebugEnabled()) {
+    if (simulateOnboarding()) {
       return "dummy@debug.com";
     }
     SupabaseClient supabaseClient = Supabase.instance.client;
@@ -171,7 +171,7 @@ class SyncUtils {
             AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
-    if (isDebugEnabled() && hasKeys) {
+    if (simulateOnboarding() && hasKeys) {
       return true;
     }
     Session? currentSession = Supabase.instance.client.auth.currentSession;
@@ -215,7 +215,7 @@ class SyncUtils {
       SecureStorage storage = SecureStorage();
       SupabaseClient supabase = Supabase.instance.client;
       try {
-        if (isDebugEnabled()) {
+        if (simulateOnboarding()) {
           await Future.delayed(const Duration(seconds: 1));
         } else {
           if (deviceId != null) {
@@ -262,7 +262,7 @@ class SyncUtils {
   static Future<void> pushLocalChanges() async {
     await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
     await signalToUpdateHome();
-    if (isDebugEnabled()) {
+    if (simulateOnboarding()) {
       await ModelPreferences.set(
           AppString.pushedLocalContentForSync.string, "yes");
       return;

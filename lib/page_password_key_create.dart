@@ -168,7 +168,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       serverKeys["id"] = userId;
       // save keys to server
       try {
-        if (isDebugEnabled()) {
+        if (simulateOnboarding()) {
           await ModelPreferences.set(
               AppString.debugCipherData.string, jsonEncode(serverKeys));
         } else {

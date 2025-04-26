@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:ntsapp/model_log.dart';
 
-import 'common.dart';
+import 'enums.dart';
+import 'model_setting.dart';
 
 // Custom Logger Class
 class AppLogger {
@@ -63,7 +64,8 @@ class AppLogger {
       final coloredMessage = "${_getColor(level)}$logMessage$_reset";
       stdout.writeln(coloredMessage);
     }
-    if (isDebugEnabled()) {
+
+    if (ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes") {
       insertToDb(logMessage);
     }
   }

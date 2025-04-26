@@ -63,7 +63,18 @@ class _PageCategoryGroupsPaneState extends State<PageCategoryGroupsPane> {
           selectedCategory = params.category;
           break;
         case PageType.items:
-          selectedGroup = params.group;
+          if (showHide) {
+            selectedGroup = params.group;
+            itemId = params.id;
+          } else {
+            if (params.group != null) {
+              if (params.group!.id == selectedGroup!.id) {
+                selectedGroup = null;
+              }
+            } else {
+              selectedGroup = null;
+            }
+          }
           break;
         case PageType.mediaViewer:
           showMediaViewer = showHide;

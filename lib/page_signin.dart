@@ -68,7 +68,7 @@ class _PageSigninState extends State<PageSignin> {
         processing = true;
       });
       try {
-        if (isDebugEnabled()) {
+        if (simulateOnboarding()) {
           await Future.delayed(const Duration(seconds: 1));
           if (debugExceptionCount == 0) {
             debugExceptionCount = 1;
@@ -112,7 +112,7 @@ class _PageSigninState extends State<PageSignin> {
       });
       try {
         Session? session;
-        if (isDebugEnabled()) {
+        if (simulateOnboarding()) {
           await Future.delayed(const Duration(seconds: 1));
           if (debugExceptionCount == 1) {
             debugExceptionCount = 2;
@@ -123,7 +123,7 @@ class _PageSigninState extends State<PageSignin> {
               .verifyOTP(email: email, token: otp, type: OtpType.email);
           session = response.session;
         }
-        if (session != null || isDebugEnabled()) {
+        if (session != null || simulateOnboarding()) {
           await StorageHive().delete(AppString.otpSentTo.string);
           await StorageHive().delete(AppString.otpSentAt.string);
           // assign a device Id

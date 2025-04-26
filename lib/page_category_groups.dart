@@ -109,7 +109,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     bool updated = false;
     for (ModelGroup categoryGroup in categoryGroupsDisplayList) {
       if (categoryGroup.id == group.id) {
-        if (categoryGroup.position == group.position) {
+        if (categoryGroup.position == group.position && group.archivedAt == 0) {
           int groupIndex = categoryGroupsDisplayList.indexOf(categoryGroup);
           setState(() {
             categoryGroupsDisplayList[groupIndex] = group;

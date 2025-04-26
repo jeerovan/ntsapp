@@ -109,6 +109,7 @@ enum AppString {
   installedAt,
   reviewDialogShown,
   deviceRegistered,
+  loggingEnabled,
 
   // Supabase
   supabaseKey,
@@ -151,6 +152,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.loggingEnabled:
+        return "logging_enabled";
       case AppString.planRcId:
         return "plan_rc_id";
       case AppString.supabaseInitialized:

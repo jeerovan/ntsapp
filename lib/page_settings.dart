@@ -42,6 +42,8 @@ class SettingsPageState extends State<SettingsPage> {
   SecureStorage secureStorage = SecureStorage();
   bool isAuthSupported = false;
   bool isAuthEnabled = false;
+  bool loggingEnabled =
+      ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
 
   @override
   void initState() {
@@ -78,6 +80,19 @@ class SettingsPageState extends State<SettingsPage> {
       }
     } catch (e, s) {
       logger.error("_authenticate", error: e, stackTrace: s);
+    }
+  }
+
+  Future<void> _setLogging(bool enable) async {
+    if (enable) {
+      await ModelSetting.set(AppString.loggingEnabled.string, "yes");
+    } else {
+      await ModelSetting.set(AppString.loggingEnabled.string, "no");
+    }
+    if (mounted) {
+      setState(() {
+        loggingEnabled = enable;
+      });
     }
   }
 
@@ -295,6 +310,18 @@ class SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 _share();
               },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.lock, color: Colors.grey),
+              title: const Text("Logging"),
+              horizontalTitleGap: 24.0,
+              trailing: Transform.scale(
+                scale: 0.7,
+                child: Switch(
+                  value: loggingEnabled,
+                  onChanged: _setLogging,
+                ),
+              ),
             ),
             FutureBuilder<PackageInfo>(
               future: PackageInfo.fromPlatform(),

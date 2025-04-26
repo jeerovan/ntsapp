@@ -66,7 +66,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   }
 
   Future<void> fetchPlanDetails() async {
-    if (currentSession == null && !isDebugEnabled()) return;
+    if (currentSession == null && !simulateOnboarding()) return;
     processing = true;
     errorFetching = false;
     refresh();
@@ -94,7 +94,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
         "b2_limit": 53687091200,
         "expires_at": 1749969096241
       };
-      if (!isDebugEnabled()) {
+      if (!simulateOnboarding()) {
         usedStorageResponse = await supabaseClient
             .from("storage")
             .select("b2_size")

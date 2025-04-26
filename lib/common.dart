@@ -39,6 +39,10 @@ bool isDebugEnabled() {
   return false;
 }
 
+bool simulateOnboarding() {
+  return false;
+}
+
 final List<Color> predefinedColors = [
   "#06b6d4",
   "#0ea5e9",

@@ -111,9 +111,11 @@ class _PageCategoriesGroupsPaneState extends State<PageCategoriesGroupsPane> {
             selectedGroup = params.group;
             itemId = params.id;
           } else {
-            if (params.group != null &&
-                selectedGroup != null &&
-                params.group!.id == selectedGroup!.id) {
+            if (params.group != null) {
+              if (params.group!.id == selectedGroup!.id) {
+                selectedGroup = null;
+              }
+            } else {
               selectedGroup = null;
             }
           }

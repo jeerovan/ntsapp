@@ -140,7 +140,8 @@ class _PageItemsState extends State<PageItems> {
       if (group != null) {
         if (group.archivedAt != null && group.archivedAt! > 0) {
           if (widget.runningOnDesktop) {
-            widget.setShowHidePage!(PageType.items, false, PageParams());
+            widget.setShowHidePage!(
+                PageType.items, false, PageParams(group: group));
           } else {
             if (mounted) Navigator.of(context).pop();
           }

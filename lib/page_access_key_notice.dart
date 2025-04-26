@@ -60,7 +60,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
     Map<String, dynamic> serverKeys = keys["server_keys"];
     serverKeys['id'] = userId;
     try {
-      if (isDebugEnabled()) {
+      if (simulateOnboarding()) {
         await ModelPreferences.set(
             AppString.debugCipherData.string, jsonEncode(serverKeys));
       } else {

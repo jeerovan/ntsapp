@@ -91,12 +91,12 @@ class _PageUserTaskState extends State<PageUserTask> {
     bool hasValidPlan = false;
     String rcId = "";
     // check signed in
-    bool signedIn = isDebugEnabled()
+    bool signedIn = simulateOnboarding()
         ? await ModelPreferences.get(AppString.deviceId.string) != null
         : currentSession != null;
     if (signedIn) {
       String? userId = SyncUtils.getSignedInUserId();
-      if (userId != null && !isDebugEnabled()) {
+      if (userId != null && !simulateOnboarding()) {
         try {
           final planResponse = await supabaseClient
               .from("plans")
@@ -202,7 +202,7 @@ class _PageUserTaskState extends State<PageUserTask> {
         "yes";
     bool canSync = await SyncUtils.canSync();
     // set debug params
-    if (isDebugEnabled()) {
+    if (simulateOnboarding()) {
       await Future.delayed(const Duration(seconds: 1));
       bool plansShown =
           await ModelPreferences.get(AppString.plansShown.string) == "yes";
@@ -216,7 +216,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       processing = false;
     });
     if (revenueCatSupported && !hasSubscriptionPlan && mounted) {
-      if (isDebugEnabled()) {
+      if (simulateOnboarding()) {
         await ModelPreferences.set(AppString.plansShown.string, "yes");
       }
       if (widget.runningOnDesktop) {
@@ -247,7 +247,7 @@ class _PageUserTaskState extends State<PageUserTask> {
         );
       }
     } else if (!hasValidPlan && mounted) {
-      if (isDebugEnabled()) {
+      if (simulateOnboarding()) {
         await ModelPreferences.set(AppString.plansShown.string, "yes");
       }
       if (widget.runningOnDesktop) {
@@ -265,7 +265,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       }
     } else if (!deviceRegistered) {
       registerDevice();
-    } else if (!canSync || isDebugEnabled()) {
+    } else if (!canSync || simulateOnboarding()) {
       checkEncryptionKeys();
     } else if (mounted) {
       await signalToUpdateHome();
@@ -286,7 +286,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       errorFetching = false;
     });
     try {
-      if (isDebugEnabled()) {
+      if (simulateOnboarding()) {
         await Future.delayed(const Duration(seconds: 1));
         if (debugExceptionCount == 0) {
           debugExceptionCount = 1;
@@ -363,15 +363,15 @@ class _PageUserTaskState extends State<PageUserTask> {
       processing = true;
       errorFetching = false;
     });
-    if (isDebugEnabled()) {
+    if (simulateOnboarding()) {
       await Future.delayed(const Duration(seconds: 1));
     }
     String? userId = SyncUtils.getSignedInUserId();
-    if (userId == null && !isDebugEnabled()) return;
+    if (userId == null && !simulateOnboarding()) return;
     //check where to navigate
     try {
       List<Map<String, dynamic>> keyRows = [];
-      if (isDebugEnabled()) {
+      if (simulateOnboarding()) {
         if (await ModelPreferences.get(AppString.hasEncryptionKeys.string,
                 defaultValue: "no") ==
             "yes") {

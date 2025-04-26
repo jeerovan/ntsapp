@@ -76,6 +76,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   Timer? _debounceTimer;
 
   bool hasValidPlan = false;
+  bool loggingEnabled = false;
 
   late StreamSubscription categoryStream;
   late StreamSubscription groupStream;
@@ -85,6 +86,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   void initState() {
     super.initState();
     selectedGroup = widget.selectedGroup;
+    loggingEnabled =
+        ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
     // update on server fetch
     categoryStream =
         StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
@@ -160,7 +163,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       bool updated = false;
       for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
         if (categoryGroup.type == "group" && categoryGroup.id == group.id) {
-          if (categoryGroup.position == group.position) {
+          if (categoryGroup.position == group.position &&
+              group.archivedAt == 0) {
             int groupIndex =
                 _categoriesGroupsDisplayList.indexOf(categoryGroup);
             setState(() {
@@ -229,6 +233,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     hasValidPlan = await ModelPreferences.get(AppString.hasValidPlan.string,
             defaultValue: "yes") ==
         "yes";
+    loggingEnabled =
+        ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
     try {
       setState(() => _isLoading = true);
       final categoriesGroups = await ModelCategoryGroup.all();
@@ -565,6 +571,12 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     } else if (!requiresAuthentication || isAuthenticated) {
       await loadCategoriesGroups();
     }
+    if (mounted) {
+      setState(() {
+        loggingEnabled =
+            ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
+      });
+    }
   }
 
   List<Widget> _buildDefaultActions() {
@@ -572,7 +584,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       if (ModelSetting.get(AppString.supabaseInitialized.string, "no") ==
               "yes" &&
           (!requiresAuthentication || isAuthenticated) &&
-          (!_canSync || isDebugEnabled()))
+          (!_canSync || simulateOnboarding()))
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: ElevatedButton(
@@ -823,7 +835,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 ],
               ),
             ),
-          if (isDebugEnabled())
+          if (loggingEnabled)
             PopupMenuItem<int>(
               value: 14,
               child: Row(
