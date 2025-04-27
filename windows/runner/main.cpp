@@ -29,7 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(1400, 30);
   Win32Window::Size size(600, 720);
-  if (!window.Create(L"ntsapp", origin, size))
+  if (!window.Create(L"NoteSafe", origin, size))
   {
     return EXIT_FAILURE;
   }

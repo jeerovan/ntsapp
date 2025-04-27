@@ -1,6 +1,6 @@
 name: ntsapp
-description: "Note to Self v2.0 - Note Safe - Encrypted notes"
-publish_to: 'none'
+description: "Note Safe - Encrypted notes"
+publish_to: "none"
 version: 2.0.13+59
 
 environment:

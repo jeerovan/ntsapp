@@ -20,7 +20,7 @@ class _PageDevicesState extends State<PageDevices> {
   AppLogger logger = AppLogger(prefixes: ["PageDevices"]);
   final SupabaseClient supabase = Supabase.instance.client;
   List<Map<String, dynamic>> devices = [];
-  bool isLoading = true;
+  bool processing = true;
 
   @override
   void initState() {
@@ -30,17 +30,20 @@ class _PageDevicesState extends State<PageDevices> {
 
   Future<void> fetchDevices() async {
     try {
-      final response =
-          await supabase.from('devices').select('id, title, last_at, status');
+      final response = await supabase
+          .from('devices')
+          .select('id, title, last_at, status')
+          .order('status', ascending: false)
+          .order('last_at', ascending: false);
 
       if (response.isNotEmpty) {
         setState(() {
           devices = List<Map<String, dynamic>>.from(response);
-          isLoading = false;
+          processing = false;
         });
       } else {
         setState(() {
-          isLoading = false;
+          processing = false;
         });
       }
     } catch (e, s) {
@@ -50,6 +53,9 @@ class _PageDevicesState extends State<PageDevices> {
 
   Future<void> disableDevice(String deviceId) async {
     try {
+      setState(() {
+        processing = true;
+      });
       await supabase.functions
           .invoke("remove_device", body: {"deviceId": deviceId});
       if (mounted) {
@@ -58,7 +64,13 @@ class _PageDevicesState extends State<PageDevices> {
       }
     } catch (e) {
       if (mounted) {
-        displaySnackBar(context, message: 'Please retry!', seconds: 2);
+        displaySnackBar(context, message: 'Please try again!', seconds: 2);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          processing = false;
+        });
       }
     }
   }
@@ -109,7 +121,7 @@ class _PageDevicesState extends State<PageDevices> {
               )
             : null,
       ),
-      body: isLoading
+      body: processing
           ? Center(child: CircularProgressIndicator())
           : devices.isEmpty
               ? Center(child: Text("No devices found"))
