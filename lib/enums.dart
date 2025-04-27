@@ -112,12 +112,9 @@ enum AppString {
   loggingEnabled,
 
   // Supabase
-  supabaseKey,
-  supabaseUrl,
   supabaseInitialized,
 
   // RevenueCat
-  rcApiKey,
   hasValidPlan,
   planStorageFull,
   planRcId,
@@ -185,8 +182,6 @@ extension AppStringExtension on AppString {
         return 'plans_shown';
       case AppString.planStorageFull:
         return 'rc_plan_full';
-      case AppString.rcApiKey:
-        return "rc_key_android";
       case AppString.deviceRegistered:
         return "device_registered";
       case AppString.appName:
@@ -197,10 +192,6 @@ extension AppStringExtension on AppString {
         return "installed_at";
       case AppString.deviceId:
         return "device_id";
-      case AppString.supabaseKey:
-        return "supabase_key";
-      case AppString.supabaseUrl:
-        return "supabase_url";
       case AppString.lastChangesFetchedAt:
         return "last_changes_fetched_at";
       case AppString.otpSentTo:

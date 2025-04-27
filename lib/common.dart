@@ -896,7 +896,6 @@ SupabaseClient? getSupabaseClient() {
 
 Future<void> initializeDependencies({String mode = "Common"}) async {
   bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
-  SecureStorage secureStorage = SecureStorage();
   await StorageHive().initialize();
   if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
@@ -914,11 +913,9 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
   await initializeDirectories();
   CryptoUtils.init();
 
-  final String? supaUrl =
-      await secureStorage.read(key: AppString.supabaseUrl.string);
-  final String? supaKey =
-      await secureStorage.read(key: AppString.supabaseKey.string);
-  if (supaUrl != null && supaKey != null) {
+  final String supaUrl = const String.fromEnvironment("SUPABASE_URL");
+  final String supaKey = const String.fromEnvironment("SUPABASE_KEY");
+  if (supaUrl.isNotEmpty && supaKey.isNotEmpty) {
     Supabase _ = await Supabase.initialize(url: supaUrl, anonKey: supaKey);
     await ModelSetting.set(AppString.supabaseInitialized.string, "yes");
     AppLogger(prefixes: [mode]).info("Initialized Supabase");

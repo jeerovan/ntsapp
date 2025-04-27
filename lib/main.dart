@@ -1,12 +1,10 @@
 // main.dart
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
@@ -35,6 +33,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   // Process the sync message
   if (message.data['type'] == 'Sync') {
+    final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        options.tracesSampleRate = 1.0;
+        options.profilesSampleRate = 1.0;
+      },
+    );
     try {
       await initializeDependencies(mode: "FcmBG");
     } catch (e, s) {
@@ -62,8 +68,7 @@ void backgroundTaskDispatcher() {
           .error("Initialize failed", error: e, stackTrace: s);
       return Future.value(false);
     }
-    SecureStorage secureStorage = SecureStorage();
-    String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
+    final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
     await SentryFlutter.init(
       (options) {
         options.dsn = sentryDsn;
@@ -94,38 +99,16 @@ final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    setWindowMinSize(const Size(600, 600));
+    setWindowMinSize(const Size(720, 720));
   }
   MediaKit.ensureInitialized();
   //load config from file
   SecureStorage secureStorage = SecureStorage();
-  try {
-    // Read the config file from assets
-    final jsonString = await rootBundle.loadString('assets/config.txt');
-    final credentials = jsonDecode(jsonString);
-    // Store each credential securely
-    for (final service in credentials.keys) {
-      if (credentials[service] is String) {
-        // Simple key-value pair
-        await secureStorage.write(
-          key: service,
-          value: credentials[service],
-        );
-      } else if (credentials[service] is Map) {
-        // Nested credentials (like Firebase)
-        for (final key in (credentials[service] as Map).keys) {
-          await secureStorage.write(
-            key: '$service.$key',
-            value: credentials[service][key].toString(),
-          );
-        }
-      }
-    }
-  } catch (e) {
-    debugPrint(
-      "Exception:${e.toString()}",
-    );
-  }
+  // set params on start
+  await secureStorage.write(key: AppString.appName.string, value: "Note Safe");
+  await secureStorage.write(key: "media_dir", value: "ntsmedia");
+  await secureStorage.write(key: "backup_dir", value: "ntsbackup");
+  await secureStorage.write(key: "db_file", value: "notetoself.db");
   await initializeDependencies(mode: "Foreground");
   logger.info("initialized dependencies");
   if (runningOnMobile) {
@@ -142,9 +125,8 @@ Future<void> main() async {
   logger.info("initialized datasync");
   // initialize purchases -- not required in background tasks
   if (Platform.isAndroid) {
-    String? rcKeyAndroid =
-        await secureStorage.read(key: AppString.rcApiKey.string);
-    if (rcKeyAndroid != null) {
+    final String rcKeyAndroid = const String.fromEnvironment("RC_KEY_ANDROID");
+    if (rcKeyAndroid.isNotEmpty) {
       if (kDebugMode) {
         await Purchases.setLogLevel(LogLevel.debug);
       }
@@ -153,7 +135,7 @@ Future<void> main() async {
       await Purchases.configure(configuration);
     }
   }
-  String? sentryDsn = await secureStorage.read(key: "sentry_dsn");
+  final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
   await SentryFlutter.init(
     (options) {
       options.dsn = sentryDsn;

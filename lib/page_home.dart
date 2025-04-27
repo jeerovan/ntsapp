@@ -640,7 +640,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       PopupMenuButton<int>(
         icon: Stack(
           children: [
-            const Icon(Icons.more_vert),
+            const Icon(LucideIcons.moreVertical),
             if (!hasValidPlan)
               Positioned(
                 right: 0,
