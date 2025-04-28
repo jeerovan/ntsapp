@@ -13,6 +13,7 @@ import 'package:ntsapp/model_item.dart';
 import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_part.dart';
 import 'package:ntsapp/model_preferences.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
@@ -132,6 +133,9 @@ class SyncUtils {
     if (simulateOnboarding()) {
       return "debug";
     }
+    bool supabaseInitialized =
+        ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
+    if (!supabaseInitialized) return null;
     SupabaseClient supabaseClient = Supabase.instance.client;
     User? currentUser = supabaseClient.auth.currentUser;
     if (currentUser != null) {
@@ -145,6 +149,9 @@ class SyncUtils {
     if (simulateOnboarding()) {
       return "dummy@debug.com";
     }
+    bool supabaseInitialized =
+        ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
+    if (!supabaseInitialized) return null;
     SupabaseClient supabaseClient = Supabase.instance.client;
     User? currentUser = supabaseClient.auth.currentUser;
     if (currentUser != null) {
@@ -171,9 +178,12 @@ class SyncUtils {
             AppString.hasEncryptionKeys.string,
             defaultValue: "no") ==
         "yes";
+    bool supabaseInitialized =
+        ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
     if (simulateOnboarding() && hasKeys) {
       return true;
     }
+    if (!supabaseInitialized) return false;
     Session? currentSession = Supabase.instance.client.auth.currentSession;
     bool loggedIn = currentSession != null;
     return loggedIn && hasKeys;
