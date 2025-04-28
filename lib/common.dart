@@ -421,6 +421,28 @@ Future<File?> getFile(String fileType, String fileName) async {
   return null;
 }
 
+Future<String> getDbStoragePath() async {
+  String? dbDirPath;
+  if (Platform.isMacOS || Platform.isIOS) {
+    Directory libDir = await getLibraryDirectory();
+    dbDirPath = libDir.path;
+  } else if (Platform.isWindows) {
+    dbDirPath = Platform.environment['APPDATA'];
+  } else if (Platform.isLinux) {
+    Directory supportDir = await getApplicationSupportDirectory();
+    dbDirPath = supportDir.path;
+  }
+  if (dbDirPath == null) {
+    Directory documentsPath = await getApplicationDocumentsDirectory();
+    dbDirPath = documentsPath.path;
+  }
+  Directory dbDir = Directory(dbDirPath); // Ensure directory exists
+  if (!dbDir.existsSync()) {
+    await dbDir.create(recursive: true);
+  }
+  return dbDirPath;
+}
+
 Future<String> getFilePath(String mimeDirectory, String fileName) async {
   SecureStorage secureStorage = SecureStorage();
   final directory = await getApplicationDocumentsDirectory();

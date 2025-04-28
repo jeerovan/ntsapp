@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
-import 'package:path_provider/path_provider.dart';
 
 class StorageHive {
   static final StorageHive _instance = StorageHive._internal();
@@ -16,8 +16,8 @@ class StorageHive {
 
   Future<void> initialize() async {
     if (!Hive.isBoxOpen(_boxName)) {
-      final appDocumentDirectory = await getApplicationDocumentsDirectory();
-      Hive.init(appDocumentDirectory.path);
+      String storagepath = await getDbStoragePath();
+      Hive.init(storagepath);
       _box = await Hive.openBox(_boxName);
     } else {
       _box = Hive.box(_boxName);
