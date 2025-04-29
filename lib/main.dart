@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
@@ -100,6 +101,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowMinSize(const Size(720, 640));
+  }
+  if (Platform.isWindows) {
+    ByteData data = await PlatformAssetBundle().load('assets/cacert.pem');
+    SecurityContext.defaultContext
+        .setTrustedCertificatesBytes(data.buffer.asUint8List());
   }
   MediaKit.ensureInitialized();
   //load config from file
