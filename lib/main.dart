@@ -99,7 +99,7 @@ final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    setWindowMinSize(const Size(720, 720));
+    setWindowMinSize(const Size(720, 640));
   }
   MediaKit.ensureInitialized();
   //load config from file
