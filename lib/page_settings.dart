@@ -314,6 +314,13 @@ class SettingsPageState extends State<SettingsPage> {
                 _share();
               },
             ),
+            if (Platform.isAndroid || Platform.isIOS)
+              ListTile(
+                leading: const Icon(LucideIcons.monitor, color: Colors.grey),
+                title: const Text('Desktop App'),
+                horizontalTitleGap: 24.0,
+                onTap: () => _redirectToDesktopApp(),
+              ),
             ListTile(
               leading: const Icon(LucideIcons.list, color: Colors.grey),
               title: const Text("Logging"),
@@ -348,6 +355,11 @@ class SettingsPageState extends State<SettingsPage> {
             ),
           ],
         ));
+  }
+
+  void _redirectToDesktopApp() {
+    const url = "https://github.com/jeerovan/ntsapp/releases";
+    openURL(url);
   }
 
   void _redirectToFeedback() {
