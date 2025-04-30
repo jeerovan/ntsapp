@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     let token = null;
     let status = 200;
     let error = "";
-    const now = new Date().getSeconds();
+    const now = new Date().getTime();
     if (file != null && file.uploaded_at > 0) {
       if (
         file.token != null && file.expires > now
@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
         error = reqError;
         if (status == 200) {
           token = reqToken;
-          const newExpires = now + 604700;
+          const newExpires = now + 604700000;
           await setDownloadToken(userFileId, token, newExpires);
         }
       }

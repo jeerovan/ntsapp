@@ -775,7 +775,7 @@ class SyncUtils {
       String itemRowId = userIdRowId[1];
       ModelItem? modelItem = await ModelItem.get(itemRowId);
       if (modelItem == null) {
-        //already deleted.
+        logger.debug("Item deleted already, not fetching: $changeId");
         await ModelChange.upgradeSyncTask(changeId);
         continue;
       }
@@ -786,6 +786,8 @@ class SyncUtils {
         File fileOut = File(filePath);
         if (fileOut.existsSync()) {
           // duplicate note item (may be different groups)
+          logger.debug(
+              "to be fetched file already exist, may be another group:$changeId");
           await ModelChange.upgradeSyncTask(changeId);
         } else {
           Map<String, dynamic> serverData =
@@ -795,6 +797,7 @@ class SyncUtils {
             int fileSize = data["size"];
             if (fileSize > 20 * 1024 * 1024) {
               // mark set downloadable
+              logger.debug("Marking downloadable:$changeId");
               await ModelChange.updateTypeState(
                   changeId, SyncState.downloadable);
               await ModelChange.upgradeSyncTask(changeId, updateState: false);
@@ -806,10 +809,13 @@ class SyncUtils {
                 await ModelChange.upgradeSyncTask(changeId);
               }
             }
+          } else {
+            logger.debug("not available to be fetched yet:$changeId");
           }
         }
       }
     }
+    logger.info("Files fetched");
   }
 
   static Future<bool> pushFiles(int startedAt, bool inBackground) async {

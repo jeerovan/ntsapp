@@ -172,15 +172,20 @@ class CryptoUtils {
                 fileInPath, fileOutPath, fileEncryptionKeyBytes);
             if (decryptionResult.isSuccess) {
               downloadDecrypted = true;
-              logger.info("downloaded & decrypted");
+              logger.info("Fetched & decrypted");
             } else {
               String error = decryptionResult.failureReason ?? "";
-              logger.error("Downloaded but decryption failed", error: error);
+              logger.error("Fetched but decryption failed", error: error);
             }
+          } else {
+            logger.error("failed to getFileEncryptionKeyBytes:$fileName");
           }
+        } else {
+          logger.error(
+              "Request to fetch:$downloadUrl; NOT OK:${response.statusCode} -> ${response.reasonPhrase ?? ''}");
         }
       } catch (e, s) {
-        logger.error("Downloading File", error: e, stackTrace: s);
+        logger.error("Error Fetching File", error: e, stackTrace: s);
       } finally {
         await fileInSink.close();
       }
