@@ -156,9 +156,11 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
     switch (item.type) {
       case ItemType.image: // image
         widget = fileAvailable
-            ? Image.file(
-                File(item.data!["path"]),
-                fit: BoxFit.cover,
+            ? InteractiveViewer(
+                child: Image.file(
+                  File(item.data!["path"]),
+                  fit: BoxFit.cover,
+                ),
               )
             : item.thumbnail != null
                 ? Image.memory(
