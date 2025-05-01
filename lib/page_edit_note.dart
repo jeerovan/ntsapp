@@ -46,7 +46,7 @@ class _PageEditNoteState extends State<PageEditNote> {
   }
 
   Future<void> saveItem(String text) async {
-    if (item != null) {
+    if (item != null && text.isNotEmpty) {
       item!.text = text.trim();
       await item!.update(["text"]);
       await StorageHive().put(AppString.changedItemId.string, item!.id);
@@ -62,7 +62,10 @@ class _PageEditNoteState extends State<PageEditNote> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Edit"),
+        title: Text(
+          "Edit",
+          style: TextStyle(fontSize: 18),
+        ),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -71,41 +74,32 @@ class _PageEditNoteState extends State<PageEditNote> {
                 },
               )
             : null,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                saveItem(controller.text);
-              },
-              child: const Text(
-                'Save',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              keyboardType: TextInputType.multiline,
-              textCapitalization: TextCapitalization.sentences,
-              autofocus: true,
-              maxLines: null,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-              onSubmitted: saveItem,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-              ),
+        child: SingleChildScrollView(
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.multiline,
+            textCapitalization: TextCapitalization.sentences,
+            autofocus: true,
+            maxLines: null,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            onSubmitted: saveItem,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             ),
           ),
-        ]),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.small(
+        heroTag: "save_note",
+        onPressed: () {
+          saveItem(controller.text);
+        },
+        child: const Icon(Icons.check),
       ),
     );
   }
