@@ -580,8 +580,9 @@ class SyncUtils {
           Map<String, dynamic> map = jsonDecode(jsonString);
           String changeId = changeMap["id"];
           String rowId = map["id"];
-          int deleteTask = map.remove("deleted");
-          bool hasThumbnail = map.remove("thumbnail") == 1 ? true : false;
+          int deleteTask = int.parse(map.remove("deleted").toString());
+          bool hasThumbnail =
+              int.parse(map.remove("thumbnail").toString()) == 1 ? true : false;
           if (deleteTask > 0) {
             // thumbnail and file already been deleted from server
             switch (table) {
