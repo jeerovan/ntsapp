@@ -94,8 +94,8 @@ class _PageUserTaskState extends State<PageUserTask> {
     bool signedIn = simulateOnboarding()
         ? await ModelPreferences.get(AppString.deviceId.string) != null
         : currentSession != null;
+    String? userId = SyncUtils.getSignedInUserId();
     if (signedIn) {
-      String? userId = SyncUtils.getSignedInUserId();
       if (userId != null && !simulateOnboarding()) {
         try {
           final planResponse = await supabaseClient
@@ -199,7 +199,7 @@ class _PageUserTaskState extends State<PageUserTask> {
     bool deviceRegistered = await ModelPreferences.get(
             AppString.deviceRegistered.string,
             defaultValue: "no") ==
-        "yes";
+        userId;
     bool canSync = await SyncUtils.canSync();
     // set debug params
     if (simulateOnboarding()) {
@@ -292,7 +292,8 @@ class _PageUserTaskState extends State<PageUserTask> {
           debugExceptionCount = 1;
           throw Exception("Debug Exception Register Device");
         } else {
-          await ModelPreferences.set(AppString.deviceRegistered.string, "yes");
+          await ModelPreferences.set(
+              AppString.deviceRegistered.string, "debug");
           bool canSync = await SyncUtils.canSync();
           if (!canSync) {
             checkEncryptionKeys();
@@ -315,10 +316,11 @@ class _PageUserTaskState extends State<PageUserTask> {
         String? fcmId = await ModelPreferences.get(AppString.fcmId.string);
         await supabaseClient.functions.invoke("register_device",
             body: {"deviceId": deviceId, "title": deviceTitle, "fcmId": fcmId});
-        await ModelPreferences.set(AppString.deviceRegistered.string, "yes");
         User user = currentSession!.user;
+        String userId = user.id;
+        await ModelPreferences.set(AppString.deviceRegistered.string, userId);
         ModelProfile profile =
-            await ModelProfile.fromMap({"id": user.id, "email": user.email!});
+            await ModelProfile.fromMap({"id": userId, "email": user.email!});
         // if exists, update no fields.
         await profile.upcertChangeFromServer();
         // associate existing categories with this profile if not already associated

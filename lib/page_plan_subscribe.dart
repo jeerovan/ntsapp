@@ -11,6 +11,7 @@ import 'common.dart';
 import 'common_widgets.dart';
 import 'enums.dart';
 import 'page_user_task.dart';
+import 'utils_sync.dart';
 
 class PagePlanSubscribe extends StatefulWidget {
   final bool runningOnDesktop;
@@ -26,8 +27,6 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   AppLogger logger = AppLogger(prefixes: ["PagePlan"]);
   List<Package> _packages = [];
   bool processing = true;
-  bool hasDeviceId =
-      true; // build will not show login button at first, show after initializing
   bool revenueCatSupported =
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
@@ -41,7 +40,6 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   }
 
   Future<void> initialize() async {
-    hasDeviceId = await ModelPreferences.get(AppString.deviceId.string) != null;
     try {
       Offerings? offerings = await Purchases.getOfferings();
       if (offerings.current != null) {
@@ -115,7 +113,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
               )
             : null,
         actions: [
-          if (!hasDeviceId)
+          if (SyncUtils.getSignedInUserId() == null)
             TextButton(
               onPressed: () {
                 if (widget.runningOnDesktop) {

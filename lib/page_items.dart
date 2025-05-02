@@ -148,6 +148,12 @@ class _PageItemsState extends State<PageItems> {
         } else {
           await loadGroupSettings(group);
         }
+      } else {
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(PageType.items, false, PageParams());
+        } else {
+          if (mounted) Navigator.of(context).pop();
+        }
       }
     }
   }

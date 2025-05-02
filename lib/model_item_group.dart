@@ -310,5 +310,6 @@ class ModelGroup {
     if (group != null) {
       await group.deleteCascade();
     }
+    await StorageHive().put(AppString.changedGroupId.string, id);
   }
 }

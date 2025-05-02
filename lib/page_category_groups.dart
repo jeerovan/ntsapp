@@ -45,6 +45,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   ModelGroup? selectedGroup;
   bool loadedSharedContents = false;
   bool _isReordering = false;
+  Timer? _debounceTimer;
 
   late StreamSubscription categoryStream;
   late StreamSubscription groupStream;
@@ -81,15 +82,28 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   }
 
   Future<void> changedCategory(String? id) async {
-    if (id == null) return;
-    loadGroups();
+    if (id == null || id != category.id) return;
+    ModelCategory? currentCategory = await ModelCategory.get(id);
+    if (currentCategory != null) {
+      if (mounted) {
+        setState(() {
+          category = currentCategory;
+        });
+      }
+    } else if (!widget.runningOnDesktop && mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> changedGroup(String? id) async {
     if (id == null) return;
     ModelGroup? group = await ModelGroup.get(id);
-    if (group != null && group.categoryId == category.id) {
-      updateDisplayGroup(group);
+    if (group != null) {
+      if (group.categoryId == category.id) {
+        updateDisplayGroup(group);
+      }
+    } else {
+      _loadGroups();
     }
   }
 
@@ -120,8 +134,15 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
       }
     }
     if (!updated) {
-      loadGroups();
+      _loadGroups();
     }
+  }
+
+  void _loadGroups() {
+    _debounceTimer?.cancel(); // Cancel any ongoing debounce
+    _debounceTimer = Timer(Duration(seconds: 1), () async {
+      loadGroups();
+    });
   }
 
   Future<void> loadGroups() async {

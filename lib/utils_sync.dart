@@ -174,19 +174,12 @@ class SyncUtils {
 
   // to sync, one must have masterKey with an active plan
   static Future<bool> canSync() async {
-    bool hasKeys = await ModelPreferences.get(
-            AppString.hasEncryptionKeys.string,
-            defaultValue: "no") ==
-        "yes";
-    bool supabaseInitialized =
-        ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
-    if (simulateOnboarding() && hasKeys) {
+    if (simulateOnboarding()) {
       return true;
     }
-    if (!supabaseInitialized) return false;
-    Session? currentSession = Supabase.instance.client.auth.currentSession;
-    bool loggedIn = currentSession != null;
-    return loggedIn && hasKeys;
+    String? masterKey = await getMasterKey();
+    bool hasKeys = masterKey != null;
+    return hasKeys;
   }
 
   static Future<bool> checkDeviceStatus() async {
@@ -389,7 +382,6 @@ class SyncUtils {
   }
 
   static Future<void> pushMapChanges() async {
-    if (!await canSync()) return;
     logger.info("Push Map Changes");
     String deviceId = await ModelPreferences.get(AppString.deviceId.string);
     SupabaseClient supabaseClient = Supabase.instance.client;
@@ -527,7 +519,6 @@ class SyncUtils {
   }
 
   static Future<void> pushProfileChange(Map<String, dynamic> map) async {
-    if (!await canSync()) return;
     SupabaseClient supabaseClient = Supabase.instance.client;
     int updatedAt = map["updated_at"];
     Map<String, dynamic> changeMap = {"updated_at": updatedAt};
@@ -549,7 +540,6 @@ class SyncUtils {
   }
 
   static Future<void> fetchMapChanges() async {
-    if (!await canSync()) return;
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");

@@ -80,10 +80,7 @@ void backgroundTaskDispatcher() {
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
-          bool canSync = await SyncUtils.canSync();
-          if (canSync) {
-            await SyncUtils().triggerSync(true);
-          }
+          await SyncUtils().triggerSync(true);
           break;
       }
       return Future.value(true);
@@ -102,11 +99,11 @@ Future<void> main() async {
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowMinSize(const Size(720, 640));
   }
-  if (Platform.isWindows) {
-    ByteData data = await PlatformAssetBundle().load('assets/cacert.pem');
-    SecurityContext.defaultContext
-        .setTrustedCertificatesBytes(data.buffer.asUint8List());
-  }
+  // set trusted certificates for https
+  ByteData data = await PlatformAssetBundle().load('assets/cacert.pem');
+  SecurityContext.defaultContext
+      .setTrustedCertificatesBytes(data.buffer.asUint8List());
+
   MediaKit.ensureInitialized();
   //load config from file
   SecureStorage secureStorage = SecureStorage();
@@ -227,12 +224,14 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     logger.info("App State:$state");
-    if (state == AppLifecycleState.resumed) {
-      SyncUtils().startAutoSync();
-      logger.info("Started Foreground Sync");
-    } else if (state == AppLifecycleState.paused) {
-      SyncUtils().stopAutoSync();
-      logger.info("Stopped Foreground Sync");
+    if (Platform.isIOS || Platform.isAndroid) {
+      if (state == AppLifecycleState.resumed) {
+        SyncUtils().startAutoSync();
+        logger.info("Started Foreground Sync");
+      } else if (state == AppLifecycleState.paused) {
+        SyncUtils().stopAutoSync();
+        logger.info("Stopped Foreground Sync");
+      }
     }
   }
 

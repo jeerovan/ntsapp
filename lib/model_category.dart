@@ -260,5 +260,9 @@ class ModelCategory {
     if (category != null) {
       await category.deleteCascade();
     }
+    await StorageHive().put(
+      AppString.changedCategoryId.string,
+      id,
+    );
   }
 }

@@ -134,9 +134,9 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
 
   Future<void> changedCategory(String? id) async {
     if (id == null) return;
+    bool updated = false;
     ModelCategory? category = await ModelCategory.get(id);
     if (category != null) {
-      bool updated = false;
       for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
         if (categoryGroup.type == "category" &&
             categoryGroup.id == category.id) {
@@ -156,17 +156,17 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           break;
         }
       }
-      if (!updated) {
-        _loadCategoriesGroups();
-      }
+    }
+    if (!updated) {
+      _loadCategoriesGroups();
     }
   }
 
   Future<void> changedGroup(String? id) async {
     if (id == null) return;
+    bool updated = false;
     ModelGroup? group = await ModelGroup.get(id);
     if (group != null) {
-      bool updated = false;
       for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
         if (categoryGroup.type == "group" && categoryGroup.id == group.id) {
           if (categoryGroup.position == group.position &&
@@ -184,20 +184,20 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           break;
         }
       }
-      if (!updated) {
-        _loadCategoriesGroups();
-      }
+    }
+    if (!updated) {
+      _loadCategoriesGroups();
     }
   }
 
   Future<void> changedItem(String? id) async {
     if (id == null) return;
+    bool updated = false;
     ModelItem? item = await ModelItem.get(id);
     if (item != null) {
       String groupId = item.groupId;
       ModelGroup? group = await ModelGroup.get(groupId);
       if (group != null) {
-        bool updated = false;
         for (ModelCategoryGroup categoryGroup in _categoriesGroupsDisplayList) {
           if (categoryGroup.type == "group" && categoryGroup.id == groupId) {
             int groupIndex =
@@ -209,10 +209,10 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
             break;
           }
         }
-        if (!updated) {
-          _loadCategoriesGroups();
-        }
       }
+    }
+    if (!updated) {
+      _loadCategoriesGroups();
     }
   }
 

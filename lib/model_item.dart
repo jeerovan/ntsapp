@@ -480,5 +480,9 @@ class ModelItem {
     if (item != null) {
       await item.delete();
     }
+    await StorageHive().put(
+      AppString.changedItemId.string,
+      id,
+    );
   }
 }
