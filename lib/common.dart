@@ -36,7 +36,7 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 bool isDebugEnabled() {
-  return true;
+  return false;
 }
 
 bool simulateOnboarding() {

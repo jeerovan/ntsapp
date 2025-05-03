@@ -112,8 +112,11 @@ class ModelChange {
     // Generate placeholders (?, ?, ?) for the number of IDs
     final placeholders = List.filled(changeTypes.length, '?').join(',');
     changeTypes.insert(0, table);
+    int? limitOnItemsOnly = table == "item" ? 100 : null;
     List<Map<String, dynamic>> rows = await db.query("change",
-        where: "name = ? AND type IN ($placeholders)", whereArgs: changeTypes);
+        where: "name = ? AND type IN ($placeholders)",
+        whereArgs: changeTypes,
+        limit: limitOnItemsOnly);
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
