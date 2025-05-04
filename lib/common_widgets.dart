@@ -482,22 +482,25 @@ class WidgetAudio extends StatefulWidget {
 
 class _WidgetAudioState extends State<WidgetAudio> {
   late AudioPlayer _audioPlayer;
-  Duration _totalDuration = Duration(seconds: 100);
+  Duration _totalDuration = Duration.zero;
   Duration _currentPosition = Duration.zero;
   bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
+    int savedDurationSeconds =
+        mediaFileDurationFromString(widget.item.data!["duration"]);
+    _totalDuration = Duration(seconds: savedDurationSeconds);
     _audioPlayer = AudioPlayer();
 
     // Load audio file duration
     _audioPlayer.onDurationChanged.listen((duration) {
       if (mounted) {
         setState(() {
-          _totalDuration = duration.inMilliseconds > 0
-              ? duration
-              : Duration(seconds: 100); // Ensure minimum duration
+          if (duration.inMilliseconds > 0) {
+            _totalDuration = duration;
+          }
         });
       }
     });
@@ -634,10 +637,10 @@ class _WidgetAudioState extends State<WidgetAudio> {
           ),
         ),
         Text(
-          _isPlaying
-              ? mediaFileDuration(
+          _currentPosition > Duration.zero
+              ? mediaFileDurationFromSeconds(
                   max(0, _totalDuration.inSeconds - _currentPosition.inSeconds))
-              : widget.item.data!["duration"],
+              : mediaFileDurationFromSeconds(_totalDuration.inSeconds),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],

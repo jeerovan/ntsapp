@@ -1214,7 +1214,7 @@ class _PageItemsState extends State<PageItems> {
           try {
             final mediaInfo = await extractor.getVideoInfo();
             int durationSeconds = mediaInfo['duration'];
-            String duration = mediaFileDuration(durationSeconds);
+            String duration = mediaFileDurationFromSeconds(durationSeconds);
             double aspect = mediaInfo['aspect'];
             Uint8List? thumbnail = await extractor.getThumbnail(
                 seekPosition:

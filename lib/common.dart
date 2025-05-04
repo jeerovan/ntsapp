@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -341,7 +342,7 @@ DateTime getLocalDateFromUtcMilliSeconds(int utcMilliSeconds) {
   return DateTime(localDateTime.year, localDateTime.month, localDateTime.day);
 }
 
-String mediaFileDuration(int seconds) {
+String mediaFileDurationFromSeconds(int seconds) {
   final int hours = seconds ~/ 3600;
   final int minutes = (seconds % 3600) ~/ 60;
   final int secs = seconds % 60;
@@ -354,6 +355,29 @@ String mediaFileDuration(int seconds) {
       ? "$hoursStr:$minutesStr:$secondsStr"
       : "$minutesStr:$secondsStr";
 }
+
+int mediaFileDurationFromString(String duration) {
+  final parts = duration.split(':');
+
+  // If the duration includes hours (e.g., hh:mm:ss)
+  if (parts.length == 3) {
+    final int hours = int.parse(parts[0]);
+    final int minutes = int.parse(parts[1]);
+    final int seconds = int.parse(parts[2]);
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+
+  // If the duration only includes minutes and seconds (e.g., mm:ss)
+  if (parts.length == 2) {
+    final int minutes = int.parse(parts[0]);
+    final int seconds = int.parse(parts[1]);
+    return minutes * 60 + seconds;
+  }
+
+  // Return 0 for invalid format
+  return 0;
+}
+
 /* date/time conversion -- ends */
 
 Uint8List? getImageThumbnail(Uint8List bytes) {
@@ -575,23 +599,54 @@ Future<String?> getAudioDuration(String filePath) async {
   final logger = AppLogger(prefixes: ["common", "getAudioDuration"]);
   final player = AudioPlayer();
   String? audioDuration;
+
   try {
-    // Retrieve duration after the audio is loaded
-    player.onDurationChanged.listen((duration) {
-      audioDuration = mediaFileDuration(duration.inSeconds);
+    // Use a Completer to wait for the duration
+    final durationCompleter = Completer<Duration>();
+
+    // Set up listener for duration changes
+    final subscription = player.onDurationChanged.listen((duration) {
+      if (!durationCompleter.isCompleted && duration.inMilliseconds > 0) {
+        durationCompleter.complete(duration);
+      }
     });
 
-    // Set the audio source to the local file
+    // Set the audio source
     await player.setSourceDeviceFile(filePath);
 
-    // Play briefly to trigger duration loading, then immediately stop
+    // Play briefly to trigger duration loading
     await player.resume();
-    await player.pause();
+
+    // Wait for duration with timeout
+    Duration duration;
+    try {
+      duration = await durationCompleter.future.timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          logger.warning("Timed out waiting for audio duration");
+          return const Duration(seconds: 0);
+        },
+      );
+    } catch (e) {
+      logger.error("Error waiting for duration", error: e);
+      return null;
+    } finally {
+      // Clean up subscription
+      await subscription.cancel();
+
+      // Stop playback
+      await player.pause();
+    }
+
+    // Convert duration to string format
+    audioDuration = mediaFileDurationFromSeconds(duration.inSeconds);
   } catch (e, s) {
     logger.error("Exception", error: e, stackTrace: s);
   } finally {
-    player.dispose();
+    // Ensure player is disposed
+    await player.dispose();
   }
+
   return audioDuration;
 }
 
