@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -481,7 +482,7 @@ class WidgetAudio extends StatefulWidget {
 
 class _WidgetAudioState extends State<WidgetAudio> {
   late AudioPlayer _audioPlayer;
-  Duration _totalDuration = Duration.zero;
+  Duration _totalDuration = Duration(seconds: 1);
   Duration _currentPosition = Duration.zero;
   bool _isPlaying = false;
 
@@ -492,22 +493,33 @@ class _WidgetAudioState extends State<WidgetAudio> {
 
     // Load audio file duration
     _audioPlayer.onDurationChanged.listen((duration) {
-      setState(() {
-        _totalDuration = duration;
-      });
+      if (mounted) {
+        setState(() {
+          _totalDuration = duration.inMilliseconds > 0 
+              ? duration 
+              : Duration(seconds: 1); // Ensure minimum duration
+        });
+      }
     });
 
     _audioPlayer.onPlayerComplete.listen((_) {
-      setState(() {
-        _isPlaying = !_isPlaying;
-      });
+      if (mounted) {
+        setState(() {
+          _isPlaying = false;  // Fixed: Set to false instead of toggling
+          _currentPosition = Duration.zero;  // Reset position
+        });
+      }
     });
 
     // Track current position of the audio
     _audioPlayer.onPositionChanged.listen((position) {
       if (mounted) {
         setState(() {
-          if (_totalDuration != Duration.zero && position > _totalDuration) {
+          // Ensure position is within valid bounds
+          if (position < Duration.zero) {
+            _currentPosition = Duration.zero;
+          } else if (_totalDuration.inMilliseconds > 0 && 
+                    position.inMilliseconds > _totalDuration.inMilliseconds) {
             _currentPosition = _totalDuration;
           } else {
             _currentPosition = position;
@@ -563,15 +575,25 @@ class _WidgetAudioState extends State<WidgetAudio> {
       await _audioPlayer.setSourceDeviceFile(filePath);
       await _audioPlayer.resume();
     }
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
+    if (mounted) {
+      setState(() {
+        _isPlaying = !_isPlaying;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     bool displayDownloadButton =
         widget.item.state == SyncState.downloadable.value;
+    
+    // Calculate safe slider value to avoid range errors
+    double sliderMax = max(_totalDuration.inMilliseconds.toDouble(), 1.0);
+    double sliderValue = min(
+      max(_currentPosition.inMilliseconds.toDouble(), 0.0),
+      sliderMax
+    );
+    
     return Row(
       children: [
         displayDownloadButton
@@ -597,16 +619,19 @@ class _WidgetAudioState extends State<WidgetAudio> {
                 ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)
                 : Colors.grey[300],
             min: 0,
-            max: _totalDuration.inMilliseconds.toDouble(),
-            value: _currentPosition.inMilliseconds.toDouble(),
+            max: sliderMax,
+            value: sliderValue,
             onChanged: (value) async {
               // Seek to the new position in the audio
-              Duration newPosition = Duration(milliseconds: value.toInt() - 1);
-              if (_totalDuration != Duration.zero &&
-                  newPosition > _totalDuration) {
-                newPosition = _totalDuration;
-              }
+              Duration newPosition = Duration(milliseconds: value.toInt());
               await _audioPlayer.seek(newPosition);
+              
+              // Update position immediately for more responsive UI
+              if (mounted) {
+                setState(() {
+                  _currentPosition = newPosition;
+                });
+              }
             },
           ),
         ),
@@ -614,7 +639,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
           _totalDuration.inSeconds == 0
               ? widget.item.data!["duration"]
               : mediaFileDuration(
-                  _totalDuration.inSeconds - _currentPosition.inSeconds),
+                  max(0, _totalDuration.inSeconds - _currentPosition.inSeconds)),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
