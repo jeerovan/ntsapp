@@ -440,6 +440,7 @@ Future<String> getDbStoragePath() async {
   if (!dbDir.existsSync()) {
     await dbDir.create(recursive: true);
   }
+  AppLogger(prefixes: ["DbStoragePath"]).info(dbDirPath);
   return dbDirPath;
 }
 
