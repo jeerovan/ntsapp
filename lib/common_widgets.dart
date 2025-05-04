@@ -482,7 +482,7 @@ class WidgetAudio extends StatefulWidget {
 
 class _WidgetAudioState extends State<WidgetAudio> {
   late AudioPlayer _audioPlayer;
-  Duration _totalDuration = Duration(seconds: 1);
+  Duration _totalDuration = Duration(seconds: 100);
   Duration _currentPosition = Duration.zero;
   bool _isPlaying = false;
 
@@ -495,9 +495,9 @@ class _WidgetAudioState extends State<WidgetAudio> {
     _audioPlayer.onDurationChanged.listen((duration) {
       if (mounted) {
         setState(() {
-          _totalDuration = duration.inMilliseconds > 0 
-              ? duration 
-              : Duration(seconds: 1); // Ensure minimum duration
+          _totalDuration = duration.inMilliseconds > 0
+              ? duration
+              : Duration(seconds: 100); // Ensure minimum duration
         });
       }
     });
@@ -505,8 +505,8 @@ class _WidgetAudioState extends State<WidgetAudio> {
     _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) {
         setState(() {
-          _isPlaying = false;  // Fixed: Set to false instead of toggling
-          _currentPosition = Duration.zero;  // Reset position
+          _isPlaying = false; // Fixed: Set to false instead of toggling
+          _currentPosition = Duration.zero; // Reset position
         });
       }
     });
@@ -518,8 +518,8 @@ class _WidgetAudioState extends State<WidgetAudio> {
           // Ensure position is within valid bounds
           if (position < Duration.zero) {
             _currentPosition = Duration.zero;
-          } else if (_totalDuration.inMilliseconds > 0 && 
-                    position.inMilliseconds > _totalDuration.inMilliseconds) {
+          } else if (_totalDuration.inMilliseconds > 0 &&
+              position.inMilliseconds > _totalDuration.inMilliseconds) {
             _currentPosition = _totalDuration;
           } else {
             _currentPosition = position;
@@ -586,14 +586,12 @@ class _WidgetAudioState extends State<WidgetAudio> {
   Widget build(BuildContext context) {
     bool displayDownloadButton =
         widget.item.state == SyncState.downloadable.value;
-    
+
     // Calculate safe slider value to avoid range errors
     double sliderMax = max(_totalDuration.inMilliseconds.toDouble(), 1.0);
-    double sliderValue = min(
-      max(_currentPosition.inMilliseconds.toDouble(), 0.0),
-      sliderMax
-    );
-    
+    double sliderValue =
+        min(max(_currentPosition.inMilliseconds.toDouble(), 0.0), sliderMax);
+
     return Row(
       children: [
         displayDownloadButton
@@ -625,7 +623,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
               // Seek to the new position in the audio
               Duration newPosition = Duration(milliseconds: value.toInt());
               await _audioPlayer.seek(newPosition);
-              
+
               // Update position immediately for more responsive UI
               if (mounted) {
                 setState(() {
@@ -636,10 +634,10 @@ class _WidgetAudioState extends State<WidgetAudio> {
           ),
         ),
         Text(
-          _totalDuration.inSeconds == 0
-              ? widget.item.data!["duration"]
-              : mediaFileDuration(
-                  max(0, _totalDuration.inSeconds - _currentPosition.inSeconds)),
+          _isPlaying
+              ? mediaFileDuration(
+                  max(0, _totalDuration.inSeconds - _currentPosition.inSeconds))
+              : widget.item.data!["duration"],
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
