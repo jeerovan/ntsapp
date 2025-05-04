@@ -49,7 +49,7 @@ dependencies:
   purchases_flutter: ^8.6.1
   random_string: ^2.3.1
   receive_sharing_intent: ^1.8.1
-  record: ^5.2.0
+  record: ^6.0.0
   scrollable_positioned_list: ^0.3.8
   sentry_flutter: ^8.10.1
   share_plus: ^10.1.2

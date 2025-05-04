@@ -972,11 +972,12 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> _startRecording() async {
+    logger.info("Starting Recording");
     if (await _audioRecorder.hasPermission()) {
       final tempDir = await getTemporaryDirectory();
+      logger.info("Temp Dir: ${tempDir.path}");
       final int utcSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      _audioFilePath = '${tempDir.path}/recording_$utcSeconds.m4a';
-
+      _audioFilePath = path.join(tempDir.path, 'recording_$utcSeconds.m4a');
       await _audioRecorder.start(const RecordConfig(), path: _audioFilePath!);
 
       setState(() {
