@@ -354,13 +354,18 @@ class _ItemWidgetVideoState extends State<ItemWidgetVideo> {
                 // File size text at the left
                 Row(
                   children: [
-                    const Icon(LucideIcons.video, size: 20),
+                    Opacity(
+                        opacity: 0.6,
+                        child: const Icon(LucideIcons.video, size: 20)),
                     const SizedBox(
                       width: 2,
                     ),
-                    Text(
-                      widget.item.data!["duration"],
-                      style: const TextStyle(color: Colors.white, fontSize: 10),
+                    Opacity(
+                      opacity: 0.6,
+                      child: Text(
+                        widget.item.data!["duration"],
+                        style: const TextStyle(fontSize: 10),
+                      ),
                     ),
                   ],
                 ),
@@ -472,9 +477,12 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
                         iconSize: 30,
                       ),
                     )
-                  : const Icon(
-                      LucideIcons.file,
-                      size: 40,
+                  : Opacity(
+                      opacity: 0.6,
+                      child: const Icon(
+                        LucideIcons.file,
+                        size: 40,
+                      ),
                     ),
               Expanded(
                 child: Padding(
@@ -494,9 +502,12 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // File size text at the left
-              Text(
-                readableFileSizeFromBytes(widget.item.data!["size"]),
-                style: const TextStyle(fontSize: 10),
+              Opacity(
+                opacity: 0.6,
+                child: Text(
+                  readableFileSizeFromBytes(widget.item.data!["size"]),
+                  style: const TextStyle(fontSize: 10),
+                ),
               ),
               WidgetTimeStampPinnedStarred(
                 item: widget.item,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -22,7 +24,7 @@ class _LocationPickerState extends State<LocationPicker> {
   void initState() {
     super.initState();
     _mapController = MapController();
-    _getLastLocation();
+    if (!Platform.isLinux) _getLastLocation();
   }
 
   Future<void> _getLastLocation() async {
@@ -179,12 +181,14 @@ class _LocationPickerState extends State<LocationPicker> {
           ]),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "get_current_location",
-        onPressed: _getCurrentLocation,
-        tooltip: "Use current location",
-        child: const Icon(LucideIcons.locate),
-      ),
+      floatingActionButton: Platform.isLinux
+          ? null
+          : FloatingActionButton(
+              heroTag: "get_current_location",
+              onPressed: _getCurrentLocation,
+              tooltip: "Use current location",
+              child: const Icon(LucideIcons.locate),
+            ),
     );
   }
 }
