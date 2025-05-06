@@ -549,6 +549,23 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     }
   }
 
+  Future<void> navigateToSeed() async {
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(
+          PageType.userTask, true, PageParams(appTask: AppTask.seedDummyData));
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PageUserTask(
+            task: AppTask.seedDummyData,
+            runningOnDesktop: widget.runningOnDesktop,
+            setShowHidePage: widget.setShowHidePage,
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> navigateToPlanStatus() async {
     if (widget.runningOnDesktop) {
       widget.setShowHidePage!(PageType.planStatus, true, PageParams());
@@ -557,7 +574,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         MaterialPageRoute(
           builder: (context) => PagePlanStatus(
             runningOnDesktop: widget.runningOnDesktop,
-            setShowChildWidget: widget.setShowHidePage,
+            setShowHidePage: widget.setShowHidePage,
           ),
         ),
       );
@@ -747,6 +764,9 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 settings: const RouteSettings(name: "PageLogs"),
               ));
               break;
+            case 99:
+              navigateToSeed();
+              break;
           }
         },
         itemBuilder: (context) => [
@@ -856,6 +876,18 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                   Container(width: 8),
                   const SizedBox(width: 5),
                   const Text('Logs'),
+                ],
+              ),
+            ),
+          if (isDebugEnabled())
+            PopupMenuItem<int>(
+              value: 99,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.list, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 5),
+                  const Text('Seed'),
                 ],
               ),
             ),

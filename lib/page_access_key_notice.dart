@@ -80,7 +80,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
               defaultValue: "no") ==
           "yes";
       if (!pushedLocalContent) {
-        await SyncUtils.pushLocalChanges();
+        SyncUtils.pushLocalChanges();
       }
       // navigate to display key
       if (mounted) {

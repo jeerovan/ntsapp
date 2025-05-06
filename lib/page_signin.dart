@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/model_preferences.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_hive.dart';
@@ -124,9 +125,9 @@ class _PageSigninState extends State<PageSignin> {
           session = response.session;
         }
         if (session != null || simulateOnboarding()) {
+          await ModelSetting.set("signed_in", "yes"); // used for simulation
           await StorageHive().delete(AppString.otpSentTo.string);
           await StorageHive().delete(AppString.otpSentAt.string);
-          // assign a device Id
           String? existingDeviceId =
               await ModelPreferences.get(AppString.deviceId.string);
           if (existingDeviceId == null) {

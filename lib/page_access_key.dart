@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -13,6 +14,7 @@ import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'common.dart';
+import 'model_preferences.dart';
 import 'page_plan_status.dart';
 
 class PageAccessKey extends StatefulWidget {
@@ -77,19 +79,36 @@ class _PageAccessKeyState extends State<PageAccessKey> {
     }
   }
 
-  void navigateToPlanStatus() {
+  Future<void> continueToNext() async {
+    bool pushedLocalContent = await ModelPreferences.get(
+            AppString.pushedLocalContentForSync.string,
+            defaultValue: "no") ==
+        "yes";
     if (widget.runningOnDesktop) {
-      widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+      if (!pushedLocalContent) {
+        widget.setShowHidePage!(PageType.userTask, true,
+            PageParams(appTask: AppTask.pushLocalContent));
+      } else {
+        widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+      }
       widget.setShowHidePage!(PageType.accessKey, false, PageParams());
     } else {
-      Navigator.of(context).pushReplacement(
-        AnimatedPageRoute(
-          child: PagePlanStatus(
-            runningOnDesktop: widget.runningOnDesktop,
-            setShowChildWidget: widget.setShowHidePage,
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageRoute(
+            child: pushedLocalContent
+                ? PagePlanStatus(
+                    runningOnDesktop: widget.runningOnDesktop,
+                    setShowHidePage: widget.setShowHidePage,
+                  )
+                : PageUserTask(
+                    task: AppTask.pushLocalContent,
+                    runningOnDesktop: widget.runningOnDesktop,
+                    setShowHidePage: widget.setShowHidePage,
+                  ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -164,7 +183,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
 
             // Button to Continue to Next Page
             OutlinedButton(
-              onPressed: navigateToPlanStatus,
+              onPressed: continueToNext,
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 side: BorderSide(color: Theme.of(context).primaryColor),

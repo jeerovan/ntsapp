@@ -104,6 +104,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("Yearly plans"),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {

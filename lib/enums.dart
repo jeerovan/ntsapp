@@ -97,8 +97,10 @@ enum ExecutionStatus {
 enum AppTask {
   registerDevice,
   checkEncryptionKeys,
+  pushLocalContent,
   checkCloudSync,
   signOut,
+  seedDummyData,
 }
 
 enum AppString {

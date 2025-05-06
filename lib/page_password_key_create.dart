@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_plan_status.dart';
+import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -183,20 +184,31 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                 defaultValue: "no") ==
             "yes";
         if (!pushedLocalContent) {
-          await SyncUtils.pushLocalChanges();
+          SyncUtils.pushLocalChanges();
         }
         if (mounted) {
           if (widget.runningOnDesktop) {
-            widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+            if (pushedLocalContent) {
+              widget.setShowHidePage!(PageType.planStatus, true, PageParams());
+            } else {
+              widget.setShowHidePage!(PageType.userTask, true,
+                  PageParams(appTask: AppTask.pushLocalContent));
+            }
             widget.setShowHidePage!(
                 PageType.passwordCreate, false, PageParams());
           } else {
             Navigator.of(context).pushReplacement(
               AnimatedPageRoute(
-                child: PagePlanStatus(
-                  runningOnDesktop: widget.runningOnDesktop,
-                  setShowChildWidget: widget.setShowHidePage,
-                ),
+                child: pushedLocalContent
+                    ? PagePlanStatus(
+                        runningOnDesktop: widget.runningOnDesktop,
+                        setShowHidePage: widget.setShowHidePage,
+                      )
+                    : PageUserTask(
+                        task: AppTask.pushLocalContent,
+                        runningOnDesktop: widget.runningOnDesktop,
+                        setShowHidePage: widget.setShowHidePage,
+                      ),
               ),
             );
           }

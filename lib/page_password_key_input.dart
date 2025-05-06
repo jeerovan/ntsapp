@@ -6,8 +6,10 @@ import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 
+import 'common_widgets.dart';
 import 'enums.dart';
 import 'model_preferences.dart';
+import 'page_user_task.dart';
 import 'utils_sync.dart';
 
 class PagePasswordKeyInput extends StatefulWidget {
@@ -88,13 +90,29 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
               defaultValue: "no") ==
           "yes";
       if (!pushedLocalContent) {
-        await SyncUtils.pushLocalChanges();
+        SyncUtils.pushLocalChanges();
       }
       if (widget.runningOnDesktop) {
+        if (!pushedLocalContent) {
+          widget.setShowHidePage!(PageType.userTask, true,
+              PageParams(appTask: AppTask.pushLocalContent));
+        }
         widget.setShowHidePage!(PageType.passwordInput, false, PageParams());
       } else {
         if (mounted) {
-          Navigator.of(context).pop();
+          if (pushedLocalContent) {
+            Navigator.of(context).pop();
+          } else {
+            Navigator.of(context).pushReplacement(
+              AnimatedPageRoute(
+                child: PageUserTask(
+                  task: AppTask.pushLocalContent,
+                  runningOnDesktop: widget.runningOnDesktop,
+                  setShowHidePage: widget.setShowHidePage,
+                ),
+              ),
+            );
+          }
         }
       }
     }

@@ -45,7 +45,7 @@ class SyncUtils {
     // Starts the interval sync
     _syncTimer?.cancel();
     _syncTimer = Timer.periodic(Duration(minutes: 1), (timer) {
-      triggerSync(false);
+      waitAndSyncChanges();
     });
   }
 
@@ -74,7 +74,6 @@ class SyncUtils {
   Future<void> triggerSync(bool inBackground, {bool manualSync = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
     logger.info("sync request from:$mode");
-    if (simulateOnboarding()) return;
     bool canSync = await SyncUtils.canSync();
     if (!canSync) return;
     bool hasInternet = await hasInternetConnection();
@@ -95,10 +94,11 @@ class SyncUtils {
     });
     logger.info("$mode|Sync|------------------START----------------");
     bool hasPendingUploads = false;
+    bool hasMoreMapChangesToPush = false;
     try {
       bool removed = await SyncUtils.checkDeviceStatus();
       if (!removed) {
-        await pushMapChanges();
+        hasMoreMapChangesToPush = await pushMapChanges();
 
         await deleteFiles();
         await deleteThumbnails();
@@ -122,16 +122,20 @@ class SyncUtils {
       // Send Signal to update home with DND category
       await signalToUpdateHome();
     }
-    if (!inBackground && hasPendingUploads) {
-      logger.info("$mode|Sync| will run again to upload");
+    logger.info("$mode|Sync|------------------ENDED----------------");
+    if (!inBackground && (hasPendingUploads || hasMoreMapChangesToPush)) {
+      logger.info("$mode|Sync| more tasks.. will continue..");
       _handleChange(inBackground, manualSync: manualSync);
     }
-    logger.info("$mode|Sync|------------------ENDED----------------");
   }
 
   static String? getSignedInUserId() {
     if (simulateOnboarding()) {
-      return "debug";
+      if (ModelSetting.get("signed_in", "no") == "yes") {
+        return "debug";
+      } else {
+        return null;
+      }
     }
     bool supabaseInitialized =
         ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
@@ -174,9 +178,6 @@ class SyncUtils {
 
   // to sync, one must have masterKey with an active plan
   static Future<bool> canSync() async {
-    if (simulateOnboarding()) {
-      return true;
-    }
     String? masterKey = await getMasterKey();
     bool hasKeys = masterKey != null;
     return hasKeys;
@@ -184,6 +185,9 @@ class SyncUtils {
 
   static Future<bool> checkDeviceStatus() async {
     bool removed = false;
+    if (simulateOnboarding()) {
+      return removed;
+    }
     try {
       SupabaseClient supabaseClient = Supabase.instance.client;
       String deviceId = await ModelPreferences.get(AppString.deviceId.string,
@@ -263,13 +267,9 @@ class SyncUtils {
 
   // called once when sync is enabled
   static Future<void> pushLocalChanges() async {
+    logger.info("pushing local content");
     await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
     await signalToUpdateHome();
-    if (simulateOnboarding()) {
-      await ModelPreferences.set(
-          AppString.pushedLocalContentForSync.string, "yes");
-      return;
-    }
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();
@@ -298,7 +298,7 @@ class SyncUtils {
         items.map((item) => Map<String, dynamic>.from(item)).toList();
     for (Map<String, dynamic> item in mutableItems) {
       item.addAll({"table": "item"});
-      encryptAndPushChange(
+      await encryptAndPushChange(
         item,
       );
     }
@@ -381,15 +381,19 @@ class SyncUtils {
     }
   }
 
-  static Future<void> pushMapChanges() async {
+  static Future<bool> pushMapChanges() async {
     logger.info("Push Map Changes");
     String deviceId = await ModelPreferences.get(AppString.deviceId.string);
     SupabaseClient supabaseClient = Supabase.instance.client;
     List<Map<String, dynamic>> allChanges = [];
+    bool hasMoreChanges = false;
     List<String> changeIds = [];
     for (String table in ["category", "itemgroup", "item"]) {
       List<ModelChange> changes =
           await ModelChange.requiresMapPushForTable(table);
+      if (table == "item" && changes.length >= 100) {
+        hasMoreChanges = true;
+      }
       List<Map<String, dynamic>> changeMaps = [];
       for (ModelChange change in changes) {
         changeMaps.add(jsonDecode(change.data));
@@ -401,8 +405,11 @@ class SyncUtils {
     }
     if (allChanges.isNotEmpty) {
       try {
-        await supabaseClient.functions.invoke("push_changes",
-            headers: {"deviceId": deviceId}, body: {"allChanges": allChanges});
+        if (!simulateOnboarding()) {
+          await supabaseClient.functions.invoke("push_changes",
+              headers: {"deviceId": deviceId},
+              body: {"allChanges": allChanges});
+        }
         await ModelChange.upgradeTypeForIds(changeIds);
         await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
         logger.info("Pushed Map Changes");
@@ -416,12 +423,14 @@ class SyncUtils {
         logger.error("pushMapChanges|Supabase", error: e, stackTrace: s);
       }
     }
+    return hasMoreChanges;
   }
 
   static Future<void> deleteFiles() async {
     logger.info("Delete Files");
-    SupabaseClient supabaseClient = Supabase.instance.client;
     List<ModelChange> changes = await ModelChange.requiresFileDelete();
+    if (changes.isEmpty) return;
+    SupabaseClient supabaseClient = Supabase.instance.client;
     for (ModelChange change in changes) {
       await deleteFile(change, supabaseClient);
     }
@@ -446,8 +455,9 @@ class SyncUtils {
 
   static Future<void> deleteThumbnails() async {
     logger.info("Delete Thumbnails");
-    SupabaseClient supabaseClient = Supabase.instance.client;
     List<ModelChange> changes = await ModelChange.requiresThumbnailDelete();
+    if (changes.isEmpty) return;
+    SupabaseClient supabaseClient = Supabase.instance.client;
     for (ModelChange change in changes) {
       String fileName = change.id.replaceAll("|", "/");
       try {
@@ -463,6 +473,7 @@ class SyncUtils {
   static Future<void> pushThumbnails(int startedAt, bool inBackground) async {
     logger.info("Push Thumbnails");
     List<ModelChange> changes = await ModelChange.requiresThumbnailPush();
+    if (changes.isEmpty) return;
     for (ModelChange change in changes) {
       String table = change.name;
       String changeId = change.id;
@@ -540,6 +551,8 @@ class SyncUtils {
   }
 
   static Future<void> fetchMapChanges() async {
+    logger.info("Fetching map changes");
+    if (simulateOnboarding()) return;
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");
@@ -701,7 +714,9 @@ class SyncUtils {
   }
 
   static Future<void> fetchThumbnails() async {
+    logger.info("Fetching thumbnails");
     List<ModelChange> changes = await ModelChange.requiresThumbnailFetch();
+    if (changes.isEmpty) return;
     SupabaseClient supabaseClient = Supabase.instance.client;
     String? masterKeyBase64 = await getMasterKey();
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
@@ -756,7 +771,7 @@ class SyncUtils {
 
   static Future<void> fetchFiles(int startedAt, bool inBackground) async {
     List<ModelChange> changes = await ModelChange.requiresFileFetch();
-
+    if (changes.isEmpty) return;
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
 
@@ -812,6 +827,7 @@ class SyncUtils {
   static Future<bool> pushFiles(int startedAt, bool inBackground) async {
     logger.info("Push Files");
     bool hasPendingUploads = false;
+    if (simulateOnboarding()) return hasPendingUploads;
     SupabaseClient supabaseClient = Supabase.instance.client;
     // push uploaded files state to supabase if left due to network failures
     // where uploadedAt > 0 but still exists,

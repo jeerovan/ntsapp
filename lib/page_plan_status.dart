@@ -18,9 +18,9 @@ import 'page_user_task.dart';
 
 class PagePlanStatus extends StatefulWidget {
   final bool runningOnDesktop;
-  final Function(PageType, bool, PageParams)? setShowChildWidget;
+  final Function(PageType, bool, PageParams)? setShowHidePage;
   const PagePlanStatus(
-      {super.key, required this.runningOnDesktop, this.setShowChildWidget});
+      {super.key, required this.runningOnDesktop, this.setShowHidePage});
   @override
   State<PagePlanStatus> createState() => _PagePlanStatusState();
 }
@@ -67,9 +67,12 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   Future<void> fetchPlanDetails() async {
     if (currentSession == null && !simulateOnboarding()) return;
-    processing = true;
-    errorFetching = false;
-    refresh();
+    if (mounted) {
+      setState(() {
+        processing = true;
+        errorFetching = false;
+      });
+    }
     if (Platform.isAndroid || Platform.isIOS) {
       try {
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
@@ -134,14 +137,14 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   Future<void> signOut() async {
     if (widget.runningOnDesktop) {
-      widget.setShowChildWidget!(
+      widget.setShowHidePage!(
           PageType.userTask, true, PageParams(appTask: AppTask.signOut));
     } else {
       Navigator.of(context).pushReplacement(
         AnimatedPageRoute(
           child: PageUserTask(
             runningOnDesktop: widget.runningOnDesktop,
-            setShowHidePage: widget.setShowChildWidget,
+            setShowHidePage: widget.setShowHidePage,
             task: AppTask.signOut,
           ),
         ),
@@ -151,13 +154,13 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   Future<void> manageDevices() async {
     if (widget.runningOnDesktop) {
-      widget.setShowChildWidget!(PageType.devices, true, PageParams());
+      widget.setShowHidePage!(PageType.devices, true, PageParams());
     } else {
       Navigator.of(context).push(
         AnimatedPageRoute(
           child: PageDevices(
             runningOnDesktop: widget.runningOnDesktop,
-            setShowHidePage: widget.setShowChildWidget,
+            setShowHidePage: widget.setShowHidePage,
           ),
         ),
       );
@@ -167,27 +170,27 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   Future<void> manageKey() async {
     if (accessKeyType == "key") {
       if (widget.runningOnDesktop) {
-        widget.setShowChildWidget!(PageType.accessKey, true, PageParams());
+        widget.setShowHidePage!(PageType.accessKey, true, PageParams());
       } else {
         Navigator.of(context).pushReplacement(
           AnimatedPageRoute(
             child: PageAccessKey(
               runningOnDesktop: widget.runningOnDesktop,
-              setShowHidePage: widget.setShowChildWidget,
+              setShowHidePage: widget.setShowHidePage,
             ),
           ),
         );
       }
     } else {
       if (widget.runningOnDesktop) {
-        widget.setShowChildWidget!(
+        widget.setShowHidePage!(
             PageType.passwordCreate, true, PageParams(recreatePassword: true));
       } else {
         Navigator.of(context).pushReplacement(
           AnimatedPageRoute(
             child: PagePasswordKeyCreate(
               runningOnDesktop: widget.runningOnDesktop,
-              setShowHidePage: widget.setShowChildWidget,
+              setShowHidePage: widget.setShowHidePage,
               recreate: true,
             ),
           ),
@@ -198,13 +201,13 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   Future<void> navigateToOnboardCheck() async {
     if (widget.runningOnDesktop) {
-      widget.setShowChildWidget!(PageType.userTask, true, PageParams());
+      widget.setShowHidePage!(PageType.userTask, true, PageParams());
     } else {
       Navigator.of(context).pushReplacement(
         AnimatedPageRoute(
           child: PageUserTask(
             runningOnDesktop: widget.runningOnDesktop,
-            setShowHidePage: widget.setShowChildWidget,
+            setShowHidePage: widget.setShowHidePage,
             task: AppTask.checkCloudSync,
           ),
         ),
@@ -220,7 +223,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
-                  widget.setShowChildWidget!(
+                  widget.setShowHidePage!(
                       PageType.planStatus, false, PageParams());
                 },
               )

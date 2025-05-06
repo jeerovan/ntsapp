@@ -7,6 +7,7 @@ import 'package:bip39/bip39.dart' as bip39;
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/common_widgets.dart';
+import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
@@ -109,13 +110,29 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
               defaultValue: "no") ==
           "yes";
       if (!pushedLocalContent) {
-        await SyncUtils.pushLocalChanges();
+        SyncUtils.pushLocalChanges();
       }
       if (widget.runningOnDesktop) {
+        if (!pushedLocalContent) {
+          widget.setShowHidePage!(PageType.userTask, true,
+              PageParams(appTask: AppTask.pushLocalContent));
+        }
         widget.setShowHidePage!(PageType.accessKeyInput, false, PageParams());
       } else {
         if (mounted) {
-          Navigator.of(context).pop();
+          if (pushedLocalContent) {
+            Navigator.of(context).pop();
+          } else {
+            Navigator.of(context).pushReplacement(
+              AnimatedPageRoute(
+                child: PageUserTask(
+                  task: AppTask.pushLocalContent,
+                  runningOnDesktop: widget.runningOnDesktop,
+                  setShowHidePage: widget.setShowHidePage,
+                ),
+              ),
+            );
+          }
         }
       }
     }

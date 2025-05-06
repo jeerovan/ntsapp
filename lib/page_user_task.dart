@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
+import 'package:ntsapp/model_item.dart';
+import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_plan_subscribe.dart';
 import 'package:ntsapp/service_logger.dart';
@@ -78,7 +81,60 @@ class _PageUserTaskState extends State<PageUserTask> {
       case AppTask.signOut:
         signOut();
         break;
+      case AppTask.pushLocalContent:
+        pushLocalContent();
+        break;
+      case AppTask.seedDummyData:
+        seedDummyData();
     }
+  }
+
+  Future<void> seedDummyData() async {
+    setState(() {
+      taskTitle = "Seeding notes";
+      processing = true;
+    });
+    //insert 20 groups
+    for (int groupNumber = 1; groupNumber <= 20; groupNumber++) {
+      ModelGroup group =
+          await ModelGroup.fromMap({"title": groupNumber.toString()});
+      await group.insert();
+      String groupId = group.id!;
+      //insert 50 notes in each group
+      for (int itemNumber = 1; itemNumber <= 50; itemNumber++) {
+        String toRepeat = '${groupNumber}_$itemNumber';
+        String itemText = List.generate(100, (_) => toRepeat).join('__');
+        ModelItem item =
+            await ModelItem.fromMap({"group_id": groupId, "text": itemText});
+        await item.insert();
+      }
+    }
+    if (widget.runningOnDesktop) {
+      widget.setShowHidePage!(PageType.userTask, false, PageParams());
+    } else if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> pushLocalContent() async {
+    setState(() {
+      taskTitle = "Encrypting notes";
+      processing = true;
+    });
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      bool pushedLocalContent = await ModelPreferences.get(
+              AppString.pushedLocalContentForSync.string,
+              defaultValue: "no") ==
+          "yes";
+      if (pushedLocalContent) {
+        timer.cancel();
+        if (widget.runningOnDesktop) {
+          widget.setShowHidePage!(PageType.userTask, false, PageParams());
+        } else if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    });
   }
 
   Future<void> checkCloudSync() async {
@@ -207,10 +263,10 @@ class _PageUserTaskState extends State<PageUserTask> {
       bool plansShown =
           await ModelPreferences.get(AppString.plansShown.string) == "yes";
       if (plansShown) {
+        hasValidPlan = true;
+        hasSubscriptionPlan = true;
         await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
       }
-      hasValidPlan =
-          await ModelPreferences.get(AppString.hasValidPlan.string) == "yes";
     }
     setState(() {
       processing = false;
@@ -265,7 +321,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       }
     } else if (!deviceRegistered) {
       registerDevice();
-    } else if (!canSync || simulateOnboarding()) {
+    } else if (!canSync) {
       checkEncryptionKeys();
     } else if (mounted) {
       await signalToUpdateHome();
@@ -497,6 +553,10 @@ class _PageUserTaskState extends State<PageUserTask> {
           checkCloudSync();
           break;
         case AppTask.signOut:
+          break;
+        case AppTask.pushLocalContent:
+          break;
+        default:
           break;
       }
     } else if (deviceLimitExceeded) {

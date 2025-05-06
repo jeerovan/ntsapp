@@ -251,7 +251,7 @@ class _PageCategoriesGroupsPaneState extends State<PageCategoriesGroupsPane> {
                       if (showPlanStatus)
                         PagePlanStatus(
                           runningOnDesktop: _runningOnDesktop,
-                          setShowChildWidget: _setShowHidePage,
+                          setShowHidePage: _setShowHidePage,
                         ),
                     ],
                   ),
