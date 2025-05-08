@@ -562,12 +562,14 @@ class SyncUtils {
     logger.info("Fetch Map Changes");
     await StorageHive()
         .put(AppString.eventName.string, EventName.serverFetching.string);
-    if (await ModelPreferences.get(AppString.dataSeeded.string,
-            defaultValue: "no") ==
-        "no") {
-      await seedGroupsAndNotes();
+    if (simulateOnboarding()) {
+      if (await ModelPreferences.get(AppString.dataSeeded.string,
+              defaultValue: "no") ==
+          "no") {
+        await seedGroupsAndNotes();
+      }
+      return;
     }
-    if (simulateOnboarding()) return;
     String deviceId = await ModelPreferences.get(AppString.deviceId.string);
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
     SodiumSumo sodium = await SodiumSumoInit.init();
