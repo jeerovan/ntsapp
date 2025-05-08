@@ -28,7 +28,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'model_category.dart';
+import 'model_item.dart';
 import 'model_item_group.dart';
+import 'model_preferences.dart';
 import 'utils_crypto.dart';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -1004,4 +1006,23 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
 Future<void> signalToUpdateHome() async {
   ModelCategory dndCategory = await ModelCategory.getDND();
   await StorageHive().put(AppString.changedCategoryId.string, dndCategory.id);
+}
+
+Future<void> seedGroupsAndNotes() async {
+  //insert 20 groups
+  for (int groupNumber = 1; groupNumber <= 20; groupNumber++) {
+    ModelGroup group =
+        await ModelGroup.fromMap({"title": groupNumber.toString()});
+    await group.insert();
+    String groupId = group.id!;
+    //insert 50 notes in each group
+    for (int itemNumber = 1; itemNumber <= 25; itemNumber++) {
+      String toRepeat = '${groupNumber}_$itemNumber';
+      String itemText = List.generate(100, (_) => toRepeat).join('__');
+      ModelItem item =
+          await ModelItem.fromMap({"group_id": groupId, "text": itemText});
+      await item.insert();
+    }
+  }
+  await ModelPreferences.set(AppString.dataSeeded.string, "yes");
 }

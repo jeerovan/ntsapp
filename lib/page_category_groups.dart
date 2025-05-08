@@ -101,6 +101,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     if (group != null) {
       if (group.categoryId == category.id) {
         updateDisplayGroup(group);
+      } else {
+        _loadGroups();
       }
     } else {
       _loadGroups();

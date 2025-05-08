@@ -125,7 +125,6 @@ class _PageSigninState extends State<PageSignin> {
           session = response.session;
         }
         if (session != null || simulateOnboarding()) {
-          await ModelSetting.set("signed_in", "yes"); // used for simulation
           await StorageHive().delete(AppString.otpSentTo.string);
           await StorageHive().delete(AppString.otpSentAt.string);
           String? existingDeviceId =
@@ -134,6 +133,8 @@ class _PageSigninState extends State<PageSignin> {
             String newDeviceId = Uuid().v4();
             await ModelPreferences.set(AppString.deviceId.string, newDeviceId);
           }
+          await ModelSetting.set(
+              AppString.signedIn.string, "yes"); // used for simulation
           navigateToOnboardCheck();
         }
         errorVerifyingOtp = false;

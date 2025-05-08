@@ -15,6 +15,7 @@ import 'package:ntsapp/model_part.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_file.dart';
@@ -131,7 +132,7 @@ class SyncUtils {
 
   static String? getSignedInUserId() {
     if (simulateOnboarding()) {
-      if (ModelSetting.get("signed_in", "no") == "yes") {
+      if (ModelSetting.get(AppString.signedIn.string, "no") == "yes") {
         return "debug";
       } else {
         return null;
@@ -223,7 +224,7 @@ class SyncUtils {
       SupabaseClient supabase = Supabase.instance.client;
       try {
         if (simulateOnboarding()) {
-          await Future.delayed(const Duration(seconds: 1));
+          await ModelCategory.deleteAll();
         } else {
           if (deviceId != null) {
             await supabase.functions.invoke("remove_device",
@@ -250,6 +251,8 @@ class SyncUtils {
         await ModelPreferences.delete(
             AppString.pushedLocalContentForSync.string);
         await ModelPreferences.delete(AppString.lastChangesFetchedAt.string);
+        await ModelPreferences.delete(AppString.dataSeeded.string);
+        await ModelSetting.set(AppString.signedIn.string, "no");
         // Send Signal to update home with DND category
         await signalToUpdateHome();
         success = true;
@@ -417,6 +420,8 @@ class SyncUtils {
         String error = jsonDecode(e.details)["error"];
         if (error == "Plan expired") {
           await ModelPreferences.set(AppString.hasValidPlan.string, "no");
+          await StorageHive().put(
+              AppString.eventName.string, EventName.checkPlanStatus.string);
           logger.error("pushMapChanges|Supabase", error: "Plan Expired");
         }
       } catch (e, s) {
@@ -552,10 +557,17 @@ class SyncUtils {
 
   static Future<void> fetchMapChanges() async {
     logger.info("Fetching map changes");
-    if (simulateOnboarding()) return;
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");
+    await StorageHive()
+        .put(AppString.eventName.string, EventName.serverFetching.string);
+    if (await ModelPreferences.get(AppString.dataSeeded.string,
+            defaultValue: "no") ==
+        "no") {
+      await seedGroupsAndNotes();
+    }
+    if (simulateOnboarding()) return;
     String deviceId = await ModelPreferences.get(AppString.deviceId.string);
     Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
     SodiumSumo sodium = await SodiumSumoInit.init();

@@ -112,6 +112,7 @@ enum AppString {
   reviewDialogShown,
   deviceRegistered,
   loggingEnabled,
+  dataSeeded,
 
   // Supabase
   supabaseInitialized,
@@ -123,6 +124,7 @@ enum AppString {
   plansShown,
 
   //sign-in
+  signedIn,
   otpSentTo,
   otpSentAt,
 
@@ -154,6 +156,10 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.signedIn:
+        return "signed_in";
+      case AppString.dataSeeded:
+        return "data_seeded";
       case AppString.eventName:
         return "event_name";
       case AppString.loggingEnabled:
@@ -318,6 +324,8 @@ extension SyncChangeTaskExtension on SyncChangeTask {
 
 enum EventName {
   onExitSettings,
+  serverFetching,
+  checkPlanStatus,
 }
 
 extension EventNameExtension on EventName {
@@ -325,6 +333,10 @@ extension EventNameExtension on EventName {
     switch (this) {
       case EventName.onExitSettings:
         return "on_exit_settings";
+      case EventName.serverFetching:
+        return "server_fetching";
+      case EventName.checkPlanStatus:
+        return "check_plan_status";
     }
   }
 }

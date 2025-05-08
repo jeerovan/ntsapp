@@ -146,6 +146,11 @@ class _PageItemsState extends State<PageItems> {
             if (mounted) Navigator.of(context).pop();
           }
         } else {
+          if (mounted) {
+            setState(() {
+              noteGroup = group;
+            });
+          }
           await loadGroupSettings(group);
         }
       } else {

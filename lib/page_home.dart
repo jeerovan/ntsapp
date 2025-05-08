@@ -116,13 +116,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     checkAuthAndLoad();
   }
 
-  void _loadCategoriesGroups() {
-    _debounceTimer?.cancel(); // Cancel any ongoing debounce
-    _debounceTimer = Timer(Duration(seconds: 1), () async {
-      loadCategoriesGroups();
-    });
-  }
-
   @override
   void dispose() {
     categoryStream.cancel();
@@ -220,6 +213,26 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     if (eventName == null) return;
     if (eventName == EventName.onExitSettings.string) {
       onExitSettings();
+    } else if (eventName == EventName.serverFetching.string) {
+      if (_hasInitiated && _categoriesGroupsDisplayList.isEmpty && mounted) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
+    } else if (eventName == EventName.checkPlanStatus.string) {
+      checkUpdateStateVariables();
+    }
+  }
+
+  Future<void> checkUpdateStateVariables() async {
+    _canSync = await SyncUtils.canSync();
+    hasValidPlan = await ModelPreferences.get(AppString.hasValidPlan.string,
+            defaultValue: "yes") ==
+        "yes";
+    loggingEnabled =
+        ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -240,15 +253,20 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     }
   }
 
+  void _loadCategoriesGroups() {
+    _debounceTimer?.cancel(); // Cancel any ongoing debounce
+    _debounceTimer = Timer(Duration(seconds: 1), () async {
+      loadCategoriesGroups();
+    });
+  }
+
   Future<void> loadCategoriesGroups() async {
-    _canSync = await SyncUtils.canSync();
-    hasValidPlan = await ModelPreferences.get(AppString.hasValidPlan.string,
-            defaultValue: "yes") ==
-        "yes";
-    loggingEnabled =
-        ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
+    checkUpdateStateVariables();
+    setState(() {
+      _isLoading = true;
+      _hasInitiated = true;
+    });
     try {
-      setState(() => _isLoading = true);
       final categoriesGroups = await ModelCategoryGroup.all();
       setState(() {
         _categoriesGroupsDisplayList = categoriesGroups;
@@ -257,8 +275,11 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     } catch (e, s) {
       logger.error("loadCategoriesGroups", error: e, stackTrace: s);
     } finally {
-      if (mounted) setState(() => _isLoading = false);
-      _hasInitiated = true;
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
     if (_categoriesGroupsDisplayList.isEmpty && widget.runningOnDesktop) {
       widget.setShowHidePage!(PageType.items, false, PageParams());
@@ -279,7 +300,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         _exitApp();
       } else {
         isAuthenticated = true;
-        await loadCategoriesGroups();
+        loadCategoriesGroups();
       }
     } catch (e, s) {
       logger.error("_authenticateOnStart", error: e, stackTrace: s);
@@ -414,7 +435,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         displaySnackBar(context, message: "Moved to trash", seconds: 1);
       }
     }
-    await signalToUpdateHome();
   }
 
   Future<void> editCategoryGroup(ModelCategoryGroup categoryGroup) async {
@@ -967,122 +987,117 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               style: TextStyle(fontSize: 18)),
           actions: _buildDefaultActions(),
         ),
-        body: Column(
-          children: [
-            Container(height: 12),
-            Expanded(
-              child: Stack(
-                children: [
-                  _isReordering
-                      ? ReorderableListView.builder(
-                          itemCount: _categoriesGroupsDisplayList.length,
-                          itemBuilder: (context, index) {
-                            final item = _categoriesGroupsDisplayList[index];
-                            return GestureDetector(
-                              key: ValueKey(item.id),
-                              child: WidgetCategoryGroup(
-                                categoryGroup: item,
-                                showSummary: true,
-                                showCategorySign: false,
-                              ),
-                              onTap: () {
-                                String dragTitle = "Drag handle to re-order";
-                                if (Platform.isAndroid || Platform.isIOS) {
-                                  dragTitle = "Hold and drag to re-order";
-                                }
-                                displaySnackBar(context,
-                                    message: dragTitle, seconds: 1);
-                              },
-                            );
-                          },
-                          onReorder: (int oldIndex, int newIndex) {
-                            setState(() {
-                              // Adjust newIndex if dragging an item down
-                              if (oldIndex < newIndex) {
-                                newIndex -= 1;
-                              }
+        body: _isReordering
+            ? ReorderableListView.builder(
+                itemCount: _categoriesGroupsDisplayList.length,
+                itemBuilder: (context, index) {
+                  final item = _categoriesGroupsDisplayList[index];
+                  return GestureDetector(
+                    key: ValueKey(item.id),
+                    child: WidgetCategoryGroup(
+                      categoryGroup: item,
+                      showSummary: true,
+                      showCategorySign: false,
+                    ),
+                    onTap: () {
+                      String dragTitle = "Drag handle to re-order";
+                      if (Platform.isAndroid || Platform.isIOS) {
+                        dragTitle = "Hold and drag to re-order";
+                      }
+                      displaySnackBar(context, message: dragTitle, seconds: 1);
+                    },
+                  );
+                },
+                onReorder: (int oldIndex, int newIndex) {
+                  setState(() {
+                    // Adjust newIndex if dragging an item down
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
 
-                              // Remove the item from the old position
-                              final item = _categoriesGroupsDisplayList
-                                  .removeAt(oldIndex);
+                    // Remove the item from the old position
+                    final item =
+                        _categoriesGroupsDisplayList.removeAt(oldIndex);
 
-                              // Insert the item at the new position
-                              _categoriesGroupsDisplayList.insert(
-                                  newIndex, item);
+                    // Insert the item at the new position
+                    _categoriesGroupsDisplayList.insert(newIndex, item);
 
-                              // Print positions after reordering
-                              _saveGroupPositions();
-                            });
-                          },
-                        )
-                      : ListView.builder(
-                          itemCount: _categoriesGroupsDisplayList.length,
-                          itemBuilder: (context, index) {
-                            final ModelCategoryGroup item =
-                                _categoriesGroupsDisplayList[index];
-                            return InkWell(
-                              hoverColor: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerLow,
-                              focusColor: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainer,
-                              onTap: () {
-                                navigateToNotesOrGroups(item);
-                              },
-                              onLongPress: () {
-                                _showOptions(context, item);
-                              },
-                              child: Container(
-                                color: item.type == "group" &&
-                                        selectedGroup != null &&
-                                        selectedGroup!.id == item.group!.id
-                                    ? Theme.of(context)
+                    // Print positions after reordering
+                    _saveGroupPositions();
+                  });
+                },
+              )
+            : _hasInitiated
+                ? _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _categoriesGroupsDisplayList.isNotEmpty
+                        ? RefreshIndicator(
+                            onRefresh: () async {
+                              loadCategoriesGroups();
+                            },
+                            child: ListView.builder(
+                                itemCount: _categoriesGroupsDisplayList.length,
+                                itemBuilder: (context, index) {
+                                  final ModelCategoryGroup item =
+                                      _categoriesGroupsDisplayList[index];
+                                  return InkWell(
+                                    hoverColor: Theme.of(context)
                                         .colorScheme
-                                        .surfaceContainer
-                                    : Colors.transparent,
-                                child: WidgetCategoryGroup(
-                                  categoryGroup: item,
-                                  showSummary: true,
-                                  showCategorySign: true,
-                                ),
-                              ),
-                            );
-                          }),
-                  if (_hasInitiated &&
-                      _categoriesGroupsDisplayList.isEmpty &&
-                      !_isLoading)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Text(
-                                "Hi there!\n\n"
-                                "It's kind of looking empty in here.\n\n"
-                                "Tap the + button and create some notes to self. :)",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary),
+                                        .surfaceContainerLow,
+                                    focusColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainer,
+                                    onTap: () {
+                                      navigateToNotesOrGroups(item);
+                                    },
+                                    onLongPress: () {
+                                      _showOptions(context, item);
+                                    },
+                                    child: Container(
+                                      color: item.type == "group" &&
+                                              selectedGroup != null &&
+                                              selectedGroup!.id ==
+                                                  item.group!.id
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainer
+                                          : Colors.transparent,
+                                      child: WidgetCategoryGroup(
+                                        categoryGroup: item,
+                                        showSummary: true,
+                                        showCategorySign: true,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          )
+                        : Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Text(
+                                      "Hi there!\n\n"
+                                      "It's kind of looking empty in here.\n\n"
+                                      "Tap the + button and create some notes to self. :)",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                          )
+                : const SizedBox.shrink(),
         floatingActionButton: !requiresAuthentication || isAuthenticated
             ? FloatingActionButton(
                 heroTag: "add_group_or_mark_reordering_complete",

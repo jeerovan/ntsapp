@@ -6,9 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
-import 'package:ntsapp/model_item.dart';
-import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_preferences.dart';
+import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_plan_subscribe.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
@@ -94,21 +93,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       taskTitle = "Seeding notes";
       processing = true;
     });
-    //insert 20 groups
-    for (int groupNumber = 1; groupNumber <= 20; groupNumber++) {
-      ModelGroup group =
-          await ModelGroup.fromMap({"title": groupNumber.toString()});
-      await group.insert();
-      String groupId = group.id!;
-      //insert 50 notes in each group
-      for (int itemNumber = 1; itemNumber <= 50; itemNumber++) {
-        String toRepeat = '${groupNumber}_$itemNumber';
-        String itemText = List.generate(100, (_) => toRepeat).join('__');
-        ModelItem item =
-            await ModelItem.fromMap({"group_id": groupId, "text": itemText});
-        await item.insert();
-      }
-    }
+    await seedGroupsAndNotes();
     if (widget.runningOnDesktop) {
       widget.setShowHidePage!(PageType.userTask, false, PageParams());
     } else if (mounted) {
@@ -148,7 +133,7 @@ class _PageUserTaskState extends State<PageUserTask> {
     String rcId = "";
     // check signed in
     bool signedIn = simulateOnboarding()
-        ? await ModelPreferences.get(AppString.deviceId.string) != null
+        ? ModelSetting.get(AppString.signedIn.string, "no") == "yes"
         : currentSession != null;
     String? userId = SyncUtils.getSignedInUserId();
     if (signedIn) {
@@ -235,7 +220,7 @@ class _PageUserTaskState extends State<PageUserTask> {
           displayMessage = errorDetails["error"];
           if (displayMessage.contains("mismatch")) {
             displayMessage =
-                "Your subscription is associated with another email. Please use that to gain storage access.";
+                "Your subscription is associated with another email. Please sign-out and use that to enable cloud storage.";
             userIdMismatch = true;
           }
           buttonText = "Continue";

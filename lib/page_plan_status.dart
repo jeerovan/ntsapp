@@ -14,7 +14,9 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'enums.dart';
+import 'model_preferences.dart';
 import 'page_user_task.dart';
+import 'storage_hive.dart';
 
 class PagePlanStatus extends StatefulWidget {
   final bool runningOnDesktop;
@@ -124,9 +126,16 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
           int now = DateTime.now().toUtc().millisecondsSinceEpoch;
           if (expiresAt < now) {
             planExpired = true;
-          }
+          } else {}
         }
       });
+      if (planExpired) {
+        await ModelPreferences.set(AppString.hasValidPlan.string, "no");
+      } else {
+        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
+      }
+      await StorageHive()
+          .put(AppString.eventName.string, EventName.checkPlanStatus.string);
     } catch (e) {
       errorFetching = true;
     } finally {
@@ -201,7 +210,8 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   Future<void> navigateToOnboardCheck() async {
     if (widget.runningOnDesktop) {
-      widget.setShowHidePage!(PageType.userTask, true, PageParams());
+      widget.setShowHidePage!(
+          PageType.userTask, true, PageParams(appTask: AppTask.checkCloudSync));
     } else {
       Navigator.of(context).pushReplacement(
         AnimatedPageRoute(
