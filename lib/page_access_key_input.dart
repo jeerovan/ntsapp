@@ -35,17 +35,33 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
   final _textController = TextEditingController();
   String _loadedFileContent = '';
   bool processing = false;
-  SecureStorage storage = SecureStorage();
+  SecureStorage secureStorage = SecureStorage();
 
   @override
   void initState() {
     super.initState();
+    if (simulateOnboarding()) {
+      simulateKeyInput();
+    }
   }
 
   @override
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+
+  Future<void> simulateKeyInput() async {
+    String userId = widget.cipherData["id"];
+    String keyForAccessKey = '${userId}_ak';
+    String? accessKeyBase64 = await secureStorage.read(key: keyForAccessKey);
+    Uint8List accessKeyBytes = base64Decode(accessKeyBase64!);
+    String accessKeyHex = bytesToHex(accessKeyBytes);
+    if (mounted) {
+      setState(() {
+        _textController.text = bip39.entropyToMnemonic(accessKeyHex);
+      });
+    }
   }
 
   /// Validates input to ensure it contains exactly 24 words
@@ -99,11 +115,11 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
       String keyForAccessKey = '${userId}_ak';
       String keyForKeyType = '${userId}_kt';
       // save keys to secure storage
-      await storage.write(
+      await secureStorage.write(
           key: keyForMasterKey, value: decryptedMasterKeyBase64);
-      await storage.write(
+      await secureStorage.write(
           key: keyForAccessKey, value: base64Encode(accessKeyBytes));
-      await storage.write(key: keyForKeyType, value: "key");
+      await secureStorage.write(key: keyForKeyType, value: "key");
       // push local content
       bool pushedLocalContent = await ModelPreferences.get(
               AppString.pushedLocalContentForSync.string,

@@ -113,6 +113,7 @@ enum AppString {
   deviceRegistered,
   loggingEnabled,
   dataSeeded,
+  simulateTesting,
 
   // Supabase
   supabaseInitialized,
@@ -121,7 +122,6 @@ enum AppString {
   hasValidPlan,
   planStorageFull,
   planRcId,
-  plansShown,
 
   //sign-in
   signedIn,
@@ -156,6 +156,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.simulateTesting:
+        return "simulate_testing";
       case AppString.signedIn:
         return "signed_in";
       case AppString.dataSeeded:
@@ -186,8 +188,6 @@ extension AppStringExtension on AppString {
         return 'pushed_local_content_for_sync';
       case AppString.hasValidPlan:
         return 'has_valid_plan';
-      case AppString.plansShown:
-        return 'plans_shown';
       case AppString.planStorageFull:
         return 'rc_plan_full';
       case AppString.deviceRegistered:

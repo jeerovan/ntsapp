@@ -62,8 +62,6 @@ class _PageUserTaskState extends State<PageUserTask> {
 
   Session? currentSession = Supabase.instance.client.auth.currentSession;
 
-  int debugExceptionCount = 0;
-
   @override
   void initState() {
     super.initState();
@@ -245,21 +243,14 @@ class _PageUserTaskState extends State<PageUserTask> {
     // set debug params
     if (simulateOnboarding()) {
       await Future.delayed(const Duration(seconds: 1));
-      bool plansShown =
-          await ModelPreferences.get(AppString.plansShown.string) == "yes";
-      if (plansShown) {
-        hasValidPlan = true;
-        hasSubscriptionPlan = true;
-        await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
-      }
+      hasValidPlan = true;
+      hasSubscriptionPlan = true;
+      await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
     }
     setState(() {
       processing = false;
     });
     if (revenueCatSupported && !hasSubscriptionPlan && mounted) {
-      if (simulateOnboarding()) {
-        await ModelPreferences.set(AppString.plansShown.string, "yes");
-      }
       if (widget.runningOnDesktop) {
         widget.setShowHidePage!(PageType.planSubscribe, true, PageParams());
         widget.setShowHidePage!(PageType.userTask, false, PageParams());
@@ -288,9 +279,6 @@ class _PageUserTaskState extends State<PageUserTask> {
         );
       }
     } else if (!hasValidPlan && mounted) {
-      if (simulateOnboarding()) {
-        await ModelPreferences.set(AppString.plansShown.string, "yes");
-      }
       if (widget.runningOnDesktop) {
         widget.setShowHidePage!(PageType.planSubscribe, true, PageParams());
         widget.setShowHidePage!(PageType.userTask, false, PageParams());
@@ -306,7 +294,7 @@ class _PageUserTaskState extends State<PageUserTask> {
       }
     } else if (!deviceRegistered) {
       registerDevice();
-    } else if (!canSync) {
+    } else if (!canSync || simulateOnboarding()) {
       checkEncryptionKeys();
     } else if (mounted) {
       await signalToUpdateHome();
@@ -329,21 +317,15 @@ class _PageUserTaskState extends State<PageUserTask> {
     try {
       if (simulateOnboarding()) {
         await Future.delayed(const Duration(seconds: 1));
-        if (debugExceptionCount == 0) {
-          debugExceptionCount = 1;
-          throw Exception("Debug Exception Register Device");
-        } else {
-          await ModelPreferences.set(
-              AppString.deviceRegistered.string, "debug");
-          bool canSync = await SyncUtils.canSync();
-          if (!canSync) {
-            checkEncryptionKeys();
-          } else if (mounted) {
-            if (widget.runningOnDesktop) {
-              widget.setShowHidePage!(PageType.userTask, false, PageParams());
-            } else {
-              Navigator.of(context).pop();
-            }
+        await ModelPreferences.set(AppString.deviceRegistered.string, "tester");
+        bool canSync = await SyncUtils.canSync();
+        if (!canSync) {
+          checkEncryptionKeys();
+        } else if (mounted) {
+          if (widget.runningOnDesktop) {
+            widget.setShowHidePage!(PageType.userTask, false, PageParams());
+          } else {
+            Navigator.of(context).pop();
           }
         }
       } else if (currentSession != null) {

@@ -154,6 +154,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       processing = true;
     });
     String keyForMasterKey = '${userId}_mk';
+    String keyForAccessKey = '${userId}_ak';
     String keyForKeyType = '${userId}_kt';
     Uint8List? masterKeyBytes;
     if (widget.recreate) {
@@ -178,6 +179,10 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
         // save locally
         String masterKeyBase64 = passwordKeys["private_keys"]["master_key"];
         await secureStorage.write(key: keyForMasterKey, value: masterKeyBase64);
+        await secureStorage.write(
+            key: keyForAccessKey,
+            value: base64Encode(
+                utf8.encode(password))); // used for testing simulation
         await secureStorage.write(key: keyForKeyType, value: "password");
         bool pushedLocalContent = await ModelPreferences.get(
                 AppString.pushedLocalContentForSync.string,

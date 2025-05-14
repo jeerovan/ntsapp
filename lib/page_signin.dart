@@ -36,7 +36,6 @@ class _PageSigninState extends State<PageSignin> {
       StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = false;
-  int debugExceptionCount = 0;
 
   @override
   void initState() {
@@ -69,12 +68,9 @@ class _PageSigninState extends State<PageSignin> {
         processing = true;
       });
       try {
-        if (simulateOnboarding()) {
+        if (email == 'tester@notesafe.app') {
           await Future.delayed(const Duration(seconds: 1));
-          if (debugExceptionCount == 0) {
-            debugExceptionCount = 1;
-            throw Exception("Debug SignIn Exception");
-          }
+          await ModelSetting.set(AppString.simulateTesting.string, "yes");
         } else {
           await supabase.auth.signInWithOtp(
             email: email,
@@ -115,10 +111,6 @@ class _PageSigninState extends State<PageSignin> {
         Session? session;
         if (simulateOnboarding()) {
           await Future.delayed(const Duration(seconds: 1));
-          if (debugExceptionCount == 1) {
-            debugExceptionCount = 2;
-            throw Exception("Debug OTP Exception");
-          }
         } else {
           AuthResponse response = await supabase.auth
               .verifyOTP(email: email, token: otp, type: OtpType.email);

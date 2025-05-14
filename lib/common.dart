@@ -43,7 +43,7 @@ bool isDebugEnabled() {
 }
 
 bool simulateOnboarding() {
-  return false;
+  return ModelSetting.get(AppString.simulateTesting.string, "no") == "yes";
 }
 
 final List<Color> predefinedColors = [
@@ -1010,13 +1010,13 @@ Future<void> signalToUpdateHome() async {
 
 Future<void> seedGroupsAndNotes() async {
   //insert 20 groups
-  for (int groupNumber = 1; groupNumber <= 20; groupNumber++) {
+  for (int groupNumber = 1; groupNumber <= 10; groupNumber++) {
     ModelGroup group =
         await ModelGroup.fromMap({"title": groupNumber.toString()});
     await group.insert();
     String groupId = group.id!;
     //insert 50 notes in each group
-    for (int itemNumber = 1; itemNumber <= 25; itemNumber++) {
+    for (int itemNumber = 1; itemNumber <= 15; itemNumber++) {
       String toRepeat = '${groupNumber}_$itemNumber';
       String itemText = List.generate(100, (_) => toRepeat).join('__');
       ModelItem item =

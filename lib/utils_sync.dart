@@ -133,7 +133,7 @@ class SyncUtils {
   static String? getSignedInUserId() {
     if (simulateOnboarding()) {
       if (ModelSetting.get(AppString.signedIn.string, "no") == "yes") {
-        return "debug";
+        return "tester";
       } else {
         return null;
       }
@@ -152,7 +152,7 @@ class SyncUtils {
 
   static String? getSignedInEmailId() {
     if (simulateOnboarding()) {
-      return "dummy@debug.com";
+      return "tester@notesafe.app";
     }
     bool supabaseInitialized =
         ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
@@ -240,7 +240,6 @@ class SyncUtils {
         await storage.delete(key: keyForAccessKey);
         await storage.delete(key: keyForKeyType);
         await storage.delete(key: keyForPasswordKey);
-        await ModelPreferences.delete(AppString.plansShown.string);
         await ModelPreferences.delete(AppString.planRcId.string);
         await ModelPreferences.delete(AppString.hasValidPlan.string);
         await ModelPreferences.delete(AppString.deviceId.string);
@@ -253,6 +252,7 @@ class SyncUtils {
         await ModelPreferences.delete(AppString.lastChangesFetchedAt.string);
         await ModelPreferences.delete(AppString.dataSeeded.string);
         await ModelSetting.set(AppString.signedIn.string, "no");
+        await ModelSetting.set(AppString.simulateTesting.string, "no");
         // Send Signal to update home with DND category
         await signalToUpdateHome();
         success = true;

@@ -35,6 +35,9 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
   @override
   void initState() {
     super.initState();
+    if (simulateOnboarding()) {
+      simulatePasswordInput();
+    }
   }
 
   @override
@@ -43,7 +46,21 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
     super.dispose();
   }
 
-  /// Processes the validated 24 words further
+  Future<void> simulatePasswordInput() async {
+    String userId = widget.cipherData["id"];
+    String keyForAccessKey = '${userId}_ak';
+    String? passwordBase64 = await secureStorage.read(key: keyForAccessKey);
+    if (passwordBase64 != null) {
+      List<int> passwordBytes = base64Decode(passwordBase64);
+      String password = utf8.decode(passwordBytes);
+      if (mounted) {
+        setState(() {
+          _textController.text = password;
+        });
+      }
+    }
+  }
+
   Future<void> _submitForm(String passwordString) async {
     setState(() {
       processing = true;
