@@ -567,6 +567,7 @@ class SyncUtils {
               defaultValue: "no") ==
           "no") {
         await seedGroupsAndNotes();
+        await pushLocalChanges();
       }
       return;
     }

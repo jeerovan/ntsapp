@@ -1010,10 +1010,14 @@ Future<void> signalToUpdateHome() async {
 
 Future<void> seedGroupsAndNotes() async {
   //insert 20 groups
+  final storage = StorageSqlite.instance;
+  final db = await storage.database;
+  Batch groupBatch = db.batch();
+  Batch itemBatch = db.batch();
   for (int groupNumber = 1; groupNumber <= 10; groupNumber++) {
     ModelGroup group =
         await ModelGroup.fromMap({"title": groupNumber.toString()});
-    await group.insert();
+    groupBatch.insert('itemgroup', group.toMap());
     String groupId = group.id!;
     //insert 50 notes in each group
     for (int itemNumber = 1; itemNumber <= 15; itemNumber++) {
@@ -1021,8 +1025,10 @@ Future<void> seedGroupsAndNotes() async {
       String itemText = List.generate(100, (_) => toRepeat).join('__');
       ModelItem item =
           await ModelItem.fromMap({"group_id": groupId, "text": itemText});
-      await item.insert();
+      itemBatch.insert('item', item.toMap());
     }
   }
+  await groupBatch.commit(noResult: true);
+  await itemBatch.commit(noResult: true);
   await ModelPreferences.set(AppString.dataSeeded.string, "yes");
 }
