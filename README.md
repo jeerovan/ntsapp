@@ -1,12 +1,25 @@
-<div align="center">
+<div>
   <img src="assets/logo.png" alt="Note Safe App" width="200">
-
-A fully open-source, end-to-end encrypted note-taking app with seamless cloud
-sync.
-
 </div>
 
-# Note Safe – Your Ultimate Private Note-Taking App
+# Note Safe - Make Note to Self
+Notes app with chat like interface and end-to-end encrypted cloud backup/sync.
+
+
+## Install
+
+* Android - [Play Store](https://play.google.com/store/apps/details?id=com.makenotetoself)
+* Windows - [Github release](https://github.com/jeerovan/ntsapp/releases/)
+* MacOS and Linux - Coming soon!
+* iOS - Coming later.
+
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+    alt="Get it on Play Store"
+    height="80">](https://play.google.com/store/apps/details?id=com.makenotetoself)
+[<img src="https://raw.githubusercontent.com/mateusz-bak/openreads/master/doc/github/get-it-on-github.png"
+    alt="Get it on Github"
+    height="80">](https://github.com/jeerovan/ntsapp/releases/)
+##
 
 Note Safe is a secure, open-source note-taking application designed for privacy
 and reliability. Built with a local-first approach, it works offline, allowing
@@ -29,14 +42,10 @@ note-taking experience across all devices.
 
 <br/>
 
-<div align="center">
-
-[<img height="40" src="graphic/play-store-badge.png">](https://play.google.com/store/apps/details?id=com.makenotetoself)
-
-</div>
-
 ## Security
 
 If you believe you have found a security vulnerability, please email us at
 [getphonesafe@gmail.com](mailto:getphonesafe@gmail.com) instead of opening a new
 issue.
+
+Made with ❤️ by the same team as [Olauncher](https://github.com/tanujnotes/Olauncher).
