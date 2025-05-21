@@ -64,7 +64,7 @@ class SyncUtils {
   void _handleChange(bool inBackground, {bool manualSync = false}) {
     _hasPendingChanges = true;
     _debounceTimer?.cancel(); // Cancel any ongoing debounce
-    _debounceTimer = Timer(Duration(seconds: 2), () async {
+    _debounceTimer = Timer(Duration(seconds: 2), () {
       if (_hasPendingChanges) {
         _hasPendingChanges = false;
         triggerSync(inBackground, manualSync: manualSync);

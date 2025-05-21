@@ -23,12 +23,15 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    if (headerDeviceId != "" && plan.devices > 0) {
-      // remove device
-      await supabaseClient.from("devices").delete().eq("id", headerDeviceId).eq(
-        "user_id",
-        plan.userId,
-      );
+    if (headerDeviceId != "") {
+      if (plan.devices > 0) {
+        // remove device
+        await supabaseClient.from("devices").delete().eq("id", headerDeviceId)
+          .eq(
+            "user_id",
+            plan.userId,
+          );
+      }
     } else if (deviceId) {
       const { data: device, error } = await supabaseClient.from("devices")
         .update({ "status": 0 }).eq(

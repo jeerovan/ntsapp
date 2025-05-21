@@ -35,13 +35,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Process the sync message
   if (message.data['type'] == 'Sync') {
     final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = sentryDsn;
-        options.tracesSampleRate = 1.0;
-        options.profilesSampleRate = 1.0;
-      },
-    );
+    if (!kDebugMode) {
+      await SentryFlutter.init(
+        (options) {
+          options.dsn = sentryDsn;
+          options.tracesSampleRate = 1.0;
+          options.profilesSampleRate = 1.0;
+        },
+      );
+    }
     try {
       await initializeDependencies(mode: "FcmBG");
     } catch (e, s) {
@@ -70,13 +72,15 @@ void backgroundTaskDispatcher() {
       return Future.value(false);
     }
     final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = sentryDsn;
-        options.tracesSampleRate = 1.0;
-        options.profilesSampleRate = 1.0;
-      },
-    );
+    if (!kDebugMode) {
+      await SentryFlutter.init(
+        (options) {
+          options.dsn = sentryDsn;
+          options.tracesSampleRate = 1.0;
+          options.profilesSampleRate = 1.0;
+        },
+      );
+    }
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
@@ -139,18 +143,22 @@ Future<void> main() async {
     }
   }
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = sentryDsn;
-      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
-      // We recommend adjusting this value in production.
-      options.tracesSampleRate = 1.0;
-      // The sampling rate for profiling is relative to tracesSampleRate
-      // Setting to 1.0 will profile 100% of sampled transactions:
-      options.profilesSampleRate = 1.0;
-    },
-    appRunner: () => runApp(const MainApp()),
-  );
+  if (kDebugMode) {
+    runApp(const MainApp());
+  } else {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+        // We recommend adjusting this value in production.
+        options.tracesSampleRate = 1.0;
+        // The sampling rate for profiling is relative to tracesSampleRate
+        // Setting to 1.0 will profile 100% of sampled transactions:
+        options.profilesSampleRate = 1.0;
+      },
+      appRunner: () => runApp(const MainApp()),
+    );
+  }
 }
 
 class MainApp extends StatefulWidget {

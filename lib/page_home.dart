@@ -255,7 +255,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
 
   void _loadCategoriesGroups() {
     _debounceTimer?.cancel(); // Cancel any ongoing debounce
-    _debounceTimer = Timer(Duration(seconds: 1), () async {
+    _debounceTimer = Timer(Duration(seconds: 1), () {
       loadCategoriesGroups();
     });
   }
