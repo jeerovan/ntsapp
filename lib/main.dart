@@ -99,6 +99,7 @@ void backgroundTaskDispatcher() {
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
+  await initializeDependencies(mode: "Foreground");
   logger.info("Started App");
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -119,7 +120,6 @@ Future<void> main() async {
   await secureStorage.write(key: "backup_dir", value: "ntsbackup");
   await secureStorage.write(key: "db_file", value: "notetoself.db");
   logger.info("Set media params");
-  await initializeDependencies(mode: "Foreground");
   if (runningOnMobile) {
     //initialize notificatins
     await Firebase.initializeApp();
@@ -145,12 +145,6 @@ Future<void> main() async {
       logger.info("Initialized purchases");
     }
   }
-  // set edge-to-edge
-  unawaited(
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.edgeToEdge,
-    ),
-  );
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
   if (kDebugMode) {
     runApp(const MainApp());
