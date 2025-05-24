@@ -31,9 +31,9 @@ import 'page_archived.dart';
 import 'page_category_add_edit.dart';
 import 'page_category_groups.dart';
 import 'page_items.dart';
-import 'page_user_task.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
+import 'page_user_task.dart';
 import 'storage_hive.dart';
 import 'utils_sync.dart';
 
@@ -641,21 +641,21 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           (!_canSync || simulateOnboarding()) &&
           ModelSetting.get(AppString.hideSyncButton.string, "no") == "no")
         Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 10.0),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.cyan,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
             ),
             onPressed: navigateToOnboardCheck,
             onLongPress: hideSyncButton,
             child: Text(
               "Sync",
               style: TextStyle(
-                  color: const Color.fromARGB(255, 78, 78, 78), fontSize: 12),
+                  color: Theme.of(context).colorScheme.primary, fontSize: 12),
             ),
           ),
         ),
