@@ -99,16 +99,18 @@ void backgroundTaskDispatcher() {
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
+  logger.info("Started App");
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowMinSize(const Size(720, 640));
   }
   // set trusted certificates for https
-  ByteData data = await PlatformAssetBundle().load('assets/cacert.pem');
+  ByteData certData = await PlatformAssetBundle().load('assets/cacert.pem');
   SecurityContext.defaultContext
-      .setTrustedCertificatesBytes(data.buffer.asUint8List());
-
+      .setTrustedCertificatesBytes(certData.buffer.asUint8List());
+  logger.info("Loaded certificate");
   MediaKit.ensureInitialized();
+  logger.info("Mediakit initiliazed");
   //load config from file
   SecureStorage secureStorage = SecureStorage();
   // set params on start
@@ -116,8 +118,8 @@ Future<void> main() async {
   await secureStorage.write(key: "media_dir", value: "ntsmedia");
   await secureStorage.write(key: "backup_dir", value: "ntsbackup");
   await secureStorage.write(key: "db_file", value: "notetoself.db");
+  logger.info("Set media params");
   await initializeDependencies(mode: "Foreground");
-  logger.info("initialized dependencies");
   if (runningOnMobile) {
     //initialize notificatins
     await Firebase.initializeApp();
@@ -140,8 +142,15 @@ Future<void> main() async {
       PurchasesConfiguration configuration =
           PurchasesConfiguration(rcKeyAndroid);
       await Purchases.configure(configuration);
+      logger.info("Initialized purchases");
     }
   }
+  // set edge-to-edge
+  unawaited(
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    ),
+  );
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
   if (kDebugMode) {
     runApp(const MainApp());

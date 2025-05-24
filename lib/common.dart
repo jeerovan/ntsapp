@@ -39,7 +39,7 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 bool isDebugEnabled() {
-  return false;
+  return true;
 }
 
 bool simulateOnboarding() {
@@ -979,6 +979,7 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
   // initialize sqlite
   StorageSqlite dbSqlite = StorageSqlite.instance;
   await dbSqlite.ensureInitialized();
+  AppLogger(prefixes: [mode]).info("Initialized SqliteDB");
   List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
   ModelSetting.settingJson = {
     for (var pair in keyValuePairs) pair['id']: pair['value']
@@ -986,7 +987,8 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
   await ModelSetting.set(AppString.supabaseInitialized.string, "no");
   await initializeDirectories();
   CryptoUtils.init();
-
+  AppLogger(prefixes: [mode])
+      .info("Initialized settings,directories & Cryptography");
   final String supaUrl = const String.fromEnvironment("SUPABASE_URL");
   final String supaKey = const String.fromEnvironment("SUPABASE_KEY");
   if (supaUrl.isNotEmpty && supaKey.isNotEmpty) {
