@@ -99,6 +99,7 @@ void backgroundTaskDispatcher() {
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
+  logger.info("Started App");
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowMinSize(const Size(720, 640));
@@ -144,6 +145,12 @@ Future<void> main() async {
       logger.info("Initialized purchases");
     }
   }
+  // set edge-to-edge
+  unawaited(
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+    ),
+  );
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
   if (kDebugMode) {
     runApp(const MainApp());
