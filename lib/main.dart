@@ -99,8 +99,6 @@ void backgroundTaskDispatcher() {
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
-  await initializeDependencies(mode: "Foreground");
-  logger.info("Started App");
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowMinSize(const Size(720, 640));
@@ -120,6 +118,7 @@ Future<void> main() async {
   await secureStorage.write(key: "backup_dir", value: "ntsbackup");
   await secureStorage.write(key: "db_file", value: "notetoself.db");
   logger.info("Set media params");
+  await initializeDependencies(mode: "Foreground");
   if (runningOnMobile) {
     //initialize notificatins
     await Firebase.initializeApp();

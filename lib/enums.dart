@@ -134,6 +134,7 @@ enum AppString {
   syncInProgress,
   pushedLocalContentForSync,
   lastChangesFetchedAt,
+  hideSyncButton,
 
   //Events
   changedItemId,
@@ -156,6 +157,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.hideSyncButton:
+        return "hide_sync_button";
       case AppString.simulateTesting:
         return "simulate_testing";
       case AppString.signedIn:

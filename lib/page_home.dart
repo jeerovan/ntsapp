@@ -628,12 +628,18 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     }
   }
 
+  Future<void> hideSyncButton() async {
+    await ModelSetting.set(AppString.hideSyncButton.string, "yes");
+    setState(() {});
+  }
+
   List<Widget> _buildDefaultActions() {
     return [
       if (ModelSetting.get(AppString.supabaseInitialized.string, "no") ==
               "yes" &&
           (!requiresAuthentication || isAuthenticated) &&
-          (!_canSync || simulateOnboarding()))
+          (!_canSync || simulateOnboarding()) &&
+          ModelSetting.get(AppString.hideSyncButton.string, "no") == "no")
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: ElevatedButton(
@@ -644,9 +650,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               ),
               padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
             ),
-            onPressed: () {
-              navigateToOnboardCheck();
-            },
+            onPressed: navigateToOnboardCheck,
+            onLongPress: hideSyncButton,
             child: Text(
               "Sync",
               style: TextStyle(
@@ -755,7 +760,11 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               }
               break;
             case 3:
-              SyncUtils.waitAndSyncChanges(manualSync: true);
+              if (_canSync) {
+                SyncUtils.waitAndSyncChanges(manualSync: true);
+              } else {
+                navigateToOnboardCheck();
+              }
               break;
             case 4:
               navigateToPlanStatus();
@@ -790,18 +799,17 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           }
         },
         itemBuilder: (context) => [
-          if (_canSync)
-            PopupMenuItem<int>(
-              value: 3,
-              child: Row(
-                children: [
-                  Icon(LucideIcons.refreshCcw, color: Colors.grey),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Sync'),
-                ],
-              ),
+          PopupMenuItem<int>(
+            value: 3,
+            child: Row(
+              children: [
+                Icon(LucideIcons.refreshCcw, color: Colors.grey),
+                Container(width: 8),
+                const SizedBox(width: 5),
+                const Text('Sync'),
+              ],
             ),
+          ),
           if (!requiresAuthentication || isAuthenticated)
             PopupMenuItem<int>(
               value: 2,
