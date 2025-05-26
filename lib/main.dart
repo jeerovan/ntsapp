@@ -145,12 +145,6 @@ Future<void> main() async {
       logger.info("Initialized purchases");
     }
   }
-  // set edge-to-edge
-  unawaited(
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-    ),
-  );
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
   if (kDebugMode) {
     runApp(const MainApp());
