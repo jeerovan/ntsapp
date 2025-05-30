@@ -1,0 +1,29 @@
+display_name: NoteSafe
+package_name: ntsapp
+maintainer:
+  name: Jeevan Singh
+  email: getphonesafe@gmail.com
+priority: optional
+section: x11
+installed_size: 25352
+dependencies:
+  - libgstreamer1.0-0
+  - libgstreamer-plugins-base1.0-0
+  - libgstreamer-plugins-bad1.0-0
+  - gstreamer1.0-libav
+  - libsecret-1-0
+  - libjsoncpp24 | libjsoncpp25
+  - libsodium23
+  - libmpv1 | libmpv2
+  - libsqlite3-0
+  - libsqlite3-dev
+essential: false
+icon: assets/icon_512.png
+postuninstall_scripts:
+  - echo "Sorry to see you go."
+keywords:
+  - NoteSafe
+generic_name: Note Application
+categories:
+  - Utility
+startup_notify: true

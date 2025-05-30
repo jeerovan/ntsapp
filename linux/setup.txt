@@ -1,15 +1,44 @@
+------
+DEB
+------
 Flutter:
-	sudo apt-get update -y && sudo apt-get upgrade -y;
+	sudo apt-get update -y
 	sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa
 	sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+	sudo apt-get install libstdc++-X-dev
+Sentry:
+	sudo apt install libcurl4-openssl-dev
+
+export LIBSODIUM_USE_PKGCONFIG=1
+-----------
 AudioPlayers:
 	sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 SecureStorage:
 	sudo apt install libsecret-1-dev libjsoncpp-dev
-Sentry:
-	sudo apt install libcurl4-openssl-dev
+Sodium:
+	sudo apt install libsodium-dev
 sudo apt install libmpv-dev
 sudo apt install libsqlite3-dev
-Sodium:
-	export LIBSODIUM_USE_PKGCONFIG=1
-	sudo apt install libsodium-dev
+
+------
+RPM
+------
+Flutter:
+	sudo dnf install curl git unzip xz zip mesa-libGLU
+	sudo dnf install clang cmake ninja-build gtk3-devel libsecret-devel openssl-devel sqlite-devel libstdc++-static
+	
+Sentry:
+	sudo dnf install libcurl-devel
+Packages:
+	sudo dnf install \
+  patchelf \
+  rpm-build \
+  gstreamer1-devel \
+  gstreamer1-plugins-base-devel \
+  gstreamer1-plugins-bad-free-devel \
+  libsecret-devel \
+  jsoncpp-devel \
+  libsodium-devel \
+  mpv-devel \
+  sqlite-devel
+

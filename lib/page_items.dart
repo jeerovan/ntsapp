@@ -1291,13 +1291,15 @@ class _PageItemsState extends State<PageItems> {
           }
           processFiles(filePaths);
         }
-      } catch (e) {
+      } catch (e, s) {
         if (e is PlatformException &&
             e.code == 'read_external_storage_denied' &&
             mounted) {
           displaySnackBar(context,
               message: 'Permission to access external storage was denied.',
               seconds: 1);
+        } else {
+          logger.error("Error opening files", error: e, stackTrace: s);
         }
       }
     } else if (type == "camera_image") {

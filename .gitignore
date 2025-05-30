@@ -52,3 +52,6 @@ app.*.map.json
 mermaid.*.md
 assets/config.txt
 /android/app/google-services.json
+
+# Release/Build Related
+distribute_options.yaml
