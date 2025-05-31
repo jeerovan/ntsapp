@@ -7,11 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 
 import 'common.dart';
+import 'model_setting.dart';
 import 'service_logger.dart';
 
 class StorageSqlite {
@@ -60,6 +60,22 @@ class StorageSqlite {
 
   Future<void> ensureInitialized() async {
     await database; // Forces lazy initialization if not already done
+  }
+
+  static Future<void> initialize(
+      {ExecutionMode mode = ExecutionMode.appForeground}) async {
+    bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
+    if (!runningOnMobile) {
+      // Initialize sqflite for FFI (non-mobile platforms)
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
+    await instance.ensureInitialized();
+    List<Map<String, dynamic>> keyValuePairs = await instance.getAll('setting');
+    ModelSetting.settingJson = {
+      for (var pair in keyValuePairs) pair['id']: pair['value']
+    };
+    AppLogger(prefixes: [mode.string]).info("Initialized SqliteDB");
   }
 
   Future close() async {

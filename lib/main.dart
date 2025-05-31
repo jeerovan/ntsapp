@@ -5,12 +5,11 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/page_home.dart';
 import 'package:ntsapp/page_desktop_categories_groups.dart';
+import 'package:ntsapp/storage_sqlite.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -45,7 +44,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       );
     }
     try {
-      await initializeDependencies(mode: "FcmBG");
+      await StorageSqlite.initialize(mode: ExecutionMode.fcmBackground);
+      await initializeDependencies(mode: ExecutionMode.fcmBackground);
     } catch (e, s) {
       AppLogger(prefixes: ["FcmBg"])
           .error("Sync error", error: e, stackTrace: s);
@@ -65,7 +65,8 @@ void backgroundTaskDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     WidgetsFlutterBinding.ensureInitialized();
     try {
-      await initializeDependencies(mode: "Background");
+      await StorageSqlite.initialize(mode: ExecutionMode.appBackground);
+      await initializeDependencies(mode: ExecutionMode.appBackground);
     } catch (e, s) {
       AppLogger(prefixes: ["BG"])
           .error("Initialize failed", error: e, stackTrace: s);
@@ -99,52 +100,12 @@ void backgroundTaskDispatcher() {
 bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
-  logger.info("Started App");
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowMinSize(const Size(720, 640));
   }
-  // set trusted certificates for https
-  ByteData certData = await PlatformAssetBundle().load('assets/cacert.pem');
-  SecurityContext.defaultContext
-      .setTrustedCertificatesBytes(certData.buffer.asUint8List());
-  logger.info("Loaded certificate");
-  MediaKit.ensureInitialized();
-  logger.info("Mediakit initiliazed");
-  //load config from file
-  SecureStorage secureStorage = SecureStorage();
-  // set params on start
-  await secureStorage.write(key: AppString.appName.string, value: "Note Safe");
-  await secureStorage.write(key: "media_dir", value: "ntsmedia");
-  await secureStorage.write(key: "backup_dir", value: "ntsbackup");
-  await secureStorage.write(key: "db_file", value: "notetoself.db");
-  logger.info("Set media params");
-  await initializeDependencies(mode: "Foreground");
-  if (runningOnMobile) {
-    //initialize notificatins
-    await Firebase.initializeApp();
-    logger.info("initialized firebase");
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    logger.info("initialized firebase background handler");
-    await NotificationService.instance.initialize();
-    logger.info("initialized notification service");
-  }
-  //initialize background sync
-  await DataSync.initialize();
-  logger.info("initialized datasync");
-  // initialize purchases -- not required in background tasks
-  if (Platform.isAndroid) {
-    final String rcKeyAndroid = const String.fromEnvironment("RC_KEY_ANDROID");
-    if (rcKeyAndroid.isNotEmpty) {
-      if (kDebugMode) {
-        await Purchases.setLogLevel(LogLevel.debug);
-      }
-      PurchasesConfiguration configuration =
-          PurchasesConfiguration(rcKeyAndroid);
-      await Purchases.configure(configuration);
-      logger.info("Initialized purchases");
-    }
-  }
+  await initializeMediaParams();
+  await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
   if (kDebugMode) {
     runApp(const MainApp());
@@ -161,6 +122,50 @@ Future<void> main() async {
       },
       appRunner: () => runApp(const MainApp()),
     );
+  }
+  await initializeDependencies(mode: ExecutionMode.appForeground);
+  if (runningOnMobile) {
+    //initialize notificatins
+    await Firebase.initializeApp();
+    logger.info("initialized firebase");
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    logger.info("initialized firebase background handler");
+    if (await SyncUtils.canSync()) {
+      await NotificationService.instance.initialize();
+      logger.info("initialized notification service");
+    }
+  }
+  //initialize background sync
+  await DataSync.initialize();
+  logger.info("initialized datasync");
+
+  // initialize purchases -- not required in background tasks
+  if (runningOnMobile) {
+    final String rcKeyAndroid = const String.fromEnvironment("RC_KEY_ANDROID");
+    if (rcKeyAndroid.isNotEmpty) {
+      if (kDebugMode) {
+        await Purchases.setLogLevel(LogLevel.debug);
+      }
+      PurchasesConfiguration configuration =
+          PurchasesConfiguration(rcKeyAndroid);
+      await Purchases.configure(configuration);
+      logger.info("Initialized purchases");
+    }
+  }
+}
+
+Future<void> initializeMediaParams() async {
+  // initialized media params once before accessing sqlite
+  SecureStorage secureStorage = SecureStorage();
+  String mediaParamsInitialized =
+      await secureStorage.read(key: "media_params_initialized") ?? "no";
+  if (mediaParamsInitialized == "no") {
+    await secureStorage.write(
+        key: AppString.appName.string, value: "Note Safe");
+    await secureStorage.write(key: "media_dir", value: "ntsmedia");
+    await secureStorage.write(key: "backup_dir", value: "ntsbackup");
+    await secureStorage.write(key: "db_file", value: "notetoself.db");
+    await secureStorage.write(key: "media_params_initialized", value: "yes");
   }
 }
 

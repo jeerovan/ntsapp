@@ -1,30 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'service_logger.dart';
+import 'package:ntsapp/service_logger.dart';
 
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
-  static final AppLogger logger = AppLogger(prefixes: ["notifications"]);
+  static final AppLogger logger = AppLogger(prefixes: ["NotificationService"]);
 
   final _messaging = FirebaseMessaging.instance;
-  final _localNotifications = FlutterLocalNotificationsPlugin();
-  bool _isFlutterLocalNotificationsInitialized = false;
 
   Future<void> initialize() async {
-    // Request permission
+    // Request permission (still needed for background messages on iOS)
     await _requestPermission();
-
-    // Setup notifications
-    await setupFlutterNotifications();
 
     // Setup message handlers
     await _setupMessageHandlers();
@@ -38,116 +30,33 @@ class NotificationService {
     } catch (e) {
       logger.error("FCM Fetch Failed", error: e);
     }
+
     // Listen for token refreshes
     _messaging.onTokenRefresh.listen(_saveFcmToken);
   }
 
   Future<void> _requestPermission() async {
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-      announcement: false,
-      carPlay: false,
-      criticalAlert: false,
+    // Minimal permission request for background messages
+    await _messaging.requestPermission(
+      alert: false, // No notifications
+      badge: false, // No badges
+      sound: false, // No sounds
+      provisional: true, // Silent permission on iOS
     );
-
-    logger.info('Permission status: ${settings.authorizationStatus}');
-  }
-
-  Future<void> setupFlutterNotifications() async {
-    if (_isFlutterLocalNotificationsInitialized) {
-      return;
-    }
-
-    // android setup
-    const channel = AndroidNotificationChannel(
-      'high_importance_channel',
-      'High Importance Notifications',
-      description: 'This channel is used for important notifications.',
-      importance: Importance.high,
-    );
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
-
-    // flutter notification setup
-    await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {},
-    );
-
-    _isFlutterLocalNotificationsInitialized = true;
-  }
-
-  Future<void> handleForegroundNotification(RemoteMessage message) async {
-    if (!_isFlutterLocalNotificationsInitialized) {
-      debugPrint("FcmFG: Reinitializing flutter notifications");
-      await setupFlutterNotifications();
-    }
-    final RemoteMessage? notificationData =
-        await _messaging.getInitialMessage();
-    if (notificationData != null) {
-      logger.info("Received:${notificationData.data.toString()}");
-    }
-    if (message.data['type'] == 'Sync') {
-      SyncUtils.waitAndSyncChanges();
-      return;
-    }
-    RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
-    if (notification != null && android != null) {
-      await _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'High Importance Notifications',
-            channelDescription:
-                'This channel is used for important notifications.',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-        payload: message.data.toString(),
-      );
-    }
   }
 
   Future<void> _setupMessageHandlers() async {
-    //foreground message
+    // Handle background messages
     FirebaseMessaging.onMessage.listen((message) {
-      handleForegroundNotification(message);
+      if (message.data['type'] == 'Sync') {
+        SyncUtils.waitAndSyncChanges();
+      }
     });
 
-    // Handle message when app is in background and user taps notification
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      logger.info("Tapped notification:${message.data.toString()}");
-    });
-
-    // opened app
+    // Handle when app is opened from terminated state
     final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      logger.info(
-          "Tapped notification initial message:${initialMessage.data.toString()}");
+    if (initialMessage != null && initialMessage.data['type'] == 'Sync') {
+      SyncUtils.waitAndSyncChanges();
     }
   }
 

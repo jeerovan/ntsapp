@@ -16,6 +16,7 @@ import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/service_logger.dart';
+import 'package:ntsapp/service_notification.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_file.dart';
@@ -273,6 +274,8 @@ class SyncUtils {
     logger.info("pushing local content");
     await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
     await signalToUpdateHome();
+    //initialize fcm notification
+    NotificationService.instance.initialize();
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();

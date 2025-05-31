@@ -94,6 +94,25 @@ enum ExecutionStatus {
   success,
 }
 
+enum ExecutionMode {
+  appForeground,
+  appBackground,
+  fcmBackground,
+}
+
+extension ExecutionModeExtension on ExecutionMode {
+  String get string {
+    switch (this) {
+      case ExecutionMode.appForeground:
+        return "AppForground";
+      case ExecutionMode.appBackground:
+        return "AppBackground";
+      case ExecutionMode.fcmBackground:
+        return "FcmBackground";
+    }
+  }
+}
+
 enum AppTask {
   registerDevice,
   checkEncryptionKeys,
@@ -306,25 +325,6 @@ extension SyncChangeTaskExtension on SyncChangeTask {
         return SyncChangeTask.deleteThumbnail;
       default:
         return null;
-    }
-  }
-}
-
-enum EventName {
-  onExitSettings,
-  serverFetching,
-  checkPlanStatus,
-}
-
-extension EventNameExtension on EventName {
-  String get string {
-    switch (this) {
-      case EventName.onExitSettings:
-        return "on_exit_settings";
-      case EventName.serverFetching:
-        return "server_fetching";
-      case EventName.checkPlanStatus:
-        return "check_plan_status";
     }
   }
 }

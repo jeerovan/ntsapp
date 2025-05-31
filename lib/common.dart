@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
@@ -39,7 +40,7 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 bool isDebugEnabled() {
-  return true;
+  return false;
 }
 
 bool simulateOnboarding() {
@@ -968,34 +969,39 @@ SupabaseClient? getSupabaseClient() {
   }
 }
 
-Future<void> initializeDependencies({String mode = "Common"}) async {
-  bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
-  if (!runningOnMobile) {
-    // Initialize sqflite for FFI (non-mobile platforms)
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
+Future<void> initializeDependencies(
+    {ExecutionMode mode = ExecutionMode.appForeground}) async {
+  // initialize in parallel
+  await Future.wait(([
+    initializeDirectories(),
+    initializeSupabase(mode: mode),
+    initializePackages(mode: mode),
+  ]));
+  AppLogger(prefixes: [mode.string]).info("Initialized Dependencies");
+}
+
+Future<void> initializePackages(
+    {ExecutionMode mode = ExecutionMode.appForeground}) async {
+  if (mode == ExecutionMode.appForeground) {
+    MediaKit.ensureInitialized();
   }
-  // initialize sqlite
-  StorageSqlite dbSqlite = StorageSqlite.instance;
-  await dbSqlite.ensureInitialized();
-  AppLogger(prefixes: [mode]).info("Initialized SqliteDB");
-  List<Map<String, dynamic>> keyValuePairs = await dbSqlite.getAll('setting');
-  ModelSetting.settingJson = {
-    for (var pair in keyValuePairs) pair['id']: pair['value']
-  };
-  await ModelSetting.set(AppString.supabaseInitialized.string, "no");
-  await initializeDirectories();
   CryptoUtils.init();
-  AppLogger(prefixes: [mode])
-      .info("Initialized settings,directories & Cryptography");
+}
+
+Future<void> initializeSupabase(
+    {ExecutionMode mode = ExecutionMode.appForeground}) async {
+  // load certificate
+  ByteData certData = await PlatformAssetBundle().load('assets/cacert.pem');
+  SecurityContext.defaultContext
+      .setTrustedCertificatesBytes(certData.buffer.asUint8List());
+  await ModelSetting.set(AppString.supabaseInitialized.string, "no");
   final String supaUrl = const String.fromEnvironment("SUPABASE_URL");
   final String supaKey = const String.fromEnvironment("SUPABASE_KEY");
   if (supaUrl.isNotEmpty && supaKey.isNotEmpty) {
     Supabase _ = await Supabase.initialize(url: supaUrl, anonKey: supaKey);
     await ModelSetting.set(AppString.supabaseInitialized.string, "yes");
-    AppLogger(prefixes: [mode]).info("Initialized Supabase");
+    AppLogger(prefixes: [mode.string]).info("Initialized Supabase");
   }
-  AppLogger(prefixes: [mode]).info("Initialized Dependencies");
 }
 
 Future<void> signalToUpdateHome() async {

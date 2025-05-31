@@ -214,21 +214,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     }
   }
 
-  Future<void> changedEvent(String? eventName) async {
-    if (eventName == null) return;
-    if (eventName == EventName.onExitSettings.string) {
-      onExitSettings();
-    } else if (eventName == EventName.serverFetching.string) {
-      if (_hasInitiated && _categoriesGroupsDisplayList.isEmpty && mounted) {
-        setState(() {
-          _isLoading = true;
-        });
-      }
-    } else if (eventName == EventName.checkPlanStatus.string) {
-      checkUpdateStateVariables();
-    }
-  }
-
   Future<void> checkUpdateStateVariables() async {
     _canSync = await SyncUtils.canSync();
     hasValidPlan = await ModelPreferences.get(AppString.hasValidPlan.string,
@@ -493,7 +478,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   }
 
   Future<void> checkShowReviewDialog() async {
-    logger.info("checking for review");
     if (ModelSetting.get(AppString.reviewDialogShown.string, "no") == "no") {
       int now = DateTime.now().toUtc().millisecondsSinceEpoch;
       int installedAt = int.parse(
@@ -502,7 +486,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       if (isDebugEnabled()) {
         timeSpent = 1 * 60 * 1000;
       }
-      logger.debug("Installedat:$installedAt");
       if (now - installedAt > timeSpent) {
         // 10 minutes
         await ModelSetting.set(AppString.reviewDialogShown.string, "yes");
