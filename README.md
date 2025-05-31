@@ -9,8 +9,8 @@ Notes app with chat like interface and end-to-end encrypted cloud backup/sync.
 ## Install
 
 * Android - [Play Store](https://play.google.com/store/apps/details?id=com.makenotetoself)
-* Windows - [Github release](https://github.com/jeerovan/ntsapp/releases/)
-* MacOS and Linux - Coming soon!
+* Windows and Linux - [Github release](https://github.com/jeerovan/ntsapp/releases/)
+* MacOS - Coming soon!
 * iOS - Coming later.
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
