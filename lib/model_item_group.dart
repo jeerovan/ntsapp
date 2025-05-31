@@ -5,11 +5,11 @@ import 'dart:ui';
 import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:uuid/uuid.dart';
 
 import 'enums.dart';
 import 'model_preferences.dart';
-import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 import 'model_item.dart';
 import 'utils_sync.dart';
@@ -274,7 +274,7 @@ class ModelGroup {
       }
     }
     // signal group update
-    await StorageHive().put(AppString.changedGroupId.string, id);
+    EventStream().publish(AppEvent(type: EventType.changedGroupId, value: id));
     return result;
   }
 
@@ -310,6 +310,6 @@ class ModelGroup {
     if (group != null) {
       await group.deleteCascade();
     }
-    await StorageHive().put(AppString.changedGroupId.string, id);
+    EventStream().publish(AppEvent(type: EventType.changedGroupId, value: id));
   }
 }

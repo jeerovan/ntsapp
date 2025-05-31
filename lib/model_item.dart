@@ -6,9 +6,9 @@ import 'package:ntsapp/common.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item_file.dart';
 import 'package:ntsapp/model_preferences.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
-import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 import 'utils_sync.dart';
 
@@ -429,7 +429,7 @@ class ModelItem {
       }
     }
     // signal item update
-    await StorageHive().put(AppString.changedItemId.string, id);
+    EventStream().publish(AppEvent(type: EventType.changedItemId, value: id));
     return result;
   }
 
@@ -480,9 +480,6 @@ class ModelItem {
     if (item != null) {
       await item.delete();
     }
-    await StorageHive().put(
-      AppString.changedItemId.string,
-      id,
-    );
+    EventStream().publish(AppEvent(type: EventType.changedItemId, value: id));
   }
 }

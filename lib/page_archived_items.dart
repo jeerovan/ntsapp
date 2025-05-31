@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/enums.dart';
-import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/service_events.dart';
 
 import 'model_item.dart';
 import 'widgets_item.dart';
@@ -89,7 +89,8 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
     for (ModelItem item in _selection) {
       item.archivedAt = 0;
       await item.update(["archived_at"]);
-      await StorageHive().put(AppString.changedItemId.string, item.id);
+      EventStream()
+          .publish(AppEvent(type: EventType.changedItemId, value: item.id));
     }
     if (mounted) {
       clearSelection();
@@ -152,12 +153,15 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
             ),
           ),
           if (_isSelecting)
-            ElevatedButton(
-                onPressed: selectAllItems,
-                child: Text(
-                  "Select all",
-                  style: TextStyle(color: Colors.black),
-                )),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                  onPressed: selectAllItems,
+                  child: Text(
+                    "Select all",
+                    style: TextStyle(color: Colors.black),
+                  )),
+            ),
         ],
       ),
     );

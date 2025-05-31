@@ -14,8 +14,8 @@ import 'package:ntsapp/model_item_group.dart';
 import 'package:ntsapp/model_part.dart';
 import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/model_setting.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_crypto.dart';
 import 'package:ntsapp/utils_file.dart';
@@ -420,8 +420,7 @@ class SyncUtils {
         String error = jsonDecode(e.details)["error"];
         if (error == "Plan expired") {
           await ModelPreferences.set(AppString.hasValidPlan.string, "no");
-          await StorageHive().put(
-              AppString.eventName.string, EventName.checkPlanStatus.string);
+          EventStream().publish(AppEvent(type: EventType.checkPlanStatus));
           logger.error("pushMapChanges|Supabase", error: "Plan Expired");
         }
       } catch (e, s) {
@@ -560,8 +559,7 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");
-    await StorageHive()
-        .put(AppString.eventName.string, EventName.serverFetching.string);
+    EventStream().publish(AppEvent(type: EventType.serverFetching));
     if (simulateOnboarding()) {
       if (await ModelPreferences.get(AppString.dataSeeded.string,
               defaultValue: "no") ==

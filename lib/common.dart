@@ -16,8 +16,8 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:mime/mime.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_setting.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/storage_sqlite.dart';
 import 'package:open_filex/open_filex.dart';
@@ -39,7 +39,7 @@ bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
 bool isDebugEnabled() {
-  return false;
+  return true;
 }
 
 bool simulateOnboarding() {
@@ -970,7 +970,6 @@ SupabaseClient? getSupabaseClient() {
 
 Future<void> initializeDependencies({String mode = "Common"}) async {
   bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
-  await StorageHive().initialize();
   if (!runningOnMobile) {
     // Initialize sqflite for FFI (non-mobile platforms)
     sqfliteFfiInit();
@@ -1001,7 +1000,8 @@ Future<void> initializeDependencies({String mode = "Common"}) async {
 
 Future<void> signalToUpdateHome() async {
   ModelCategory dndCategory = await ModelCategory.getDND();
-  await StorageHive().put(AppString.changedCategoryId.string, dndCategory.id);
+  EventStream().publish(
+      AppEvent(type: EventType.changedCategoryId, value: dndCategory.id));
 }
 
 Future<void> seedGroupsAndNotes() async {

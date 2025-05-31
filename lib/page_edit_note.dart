@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_item.dart';
-import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/service_events.dart';
 
 import 'common.dart';
 
@@ -49,7 +49,8 @@ class _PageEditNoteState extends State<PageEditNote> {
     if (item != null && text.isNotEmpty) {
       item!.text = text.trim();
       await item!.update(["text"]);
-      await StorageHive().put(AppString.changedItemId.string, item!.id);
+      EventStream()
+          .publish(AppEvent(type: EventType.changedItemId, value: item!.id));
       if (widget.runningOnDesktop) {
         widget.setShowHidePage!(PageType.editNote, false, PageParams());
       } else {

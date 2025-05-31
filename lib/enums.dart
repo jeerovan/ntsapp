@@ -100,7 +100,6 @@ enum AppTask {
   pushLocalContent,
   checkCloudSync,
   signOut,
-  seedDummyData,
 }
 
 enum AppString {
@@ -136,12 +135,6 @@ enum AppString {
   lastChangesFetchedAt,
   hideSyncButton,
 
-  //Events
-  changedItemId,
-  changedGroupId,
-  changedCategoryId,
-  eventName,
-
   // Cipher
   key,
   nonce,
@@ -165,8 +158,6 @@ extension AppStringExtension on AppString {
         return "signed_in";
       case AppString.dataSeeded:
         return "data_seeded";
-      case AppString.eventName:
-        return "event_name";
       case AppString.loggingEnabled:
         return "logging_enabled";
       case AppString.planRcId:
@@ -181,12 +172,6 @@ extension AppStringExtension on AppString {
         return "encryption_key_type";
       case AppString.hasEncryptionKeys:
         return "has_encryption_keys";
-      case AppString.changedItemId:
-        return "changed_item_id";
-      case AppString.changedGroupId:
-        return "changed_group_id";
-      case AppString.changedCategoryId:
-        return "changed_category_id";
       case AppString.pushedLocalContentForSync:
         return 'pushed_local_content_for_sync';
       case AppString.hasValidPlan:

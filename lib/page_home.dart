@@ -11,11 +11,11 @@ import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/page_desktop_category_groups.dart';
 import 'package:ntsapp/page_dummy.dart';
 import 'package:ntsapp/page_group_add_edit.dart';
-import 'package:ntsapp/page_hive.dart';
 import 'package:ntsapp/page_logs.dart';
 import 'package:ntsapp/page_plan_status.dart';
 import 'package:ntsapp/page_sqlite.dart';
 import 'package:ntsapp/page_starred.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:path/path.dart' as path;
@@ -34,7 +34,6 @@ import 'page_items.dart';
 import 'page_search.dart';
 import 'page_settings.dart';
 import 'page_user_task.dart';
-import 'storage_hive.dart';
 import 'utils_sync.dart';
 
 class PageCategoriesGroups extends StatefulWidget {
@@ -78,51 +77,57 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   bool hasValidPlan = false;
   bool loggingEnabled = false;
 
-  late StreamSubscription categoryStream;
-  late StreamSubscription groupStream;
-  late StreamSubscription itemStream;
-  late StreamSubscription eventStream;
-
   @override
   void initState() {
     super.initState();
     selectedGroup = widget.selectedGroup;
     loggingEnabled =
         ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
-    // update on server fetch
-    categoryStream =
-        StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
-      if (!requiresAuthentication || isAuthenticated) {
-        if (mounted) changedCategory(event.value);
-      }
-    });
-    groupStream =
-        StorageHive().watch(AppString.changedGroupId.string).listen((event) {
-      if (!requiresAuthentication || isAuthenticated) {
-        if (mounted) changedGroup(event.value);
-      }
-    });
-    itemStream =
-        StorageHive().watch(AppString.changedItemId.string).listen((event) {
-      if (!requiresAuthentication || isAuthenticated) {
-        if (mounted) changedItem(event.value);
-      }
-    });
-    eventStream =
-        StorageHive().watch(AppString.eventName.string).listen((event) {
-      changedEvent(event.value);
-    });
+    EventStream().notifier.addListener(_handleAppEvent);
     logger.info("Monitoring changes");
     checkAuthAndLoad();
   }
 
   @override
   void dispose() {
-    categoryStream.cancel();
-    groupStream.cancel();
-    itemStream.cancel();
-    eventStream.cancel();
+    EventStream().notifier.removeListener(_handleAppEvent);
     super.dispose();
+  }
+
+  void _handleAppEvent() {
+    final AppEvent? event = EventStream().notifier.value;
+    if (event == null) return;
+
+    switch (event.type) {
+      case EventType.changedCategoryId:
+        if (!requiresAuthentication || isAuthenticated) {
+          if (mounted) changedCategory(event.value);
+        }
+        break;
+      case EventType.changedGroupId:
+        if (!requiresAuthentication || isAuthenticated) {
+          if (mounted) changedGroup(event.value);
+        }
+        break;
+      case EventType.changedItemId:
+        if (!requiresAuthentication || isAuthenticated) {
+          if (mounted) changedItem(event.value);
+        }
+        break;
+      case EventType.exitSettings:
+        onExitSettings();
+        break;
+      case EventType.serverFetching:
+        if (_hasInitiated && _categoriesGroupsDisplayList.isEmpty && mounted) {
+          setState(() {
+            _isLoading = true;
+          });
+        }
+        break;
+      case EventType.checkPlanStatus:
+        checkUpdateStateVariables();
+        break;
+    }
   }
 
   Future<void> changedCategory(String? id) async {
@@ -488,13 +493,19 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   }
 
   Future<void> checkShowReviewDialog() async {
-    if (!StorageHive()
-        .get(AppString.reviewDialogShown.string, defaultValue: false)) {
+    logger.info("checking for review");
+    if (ModelSetting.get(AppString.reviewDialogShown.string, "no") == "no") {
       int now = DateTime.now().toUtc().millisecondsSinceEpoch;
-      int installedAt = await StorageHive().get(AppString.installedAt.string);
-      if (now - installedAt > 10 * 60 * 1000) {
+      int installedAt = int.parse(
+          ModelSetting.get(AppString.installedAt.string, "0").toString());
+      int timeSpent = 10 * 60 * 1000;
+      if (isDebugEnabled()) {
+        timeSpent = 1 * 60 * 1000;
+      }
+      logger.debug("Installedat:$installedAt");
+      if (now - installedAt > timeSpent) {
         // 10 minutes
-        await StorageHive().put(AppString.reviewDialogShown.string, true);
+        await ModelSetting.set(AppString.reviewDialogShown.string, "yes");
         _showReviewDialog();
       }
     }
@@ -563,23 +574,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
             runningOnDesktop: widget.runningOnDesktop,
             setShowHidePage: widget.setShowHidePage,
             task: AppTask.checkCloudSync,
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> navigateToSeed() async {
-    if (widget.runningOnDesktop) {
-      widget.setShowHidePage!(
-          PageType.userTask, true, PageParams(appTask: AppTask.seedDummyData));
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => PageUserTask(
-            task: AppTask.seedDummyData,
-            runningOnDesktop: widget.runningOnDesktop,
-            setShowHidePage: widget.setShowHidePage,
           ),
         ),
       );
@@ -781,20 +775,11 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 settings: const RouteSettings(name: "SqlitePage"),
               ));
               break;
-            case 13:
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => PageHive(),
-                settings: const RouteSettings(name: "HivePage"),
-              ));
-              break;
             case 14:
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => PageLogs(),
                 settings: const RouteSettings(name: "PageLogs"),
               ));
-              break;
-            case 99:
-              navigateToSeed();
               break;
           }
         },
@@ -883,18 +868,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 ],
               ),
             ),
-          if (isDebugEnabled())
-            PopupMenuItem<int>(
-              value: 13,
-              child: Row(
-                children: [
-                  Icon(LucideIcons.columns, color: Colors.grey),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Hive'),
-                ],
-              ),
-            ),
           if (loggingEnabled)
             PopupMenuItem<int>(
               value: 14,
@@ -904,18 +877,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                   Container(width: 8),
                   const SizedBox(width: 5),
                   const Text('Logs'),
-                ],
-              ),
-            ),
-          if (isDebugEnabled())
-            PopupMenuItem<int>(
-              value: 99,
-              child: Row(
-                children: [
-                  Icon(LucideIcons.list, color: Colors.grey),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Seed'),
                 ],
               ),
             ),

@@ -81,21 +81,6 @@ class _PageUserTaskState extends State<PageUserTask> {
       case AppTask.pushLocalContent:
         pushLocalContent();
         break;
-      case AppTask.seedDummyData:
-        seedDummyData();
-    }
-  }
-
-  Future<void> seedDummyData() async {
-    setState(() {
-      taskTitle = "Seeding notes";
-      processing = true;
-    });
-    await seedGroupsAndNotes();
-    if (widget.runningOnDesktop) {
-      widget.setShowHidePage!(PageType.userTask, false, PageParams());
-    } else if (mounted) {
-      Navigator.of(context).pop();
     }
   }
 
@@ -522,8 +507,6 @@ class _PageUserTaskState extends State<PageUserTask> {
         case AppTask.signOut:
           break;
         case AppTask.pushLocalContent:
-          break;
-        default:
           break;
       }
     } else if (deviceLimitExceeded) {

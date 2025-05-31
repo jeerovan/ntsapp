@@ -12,4 +12,9 @@ class ModelSetting {
   static dynamic get(String key, dynamic defaultValue) {
     return settingJson.containsKey(key) ? settingJson[key] : defaultValue;
   }
+
+  static Future<void> delete(String key) async {
+    final dbHelper = StorageSqlite.instance;
+    int _ = await dbHelper.delete("setting", key);
+  }
 }

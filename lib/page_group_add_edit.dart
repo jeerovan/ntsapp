@@ -5,7 +5,7 @@ import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/page_add_select_category.dart';
-import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/service_events.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
@@ -123,7 +123,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           "color": colorCode,
         });
         await newGroup.insert();
-        await StorageHive().put(AppString.changedGroupId.string, newGroup.id);
+
+        EventStream().publish(
+            AppEvent(type: EventType.changedGroupId, value: newGroup.id));
         if (widget.runningOnDesktop) {
           widget.setShowHidePage!(
               PageType.items, true, PageParams(group: newGroup));
@@ -137,8 +139,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         widget.group!.data = groupData;
         await widget.group!
             .update(["thumbnail", "title", "category_id", "color", "data"]);
-        await StorageHive()
-            .put(AppString.changedGroupId.string, widget.group!.id);
+
+        EventStream().publish(
+            AppEvent(type: EventType.changedGroupId, value: widget.group!.id));
         if (shouldUpdateHome) {
           await signalToUpdateHome();
         }
@@ -187,7 +190,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   Future<void> archiveGroup(ModelGroup group) async {
     group.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
     await group.update(["archived_at"]);
-    await StorageHive().put(AppString.changedGroupId.string, group.id);
+    EventStream()
+        .publish(AppEvent(type: EventType.changedGroupId, value: group.id));
     if (widget.runningOnDesktop) {
       widget.setShowHidePage!(PageType.addEditGroup, false, PageParams());
     } else {

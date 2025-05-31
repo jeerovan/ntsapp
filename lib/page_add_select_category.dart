@@ -9,7 +9,7 @@ import 'common_widgets.dart';
 import 'enums.dart';
 import 'model_category.dart';
 import 'page_category_add_edit.dart';
-import 'storage_hive.dart';
+import 'service_events.dart';
 
 class PageAddSelectCategory extends StatefulWidget {
   final bool runningOnDesktop;
@@ -32,10 +32,7 @@ class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
   @override
   void initState() {
     super.initState();
-    categoryStream =
-        StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
-      fetchCategories();
-    });
+    EventStream().notifier.addListener(_handleAppEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchCategories();
     });
@@ -43,8 +40,21 @@ class PageAddSelectCategoryState extends State<PageAddSelectCategory> {
 
   @override
   void dispose() {
-    categoryStream.cancel();
+    EventStream().notifier.removeListener(_handleAppEvent);
     super.dispose();
+  }
+
+  void _handleAppEvent() {
+    final AppEvent? event = EventStream().notifier.value;
+    if (event == null) return;
+
+    switch (event.type) {
+      case EventType.changedCategoryId:
+        fetchCategories();
+        break;
+      default:
+        break;
+    }
   }
 
   Future<void> fetchCategories() async {

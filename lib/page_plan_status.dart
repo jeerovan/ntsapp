@@ -7,6 +7,7 @@ import 'package:ntsapp/common_widgets.dart';
 import 'package:ntsapp/page_access_key.dart';
 import 'package:ntsapp/page_devices.dart';
 import 'package:ntsapp/page_password_key_create.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/service_logger.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:ntsapp/utils_sync.dart';
@@ -16,7 +17,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'enums.dart';
 import 'model_preferences.dart';
 import 'page_user_task.dart';
-import 'storage_hive.dart';
 
 class PagePlanStatus extends StatefulWidget {
   final bool runningOnDesktop;
@@ -134,8 +134,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
       } else {
         await ModelPreferences.set(AppString.hasValidPlan.string, "yes");
       }
-      await StorageHive()
-          .put(AppString.eventName.string, EventName.checkPlanStatus.string);
+      EventStream().publish(AppEvent(type: EventType.checkPlanStatus));
     } catch (e) {
       errorFetching = true;
     } finally {

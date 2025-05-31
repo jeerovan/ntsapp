@@ -3,10 +3,10 @@ import 'package:ntsapp/common.dart';
 import 'package:ntsapp/model_category.dart';
 import 'package:ntsapp/model_item.dart';
 import 'package:ntsapp/model_item_group.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/service_logger.dart';
 
 import 'enums.dart';
-import 'storage_hive.dart';
 import 'storage_sqlite.dart';
 
 class ModelChange {
@@ -242,7 +242,8 @@ class ModelChange {
             modelCategory.state = newState.value;
             await modelCategory.update(["state"], pushToSync: false);
             // signal category update
-            await StorageHive().put(AppString.changedCategoryId.string, rowId);
+            EventStream().publish(
+                AppEvent(type: EventType.changedCategoryId, value: rowId));
           }
           break;
         case "itemgroup":
@@ -251,7 +252,8 @@ class ModelChange {
             modelGroup.state = newState.value;
             await modelGroup.update(["state"], pushToSync: false);
             // signal category update
-            await StorageHive().put(AppString.changedGroupId.string, rowId);
+            EventStream().publish(
+                AppEvent(type: EventType.changedGroupId, value: rowId));
           }
           break;
         case "item":
@@ -260,7 +262,8 @@ class ModelChange {
             modelItem.state = newState.value;
             await modelItem.update(["state"], pushToSync: false);
             // signal category update
-            await StorageHive().put(AppString.changedItemId.string, rowId);
+            EventStream()
+                .publish(AppEvent(type: EventType.changedItemId, value: rowId));
           }
           break;
       }

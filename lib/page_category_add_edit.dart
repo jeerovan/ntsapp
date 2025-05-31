@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category_group.dart';
-import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/service_events.dart';
 
 import 'common.dart';
 import 'common_widgets.dart';
@@ -77,8 +77,8 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         category!.title = title!;
         category!.color = colorCode ?? category!.color;
         await category!.update(["thumbnail", "title", "color"]);
-        await StorageHive()
-            .put(AppString.changedCategoryId.string, category!.id);
+        EventStream().publish(
+            AppEvent(type: EventType.changedCategoryId, value: category!.id));
       }
     }
     if (widget.runningOnDesktop) {

@@ -31,7 +31,7 @@ import 'page_contact_pick.dart';
 import 'page_group_add_edit.dart';
 import 'page_location_pick.dart';
 import 'page_media_viewer.dart';
-import 'storage_hive.dart';
+import 'service_events.dart';
 
 bool isMobile = Platform.isAndroid || Platform.isIOS;
 
@@ -110,27 +110,43 @@ class _PageItemsState extends State<PageItems> {
 
   bool _shouldBlinkItem = false;
 
-  late StreamSubscription groupStream;
-  late StreamSubscription itemStream;
-
   @override
   void initState() {
     super.initState();
 
     _audioRecorder = AudioRecorder();
 
-    groupStream =
-        StorageHive().watch(AppString.changedGroupId.string).listen((event) {
-      if (mounted) {
-        changedGroup(event.value);
-      }
-    });
-    itemStream =
-        StorageHive().watch(AppString.changedItemId.string).listen((event) {
-      if (mounted) {
-        changedItem(event.value);
-      }
-    });
+    EventStream().notifier.addListener(_handleAppEvent);
+  }
+
+  @override
+  void dispose() {
+    EventStream().notifier.removeListener(_handleAppEvent);
+    _recordingTimer?.cancel();
+    _textController.dispose();
+    _textControllerFocus.dispose();
+    _audioRecorder.dispose();
+    super.dispose();
+  }
+
+  void _handleAppEvent() {
+    final AppEvent? event = EventStream().notifier.value;
+    if (event == null) return;
+
+    switch (event.type) {
+      case EventType.changedGroupId:
+        if (mounted) {
+          changedGroup(event.value);
+        }
+        break;
+      case EventType.changedItemId:
+        if (mounted) {
+          changedItem(event.value);
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   Future<void> changedGroup(String? groupId) async {
@@ -210,16 +226,6 @@ class _PageItemsState extends State<PageItems> {
         }
       });
     }
-  }
-
-  @override
-  void dispose() {
-    itemStream.cancel();
-    _recordingTimer?.cancel();
-    _textController.dispose();
-    _textControllerFocus.dispose();
-    _audioRecorder.dispose();
-    super.dispose();
   }
 
   Future<void> fetchItems(String? itemId) async {
@@ -798,7 +804,9 @@ class _PageItemsState extends State<PageItems> {
     for (ModelItem item in _selectedItems) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
       await item.update(["archived_at"]);
-      await StorageHive().put(AppString.changedItemId.string, item.id);
+
+      EventStream()
+          .publish(AppEvent(type: EventType.changedItemId, value: item.id));
     }
     if (mounted) {
       displaySnackBar(context, message: "Moved to trash", seconds: 1);
@@ -1097,7 +1105,8 @@ class _PageItemsState extends State<PageItems> {
       "data": data,
     });
     await item.insert();
-    await StorageHive().put(AppString.changedItemId.string, item.id);
+    EventStream()
+        .publish(AppEvent(type: EventType.changedItemId, value: item.id));
     await checkAddItemFileHash(item);
     setState(() {
       int existingIndex = _displayItemList.indexOf(item);

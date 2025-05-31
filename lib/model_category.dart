@@ -6,7 +6,7 @@ import 'dart:ui';
 import 'package:ntsapp/enums.dart';
 import 'package:ntsapp/model_category_group.dart';
 import 'package:ntsapp/model_preferences.dart';
-import 'package:ntsapp/storage_hive.dart';
+import 'package:ntsapp/service_events.dart';
 import 'package:ntsapp/utils_sync.dart';
 import 'package:uuid/uuid.dart';
 
@@ -223,7 +223,8 @@ class ModelCategory {
       }
     }
     // signal category update
-    await StorageHive().put(AppString.changedCategoryId.string, id);
+    EventStream()
+        .publish(AppEvent(type: EventType.changedCategoryId, value: id));
     return result;
   }
 
@@ -260,9 +261,7 @@ class ModelCategory {
     if (category != null) {
       await category.deleteCascade();
     }
-    await StorageHive().put(
-      AppString.changedCategoryId.string,
-      id,
-    );
+    EventStream()
+        .publish(AppEvent(type: EventType.changedCategoryId, value: id));
   }
 }

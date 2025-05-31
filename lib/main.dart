@@ -129,7 +129,7 @@ Future<void> main() async {
     await NotificationService.instance.initialize();
     logger.info("initialized notification service");
   }
-  //initialize sync
+  //initialize background sync
   await DataSync.initialize();
   logger.info("initialized datasync");
   // initialize purchases -- not required in background tasks

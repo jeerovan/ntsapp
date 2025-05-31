@@ -4,7 +4,6 @@ import 'package:ntsapp/model_preferences.dart';
 import 'package:ntsapp/model_setting.dart';
 import 'package:ntsapp/page_user_task.dart';
 import 'package:ntsapp/service_logger.dart';
-import 'package:ntsapp/storage_hive.dart';
 import 'package:ntsapp/storage_secure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -32,8 +31,7 @@ class _PageSigninState extends State<PageSignin> {
   bool canResend = false;
   bool errorSendingOtp = false;
   bool errorVerifyingOtp = false;
-  String email =
-      StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
+  String email = ModelSetting.get(AppString.otpSentTo.string, "");
   final SupabaseClient supabase = Supabase.instance.client;
   bool signedIn = false;
 
@@ -42,7 +40,7 @@ class _PageSigninState extends State<PageSignin> {
     super.initState();
     if (supabase.auth.currentSession == null) {
       int sentOtpAt =
-          StorageHive().get(AppString.otpSentAt.string, defaultValue: 0);
+          int.parse(ModelSetting.get(AppString.otpSentAt.string, 0).toString());
       int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
       if (nowUtc - sentOtpAt < 900000) {
         otpSent = true;
@@ -77,8 +75,8 @@ class _PageSigninState extends State<PageSignin> {
           );
         }
         int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
-        await StorageHive().put(AppString.otpSentTo.string, email);
-        await StorageHive().put(AppString.otpSentAt.string, nowUtc);
+        await ModelSetting.set(AppString.otpSentTo.string, email);
+        await ModelSetting.set(AppString.otpSentAt.string, nowUtc);
         setState(() {
           otpSent = true;
         });
@@ -101,8 +99,7 @@ class _PageSigninState extends State<PageSignin> {
   Future<void> verifyOtp(String text) async {
     if (processing) return;
     final otp = text.trim();
-    final String email =
-        StorageHive().get(AppString.otpSentTo.string, defaultValue: "");
+    final String email = ModelSetting.get(AppString.otpSentTo.string, "");
     if (email.isNotEmpty && otp.isNotEmpty) {
       setState(() {
         processing = true;
@@ -117,8 +114,8 @@ class _PageSigninState extends State<PageSignin> {
           session = response.session;
         }
         if (session != null || simulateOnboarding()) {
-          await StorageHive().delete(AppString.otpSentTo.string);
-          await StorageHive().delete(AppString.otpSentAt.string);
+          await ModelSetting.delete(AppString.otpSentTo.string);
+          await ModelSetting.delete(AppString.otpSentAt.string);
           String? existingDeviceId =
               await ModelPreferences.get(AppString.deviceId.string);
           if (existingDeviceId == null) {
@@ -164,8 +161,8 @@ class _PageSigninState extends State<PageSignin> {
   }
 
   Future<void> changeEmail() async {
-    await StorageHive().delete(AppString.otpSentTo.string);
-    await StorageHive().delete(AppString.otpSentAt.string);
+    await ModelSetting.delete(AppString.otpSentTo.string);
+    await ModelSetting.delete(AppString.otpSentAt.string);
     setState(() {
       otpSent = false;
     });

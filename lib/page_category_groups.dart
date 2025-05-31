@@ -15,7 +15,7 @@ import 'model_item.dart';
 import 'page_category_add_edit.dart';
 import 'page_group_add_edit.dart';
 import 'page_items.dart';
-import 'storage_hive.dart';
+import 'service_events.dart';
 
 class PageCategoryGroups extends StatefulWidget {
   final bool runningOnDesktop;
@@ -56,18 +56,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     super.initState();
     category = widget.category;
     selectedGroup = widget.selectedGroup;
-    categoryStream =
-        StorageHive().watch(AppString.changedCategoryId.string).listen((event) {
-      if (mounted) changedCategory(event.value);
-    });
-    groupStream =
-        StorageHive().watch(AppString.changedGroupId.string).listen((event) {
-      if (mounted) changedGroup(event.value);
-    });
-    itemStream =
-        StorageHive().watch(AppString.changedItemId.string).listen((event) {
-      if (mounted) changedItem(event.value);
-    });
+    EventStream().notifier.addListener(_handleAppEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadGroups();
     });
@@ -75,10 +64,27 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
 
   @override
   void dispose() {
-    categoryStream.cancel();
-    groupStream.cancel();
-    itemStream.cancel();
+    EventStream().notifier.removeListener(_handleAppEvent);
     super.dispose();
+  }
+
+  void _handleAppEvent() {
+    final AppEvent? event = EventStream().notifier.value;
+    if (event == null) return;
+
+    switch (event.type) {
+      case EventType.changedCategoryId:
+        if (mounted) changedCategory(event.value);
+        break;
+      case EventType.changedGroupId:
+        if (mounted) changedGroup(event.value);
+        break;
+      case EventType.changedItemId:
+        if (mounted) changedItem(event.value);
+        break;
+      default:
+        break;
+    }
   }
 
   Future<void> changedCategory(String? id) async {

@@ -84,6 +84,9 @@ class StorageSqlite {
   Future _onCreate(Database db, int version) async {
     await initTables(db);
     logger.info('Database created with version: $version');
+    int now = DateTime.now().toUtc().millisecondsSinceEpoch;
+    await db
+        .insert("setting", {"id": AppString.installedAt.string, "value": now});
     await createCategoryAndGroupsWithNotesOnFreshInstall(db);
   }
 
