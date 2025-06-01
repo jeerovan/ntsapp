@@ -310,6 +310,7 @@ class SyncUtils {
     }
     await ModelPreferences.set(
         AppString.pushedLocalContentForSync.string, "yes");
+    EventStream().publish(AppEvent(type: EventType.serverFirstFetch));
   }
 
   static Future<void> encryptAndPushChange(
@@ -562,7 +563,6 @@ class SyncUtils {
     String? masterKeyBase64 = await getMasterKey();
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");
-    EventStream().publish(AppEvent(type: EventType.serverFetching));
     if (simulateOnboarding()) {
       if (await ModelPreferences.get(AppString.dataSeeded.string,
               defaultValue: "no") ==

@@ -5,7 +5,7 @@ enum EventType {
   changedGroupId,
   changedItemId,
   exitSettings,
-  serverFetching,
+  serverFirstFetch,
   checkPlanStatus,
 }
 

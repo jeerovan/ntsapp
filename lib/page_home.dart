@@ -117,8 +117,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       case EventType.exitSettings:
         onExitSettings();
         break;
-      case EventType.serverFetching:
-        if (_hasInitiated && _categoriesGroupsDisplayList.isEmpty && mounted) {
+      case EventType.serverFirstFetch:
+        if (mounted) {
           setState(() {
             _isLoading = true;
           });
