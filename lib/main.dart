@@ -34,7 +34,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Process the sync message
   if (message.data['type'] == 'Sync') {
     final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    if (!kDebugMode) {
+    if (!isDebugEnabled()) {
       await SentryFlutter.init(
         (options) {
           options.dsn = sentryDsn;
@@ -73,7 +73,7 @@ void backgroundTaskDispatcher() {
       return Future.value(false);
     }
     final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    if (!kDebugMode) {
+    if (!isDebugEnabled()) {
       await SentryFlutter.init(
         (options) {
           options.dsn = sentryDsn;
@@ -107,7 +107,7 @@ Future<void> main() async {
   await initializeMediaParams();
   await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-  if (kDebugMode) {
+  if (isDebugEnabled()) {
     runApp(const MainApp());
   } else {
     await SentryFlutter.init(
@@ -123,7 +123,19 @@ Future<void> main() async {
       appRunner: () => runApp(const MainApp()),
     );
   }
-  await initializeDependencies(mode: ExecutionMode.appForeground);
+  unawaited(initializeRestInParallel());
+}
+
+Future<void> initializeRestInParallel() async {
+  await Future.wait(([
+    initializeDependencies(mode: ExecutionMode.appForeground),
+    initializeFirebase(),
+    initializeBackgroundSync(),
+    initializePurchases()
+  ]));
+}
+
+Future<void> initializeFirebase() async {
   if (runningOnMobile) {
     //initialize notificatins
     await Firebase.initializeApp();
@@ -135,15 +147,20 @@ Future<void> main() async {
       logger.info("initialized notification service");
     }
   }
+}
+
+Future<void> initializeBackgroundSync() async {
   //initialize background sync
   await DataSync.initialize();
   logger.info("initialized datasync");
+}
 
+Future<void> initializePurchases() async {
   // initialize purchases -- not required in background tasks
   if (runningOnMobile) {
     final String rcKeyAndroid = const String.fromEnvironment("RC_KEY_ANDROID");
     if (rcKeyAndroid.isNotEmpty) {
-      if (kDebugMode) {
+      if (isDebugEnabled()) {
         await Purchases.setLogLevel(LogLevel.debug);
       }
       PurchasesConfiguration configuration =
@@ -342,7 +359,7 @@ class DataSync {
   // Mobile-specific initialization using Workmanager
   static Future<void> _initializeBackgroundForMobile() async {
     await Workmanager()
-        .initialize(backgroundTaskDispatcher, isInDebugMode: kDebugMode);
+        .initialize(backgroundTaskDispatcher, isInDebugMode: isDebugEnabled());
     await Workmanager().registerPeriodicTask(
       syncTaskId,
       syncTaskId,
