@@ -67,7 +67,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   ModelGroup? selectedGroup;
   String? appName = "";
   List<ModelCategoryGroup> _categoriesGroupsDisplayList = [];
-  bool _isLoading = false;
+  bool _isFetchingFromServer = false;
   bool _hasInitiated = false;
   bool _isReordering = false;
   bool _canSync = false;
@@ -120,7 +120,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       case EventType.serverFirstFetch:
         if (mounted) {
           setState(() {
-            _isLoading = true;
+            _isFetchingFromServer = true;
           });
         }
         break;
@@ -253,7 +253,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   Future<void> loadCategoriesGroups() async {
     checkUpdateStateVariables();
     setState(() {
-      _isLoading = true;
       _hasInitiated = true;
     });
     try {
@@ -267,7 +266,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isFetchingFromServer = false;
         });
       }
     }
@@ -980,7 +979,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 },
               )
             : _hasInitiated
-                ? _isLoading
+                ? _isFetchingFromServer
                     ? const Center(child: CircularProgressIndicator())
                     : _categoriesGroupsDisplayList.isNotEmpty
                         ? RefreshIndicator(
