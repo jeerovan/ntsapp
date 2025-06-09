@@ -120,6 +120,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
 
   @override
   Widget build(BuildContext context) {
+    final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       body: Column(
         children: [
@@ -154,7 +155,8 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
           ),
           if (_isSelecting)
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding:
+                  EdgeInsets.fromLTRB(8.0, 8, 8, 8 + edgeToEdgePadding.bottom),
               child: ElevatedButton(
                   onPressed: selectAllItems,
                   child: Text(

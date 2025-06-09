@@ -39,6 +39,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
 
   @override
   Widget build(BuildContext context) {
+    final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       appBar: AppBar(
         leading: widget.runningOnDesktop
@@ -54,7 +55,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + edgeToEdgePadding.bottom),
         child: welcomed
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

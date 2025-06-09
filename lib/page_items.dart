@@ -1507,6 +1507,7 @@ class _PageItemsState extends State<PageItems> {
         }
       });
     }
+    final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: !widget.runningOnDesktop,
@@ -1519,176 +1520,181 @@ class _PageItemsState extends State<PageItems> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Items view (displaying the messages)
-          Expanded(
-            child: Stack(
-              children: [
-                NotificationListener<ScrollNotification>(
-                  onNotification: (ScrollNotification scrollInfo) {
-                    showHideScrollToBottomButton(scrollInfo.metrics.pixels);
-                    return false;
-                  },
-                  child: ScrollablePositionedList.builder(
-                    itemScrollController: _itemScrollController,
-                    itemPositionsListener: _itemPositionsListener,
-                    reverse: true,
-                    itemCount: _displayItemList.length,
-                    itemBuilder: (context, index) {
-                      if (index < 0 || index >= _displayItemList.length) {
-                        return const SizedBox.shrink();
-                      }
-                      final ModelItem item = _displayItemList[index];
-                      if (item.type == ItemType.date) {
-                        if (showDateTime) {
-                          return ItemWidgetDate(item: item);
-                        } else {
+      body: Padding(
+        padding: EdgeInsets.only(bottom: edgeToEdgePadding.bottom),
+        child: Column(
+          children: [
+            // Items view (displaying the messages)
+            Expanded(
+              child: Stack(
+                children: [
+                  NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification scrollInfo) {
+                      showHideScrollToBottomButton(scrollInfo.metrics.pixels);
+                      return false;
+                    },
+                    child: ScrollablePositionedList.builder(
+                      itemScrollController: _itemScrollController,
+                      itemPositionsListener: _itemPositionsListener,
+                      reverse: true,
+                      itemCount: _displayItemList.length,
+                      itemBuilder: (context, index) {
+                        if (index < 0 || index >= _displayItemList.length) {
                           return const SizedBox.shrink();
                         }
-                      } else {
-                        Map<String, dynamic>? urlInfo = item.data != null &&
-                                item.data!.containsKey("url_info")
-                            ? item.data!["url_info"]
-                            : null;
-                        return Dismissible(
-                          key: ValueKey(item.id),
-                          direction: DismissDirection.startToEnd,
-                          confirmDismiss: (direction) async {
-                            replyOnSwipe(item);
-                            return false;
-                          },
-                          background: Container(
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.only(left: 20),
-                            child: const Icon(
-                              LucideIcons.reply,
-                            ),
-                          ),
-                          child: GestureDetector(
-                            onLongPress: () {
-                              onItemLongPressed(item);
+                        final ModelItem item = _displayItemList[index];
+                        if (item.type == ItemType.date) {
+                          if (showDateTime) {
+                            return ItemWidgetDate(item: item);
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+                        } else {
+                          Map<String, dynamic>? urlInfo = item.data != null &&
+                                  item.data!.containsKey("url_info")
+                              ? item.data!["url_info"]
+                              : null;
+                          return Dismissible(
+                            key: ValueKey(item.id),
+                            direction: DismissDirection.startToEnd,
+                            confirmDismiss: (direction) async {
+                              replyOnSwipe(item);
+                              return false;
                             },
-                            onTap: () {
-                              onItemTapped(item);
-                            },
-                            child: Container(
-                              width: double.infinity,
-                              color: _selectedItems.contains(item)
-                                  ? Theme.of(context).colorScheme.inversePrimary
-                                  : _shouldBlinkItem &&
-                                          showItemId != null &&
-                                          showItemId == item.id
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .inversePrimary
-                                      : Colors.transparent,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        vertical: 5, horizontal: 10),
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: showNoteBorder
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .surfaceContainerLow
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        if (item.replyOn != null)
-                                          GestureDetector(
-                                            onTap: () {
-                                              fetchItems(item.replyOn!.id);
-                                            },
-                                            child: NotePreviewSummary(
-                                              item: item.replyOn!,
-                                              showImagePreview: true,
-                                              showTimestamp: false,
-                                              expanded: false,
-                                            ),
-                                          ),
-                                        if (urlInfo != null)
-                                          GestureDetector(
-                                            onTap: () async {
-                                              if (_hasNotesSelected) {
-                                                onItemTapped(item);
-                                              } else {
-                                                final String linkText =
-                                                    urlInfo["url"];
-                                                final linkUri =
-                                                    Uri.parse(linkText);
-                                                if (await canLaunchUrl(
-                                                    linkUri)) {
-                                                  await launchUrl(linkUri);
-                                                } else {
-                                                  logger.warning(
-                                                      "Could not launch $linkText");
-                                                }
-                                              }
-                                            },
-                                            child: imageDirPath.isEmpty
-                                                ? const SizedBox.shrink()
-                                                : NoteUrlPreview(
-                                                    urlInfo: urlInfo,
-                                                    imageDirectory:
-                                                        imageDirPath,
-                                                    itemId: item.id!),
-                                          ),
-                                        _buildNoteItem(item, showDateTime),
-                                      ],
-                                    )),
+                            background: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.only(left: 20),
+                              child: const Icon(
+                                LucideIcons.reply,
                               ),
                             ),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
-                if (canScrollToBottom)
-                  Positioned(
-                    bottom: 10, // Adjust for FAB height and margin
-                    right: 20,
-                    child: FloatingActionButton(
-                      heroTag: "scroll_to_bottom",
-                      mini: true,
-                      onPressed: () {
-                        clearSelection();
-                        fetchItems(null);
+                            child: GestureDetector(
+                              onLongPress: () {
+                                onItemLongPressed(item);
+                              },
+                              onTap: () {
+                                onItemTapped(item);
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                color: _selectedItems.contains(item)
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .inversePrimary
+                                    : _shouldBlinkItem &&
+                                            showItemId != null &&
+                                            showItemId == item.id
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .inversePrimary
+                                        : Colors.transparent,
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 5, horizontal: 10),
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: showNoteBorder
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .surfaceContainerLow
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (item.replyOn != null)
+                                            GestureDetector(
+                                              onTap: () {
+                                                fetchItems(item.replyOn!.id);
+                                              },
+                                              child: NotePreviewSummary(
+                                                item: item.replyOn!,
+                                                showImagePreview: true,
+                                                showTimestamp: false,
+                                                expanded: false,
+                                              ),
+                                            ),
+                                          if (urlInfo != null)
+                                            GestureDetector(
+                                              onTap: () async {
+                                                if (_hasNotesSelected) {
+                                                  onItemTapped(item);
+                                                } else {
+                                                  final String linkText =
+                                                      urlInfo["url"];
+                                                  final linkUri =
+                                                      Uri.parse(linkText);
+                                                  if (await canLaunchUrl(
+                                                      linkUri)) {
+                                                    await launchUrl(linkUri);
+                                                  } else {
+                                                    logger.warning(
+                                                        "Could not launch $linkText");
+                                                  }
+                                                }
+                                              },
+                                              child: imageDirPath.isEmpty
+                                                  ? const SizedBox.shrink()
+                                                  : NoteUrlPreview(
+                                                      urlInfo: urlInfo,
+                                                      imageDirectory:
+                                                          imageDirPath,
+                                                      itemId: item.id!),
+                                            ),
+                                          _buildNoteItem(item, showDateTime),
+                                        ],
+                                      )),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
                       },
-                      shape: const CircleBorder(),
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerHigh,
-                      child: const Icon(LucideIcons.chevronsDown),
                     ),
                   ),
-                if (_filtersEnabled)
-                  Positioned(
-                    right: 0,
-                    child: IconButton(
-                      tooltip: "Filter notes",
-                      onPressed: () {
-                        _openFilterDialog();
-                      },
-                      icon: Icon(
-                        LucideIcons.filter,
+                  if (canScrollToBottom)
+                    Positioned(
+                      bottom: 10, // Adjust for FAB height and margin
+                      right: 20,
+                      child: FloatingActionButton(
+                        heroTag: "scroll_to_bottom",
+                        mini: true,
+                        onPressed: () {
+                          clearSelection();
+                          fetchItems(null);
+                        },
+                        shape: const CircleBorder(),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHigh,
+                        child: const Icon(LucideIcons.chevronsDown),
                       ),
                     ),
-                  ),
-              ],
+                  if (_filtersEnabled)
+                    Positioned(
+                      right: 0,
+                      child: IconButton(
+                        tooltip: "Filter notes",
+                        onPressed: () {
+                          _openFilterDialog();
+                        },
+                        icon: Icon(
+                          LucideIcons.filter,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          AnimatedWidgetSwap(
-              firstWidget: widgetBottomSection(),
-              secondWidget: widgetSelectionOptions(),
-              showFirst: !_hasNotesSelected),
-        ],
+            AnimatedWidgetSwap(
+                firstWidget: widgetBottomSection(),
+                secondWidget: widgetSelectionOptions(),
+                showFirst: !_hasNotesSelected),
+          ],
+        ),
       ),
     );
   }

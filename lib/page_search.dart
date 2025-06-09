@@ -94,6 +94,7 @@ class SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Search notes"),
@@ -106,7 +107,7 @@ class SearchPageState extends State<SearchPage> {
             : null,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.fromLTRB(8.0, 8, 8, 8 + edgeToEdgePadding.bottom),
         child: Column(
           children: [
             // Display search query or results here
