@@ -39,13 +39,16 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 bool canUseVideoPlayer =
     Platform.isAndroid || Platform.isIOS || Platform.isMacOS || kIsWeb;
 
-bool isDebugEnabled() {
-  return kDebugMode;
-}
+bool isDebugEnabled = kDebugMode;
 
 bool simulateOnboarding() {
   return ModelSetting.get(AppString.simulateTesting.string, "no") == "yes";
 }
+
+bool revenueCatSupported =
+    Platform.isIOS || Platform.isAndroid; // TODO || Platform.isMacOS
+
+bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 
 final List<Color> predefinedColors = [
   "#06b6d4",

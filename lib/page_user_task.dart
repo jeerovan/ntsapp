@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,8 +41,6 @@ class PageUserTask extends StatefulWidget {
 class _PageUserTaskState extends State<PageUserTask> {
   final logger = AppLogger(prefixes: ["page_onboard_task"]);
   bool processing = true;
-  bool revenueCatSupported =
-      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
   SupabaseClient supabaseClient = Supabase.instance.client;
 
   SecureStorage secureStorage = SecureStorage();

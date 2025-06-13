@@ -482,7 +482,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       int installedAt = int.parse(
           ModelSetting.get(AppString.installedAt.string, "0").toString());
       int timeSpent = 10 * 60 * 1000;
-      if (isDebugEnabled()) {
+      if (isDebugEnabled) {
         timeSpent = 1 * 60 * 1000;
       }
       if (now - installedAt > timeSpent) {
@@ -826,7 +826,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 ],
               ),
             ),
-          if (isDebugEnabled())
+          if (isDebugEnabled)
             PopupMenuItem<int>(
               value: 11,
               child: Row(
@@ -838,7 +838,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                 ],
               ),
             ),
-          if (isDebugEnabled())
+          if (isDebugEnabled)
             PopupMenuItem<int>(
               value: 12,
               child: Row(

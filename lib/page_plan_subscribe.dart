@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/model_preferences.dart';
@@ -27,8 +25,6 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   AppLogger logger = AppLogger(prefixes: ["PagePlan"]);
   List<Package> _packages = [];
   bool processing = true;
-  bool revenueCatSupported =
-      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
   @override
   void initState() {
@@ -141,18 +137,23 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
           ? Center(child: CircularProgressIndicator()) // Centering the loader
           : Padding(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: ListView(
                 children: [
                   Icon(Icons.auto_awesome, color: Colors.amber, size: 50),
                   SizedBox(height: 10),
-                  Text(
-                    'Sync all your notes',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'across your devices',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Sync all your notes',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'across your devices',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 20),
 
@@ -207,9 +208,11 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                   /// Privacy Terms
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
-                    child: Text(
-                      "Privacy • Terms",
-                      style: TextStyle(color: Colors.grey, fontSize: 10),
+                    child: Center(
+                      child: Text(
+                        "Privacy • Terms",
+                        style: TextStyle(color: Colors.grey, fontSize: 10),
+                      ),
                     ),
                   ),
                 ],

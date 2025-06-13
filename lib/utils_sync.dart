@@ -275,7 +275,7 @@ class SyncUtils {
     await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
     await signalToUpdateHome();
     //initialize fcm notification
-    NotificationService.instance.initialize();
+    if (runningOnMobile) NotificationService.instance.initialize();
     //push categories
     List<Map<String, dynamic>> categories =
         await ModelCategory.getAllRawRowsMap();

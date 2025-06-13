@@ -34,7 +34,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Process the sync message
   if (message.data['type'] == 'Sync') {
     final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    if (!isDebugEnabled()) {
+    if (!isDebugEnabled) {
       await SentryFlutter.init(
         (options) {
           options.dsn = sentryDsn;
@@ -73,7 +73,7 @@ void backgroundTaskDispatcher() {
       return Future.value(false);
     }
     final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    if (!isDebugEnabled()) {
+    if (!isDebugEnabled) {
       await SentryFlutter.init(
         (options) {
           options.dsn = sentryDsn;
@@ -97,7 +97,6 @@ void backgroundTaskDispatcher() {
   });
 }
 
-bool runningOnMobile = Platform.isAndroid || Platform.isIOS;
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,7 +106,7 @@ Future<void> main() async {
   await initializeMediaParams();
   await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
   final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-  if (isDebugEnabled()) {
+  if (isDebugEnabled) {
     runApp(const MainApp());
   } else {
     await SentryFlutter.init(
@@ -157,14 +156,16 @@ Future<void> initializeBackgroundSync() async {
 
 Future<void> initializePurchases() async {
   // initialize purchases -- not required in background tasks
-  if (runningOnMobile) {
-    final String rcKeyAndroid = const String.fromEnvironment("RC_KEY_ANDROID");
-    if (rcKeyAndroid.isNotEmpty) {
-      if (isDebugEnabled()) {
+  if (revenueCatSupported) {
+    String rcKey = "";
+    if (Platform.isAndroid) {
+      rcKey = const String.fromEnvironment("RC_KEY_ANDROID");
+    }
+    if (rcKey.isNotEmpty) {
+      if (isDebugEnabled) {
         await Purchases.setLogLevel(LogLevel.debug);
       }
-      PurchasesConfiguration configuration =
-          PurchasesConfiguration(rcKeyAndroid);
+      PurchasesConfiguration configuration = PurchasesConfiguration(rcKey);
       await Purchases.configure(configuration);
       logger.info("Initialized purchases");
     }
@@ -287,7 +288,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     bool isLargeScreen = false;
-    if (isDebugEnabled()) {
+    if (isDebugEnabled) {
       isLargeScreen = MediaQuery.of(context).size.width > 600;
     } else {
       isLargeScreen =
@@ -359,7 +360,7 @@ class DataSync {
   // Mobile-specific initialization using Workmanager
   static Future<void> _initializeBackgroundForMobile() async {
     await Workmanager()
-        .initialize(backgroundTaskDispatcher, isInDebugMode: isDebugEnabled());
+        .initialize(backgroundTaskDispatcher, isInDebugMode: isDebugEnabled);
     await Workmanager().registerPeriodicTask(
       syncTaskId,
       syncTaskId,
