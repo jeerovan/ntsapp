@@ -77,9 +77,7 @@ class _PageSigninState extends State<PageSignin> {
         int nowUtc = DateTime.now().toUtc().millisecondsSinceEpoch;
         await ModelSetting.set(AppString.otpSentTo.string, email);
         await ModelSetting.set(AppString.otpSentAt.string, nowUtc);
-        setState(() {
-          otpSent = true;
-        });
+        otpSent = true;
         errorSendingOtp = false;
       } catch (e, s) {
         logger.error("sendOTP", error: e, stackTrace: s);
@@ -89,9 +87,11 @@ class _PageSigninState extends State<PageSignin> {
               message: 'Sending OTP failed. Please try again!', seconds: 2);
         }
       }
-      setState(() {
-        processing = false;
-      });
+      if (mounted) {
+        setState(() {
+          processing = false;
+        });
+      }
     }
   }
 
@@ -136,9 +136,11 @@ class _PageSigninState extends State<PageSignin> {
               seconds: 2);
         }
       }
-      setState(() {
-        processing = false;
-      });
+      if (mounted) {
+        setState(() {
+          processing = false;
+        });
+      }
     }
   }
 

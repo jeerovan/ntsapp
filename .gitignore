@@ -55,3 +55,6 @@ assets/config.txt
 
 # Release/Build Related
 distribute_options.yaml
+
+# Builds in dist
+/dist/

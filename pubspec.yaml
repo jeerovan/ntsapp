@@ -84,7 +84,7 @@ flutter:
 
 flutter_launcher_icons:
   android: "ic_launcher"
-  ios: false
+  ios: true
   image_path: "assets/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
@@ -92,7 +92,7 @@ flutter_launcher_icons:
   windows:
     generate: false
   macos:
-    generate: false
+    generate: true
 
 flutter_native_splash:
   android: true

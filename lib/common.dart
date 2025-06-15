@@ -499,6 +499,7 @@ Future<void> checkAndCreateDirectory(String filePath) async {
 Future<void> initializeDirectories() async {
   SecureStorage secureStorage = SecureStorage();
   final directory = await getApplicationDocumentsDirectory();
+  AppLogger(prefixes: ["MediaDirPath"]).info(directory.path);
   String? mediaDir = await secureStorage.read(key: "media_dir");
   String mediaDirPath = path.join(directory.path, mediaDir);
   final mediaDirectory = Directory(mediaDirPath);
