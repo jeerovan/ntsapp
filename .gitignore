@@ -58,3 +58,6 @@ distribute_options.yaml
 
 # Builds in dist
 /dist/
+
+#-- npm 
+node_modules
