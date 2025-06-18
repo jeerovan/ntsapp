@@ -991,13 +991,23 @@ class _PageItemsState extends State<PageItems> {
       logger.info("Temp Dir: ${tempDir.path}");
       final int utcSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       _audioFilePath = path.join(tempDir.path, 'recording_$utcSeconds.m4a');
-      await _audioRecorder.start(const RecordConfig(), path: _audioFilePath!);
-
-      setState(() {
-        _isRecording = true;
-        _recordingState = 1;
-      });
-      HapticFeedback.vibrate();
+      try {
+        await _audioRecorder.start(const RecordConfig(), path: _audioFilePath!);
+        setState(() {
+          _isRecording = true;
+          _recordingState = 1;
+        });
+        HapticFeedback.vibrate();
+      } catch (e, s) {
+        if (e is PlatformException && e.code == "record") {
+          if (mounted) {
+            displaySnackBar(context,
+                message: "Microphone may not be available.", seconds: 1);
+          }
+        } else {
+          logger.error("Recording failed", error: e, stackTrace: s);
+        }
+      }
     } else {
       if (mounted) {
         displaySnackBar(context,
