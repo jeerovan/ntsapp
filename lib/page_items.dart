@@ -2017,7 +2017,6 @@ class _PageItemsState extends State<PageItems> {
                           minLines: 1,
                           keyboardType: TextInputType.multiline,
                           textCapitalization: TextCapitalization.sentences,
-                          textInputAction: TextInputAction.go,
                           onSubmitted: _handleTextInput,
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.onSurface),
