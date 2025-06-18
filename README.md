@@ -47,4 +47,4 @@ If you believe you have found a security vulnerability, please email us at
 [getphonesafe@gmail.com](mailto:getphonesafe@gmail.com) instead of opening a new
 issue.
 
-Made with ❤️ by the same team as [Olauncher](https://github.com/tanujnotes/Olauncher).
+Made with ❤️ by team [Olauncher](https://github.com/tanujnotes/Olauncher).
