@@ -157,6 +157,7 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
       case ItemType.image: // image
         widget = fileAvailable
             ? InteractiveViewer(
+                maxScale: 3.5,
                 child: Image.file(
                   File(item.data!["path"]),
                   fit: BoxFit.cover,
