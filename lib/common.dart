@@ -1021,13 +1021,12 @@ Future<void> seedGroupsAndNotes() async {
   final db = await storage.database;
   Batch groupBatch = db.batch();
   Batch itemBatch = db.batch();
-  for (int groupNumber = 1; groupNumber <= 10; groupNumber++) {
+  for (int groupNumber = 1; groupNumber <= 5; groupNumber++) {
     ModelGroup group =
         await ModelGroup.fromMap({"title": groupNumber.toString()});
     groupBatch.insert('itemgroup', group.toMap());
     String groupId = group.id!;
-    //insert 50 notes in each group
-    for (int itemNumber = 1; itemNumber <= 15; itemNumber++) {
+    for (int itemNumber = 1; itemNumber <= 5; itemNumber++) {
       String toRepeat = '${groupNumber}_$itemNumber';
       String itemText = List.generate(100, (_) => toRepeat).join('__');
       ModelItem item =

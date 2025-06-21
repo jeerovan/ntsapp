@@ -117,10 +117,17 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       case EventType.exitSettings:
         onExitSettings();
         break;
-      case EventType.serverFirstFetch:
+      case EventType.serverFirstFetchStarts:
         if (mounted) {
           setState(() {
             _isFetchingFromServer = true;
+          });
+        }
+        break;
+      case EventType.serverFirstFetchEnds:
+        if (mounted) {
+          setState(() {
+            _isFetchingFromServer = false;
           });
         }
         break;
@@ -264,12 +271,6 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       logger.info("Loaded categoriesGroups");
     } catch (e, s) {
       logger.error("loadCategoriesGroups", error: e, stackTrace: s);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isFetchingFromServer = false;
-        });
-      }
     }
     if (_categoriesGroupsDisplayList.isEmpty && widget.runningOnDesktop) {
       widget.setShowHidePage!(PageType.items, false, PageParams());

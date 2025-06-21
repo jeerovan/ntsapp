@@ -58,22 +58,28 @@ class SyncUtils {
 
   // Static method to trigger change detection
   static void waitAndSyncChanges(
-      {bool inBackground = false, bool manualSync = false}) {
-    _instance._handleChange(inBackground, manualSync: manualSync);
+      {bool inBackground = false,
+      bool manualSync = false,
+      bool firstFetch = false}) {
+    _instance._handleChange(inBackground,
+        manualSync: manualSync, firstFetch: firstFetch);
   }
 
-  void _handleChange(bool inBackground, {bool manualSync = false}) {
+  void _handleChange(bool inBackground,
+      {bool manualSync = false, bool firstFetch = false}) {
     _hasPendingChanges = true;
     _debounceTimer?.cancel(); // Cancel any ongoing debounce
-    _debounceTimer = Timer(Duration(seconds: 2), () {
+    _debounceTimer = Timer(Duration(seconds: 1), () {
       if (_hasPendingChanges) {
         _hasPendingChanges = false;
-        triggerSync(inBackground, manualSync: manualSync);
+        triggerSync(inBackground,
+            manualSync: manualSync, firstFetch: firstFetch);
       }
     });
   }
 
-  Future<void> triggerSync(bool inBackground, {bool manualSync = false}) async {
+  Future<void> triggerSync(bool inBackground,
+      {bool manualSync = false, bool firstFetch = false}) async {
     String mode = inBackground ? "Background" : "Foreground";
     logger.info("sync request from:$mode");
     bool canSync = await SyncUtils.canSync();
@@ -123,6 +129,11 @@ class SyncUtils {
     if (manualSync) {
       // Send Signal to update home with DND category
       await signalToUpdateHome();
+    }
+    if (firstFetch) {
+      // Send Signal to update home with DND category
+      await signalToUpdateHome();
+      EventStream().publish(AppEvent(type: EventType.serverFirstFetchEnds));
     }
     logger.info("$mode|Sync|------------------ENDED----------------");
     if (!inBackground && (hasPendingUploads || hasMoreMapChangesToPush)) {
@@ -269,11 +280,10 @@ class SyncUtils {
     return success;
   }
 
-  // called once when sync is enabled
+  // called once when sync gets enabled
   static Future<void> pushLocalChanges() async {
-    logger.info("pushing local content");
     await ModelPreferences.set(AppString.hasEncryptionKeys.string, "yes");
-    await signalToUpdateHome();
+    logger.info("pushing local content");
     //initialize fcm notification
     if (runningOnMobile) NotificationService.instance.initialize();
     //push categories
@@ -284,9 +294,7 @@ class SyncUtils {
         .toList();
     for (Map<String, dynamic> category in mutableCategories) {
       category.addAll({"table": "category"});
-      encryptAndPushChange(
-        category,
-      );
+      await encryptAndPushChange(category, pushToSync: false);
     }
     //push groups
     List<Map<String, dynamic>> groups = await ModelGroup.getAllRawRowsMap();
@@ -294,9 +302,7 @@ class SyncUtils {
         groups.map((group) => Map<String, dynamic>.from(group)).toList();
     for (Map<String, dynamic> group in mutableGroups) {
       group.addAll({"table": "itemgroup"});
-      encryptAndPushChange(
-        group,
-      );
+      await encryptAndPushChange(group, pushToSync: false);
     }
     //push items
     List<Map<String, dynamic>> items = await ModelItem.getAllRawRowsMap();
@@ -304,20 +310,22 @@ class SyncUtils {
         items.map((item) => Map<String, dynamic>.from(item)).toList();
     for (Map<String, dynamic> item in mutableItems) {
       item.addAll({"table": "item"});
-      await encryptAndPushChange(
-        item,
-      );
+      await encryptAndPushChange(item, pushToSync: false);
+    }
+    if (simulateOnboarding()) {
+      // a little delay to keep the screen "Encrypting Notes"
+      await Future.delayed(const Duration(seconds: 2));
     }
     await ModelPreferences.set(
         AppString.pushedLocalContentForSync.string, "yes");
-    EventStream().publish(AppEvent(type: EventType.serverFirstFetch));
+    EventStream().publish(AppEvent(type: EventType.serverFirstFetchStarts));
+    waitAndSyncChanges(firstFetch: true);
   }
 
-  static Future<void> encryptAndPushChange(
-    Map<String, dynamic> map, {
-    bool mediaChanges = true,
-    int deleteTask = 0,
-  }) async {
+  static Future<void> encryptAndPushChange(Map<String, dynamic> map,
+      {bool mediaChanges = true,
+      int deleteTask = 0,
+      bool pushToSync = true}) async {
     String? masterKeyBase64 = await getMasterKey();
     String? userId = getSignedInUserId();
     if (masterKeyBase64 != null && userId != null) {
@@ -384,7 +392,7 @@ class SyncUtils {
           thumbnail: thumbnail, dataMap: dataMap);
       logger.info("encryptAndPushChange:$table|$changeId|${changeTask.value}");
       await ModelChange.updateTypeState(changeId, SyncState.uploading);
-      waitAndSyncChanges();
+      if (pushToSync) waitAndSyncChanges();
     }
   }
 
@@ -564,12 +572,7 @@ class SyncUtils {
     if (masterKeyBase64 == null) return;
     logger.info("Fetch Map Changes");
     if (simulateOnboarding()) {
-      if (await ModelPreferences.get(AppString.dataSeeded.string,
-              defaultValue: "no") ==
-          "no") {
-        await seedGroupsAndNotes();
-        await pushLocalChanges();
-      }
+      await Future.delayed(const Duration(seconds: 2));
       return;
     }
     String deviceId = await ModelPreferences.get(AppString.deviceId.string);
@@ -985,6 +988,9 @@ class SyncUtils {
               await modelFile.insert();
               // start actual upload
               await pushFile(modelFile);
+            } else if (fileEncryptionResult.failureReason!
+                .contains("PathNotFoundException")) {
+              change.deleteWithItem();
             }
           }
         } catch (e, s) {

@@ -317,6 +317,18 @@ class ModelChange {
     return deleted;
   }
 
+  Future<int> deleteWithItem() async {
+    List<String> userIdRowId = id.split("|");
+    String rowId = userIdRowId.last;
+    ModelItem? item = await ModelItem.get(rowId);
+    if (item != null) {
+      await item.delete(withServerSync: true);
+    }
+    final dbHelper = StorageSqlite.instance;
+    int deleted = await dbHelper.delete("change", id);
+    return deleted;
+  }
+
   static SyncChangeTask getPushChangeTaskType(
       String table, bool thumbnailIsNull, Map<String, dynamic> map) {
     switch (table) {

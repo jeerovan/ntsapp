@@ -107,7 +107,12 @@ class _PageSigninState extends State<PageSignin> {
       try {
         Session? session;
         if (simulateOnboarding()) {
-          await Future.delayed(const Duration(seconds: 1));
+          if (await ModelPreferences.get(AppString.dataSeeded.string,
+                  defaultValue: "no") ==
+              "no") {
+            await seedGroupsAndNotes();
+            await signalToUpdateHome(); // update home with data
+          }
         } else {
           AuthResponse response = await supabase.auth
               .verifyOTP(email: email, token: otp, type: OtpType.email);
