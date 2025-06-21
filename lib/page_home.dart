@@ -226,9 +226,10 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     }
   }
 
+  // executes once while initstate
   Future<void> checkAuthAndLoad() async {
-    logger.info("Checking auth and load");
     appName = await secureStorage.read(key: AppString.appName.string);
+    await checkUpdateStateVariables();
     setState(() {});
     try {
       if (ModelSetting.get("local_auth", "no") == "no") {
@@ -610,12 +611,15 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   }
 
   List<Widget> _buildDefaultActions() {
+    bool supabaseInitialized =
+        ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
+    bool showSync =
+        ModelSetting.get(AppString.hideSyncButton.string, "no") == "no";
     return [
-      if (ModelSetting.get(AppString.supabaseInitialized.string, "no") ==
-              "yes" &&
+      if (supabaseInitialized &&
           (!requiresAuthentication || isAuthenticated) &&
-          (!_canSync || simulateOnboarding()) &&
-          ModelSetting.get(AppString.hideSyncButton.string, "no") == "no")
+          !_canSync &&
+          showSync)
         Padding(
           padding: const EdgeInsets.only(right: 10.0),
           child: ElevatedButton(
