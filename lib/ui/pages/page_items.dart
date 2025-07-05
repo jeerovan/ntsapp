@@ -2058,19 +2058,17 @@ class _PageItemsState extends State<PageItems> {
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 15, vertical: 10),
-                            suffixIcon: AnimatedOpacity(
-                              opacity: _isTyping ? 0.0 : 1.0,
-                              duration: const Duration(milliseconds: 150),
-                              // Set your animation duration
-                              child: IconButton(
-                                tooltip: "Attach",
-                                icon: const Icon(LucideIcons.plus),
-                                color: Theme.of(context).colorScheme.outline,
-                                onPressed: () {
-                                  _showAttachmentOptions();
-                                },
-                              ),
-                            ),
+                            suffixIcon: _isTyping
+                                ? null
+                                : IconButton(
+                                    tooltip: "Attach",
+                                    icon: const Icon(LucideIcons.plus),
+                                    color:
+                                        Theme.of(context).colorScheme.outline,
+                                    onPressed: () {
+                                      _showAttachmentOptions();
+                                    },
+                                  ),
                           ),
                           onChanged: (value) => _onInputTextChanged(value),
                           scrollController: ScrollController(),
@@ -2132,7 +2130,7 @@ class _PageItemsState extends State<PageItems> {
                         );
                       },
                       child: Tooltip(
-                        message: "Record/stop audio",
+                        message: _isTyping ? "Add note" : "Record/stop audio",
                         key: _recordtooltipKey,
                         triggerMode: TooltipTriggerMode.manual,
                         child: Icon(

@@ -61,3 +61,6 @@ distribute_options.yaml
 
 #-- npm 
 node_modules
+
+# env
+.env
