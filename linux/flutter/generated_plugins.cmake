@@ -13,6 +13,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   sentry_flutter
   sodium_libs
   url_launcher_linux
+  volume_controller
   window_size
 )
 
