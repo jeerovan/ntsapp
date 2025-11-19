@@ -326,19 +326,30 @@ String getNoteGroupDateTitle() {
 }
 
 String getFormattedTime(int utcMilliSeconds) {
+  final String timeFormat = ModelSetting.get("time_format", "H12");
   final DateTime dateTime =
       DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
-  final String formattedTime = DateFormat('hh:mm a')
-      .format(dateTime.toLocal()); // Converts to local time and formats
+
+  // Use 'HH:mm' for 24-hour format and 'hh:mm a' for 12-hour format
+  final String formatPattern = (timeFormat == "H24") ? 'HH:mm' : 'hh:mm a';
+  final String formattedTime =
+      DateFormat(formatPattern).format(dateTime.toLocal());
+
   return formattedTime;
 }
 
 String getFormattedDateTime(int utcMilliSeconds) {
+  final String timeFormat = ModelSetting.get("time_format", "H12");
   final DateTime dateTime =
       DateTime.fromMillisecondsSinceEpoch(utcMilliSeconds, isUtc: true);
-  final String formattedTime = DateFormat('dd MMM yy hh:mm a')
-      .format(dateTime.toLocal()); // Converts to local time and formats
-  return formattedTime;
+
+  // Use 'dd MMM yy HH:mm' for 24-hour format and 'dd MMM yy hh:mm a' for 12-hour
+  final String formatPattern =
+      (timeFormat == "H24") ? 'dd MMM yy HH:mm' : 'dd MMM yy hh:mm a';
+  final String formattedDateTime =
+      DateFormat(formatPattern).format(dateTime.toLocal());
+
+  return formattedDateTime;
 }
 
 DateTime getLocalDateFromUtcMilliSeconds(int utcMilliSeconds) {

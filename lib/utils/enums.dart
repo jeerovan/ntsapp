@@ -131,6 +131,7 @@ enum AppString {
   deviceRegistered,
   loggingEnabled,
   dataSeeded,
+  timeFormat,
   simulateTesting,
 
   // Supabase
@@ -169,6 +170,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.timeFormat:
+        return 'time_format';
       case AppString.hideSyncButton:
         return "hide_sync_button";
       case AppString.simulateTesting:

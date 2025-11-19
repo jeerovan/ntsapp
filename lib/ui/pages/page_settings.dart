@@ -45,10 +45,12 @@ class SettingsPageState extends State<SettingsPage> {
   bool isAuthEnabled = false;
   bool loggingEnabled =
       ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
+  String timeFormat = "H12";
 
   @override
   void initState() {
     super.initState();
+    timeFormat = ModelSetting.get(AppString.timeFormat.string, "H12");
     isAuthEnabled = ModelSetting.get("local_auth", "no") == "yes";
   }
 
@@ -93,6 +95,16 @@ class SettingsPageState extends State<SettingsPage> {
     if (mounted) {
       setState(() {
         loggingEnabled = enable;
+      });
+    }
+  }
+
+  Future<void> updateTimeFormat(String? newFormat) async {
+    if (newFormat == null) return;
+    await ModelSetting.set(AppString.timeFormat.string, newFormat);
+    if (mounted) {
+      setState(() {
+        timeFormat = newFormat;
       });
     }
   }
@@ -244,6 +256,29 @@ class SettingsPageState extends State<SettingsPage> {
                     _authenticate();
                   },
                 ),
+              ),
+            ),
+            ListTile(
+              // The icon at the beginning of the ListTile.
+              leading: const Icon(LucideIcons.timer, color: Colors.grey),
+              // The main text of the ListTile.
+              title: const Text('Time Format'),
+              // The widget at the end of the ListTile, in this case, a dropdown.
+              trailing: DropdownButton<String>(
+                value: timeFormat,
+                // The items that will be displayed in the dropdown.
+                items: const [
+                  DropdownMenuItem(
+                    value: "H12",
+                    child: Text('H12'),
+                  ),
+                  DropdownMenuItem(
+                    value: "H24",
+                    child: Text('H24'),
+                  ),
+                ],
+                // The function that is called when a new item is selected.
+                onChanged: (format) => updateTimeFormat(format),
               ),
             ),
             ListTile(
