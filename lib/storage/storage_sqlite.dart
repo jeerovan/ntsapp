@@ -46,7 +46,7 @@ class StorageSqlite {
       final dbPath = join(dbDir, dbFileName);
       logger.info("DbPath:$dbPath");
       return await openDatabase(dbPath,
-          version: 13,
+          version: 14,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
@@ -115,20 +115,27 @@ class StorageSqlite {
       await dbMigration_11(db);
       await dbMigration_12(db);
       await dbMigration_13(db);
+      await dbMigration_14(db);
     } else if (oldVersion == 9) {
       await dbMigration_10(db);
       await dbMigration_11(db);
       await dbMigration_12(db);
       await dbMigration_13(db);
+      await dbMigration_14(db);
     } else if (oldVersion == 10) {
       await dbMigration_11(db);
       await dbMigration_12(db);
       await dbMigration_13(db);
+      await dbMigration_14(db);
     } else if (oldVersion == 11) {
       await dbMigration_12(db);
       await dbMigration_13(db);
+      await dbMigration_14(db);
     } else if (oldVersion == 12) {
       await dbMigration_13(db);
+      await dbMigration_14(db);
+    } else if (oldVersion == 13) {
+      await dbMigration_14(db);
     }
     logger.info('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -195,24 +202,28 @@ class StorageSqlite {
       )
     ''');
     await db.execute('''
-      CREATE INDEX idx_item_text ON item(text)
-    ''');
-    await db.execute('''
-      CREATE VIRTUAL TABLE item_fts USING fts4(text, item_id);
+      CREATE VIRTUAL TABLE item_fts USING fts4(
+        content="",
+        text,
+        tokenize=unicode61
+      );
     ''');
     await db.execute('''
       CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
-        INSERT INTO item_fts(rowid, text, item_id) VALUES (new.rowid, new.text, new.id);
-      END;
-    ''');
-    await db.execute('''
-      CREATE TRIGGER item_au AFTER UPDATE ON item BEGIN
-        UPDATE item_fts SET text = new.text WHERE item_id = old.id;
+        INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
       END;
     ''');
     await db.execute('''
       CREATE TRIGGER item_ad AFTER DELETE ON item BEGIN
-        DELETE FROM item_fts WHERE item_id = old.id;
+        DELETE FROM item_fts WHERE docid = old.rowid;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_au AFTER UPDATE ON item 
+      WHEN old.text != new.text
+      BEGIN
+        DELETE FROM item_fts WHERE docid = old.rowid;
+        INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
       END;
     ''');
     await db.execute('''
@@ -746,6 +757,41 @@ class StorageSqlite {
     await db.execute(
       'CREATE TABLE logs(id INTEGER PRIMARY KEY AUTOINCREMENT, log TEXT)',
     );
+  }
+
+  Future<void> dbMigration_14(Database db) async {
+    await db.execute('DROP TRIGGER IF EXISTS item_ai');
+    await db.execute('DROP TRIGGER IF EXISTS item_au');
+    await db.execute('DROP TRIGGER IF EXISTS item_ad');
+    await db.execute('DROP TABLE IF EXISTS item_fts');
+    await db.execute('''
+      CREATE VIRTUAL TABLE item_fts USING fts4(
+        content="",
+        text,
+        tokenize=unicode61
+      );
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+        INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ad AFTER DELETE ON item BEGIN
+        DELETE FROM item_fts WHERE docid = old.rowid;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_au AFTER UPDATE ON item 
+      WHEN old.text != new.text
+      BEGIN
+        DELETE FROM item_fts WHERE docid = old.rowid;
+        INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
+      END;
+    ''');
+    await db.execute('''
+      INSERT INTO item_fts(docid, text) SELECT rowid, text FROM item;
+    ''');
   }
 
   Future<bool> _checkColumnExists(

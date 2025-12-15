@@ -29,17 +29,17 @@ class ModelSearchItem {
       String query, int offset, int limit) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-
+    String normalizedQuery = '"$query" *';
     List<Map<String, dynamic>> rows = [];
     try {
       List<Map<String, dynamic>> filteredRows = await db.rawQuery(
         '''SELECT item.*
        FROM item
-       JOIN item_fts ON item.id = item_fts.item_id
+       JOIN item_fts ON item.rowid = item_fts.docid
        WHERE item_fts MATCH ?
        ORDER BY item.at DESC
        LIMIT ? OFFSET ?''',
-        [query, limit, offset],
+        [normalizedQuery, limit, offset],
       );
 
       rows.addAll(filteredRows);
