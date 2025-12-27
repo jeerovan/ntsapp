@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_item.dart';
 import 'package:ntsapp/services/service_events.dart';
+import 'package:flutter_bidi_text/flutter_bidi_text.dart';
+
 
 import '../../utils/common.dart';
 
@@ -79,7 +81,7 @@ class _PageEditNoteState extends State<PageEditNote> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          child: TextField(
+          child: BidiTextField(
             controller: controller,
             keyboardType: TextInputType.multiline,
             textCapitalization: TextCapitalization.sentences,

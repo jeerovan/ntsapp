@@ -63,6 +63,7 @@ dependencies:
   video_player: ^2.9.2
   window_size: ^0.1.0
   workmanager: ^0.7.0
+  flutter_bidi_text: ^1.0.0
 
 dev_dependencies:
   flutter_test:
