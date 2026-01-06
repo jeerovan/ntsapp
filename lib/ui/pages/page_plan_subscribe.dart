@@ -173,21 +173,19 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                   revenueCatSupported
                       ? _packages.isEmpty
                           ? Center(child: Text("No plans available"))
-                          : Expanded(
-                              child: ListView.builder(
-                                shrinkWrap:
-                                    true, // Ensures it works inside Column
-                                physics:
-                                    BouncingScrollPhysics(), // Smooth scrolling
-                                itemCount: _packages.length,
-                                itemBuilder: (context, index) {
-                                  Package package = _packages[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 15),
-                                    child: _buildPlanOption(package),
-                                  );
-                                },
-                              ),
+                          : ListView.builder(
+                              shrinkWrap:
+                                  true, // Ensures it works inside Column
+                              physics:
+                                  BouncingScrollPhysics(), // Smooth scrolling
+                              itemCount: _packages.length,
+                              itemBuilder: (context, index) {
+                                Package package = _packages[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 15),
+                                  child: _buildPlanOption(package),
+                                );
+                              },
                             )
                       : Column(
                           children: [
