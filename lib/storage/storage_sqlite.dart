@@ -45,15 +45,20 @@ class StorageSqlite {
           : await getDbStoragePath();
       final dbPath = join(dbDir, dbFileName);
       logger.info("DbPath:$dbPath");
-      return await openDatabase(dbPath,
-          version: 14,
-          onConfigure: _onConfigure,
-          onCreate: _onCreate,
-          onUpgrade: _onUpgrade,
-          onOpen: _onOpen);
+      return await openDatabase(
+        dbPath,
+        version: 15,
+        onConfigure: _onConfigure,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+        onOpen: _onOpen,
+      );
     } catch (e, stackTrace) {
-      logger.error("Failed to initialize database",
-          error: e, stackTrace: stackTrace);
+      logger.error(
+        "Failed to initialize database",
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -62,8 +67,9 @@ class StorageSqlite {
     await database; // Forces lazy initialization if not already done
   }
 
-  static Future<void> initialize(
-      {ExecutionMode mode = ExecutionMode.appForeground}) async {
+  static Future<void> initialize({
+    ExecutionMode mode = ExecutionMode.appForeground,
+  }) async {
     bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
     if (!runningOnMobile) {
       // Initialize sqflite for FFI (non-mobile platforms)
@@ -73,7 +79,7 @@ class StorageSqlite {
     await instance.ensureInitialized();
     List<Map<String, dynamic>> keyValuePairs = await instance.getAll('setting');
     ModelSetting.settingJson = {
-      for (var pair in keyValuePairs) pair['id']: pair['value']
+      for (var pair in keyValuePairs) pair['id']: pair['value'],
     };
     AppLogger(prefixes: [mode.string]).info("Initialized SqliteDB");
   }
@@ -91,8 +97,9 @@ class StorageSqlite {
   }
 
   Future _onOpen(Database db) async {
-    List<Map<String, dynamic>> result =
-        await db.rawQuery('SELECT sqlite_version()');
+    List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT sqlite_version()',
+    );
     String version = result.first.values.first;
     logger.info('Database opened, Version: $version');
   }
@@ -101,8 +108,10 @@ class StorageSqlite {
     await initTables(db);
     logger.info('Database created with version: $version');
     int now = DateTime.now().toUtc().millisecondsSinceEpoch;
-    await db
-        .insert("setting", {"id": AppString.installedAt.string, "value": now});
+    await db.insert("setting", {
+      "id": AppString.installedAt.string,
+      "value": now,
+    });
     await createCategoryAndGroupsWithNotesOnFreshInstall(db);
   }
 
@@ -115,27 +124,29 @@ class StorageSqlite {
       await dbMigration_11(db);
       await dbMigration_12(db);
       await dbMigration_13(db);
-      await dbMigration_14(db);
+      await dbMigration_15(db);
     } else if (oldVersion == 9) {
       await dbMigration_10(db);
       await dbMigration_11(db);
       await dbMigration_12(db);
       await dbMigration_13(db);
-      await dbMigration_14(db);
+      await dbMigration_15(db);
     } else if (oldVersion == 10) {
       await dbMigration_11(db);
       await dbMigration_12(db);
       await dbMigration_13(db);
-      await dbMigration_14(db);
+      await dbMigration_15(db);
     } else if (oldVersion == 11) {
       await dbMigration_12(db);
       await dbMigration_13(db);
-      await dbMigration_14(db);
+      await dbMigration_15(db);
     } else if (oldVersion == 12) {
       await dbMigration_13(db);
-      await dbMigration_14(db);
+      await dbMigration_15(db);
     } else if (oldVersion == 13) {
-      await dbMigration_14(db);
+      await dbMigration_15(db);
+    } else if (oldVersion == 14) {
+      await dbMigration_15(db);
     }
     logger.info('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -203,9 +214,9 @@ class StorageSqlite {
     ''');
     await db.execute('''
       CREATE VIRTUAL TABLE item_fts USING fts4(
-        content="",
-        text,
-        tokenize=unicode61
+      content="item",
+      text,
+      tokenize=unicode61
       );
     ''');
     await db.execute('''
@@ -214,15 +225,21 @@ class StorageSqlite {
       END;
     ''');
     await db.execute('''
-      CREATE TRIGGER item_ad AFTER DELETE ON item BEGIN
+      CREATE TRIGGER item_bd BEFORE DELETE ON item BEGIN
+        DELETE FROM item_fts WHERE docid = old.rowid;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_bu BEFORE UPDATE ON item 
+      WHEN old.text IS NOT new.text
+      BEGIN
         DELETE FROM item_fts WHERE docid = old.rowid;
       END;
     ''');
     await db.execute('''
       CREATE TRIGGER item_au AFTER UPDATE ON item 
-      WHEN old.text != new.text
+      WHEN old.text IS NOT new.text
       BEGIN
-        DELETE FROM item_fts WHERE docid = old.rowid;
         INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
       END;
     ''');
@@ -294,7 +311,8 @@ class StorageSqlite {
   }
 
   Future<void> createCategoryAndGroupsWithNotesOnFreshInstall(
-      Database db) async {
+    Database db,
+  ) async {
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
     String dndCategoryId = uuid.v4();
@@ -336,7 +354,7 @@ class StorageSqlite {
       'state': 0,
       'data': null,
       'at': at,
-      'updated_at': at
+      'updated_at': at,
     });
 
     String tasksCategoryId = uuid.v4();
@@ -377,7 +395,7 @@ class StorageSqlite {
       'state': 0,
       'data': null,
       'at': at,
-      'updated_at': at
+      'updated_at': at,
     });
     await db.insert("item", {
       'id': uuid.v4(),
@@ -391,7 +409,7 @@ class StorageSqlite {
       'state': 0,
       'data': null,
       'at': at,
-      'updated_at': at
+      'updated_at': at,
     });
     await db.insert("item", {
       'id': uuid.v4(),
@@ -405,7 +423,7 @@ class StorageSqlite {
       'state': 0,
       'data': null,
       'at': at,
-      'updated_at': at
+      'updated_at': at,
     });
     await db.insert("item", {
       'id': uuid.v4(),
@@ -419,7 +437,7 @@ class StorageSqlite {
       'state': 0,
       'data': null,
       'at': at,
-      'updated_at': at
+      'updated_at': at,
     });
   }
 
@@ -433,7 +451,10 @@ class StorageSqlite {
   }
 
   Future<int> update(
-      String tableName, Map<String, dynamic> row, dynamic id) async {
+    String tableName,
+    Map<String, dynamic> row,
+    dynamic id,
+  ) async {
     final db = await instance.database;
     return await db.update(tableName, row, where: 'id = ?', whereArgs: [id]);
   }
@@ -444,7 +465,9 @@ class StorageSqlite {
   }
 
   Future<List<Map<String, dynamic>>> getWithId(
-      String tableName, dynamic id) async {
+    String tableName,
+    dynamic id,
+  ) async {
     final db = await instance.database;
     return await db.query(tableName, where: "id = ?", whereArgs: [id]);
   }
@@ -482,9 +505,7 @@ class StorageSqlite {
 
     // create note groups
     int groupCount = 1;
-    List<Map<String, dynamic>> groupRows = await db.query(
-      "notegroups",
-    );
+    List<Map<String, dynamic>> groupRows = await db.query("notegroups");
     for (Map<String, dynamic> groupRow in groupRows) {
       if (groupRow.containsKey("uuid") &&
           groupRow.containsKey("title") &&
@@ -517,7 +538,7 @@ class StorageSqlite {
             "color": colorToHex(color),
             "thumbnail": thumbnail,
             "at": at,
-            "updated_at": at
+            "updated_at": at,
           });
         }
         groupCount = groupCount + 1;
@@ -525,15 +546,16 @@ class StorageSqlite {
     }
 
     // process notes
-    List<Map<String, dynamic>> noteRows = await db.query(
-      "notes",
-    );
+    List<Map<String, dynamic>> noteRows = await db.query("notes");
     for (Map<String, dynamic> noteRow in noteRows) {
       if (noteRow.containsKey("uuid") && noteRow.containsKey("group_uuid")) {
         String? groupId = noteRow["group_uuid"];
         if (groupId == null) continue;
-        List<Map<String, dynamic>> groupRows =
-            await db.query("itemgroup", where: "id = ?", whereArgs: [groupId]);
+        List<Map<String, dynamic>> groupRows = await db.query(
+          "itemgroup",
+          where: "id = ?",
+          whereArgs: [groupId],
+        );
         if (groupRows.isNotEmpty) {
           String? noteId = noteRow["uuid"];
           if (noteId == null) continue;
@@ -557,7 +579,7 @@ class StorageSqlite {
                 "thumbnail": null,
                 "state": 0,
                 "at": at,
-                "updated_at": at
+                "updated_at": at,
               });
               break;
             case 2:
@@ -568,7 +590,7 @@ class StorageSqlite {
                     "path": mediaPath,
                     "mime": "image/jpg",
                     "name": "",
-                    "size": 0
+                    "size": 0,
                   };
                   String imageData = jsonEncode(imageDataMap);
                   await db.insert("item", {
@@ -583,7 +605,7 @@ class StorageSqlite {
                     "thumbnail": null,
                     "state": 0,
                     "at": at,
-                    "updated_at": at
+                    "updated_at": at,
                   });
                 }
               }
@@ -597,7 +619,7 @@ class StorageSqlite {
                     "mime": "audio/mp4",
                     "name": "",
                     "size": 0,
-                    "duration": "00:00"
+                    "duration": "00:00",
                   };
                   String audioData = jsonEncode(audioDataMap);
                   await db.insert("item", {
@@ -612,7 +634,7 @@ class StorageSqlite {
                     "thumbnail": null,
                     "state": 0,
                     "at": at,
-                    "updated_at": at
+                    "updated_at": at,
                   });
                 }
               }
@@ -633,7 +655,7 @@ class StorageSqlite {
                   "thumbnail": null,
                   "state": 0,
                   "at": at,
-                  "updated_at": at
+                  "updated_at": at,
                 });
               }
               break;
@@ -742,8 +764,9 @@ class StorageSqlite {
   Future<void> dbMigration_12(Database db) async {
     bool columnExists = await _checkColumnExists(db, 'category', 'state');
     if (!columnExists) {
-      await db
-          .execute("ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0");
+      await db.execute(
+        "ALTER TABLE category ADD COLUMN state INTEGER DEFAULT 0",
+      );
     }
   }
 
@@ -794,8 +817,52 @@ class StorageSqlite {
     ''');
   }
 
+  Future<void> dbMigration_15(Database db) async {
+    await db.execute('DROP TRIGGER IF EXISTS item_ai');
+    await db.execute('DROP TRIGGER IF EXISTS item_bu');
+    await db.execute('DROP TRIGGER IF EXISTS item_au');
+    await db.execute('DROP TRIGGER IF EXISTS item_bd');
+    await db.execute('DROP TRIGGER IF EXISTS item_ad');
+    await db.execute('DROP TABLE IF EXISTS item_fts');
+    await db.execute('''
+      CREATE VIRTUAL TABLE item_fts USING fts4(
+        content="item",
+        text,
+        tokenize=unicode61
+      );
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+        INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_bd BEFORE DELETE ON item BEGIN
+        DELETE FROM item_fts WHERE docid = old.rowid;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_bu BEFORE UPDATE ON item 
+      WHEN old.text IS NOT new.text
+      BEGIN
+        DELETE FROM item_fts WHERE docid = old.rowid;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER item_au AFTER UPDATE ON item 
+      WHEN old.text IS NOT new.text
+      BEGIN
+        INSERT INTO item_fts(docid, text) VALUES (new.rowid, new.text);
+      END;
+    ''');
+    await db.execute("INSERT INTO item_fts(item_fts) VALUES('rebuild')");
+  }
+
   Future<bool> _checkColumnExists(
-      Database db, String tableName, String columnName) async {
+    Database db,
+    String tableName,
+    String columnName,
+  ) async {
     final result = await db.rawQuery('PRAGMA table_info($tableName);');
     return result.any((row) => row['name'] == columnName);
   }
