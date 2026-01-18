@@ -29,7 +29,11 @@ class ModelSearchItem {
       String query, int offset, int limit) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;
-    String normalizedQuery = '"$query" *';
+
+    List<String> tokens = query.trim().split(RegExp(r'\s+'));
+
+    String normalizedQuery = tokens.map((token) => '$token*').join(' ');
+
     List<Map<String, dynamic>> rows = [];
     try {
       List<Map<String, dynamic>> filteredRows = await db.rawQuery(
