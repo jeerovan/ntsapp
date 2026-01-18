@@ -5,6 +5,8 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/services/service_events.dart';
+import 'package:ntsapp/utils/auth_guard.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/pages/page_home.dart';
@@ -207,6 +209,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    AuthGuard.lastActiveAt = DateTime.now();
     // Load the theme from saved preferences
     String? savedTheme = ModelSetting.get("theme", null);
     switch (savedTheme) {
@@ -257,12 +260,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (AuthGuard.isAuthenticating) {
+      logger.info("Lifecycle change ignored due to active authentication");
+      return;
+    }
     logger.info("App State:$state");
     if (Platform.isIOS || Platform.isAndroid) {
       if (state == AppLifecycleState.resumed) {
+        if (DateTime.now().difference(AuthGuard.lastActiveAt).inSeconds > 60) {
+          AuthGuard.lastActiveAt = DateTime.now();
+          EventStream().publish(AppEvent(type: EventType.authorise));
+        }
         SyncUtils().startAutoSync();
         logger.info("Started Foreground Sync");
       } else if (state == AppLifecycleState.paused) {
+        AuthGuard.lastActiveAt = DateTime.now();
         SyncUtils().stopAutoSync();
         logger.info("Stopped Foreground Sync");
       }

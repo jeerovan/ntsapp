@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
+import 'package:ntsapp/utils/auth_guard.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_preferences.dart';
 import 'package:ntsapp/ui/pages/page_desktop_category_groups.dart';
@@ -61,8 +62,11 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   final logger = AppLogger(prefixes: ["CategoriesGroups"]);
   final LocalAuthentication _auth = LocalAuthentication();
   SecureStorage secureStorage = SecureStorage();
+
   bool requiresAuthentication = false;
   bool isAuthenticated = false;
+  bool isAuthenticating = false;
+
   ModelCategory? category;
   ModelGroup? selectedGroup;
   String? appName = "";
@@ -96,9 +100,15 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
 
   void _handleAppEvent() {
     final AppEvent? event = EventStream().notifier.value;
+    logger.debug("App Event in Home: ${event?.type}");
     if (event == null) return;
 
     switch (event.type) {
+      case EventType.authorise:
+        if (requiresAuthentication) {
+          checkAuthAndLoad();
+        }
+        break;
       case EventType.changedCategoryId:
         if (!requiresAuthentication || isAuthenticated) {
           if (mounted) changedCategory(event.value);
@@ -235,6 +245,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
 
   // executes once while initstate
   Future<void> checkAuthAndLoad() async {
+    if (isAuthenticating) return;
+    isAuthenticating = true;
     appName = await secureStorage.read(key: AppString.appName.string);
     await checkUpdateStateVariables();
     setState(() {});
@@ -248,6 +260,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       }
     } catch (e, s) {
       logger.error("checkAuthAndLoad", error: e, stackTrace: s);
+    } finally {
+      isAuthenticating = false;
     }
   }
 
@@ -279,6 +293,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
 
   Future<void> _authenticateOnStart() async {
     try {
+      AuthGuard.isAuthenticating = true;
+      if (Platform.isIOS) await Future.delayed(Duration(milliseconds: 100));
       isAuthenticated = await _auth.authenticate(
         localizedReason: 'Please authenticate',
         options: const AuthenticationOptions(
@@ -296,6 +312,9 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     } catch (e, s) {
       logger.error("_authenticateOnStart", error: e, stackTrace: s);
       _exitApp();
+    } finally {
+      AuthGuard.isAuthenticating = false;
+      AuthGuard.lastActiveAt = DateTime.now();
     }
   }
 

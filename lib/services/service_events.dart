@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 enum EventType {
+  authorise,
   changedCategoryId,
   changedGroupId,
   changedItemId,
