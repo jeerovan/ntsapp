@@ -1,7 +1,7 @@
 name: ntsapp
 description: "Note Safe - Encrypted notes"
 publish_to: "none"
-version: 2.2.3+70
+version: 2.2.4+71
 
 environment:
   sdk: ^3.5.1
