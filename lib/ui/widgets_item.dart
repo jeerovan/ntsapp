@@ -5,6 +5,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:path/path.dart' as path;
 import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:flutter_bidi_text/flutter_bidi_text.dart';
+
 
 import '../utils/common.dart';
 import 'common_widgets.dart';
@@ -784,7 +786,7 @@ class NotePreviewSummary extends StatelessWidget {
         const SizedBox(width: 5), */
         expanded == true
             ? Expanded(
-                child: Text(
+                child: BidiText(
                   _getMessageText(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
@@ -795,7 +797,7 @@ class NotePreviewSummary extends StatelessWidget {
                 ),
               )
             : Flexible(
-                child: Text(
+                child: BidiText(
                   _getMessageText(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text

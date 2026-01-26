@@ -15,6 +15,8 @@ import 'package:provider/provider.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_bidi_text/flutter_bidi_text.dart';
+
 
 import '../utils/common.dart';
 import '../utils/enums.dart';
@@ -674,11 +676,11 @@ class _WidgetTextWithLinksState extends State<WidgetTextWithLinks> {
   @override
   Widget build(BuildContext context) {
     return Consumer<FontSizeController>(builder: (context, controller, child) {
-      return RichText(
+      return BidiRichText(
         text: TextSpan(
           children: _buildTextWithLinks(context, controller, widget.text),
         ),
-        textAlign: widget.align == null ? TextAlign.left : widget.align!,
+        textAlign: widget.align == null ? TextAlign.start : widget.align!,
       );
     });
   }
