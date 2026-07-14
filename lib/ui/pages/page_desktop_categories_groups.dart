@@ -272,13 +272,13 @@ class _PageCategoriesGroupsPaneState extends State<PageCategoriesGroupsPane> {
                             sharedContents: widget.sharedContents,
                             loadItemIdOnInit: itemId,
                             group: selectedGroup!),
-                    if (showEditNote)
+                    if (showEditNote && itemId != null)
                       PageEditNote(
                         itemId: itemId!,
                         runningOnDesktop: _runningOnDesktop,
                         setShowHidePage: _setShowHidePage,
                       ),
-                    if (showMediaViewer)
+                    if (showMediaViewer && itemId != null)
                       PageMediaViewer(
                           runningOnDesktop: _runningOnDesktop,
                           setShowHidePage: _setShowHidePage,

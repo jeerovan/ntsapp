@@ -510,7 +510,11 @@ class SyncUtils {
     Uint8List thumbnailBytes = base64Decode(thumbnail);
 
     String? masterKeyBase64 = await getMasterKey();
-    Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+    if (masterKeyBase64 == null) {
+      logger.error("pushThumbnail|Master key missing");
+      return;
+    }
+    Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
 
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
@@ -653,16 +657,24 @@ class SyncUtils {
                     File fileOut = File(fileOutPath);
                     if (fileOut.existsSync()) {
                       // duplicate note item (may be different group)
-                      ModelItemFile itemFile =
-                          ModelItemFile(id: item.id!, fileHash: fileName);
-                      await itemFile.insert();
+                      if (item.id == null) {
+                        logger.warning("fetchMapChanges|Item ID is null, skipping file check");
+                      } else {
+                        ModelItemFile itemFile =
+                            ModelItemFile(id: item.id!, fileHash: fileName);
+                        await itemFile.insert();
+                      }
                     }
                   }
                   // check for urls and add preview image
                   if (dataMap.containsKey("url_info")) {
                     Map<String, dynamic> urlInfo = dataMap["url_info"];
                     String imageUrl = urlInfo["image"];
-                    await checkDownloadNetworkImage(item.id!, imageUrl);
+                    if (item.id != null) {
+                      await checkDownloadNetworkImage(item.id!, imageUrl);
+                    } else {
+                      logger.warning("fetchMapChanges|Item ID is null, skipping image check");
+                    }
                   } else {
                     // remove if exists
                     String fileName = '${item.id}-urlimage.png';
@@ -738,7 +750,11 @@ class SyncUtils {
     if (changes.isEmpty) return;
     SupabaseClient supabaseClient = Supabase.instance.client;
     String? masterKeyBase64 = await getMasterKey();
-    Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+    if (masterKeyBase64 == null) {
+      logger.error("pushThumbnail|Master key missing");
+      return;
+    }
+    Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
 
     SodiumSumo sodium = await SodiumSumoInit.init();
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
@@ -943,11 +959,19 @@ class SyncUtils {
                 await cryptoUtils.encryptFile(fileIn, fileOut);
             if (fileEncryptionResult.isSuccess) {
               // may fail due to low storage
-              String encryptionKeyBase64 =
-                  fileEncryptionResult.getResult()!["key"];
+              var result = fileEncryptionResult.getResult();
+              if (result == null) {
+                logger.error("checkPushFile|Encryption result is null");
+                return;
+              }
+              String encryptionKeyBase64 = result["key"];
               Uint8List encryptionKeyBytes = base64Decode(encryptionKeyBase64);
               String? masterKeyBase64 = await getMasterKey();
-              Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+              if (masterKeyBase64 == null) {
+                logger.error("checkPushFile|Master key missing");
+                return;
+              }
+              Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
               Map<String, dynamic> encryptionKeyCipher =
                   cryptoUtils.getFileEncryptionKeyCipher(
                       encryptionKeyBytes, masterKeyBytes);
@@ -988,8 +1012,8 @@ class SyncUtils {
               await modelFile.insert();
               // start actual upload
               await pushFile(modelFile);
-            } else if (fileEncryptionResult.failureReason!
-                .contains("PathNotFoundException")) {
+            } else if (fileEncryptionResult.failureReason != null &&
+                fileEncryptionResult.failureReason!.contains("PathNotFoundException")) {
               change.deleteWithItem();
             }
           }
@@ -1207,13 +1231,21 @@ class SyncUtils {
     if (!fileOut.existsSync()) {
       if (fileIn.existsSync()) {
         String? masterKeyBase64 = await getMasterKey();
-        Uint8List masterKeyBytes = base64Decode(masterKeyBase64!);
+        if (masterKeyBase64 == null) {
+          logger.error("getCreateEncryptedFileToUpload|Master key missing");
+          return null;
+        }
+        Uint8List masterKeyBytes = base64Decode(masterKeyBase64);
         Uint8List keyNonceBytes = base64Decode(keyNonceBase64);
         Uint8List keyCipherBytes = base64Decode(keyCipherBase64);
         ExecutionResult keyDecryptionResult = cryptoUtils.decryptBytes(
             cipherBytes: keyCipherBytes,
             nonce: keyNonceBytes,
             key: masterKeyBytes);
+        if (!keyDecryptionResult.isSuccess) {
+          logger.error("getCreateEncryptedFileToUpload|Key decryption failed: ${keyDecryptionResult.failureReason}");
+          return null;
+        }
         Uint8List fileEncryptionKey =
             keyDecryptionResult.getResult()![AppString.decrypted.string];
         ExecutionResult fileEncryptionResult = await cryptoUtils

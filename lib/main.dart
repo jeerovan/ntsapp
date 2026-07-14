@@ -35,16 +35,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   // Process the sync message
   if (message.data['type'] == 'Sync') {
-    final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    if (!isDebugEnabled) {
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = sentryDsn;
-          options.tracesSampleRate = 1.0;
-          options.profilesSampleRate = 1.0;
-        },
-      );
-    }
     try {
       await StorageSqlite.initialize(mode: ExecutionMode.fcmBackground);
       await initializeDependencies(mode: ExecutionMode.fcmBackground);
@@ -74,16 +64,6 @@ void backgroundTaskDispatcher() {
           .error("Initialize failed", error: e, stackTrace: s);
       return Future.value(false);
     }
-    final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-    if (!isDebugEnabled) {
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = sentryDsn;
-          options.tracesSampleRate = 1.0;
-          options.profilesSampleRate = 1.0;
-        },
-      );
-    }
     try {
       switch (taskName) {
         case DataSync.syncTaskId:
@@ -107,23 +87,7 @@ Future<void> main() async {
   }
   await initializeMediaParams();
   await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
-  final String sentryDsn = const String.fromEnvironment("SENTRY_DSN");
-  if (isDebugEnabled) {
-    runApp(const MainApp());
-  } else {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = sentryDsn;
-        // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
-        // We recommend adjusting this value in production.
-        options.tracesSampleRate = 1.0;
-        // The sampling rate for profiling is relative to tracesSampleRate
-        // Setting to 1.0 will profile 100% of sampled transactions:
-        options.profilesSampleRate = 1.0;
-      },
-      appRunner: () => runApp(const MainApp()),
-    );
-  }
+  runApp(const MainApp());
   unawaited(initializeRestInParallel());
 }
 
