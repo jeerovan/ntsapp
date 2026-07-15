@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../services/service_locale.dart';
 import '../../utils/common.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -194,6 +195,234 @@ class SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> setLocale(String localeCode) async {
+    final provider = Provider.of<LocaleProvider>(context, listen: false);
+    provider.setLocale(Locale(localeCode));
+    await ModelSetting.set(AppString.locale.string, localeCode);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> clearLocale() async {
+    final provider = Provider.of<LocaleProvider>(context, listen: false);
+    // Clear locale to fallback to device default system language
+    provider.clearLocale();
+    await ModelSetting.delete(AppString.locale.string);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  final List<_AppLanguageOption> _supportedLanguages = [
+    _AppLanguageOption(
+      code: 'ar',
+      nativeName: 'العربية',
+      locale: Locale('ar'),
+    ),
+    _AppLanguageOption(
+      code: 'de',
+      nativeName: 'Deutsch',
+      locale: Locale('de'),
+    ),
+    _AppLanguageOption(
+      code: 'el',
+      nativeName: 'Ελληνικά',
+      locale: Locale('el'),
+    ),
+    _AppLanguageOption(
+      code: 'en',
+      nativeName: 'English',
+      locale: Locale('en'),
+    ),
+    _AppLanguageOption(
+      code: 'es',
+      nativeName: 'Español',
+      locale: Locale('es'),
+    ),
+    _AppLanguageOption(
+      code: 'fa',
+      nativeName: 'فارسی',
+      locale: Locale('fa'),
+    ),
+    _AppLanguageOption(
+      code: 'fr',
+      nativeName: 'Français',
+      locale: Locale('fr'),
+    ),
+    _AppLanguageOption(
+      code: 'he',
+      nativeName: 'עברית',
+      locale: Locale('he'),
+    ),
+    _AppLanguageOption(
+      code: 'hi',
+      nativeName: 'हिन्दी',
+      locale: Locale('hi'),
+    ),
+    _AppLanguageOption(
+      code: 'id',
+      nativeName: 'Bahasa Indonesia',
+      locale: Locale('id'),
+    ),
+    _AppLanguageOption(
+      code: 'it',
+      nativeName: 'Italiano',
+      locale: Locale('it'),
+    ),
+    _AppLanguageOption(
+      code: 'ja',
+      nativeName: '日本語',
+      locale: Locale('ja'),
+    ),
+    _AppLanguageOption(
+      code: 'ko',
+      nativeName: '한국어',
+      locale: Locale('ko'),
+    ),
+    _AppLanguageOption(
+      code: 'nl',
+      nativeName: 'Nederlands',
+      locale: Locale('nl'),
+    ),
+    _AppLanguageOption(
+      code: 'pt',
+      nativeName: 'Português',
+      locale: Locale('pt'),
+    ),
+    _AppLanguageOption(
+      code: 'ru',
+      nativeName: 'Русский',
+      locale: Locale('ru'),
+    ),
+    _AppLanguageOption(
+      code: 'th',
+      nativeName: 'ไทย',
+      locale: Locale('th'),
+    ),
+    _AppLanguageOption(
+      code: 'tr',
+      nativeName: 'Türkçe',
+      locale: Locale('tr'),
+    ),
+    _AppLanguageOption(
+      code: 'uk',
+      nativeName: 'Українська',
+      locale: Locale('uk'),
+    ),
+    _AppLanguageOption(
+      code: 'vi',
+      nativeName: 'Tiếng Việt',
+      locale: Locale('vi'),
+    ),
+    _AppLanguageOption(
+      code: 'zh',
+      nativeName: '简体中文',
+      locale: Locale('zh'),
+    ),
+  ];
+
+  String _normalizeLocaleCode(Locale locale) {
+    final countryCode = locale.countryCode;
+    if (countryCode != null && countryCode.isNotEmpty) {
+      return '${locale.languageCode}-r$countryCode';
+    }
+    return locale.languageCode;
+  }
+
+  _AppLanguageOption? _selectedLanguageOption() {
+    final savedCode = ModelSetting.get(AppString.locale.string, "");
+    if (savedCode.isEmpty) return null;
+
+    try {
+      return _supportedLanguages.firstWhere(
+        (item) => item.code == savedCode,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _showLanguagePicker(BuildContext context) async {
+    final selected = _selectedLanguageOption();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.65,
+          minChildSize: 0.35,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Select language',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView.separated(
+                    controller: scrollController,
+                    itemCount: _supportedLanguages.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final item = _supportedLanguages[index];
+                      final isSelected = selected?.code == item.code;
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 2,
+                        ),
+                        title: Text(item.nativeName),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              )
+                            : null,
+                        onTap: () {
+                          setLocale(_normalizeLocaleCode(item.locale));
+                          Navigator.of(sheetContext).pop();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -316,6 +545,19 @@ class SettingsPageState extends State<SettingsPage> {
                 ],
               ),
             ),
+            ListTile(
+              leading: const Icon(LucideIcons.languages, color: Colors.grey),
+              title: Text("Language"),
+              horizontalTitleGap: 24.0,
+              onTap: () => _showLanguagePicker(context),
+              trailing: _selectedLanguageOption() != null
+                  ? IconButton(
+                      onPressed: () {
+                        clearLocale();
+                      },
+                      icon: const Icon(LucideIcons.rotateCcw))
+                  : null,
+            ),
             if (widget.canShowBackupRestore)
               ListTile(
                 leading:
@@ -411,4 +653,16 @@ class SettingsPageState extends State<SettingsPage> {
         'https://play.google.com/store/apps/details?id=com.makenotetoself';
     Share.share("Make a $appName: $appLink");
   }
+}
+
+class _AppLanguageOption {
+  final String code;
+  final String nativeName;
+  final Locale locale;
+
+  const _AppLanguageOption({
+    required this.code,
+    required this.nativeName,
+    required this.locale,
+  });
 }
