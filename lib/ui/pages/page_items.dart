@@ -23,6 +23,8 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:siri_wave/siri_wave.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_bidi_text/flutter_bidi_text.dart';
+
 
 import '../../utils/common.dart';
 import '../../models/model_item.dart';
@@ -2010,7 +2012,7 @@ class _PageItemsState extends State<PageItems> {
                               ],
                             ),
                           ),
-                        TextField(
+                        BidiTextField(
                           controller: _textController,
                           focusNode: _textControllerFocus,
                           maxLines: 10,
