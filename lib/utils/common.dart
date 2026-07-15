@@ -507,6 +507,16 @@ Future<void> checkAndCreateDirectory(String filePath) async {
   }
 }
 
+Future<Directory> getAppTempDirectory() async {
+  Directory directory = await getApplicationDocumentsDirectory();
+  String appTempPath = path.joinAll([directory.path, "Temp"]);
+  Directory tempDir = Directory(appTempPath);
+  if (!tempDir.existsSync()) {
+    await tempDir.create(recursive: true);
+  }
+  return tempDir;
+}
+
 Future<void> initializeDirectories() async {
   SecureStorage secureStorage = SecureStorage();
   final directory = await getApplicationDocumentsDirectory();

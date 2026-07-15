@@ -1,10 +1,7 @@
 import 'dart:developer' as dev;
 import 'dart:io';
 
-import 'package:ntsapp/models/model_log.dart';
-
-import '../utils/enums.dart';
-import '../models/model_setting.dart';
+import '../utils/common.dart';
 
 // Custom Logger Class
 class AppLogger {
@@ -18,6 +15,11 @@ class AppLogger {
   static const String _yellow = '\x1B[33m';
   static const String _red = '\x1B[31m';
   static const String _white = '\x1B[37m';
+
+  static File? _logFile;
+  static const int _maxLogSize = 1024 * 1024; // 1MB rotation limit
+  static final List<String> _logQueue = [];
+  static bool _isWriting = false;
 
   /// Get color based on log level
   String _getColor(AppLogLevel level) {
@@ -33,6 +35,14 @@ class AppLogger {
     }
   }
 
+  /// Internal helper to get or initialize the log file
+  static Future<File> _getLogFile() async {
+    if (_logFile != null && await _logFile!.exists()) return _logFile!;
+    final tempDir = await getAppTempDirectory();
+    _logFile = File('${tempDir.path}/app_logs.txt');
+    return _logFile!;
+  }
+
   /// Log a message with an optional error and stack trace
   void log(
     String message, {
@@ -46,7 +56,7 @@ class AppLogger {
 
     // Format log message
     String logMessage =
-        "NTSAPP $prefixString [$levelStr] [$timestamp] $message";
+        "NoteSafe $prefixString [$levelStr] [$timestamp] $message";
 
     // Use dart:developer for efficient logging
     if (Platform.isAndroid || Platform.isIOS) {
@@ -65,14 +75,47 @@ class AppLogger {
       stdout.writeln(coloredMessage);
     }
 
-    if (ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes") {
-      insertToDb(logMessage);
-    }
+    _enqueueLog(logMessage);
   }
 
-  Future<void> insertToDb(String logMessage) async {
-    ModelLog log = await ModelLog.fromMap({"log": logMessage});
-    await log.insert();
+  static void _enqueueLog(String logMessage) {
+    _logQueue.add(logMessage);
+    _processQueue();
+  }
+
+  static Future<void> _processQueue() async {
+    if (_isWriting) return;
+    _isWriting = true;
+
+    try {
+      while (_logQueue.isNotEmpty) {
+        final messages = List<String>.from(_logQueue);
+        _logQueue.clear();
+
+        final file = await _getLogFile();
+
+        // Production-grade rotation: If file exceeds size limit, rotate to .old
+        if (await file.exists() && await file.length() > _maxLogSize) {
+          try {
+            final oldFile = File('${file.path}.old');
+            if (await oldFile.exists()) {
+              await oldFile.delete();
+            }
+            await file.rename(oldFile.path);
+          } catch (e) {
+            // Ignore rotation errors (e.g., another isolate already rotated the file)
+          }
+        }
+
+        // Use FileMode.append for atomic writes across multiple isolates/processes.
+        await file.writeAsString('${messages.join('\n')}\n',
+            mode: FileMode.append);
+      }
+    } catch (e) {
+      dev.log("Failed to write to log file queue", error: e);
+    } finally {
+      _isWriting = false;
+    }
   }
 
   /// Convenience methods

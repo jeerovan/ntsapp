@@ -126,6 +126,7 @@ enum AppString {
   appName,
   deviceId,
   fcmId,
+  locale,
   installedAt,
   reviewDialogShown,
   deviceRegistered,
@@ -172,6 +173,8 @@ extension AppStringExtension on AppString {
     switch (this) {
       case AppString.timeFormat:
         return 'time_format';
+      case AppString.locale:
+        return 'app_locale';
       case AppString.hideSyncButton:
         return "hide_sync_button";
       case AppString.simulateTesting:

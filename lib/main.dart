@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ntsapp/services/service_events.dart';
 import 'package:ntsapp/utils/auth_guard.dart';
 import 'package:ntsapp/utils/common.dart';
@@ -15,10 +16,11 @@ import 'package:ntsapp/storage/storage_sqlite.dart';
 import 'package:ntsapp/utils/utils_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:window_size/window_size.dart';
 
+import 'l10n/app_localizations.dart';
+import 'services/service_locale.dart';
 import 'ui/pages/page_media_migration.dart';
 import 'services/service_logger.dart';
 import 'services/service_notification.dart';
@@ -72,8 +74,7 @@ void backgroundTaskDispatcher() {
       }
       return Future.value(true);
     } catch (e, s) {
-      // Capture exceptions with Sentry
-      await Sentry.captureException(e, stackTrace: s);
+      AppLogger(prefixes: ["BG"]).error("Sync failed", error: e, stackTrace: s);
       return Future.value(false);
     }
   });
@@ -87,7 +88,16 @@ Future<void> main() async {
   }
   await initializeMediaParams();
   await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => LocaleProvider(),
+        ),
+      ],
+      child: const MainApp(),
+    ),
+  );
   unawaited(initializeRestInParallel());
 }
 
@@ -291,6 +301,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         onThemeToggle: _onThemeToggle,
       );
     }
+    final localeProvider = Provider.of<LocaleProvider>(context);
     return ChangeNotifierProvider(
       create: (_) => FontSizeController(),
       child: Builder(builder: (context) {
@@ -305,14 +316,19 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               child: child!,
             );
           },
+          locale: localeProvider.locale,
+          supportedLocales: L10n.all,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: AppThemes.lightTheme,
           darkTheme: AppThemes.darkTheme,
           themeMode: _themeMode,
           // Uses system theme by default
           home: page,
-          navigatorObservers: [
-            SentryNavigatorObserver(),
-          ],
           debugShowCheckedModeBanner: false,
         );
       }),

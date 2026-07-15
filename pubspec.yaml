@@ -23,6 +23,8 @@ dependencies:
   flutter_contacts: ^1.1.9+2
   flutter_launcher_icons: ^0.14.1
   flutter_local_notifications: ^19.0.0
+  flutter_localizations:
+    sdk: flutter
   flutter_map: ^7.0.2
   flutter_native_splash: ^2.4.3
   flutter_secure_storage: ^9.2.4
@@ -31,7 +33,7 @@ dependencies:
   http: ^1.2.2
   image: ^4.3.0
   image_picker: ^1.1.2
-  intl: ^0.19.0
+  intl: any
   latlong2: ^0.9.1
   local_auth: ^2.3.0
   lucide_icons: ^0.257.0
@@ -51,7 +53,6 @@ dependencies:
   receive_sharing_intent: ^1.8.1
   record: ^6.0.0
   scrollable_positioned_list: ^0.3.8
-  sentry_flutter: ^8.10.1
   share_plus: ^10.1.2
   siri_wave: ^2.1.0
   sodium_libs: ^3.4.3
@@ -70,6 +71,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - assets/
