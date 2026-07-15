@@ -1,5 +1,11 @@
+import 'dart:async';
+import 'dart:developer' as dev;
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:ntsapp/models/model_log.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+
+import '../../utils/common.dart';
 
 class PageLogs extends StatefulWidget {
   const PageLogs({super.key});
@@ -9,30 +15,86 @@ class PageLogs extends StatefulWidget {
 }
 
 class _PageLogsState extends State<PageLogs> {
-  late Future<List<ModelLog>> _logsFuture;
+  late Future<List<String>> _logsFuture;
   String? _filterText;
   String _filterType = 'All';
   final List<String> _logTypes = ['All', 'INFO', 'DEBUG', 'WARNING', 'ERROR'];
+  late final TextEditingController _searchController;
 
+  Timer? _debounce;
   @override
   void initState() {
     super.initState();
-    _refreshLogs();
+    _searchController = TextEditingController();
+    _loadLogs();
   }
 
-  void _refreshLogs() {
-    List<String> searches = [_filterType];
-    if (_filterText != null && _filterText!.isNotEmpty) {
-      searches.add(_filterText!.trim());
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _loadLogs() {
+    if (mounted) {
+      setState(() {});
     }
-    setState(() {
-      _logsFuture = ModelLog.all(searches);
-    });
+    _logsFuture = _readAndFilterLogs();
+  }
+
+  Future<List<String>> _readAndFilterLogs() async {
+    try {
+      final tempDir = await getAppTempDirectory();
+      final logFile = File('${tempDir.path}/app_logs.txt');
+      if (!await logFile.exists()) {
+        return [];
+      }
+
+      final lines = await logFile.readAsLines();
+
+      return lines.where((line) {
+        // Filter by type
+        if (_filterType != 'All') {
+          if (!line.contains('[$_filterType]')) {
+            return false;
+          }
+        }
+        // Filter by text
+        if (_filterText != null && _filterText!.isNotEmpty) {
+          if (!line.toLowerCase().contains(_filterText!.toLowerCase())) {
+            return false;
+          }
+        }
+        return true;
+      }).toList()
+        ..reversed.forEach((_) {}); // Keep order as is, but UI handles reverse
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> _clearLogs() async {
-    await ModelLog.clear();
-    _refreshLogs();
+    try {
+      final tempDir = await getAppTempDirectory();
+      final logFile = File('${tempDir.path}/app_logs.txt');
+      if (await logFile.exists()) {
+        await logFile.writeAsString('');
+      }
+    } catch (e) {
+      dev.log("Failed to clear logs", error: e);
+    }
+    _loadLogs();
+  }
+
+  void onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+    }
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _filterText = query.trim();
+      _loadLogs();
+    });
   }
 
   @override
@@ -50,7 +112,7 @@ class _PageLogsState extends State<PageLogs> {
               onChanged: (String? newValue) {
                 if (newValue != null) {
                   _filterType = newValue;
-                  _refreshLogs();
+                  _loadLogs();
                 }
               },
               items: _logTypes.map<DropdownMenuItem<String>>((String value) {
@@ -81,19 +143,59 @@ class _PageLogsState extends State<PageLogs> {
               children: [
                 // Text search field
                 Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                        hintText: 'Search logs...',
-                        border: OutlineInputBorder(),
-                        suffix: IconButton(
-                            iconSize: 20,
-                            onPressed: _refreshLogs,
-                            icon: Icon(Icons.search))),
-                    onChanged: (value) {
-                      setState(() {
-                        _filterText = value;
-                      });
-                    },
+                  child: SizedBox(
+                    height: 40,
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: onSearchChanged,
+                      textAlignVertical: TextAlignVertical.center,
+                      textInputAction: TextInputAction.search,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withAlpha(20),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16.0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: "Search logs..",
+                        hintStyle: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withAlpha(125),
+                        ),
+                        prefixIcon: Icon(
+                          LucideIcons.search,
+                          size: 20,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withAlpha(125),
+                        ),
+                        suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _searchController,
+                          builder: (context, value, child) {
+                            if (value.text.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return IconButton(
+                              icon: const Icon(LucideIcons.x, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                onSearchChanged('');
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -102,9 +204,9 @@ class _PageLogsState extends State<PageLogs> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                _refreshLogs();
+                _loadLogs();
               },
-              child: FutureBuilder<List<ModelLog>>(
+              child: FutureBuilder<List<String>>(
                 future: _logsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -124,7 +226,7 @@ class _PageLogsState extends State<PageLogs> {
                               horizontal: 8, vertical: 4),
                           child: ListTile(
                             title: Text(
-                              log.log,
+                              log,
                               style: const TextStyle(fontSize: 10),
                             ),
                           ),

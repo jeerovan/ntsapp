@@ -94,6 +94,9 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (context) => LocaleProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => FontSizeController(),
+        ),
       ],
       child: const MainApp(),
     ),
@@ -302,36 +305,30 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       );
     }
     final localeProvider = Provider.of<LocaleProvider>(context);
-    return ChangeNotifierProvider(
-      create: (_) => FontSizeController(),
-      child: Builder(builder: (context) {
-        return MaterialApp(
-          builder: (context, child) {
-            final textScaler =
-                Provider.of<FontSizeController>(context).textScaler;
-            return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: textScaler,
-              ),
-              child: child!,
-            );
-          },
-          locale: localeProvider.locale,
-          supportedLocales: L10n.all,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: AppThemes.lightTheme,
-          darkTheme: AppThemes.darkTheme,
-          themeMode: _themeMode,
-          // Uses system theme by default
-          home: page,
-          debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      builder: (context, child) {
+        final textScaler = Provider.of<FontSizeController>(context).textScaler;
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: textScaler,
+          ),
+          child: child!,
         );
-      }),
+      },
+      locale: localeProvider.locale,
+      supportedLocales: L10n.all,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      theme: AppThemes.lightTheme,
+      darkTheme: AppThemes.darkTheme,
+      themeMode: _themeMode,
+      // Uses system theme by default
+      home: page,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
