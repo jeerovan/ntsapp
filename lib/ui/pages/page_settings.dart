@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/backup_restore.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_setting.dart';
@@ -70,9 +71,10 @@ class SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _authenticate() async {
+    final loc = AppLocalizations.of(context)!;
     try {
       bool isAuthenticated = await _auth.authenticate(
-        localizedReason: 'Please authenticate',
+        localizedReason: loc.pleaseAuthenticate,
         options: const AuthenticationOptions(
           biometricOnly: false, // Use only biometric
           stickyAuth: true, // Keeps the authentication open
@@ -119,6 +121,7 @@ class SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> createDownloadBackup() async {
+    final loc = AppLocalizations.of(context)!;
     showProcessing();
     String status = "";
     Directory directory = await getApplicationDocumentsDirectory();
@@ -136,24 +139,25 @@ class SettingsPageState extends State<SettingsPage> {
     }
     hideProcessing();
     if (status.isNotEmpty) {
-      if (mounted) showAlertMessage(context, "Could not create", status);
+      if (mounted) showAlertMessage(context, loc.couldNotCreate, status);
     } else {
       try {
         // Use Share package to trigger download or share intent
         await Share.shareXFiles(
           [XFile(backupFilePath)],
-          text: 'Here is the backup file for your app.',
+          text: loc.hereIsTheBackupFile,
         );
       } catch (e) {
         status = e.toString();
       }
       if (status.isNotEmpty) {
-        if (mounted) showAlertMessage(context, "Could not share file", status);
+        if (mounted) showAlertMessage(context, loc.couldNotShareFile, status);
       }
     }
   }
 
   Future<void> restoreZipBackup() async {
+    final loc = AppLocalizations.of(context)!;
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
@@ -176,7 +180,7 @@ class SettingsPageState extends State<SettingsPage> {
           }
           hideProcessing();
           if (error.isNotEmpty) {
-            if (mounted) showAlertMessage(context, "Error", error);
+            if (mounted) showAlertMessage(context, loc.errorTitle, error);
           }
         } else if (selectedFile.name.startsWith("NTS")) {
           showProcessing();
@@ -188,7 +192,7 @@ class SettingsPageState extends State<SettingsPage> {
           }
           hideProcessing();
           if (error.isNotEmpty) {
-            if (mounted) showAlertMessage(context, "Error", error);
+            if (mounted) showAlertMessage(context, loc.errorTitle, error);
           }
         }
       }
@@ -425,6 +429,7 @@ class SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
@@ -562,7 +567,7 @@ class SettingsPageState extends State<SettingsPage> {
               ListTile(
                 leading:
                     const Icon(LucideIcons.databaseBackup, color: Colors.grey),
-                title: const Text('Backup'),
+                title: Text(loc.backupLabel),
                 horizontalTitleGap: 24.0,
                 onTap: () async {
                   createDownloadBackup();
@@ -571,7 +576,7 @@ class SettingsPageState extends State<SettingsPage> {
             if (widget.canShowBackupRestore)
               ListTile(
                 leading: const Icon(LucideIcons.rotateCcw, color: Colors.grey),
-                title: const Text('Restore'),
+                title: Text(loc.restoreLabel),
                 horizontalTitleGap: 24.0,
                 onTap: () async {
                   restoreZipBackup();
@@ -579,13 +584,13 @@ class SettingsPageState extends State<SettingsPage> {
               ),
             ListTile(
               leading: const Icon(LucideIcons.star, color: Colors.grey),
-              title: const Text('Leave a review'),
+              title: Text(loc.leaveAReviewLabel),
               horizontalTitleGap: 24.0,
               onTap: () => _redirectToFeedback(),
             ),
             ListTile(
               leading: const Icon(LucideIcons.share2, color: Colors.grey),
-              title: const Text('Share'),
+              title: Text(loc.shareLabel),
               horizontalTitleGap: 24.0,
               onTap: () {
                 _share();
@@ -594,13 +599,13 @@ class SettingsPageState extends State<SettingsPage> {
             if (Platform.isAndroid || Platform.isIOS)
               ListTile(
                 leading: const Icon(LucideIcons.monitor, color: Colors.grey),
-                title: const Text('Desktop App'),
+                title: Text(loc.desktopAppLinkLabel),
                 horizontalTitleGap: 24.0,
                 onTap: () => _redirectToDesktopApp(),
               ),
             ListTile(
               leading: const Icon(LucideIcons.list, color: Colors.grey),
-              title: const Text("Logging"),
+              title: Text(loc.loggingLabel),
               horizontalTitleGap: 24.0,
               trailing: Transform.scale(
                 scale: 0.7,
@@ -618,13 +623,13 @@ class SettingsPageState extends State<SettingsPage> {
                   return ListTile(
                     leading: const Icon(LucideIcons.info, color: Colors.grey),
                     horizontalTitleGap: 24.0,
-                    title: Text('Version: $version'),
+                    title: Text(loc.versionLabel(version)),
                     onTap: null,
                   );
                 } else {
-                  return const ListTile(
-                    leading: Icon(LucideIcons.info, color: Colors.grey),
-                    title: Text('Loading...'),
+                  return ListTile(
+                    leading: const Icon(LucideIcons.info, color: Colors.grey),
+                    title: Text(loc.loadingLabel),
                     horizontalTitleGap: 24.0,
                   );
                 }

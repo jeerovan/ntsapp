@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/storage/storage_secure.dart';
 import 'package:ntsapp/utils/utils_crypto.dart';
@@ -62,6 +63,7 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
   }
 
   Future<void> _submitForm(String passwordString) async {
+    final loc = AppLocalizations.of(context)!;
     setState(() {
       processing = true;
     });
@@ -87,7 +89,7 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
         key: passwordKeyBytes);
     if (masterKeyDecryptionResult.isFailure) {
       if (mounted) {
-        showAlertMessage(context, "Failure", "Invalid password key");
+        showAlertMessage(context, loc.failureTitle, loc.invalidPasswordKey);
       }
     } else {
       Uint8List decryptedMasterKeyBytes =
@@ -140,9 +142,10 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Enable Sync'),
+        title: Text(loc.enableSyncTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -160,8 +163,7 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                  "Please enter the key (password) you had created. Its a min 10 characters long with minimum 1 numeric, 1 lowercase, 1 uppercase and 1 special character."),
+              Text(loc.passwordRequirementsDescription),
               SizedBox(
                 height: 40,
               ),
@@ -170,13 +172,13 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
                 controller: _textController,
                 maxLines: null, // Allows all words to be visible
                 decoration: InputDecoration(
-                  labelText: 'Enter key',
+                  labelText: loc.enterKeyLabel,
                   border: OutlineInputBorder(),
-                  hintText: 'Enter key',
+                  hintText: loc.enterKeyLabel,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter key';
+                    return loc.pleaseEnterKey;
                   }
                   return null;
                 },
@@ -208,7 +210,7 @@ class _PagePasswordKeyInputState extends State<PagePasswordKeyInput> {
                         ),
                       ),
                     Text(
-                      'Submit',
+                      loc.submitLabel,
                       style: TextStyle(fontSize: 16.0, color: Colors.black),
                     ),
                   ],

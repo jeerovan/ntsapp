@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/models/model_category.dart';
 import 'package:ntsapp/models/model_category_group.dart';
@@ -78,26 +79,28 @@ class _PageArchivedCategoriesState extends State<PageArchivedCategories> {
   }
 
   Future<void> restoreSelectedItems() async {
+    final loc = AppLocalizations.of(context)!;
     for (ModelCategory category in _selection) {
       category.archivedAt = 0;
       await category.update(["archived_at"]);
     }
     if (mounted) {
       clearSelection();
-      displaySnackBar(context, message: "Restored.", seconds: 1);
+      displaySnackBar(context, message: loc.restoredLabel, seconds: 1);
     }
     await fetchArchivedCategories();
     await signalToUpdateHome();
   }
 
   Future<void> deleteSelectedItems() async {
+    final loc = AppLocalizations.of(context)!;
     for (ModelCategory category in _selection) {
       _archivedCategories.remove(category);
       await category.deleteCascade(withServerSync: true);
     }
     if (mounted) {
       clearSelection();
-      displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
+      displaySnackBar(context, message: loc.deletedPermanentlyLabel, seconds: 1);
     }
     await fetchArchivedCategories();
   }

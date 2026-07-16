@@ -4,6 +4,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:video_player/video_player.dart';
@@ -111,9 +112,10 @@ class _PageMediaViewerState extends State<PageMediaViewer> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Media"),
+        title: Text(loc.mediaTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {

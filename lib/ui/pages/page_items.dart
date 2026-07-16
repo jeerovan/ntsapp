@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_item_file.dart';
@@ -481,6 +482,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void _openFilterDialog() {
+    final loc = AppLocalizations.of(context)!;
     bool pinned = _filters["pinned"]!;
     bool starred = _filters["starred"]!;
     bool notes = _filters["notes"]!;
@@ -498,7 +500,7 @@ class _PageItemsState extends State<PageItems> {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
-            title: const Text('Filter notes'),
+            title: Text(loc.filterNotesTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -506,7 +508,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      tooltip: "Filter pinned notes",
+                      tooltip: loc.filterPinnedNotesTooltip,
                       onPressed: () {
                         setState(() {
                           pinned = !pinned;
@@ -521,7 +523,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
-                      tooltip: "Filter starred notes",
+                      tooltip: loc.filterStarredNotesTooltip,
                       onPressed: () {
                         setState(() {
                           starred = !starred;
@@ -544,7 +546,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      tooltip: "Filter text notes",
+                      tooltip: loc.filterTextNotesTooltip,
                       onPressed: () {
                         setState(() {
                           notes = !notes;
@@ -559,7 +561,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
-                      tooltip: "Filter tasks",
+                      tooltip: loc.filterTasksTooltip,
                       onPressed: () {
                         setState(() {
                           tasks = !tasks;
@@ -582,7 +584,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      tooltip: "Filter links",
+                      tooltip: loc.filterLinksTooltip,
                       onPressed: () {
                         setState(() {
                           links = !links;
@@ -597,7 +599,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
-                      tooltip: "Filter images",
+                      tooltip: loc.filterImagesTooltip,
                       onPressed: () {
                         setState(() {
                           images = !images;
@@ -620,7 +622,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      tooltip: "Filter audio",
+                      tooltip: loc.filterAudioTooltip,
                       onPressed: () {
                         setState(() {
                           audio = !audio;
@@ -635,7 +637,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
-                      tooltip: "Filter video",
+                      tooltip: loc.filterVideoTooltip,
                       onPressed: () {
                         setState(() {
                           video = !video;
@@ -658,7 +660,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      tooltip: "Filter files",
+                      tooltip: loc.filterFilesTooltip,
                       onPressed: () {
                         setState(() {
                           documents = !documents;
@@ -673,7 +675,7 @@ class _PageItemsState extends State<PageItems> {
                       ),
                     ),
                     IconButton(
-                      tooltip: "Filter contacts",
+                      tooltip: loc.filterContactsTooltip,
                       onPressed: () {
                         setState(() {
                           contacts = !contacts;
@@ -696,7 +698,7 @@ class _PageItemsState extends State<PageItems> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      tooltip: "Filter location",
+                      tooltip: loc.filterLocationTooltip,
                       onPressed: () {
                         setState(() {
                           locations = !locations;
@@ -720,13 +722,13 @@ class _PageItemsState extends State<PageItems> {
                   _clearFilters();
                   Navigator.of(context).pop(); // Close the dialog
                 },
-                child: const Text('Clear'),
+                child: Text(loc.clearSelectionTooltip),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
                 },
-                child: const Text('Show'),
+                child: Text(loc.submitLabel),
               ),
             ],
           );
@@ -801,6 +803,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> archiveSelectedItems() async {
+    final loc = AppLocalizations.of(context)!;
     for (ModelItem item in _selectedItems) {
       item.archivedAt = DateTime.now().toUtc().millisecondsSinceEpoch;
       await item.update(["archived_at"]);
@@ -809,7 +812,7 @@ class _PageItemsState extends State<PageItems> {
           .publish(AppEvent(type: EventType.changedItemId, value: item.id));
     }
     if (mounted) {
-      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+      displaySnackBar(context, message: loc.movedToTrash, seconds: 1);
     }
     clearSelection();
   }
@@ -847,15 +850,17 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> copyToClipboard() async {
+    final loc = AppLocalizations.of(context)!;
     String textToCopy = getTextsFromSelectedItems();
     Clipboard.setData(ClipboardData(text: textToCopy));
     if (mounted) {
-      displaySnackBar(context, message: 'Copied to clipboard', seconds: 1);
+      displaySnackBar(context, message: loc.copiedNotesToClipboard, seconds: 1);
     }
     clearSelection();
   }
 
   void shareNotes() {
+    final loc = AppLocalizations.of(context)!;
     List<String> texts = [];
     for (ModelItem item in _selectedItems) {
       switch (item.type) {
@@ -874,7 +879,7 @@ class _PageItemsState extends State<PageItems> {
           double lng = locationData["lng"];
           Map<String, String> mapUrls = getMapUrls(lat, lng);
           List<String> locationParts = [
-            "Location:",
+            loc.locationShareLabel,
             mapUrls["google"]!,
             mapUrls["apple"]!
           ];
@@ -883,11 +888,11 @@ class _PageItemsState extends State<PageItems> {
         case ItemType.contact:
           Map<String, dynamic> contactData = item.data!;
           String phones =
-              ["Contact:", contactData["phones"].join("\n")].join("\n");
+              [loc.contactShareLabel, contactData["phones"].join("\n")].join("\n");
           String emails =
-              ["Emails:", contactData["emails"].join("\n")].join("\n");
+              [loc.emailsShareLabel, contactData["emails"].join("\n")].join("\n");
           String addresses =
-              ["Addresses:", contactData["addresses"].join("\n")].join("\n");
+              [loc.addressesShareLabel, contactData["addresses"].join("\n")].join("\n");
           texts
               .add([contactData["name"], phones, emails, addresses].join("\n"));
           break;
@@ -985,6 +990,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Future<void> _startRecording() async {
+    final loc = AppLocalizations.of(context)!;
     logger.info("Starting Recording");
     if (await _audioRecorder.hasPermission()) {
       final tempDir = await getTemporaryDirectory();
@@ -1002,7 +1008,7 @@ class _PageItemsState extends State<PageItems> {
         if (e is PlatformException && e.code == "record") {
           if (mounted) {
             displaySnackBar(context,
-                message: "Microphone may not be available.", seconds: 1);
+                message: loc.microphoneNotAvailable, seconds: 1);
           }
         } else {
           logger.error("Recording failed", error: e, stackTrace: s);
@@ -1011,7 +1017,7 @@ class _PageItemsState extends State<PageItems> {
     } else {
       if (mounted) {
         displaySnackBar(context,
-            message: "Microphone permission is required to record audio.",
+            message: loc.microphonePermissionRequired,
             seconds: 1);
       }
     }
@@ -1517,6 +1523,7 @@ class _PageItemsState extends State<PageItems> {
         }
       });
     }
+    final loc = AppLocalizations.of(context)!;
     final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       appBar: AppBar(
@@ -1687,7 +1694,7 @@ class _PageItemsState extends State<PageItems> {
                     Positioned(
                       right: 0,
                       child: IconButton(
-                        tooltip: "Filter notes",
+                        tooltip: loc.filterNotesTitle,
                         onPressed: () {
                           _openFilterDialog();
                         },
@@ -1802,6 +1809,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   void openDocument(ModelItem item) {
+    final loc = AppLocalizations.of(context)!;
     if (_hasNotesSelected) {
       onItemTapped(item);
     } else {
@@ -1809,7 +1817,7 @@ class _PageItemsState extends State<PageItems> {
       File file = File(filePath);
       if (!file.existsSync()) {
         if (mounted) {
-          showAlertMessage(context, "Please wait", "File not available yet");
+          showAlertMessage(context, loc.pleaseWaitTitle, loc.fileNotAvailableYet);
         }
       } else {
         openMedia(filePath);
@@ -1860,6 +1868,7 @@ class _PageItemsState extends State<PageItems> {
   }
 
   Widget widgetSelectionOptions() {
+    final loc = AppLocalizations.of(context)!;
     double iconSize = 20;
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
@@ -1870,7 +1879,7 @@ class _PageItemsState extends State<PageItems> {
           children: [
             Flexible(
               child: IconButton(
-                  tooltip: "Clear selection",
+                  tooltip: loc.clearSelectionTooltip,
                   iconSize: iconSize,
                   onPressed: () {
                     clearSelection();
@@ -1882,7 +1891,7 @@ class _PageItemsState extends State<PageItems> {
             if (selectionHasOnlyTextOrTaskItem)
               Flexible(
                 child: IconButton(
-                  tooltip: "Copy notes",
+                  tooltip: loc.copyNotesTooltip,
                   iconSize: iconSize,
                   onPressed: () {
                     copyToClipboard();
@@ -1895,7 +1904,7 @@ class _PageItemsState extends State<PageItems> {
             if (selectionHasOnlyTextOrTaskItem)
               Flexible(
                 child: IconButton(
-                  tooltip: "Change task type",
+                  tooltip: loc.changeTaskTypeTooltip,
                   iconSize: iconSize,
                   onPressed: () {
                     updateSelectedItemsTaskType();
@@ -1907,7 +1916,7 @@ class _PageItemsState extends State<PageItems> {
               ),
             Flexible(
               child: IconButton(
-                tooltip: "Share notes",
+                tooltip: loc.shareNotesTooltip,
                 iconSize: iconSize,
                 onPressed: () {
                   shareNotes();
@@ -1918,7 +1927,7 @@ class _PageItemsState extends State<PageItems> {
             if (selectionHasOnlyTextOrTaskItem && _selectedItems.length == 1)
               Flexible(
                 child: IconButton(
-                  tooltip: "Edit note",
+                  tooltip: loc.editNoteTooltip,
                   iconSize: iconSize,
                   onPressed: () {
                     editNote();
@@ -1928,7 +1937,7 @@ class _PageItemsState extends State<PageItems> {
               ),
             Flexible(
               child: IconButton(
-                tooltip: "Star/unstar notes",
+                tooltip: loc.starUnstarNotesTooltip,
                 iconSize: iconSize,
                 onPressed: () {
                   updateSelectedItemsStarred();
@@ -1940,7 +1949,7 @@ class _PageItemsState extends State<PageItems> {
             ),
             Flexible(
               child: IconButton(
-                tooltip: "Move to trash",
+                tooltip: loc.moveToTrashTooltip,
                 iconSize: iconSize,
                 onPressed: () {
                   archiveSelectedItems();
@@ -1950,7 +1959,7 @@ class _PageItemsState extends State<PageItems> {
             ),
             Flexible(
               child: IconButton(
-                tooltip: "Pin/unpin notes",
+                tooltip: loc.pinUnpinNotesTooltip,
                 iconSize: iconSize,
                 onPressed: () {
                   updateSelectedItemsPinned();
@@ -1968,6 +1977,7 @@ class _PageItemsState extends State<PageItems> {
 
   // Input box with attachment and send button
   Widget widgetBottomSection() {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ConstrainedBox(
@@ -2002,7 +2012,7 @@ class _PageItemsState extends State<PageItems> {
                                   ),
                                 ),
                                 IconButton(
-                                  tooltip: "Cancel reply item",
+                                  tooltip: loc.cancelReplyTooltip,
                                   icon: const Icon(LucideIcons.x),
                                   onPressed:
                                       cancelReplyItem, // Cancel reply action
@@ -2023,8 +2033,8 @@ class _PageItemsState extends State<PageItems> {
                           decoration: InputDecoration(
                             filled: true,
                             hintText: _isCreatingTask
-                                ? "Create a task"
-                                : "Add a note...",
+                                ? loc.createTaskHint
+                                : loc.addNoteHint,
                             hintStyle: TextStyle(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -2061,7 +2071,7 @@ class _PageItemsState extends State<PageItems> {
                             suffixIcon: _isTyping
                                 ? null
                                 : IconButton(
-                                    tooltip: "Attach",
+                                    tooltip: loc.attachTooltip,
                                     icon: const Icon(LucideIcons.plus),
                                     color:
                                         Theme.of(context).colorScheme.outline,
@@ -2130,7 +2140,7 @@ class _PageItemsState extends State<PageItems> {
                         );
                       },
                       child: Tooltip(
-                        message: _isTyping ? "Add note" : "Record/stop audio",
+                        message: _isTyping ? loc.addNoteTooltip : loc.recordStopAudioTooltip,
                         key: _recordtooltipKey,
                         triggerMode: TooltipTriggerMode.manual,
                         child: Icon(
@@ -2164,6 +2174,7 @@ class _PageItemsState extends State<PageItems> {
 
   // Show attachment options
   void _showAttachmentOptions() {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -2173,7 +2184,7 @@ class _PageItemsState extends State<PageItems> {
               if (Platform.isAndroid || Platform.isIOS)
                 ListTile(
                   leading: const Icon(LucideIcons.contact, color: Colors.grey),
-                  title: const Text("Contact"),
+                  title: Text(loc.contactAttachmentLabel),
                   horizontalTitleGap: 24.0,
                   onTap: () {
                     Navigator.pop(context);
@@ -2182,7 +2193,7 @@ class _PageItemsState extends State<PageItems> {
                 ),
               ListTile(
                 leading: const Icon(LucideIcons.mapPin, color: Colors.grey),
-                title: const Text("Location"),
+                title: Text(loc.locationAttachmentLabel),
                 horizontalTitleGap: 24.0,
                 onTap: () {
                   Navigator.pop(context);
@@ -2192,7 +2203,7 @@ class _PageItemsState extends State<PageItems> {
               if (ImagePicker().supportsImageSource(ImageSource.camera))
                 ListTile(
                   leading: const Icon(LucideIcons.camera, color: Colors.grey),
-                  title: const Text("Camera"),
+                  title: Text(loc.cameraAttachmentLabel),
                   horizontalTitleGap: 24.0,
                   onTap: () {
                     Navigator.pop(context);
@@ -2201,7 +2212,7 @@ class _PageItemsState extends State<PageItems> {
                 ),
               ListTile(
                 leading: const Icon(LucideIcons.file, color: Colors.grey),
-                title: const Text("Files"),
+                title: Text(loc.filesAttachmentLabel),
                 horizontalTitleGap: 24.0,
                 onTap: () {
                   Navigator.pop(context);
@@ -2211,7 +2222,7 @@ class _PageItemsState extends State<PageItems> {
               ListTile(
                 leading:
                     const Icon(LucideIcons.checkCircle, color: Colors.grey),
-                title: const Text("Checklist"),
+                title: Text(loc.checklistAttachmentLabel),
                 horizontalTitleGap: 24.0,
                 onTap: () {
                   Navigator.pop(context);

@@ -65,3 +65,12 @@ node_modules
 
 # env
 .env
+
+# Graphify
+/graphify-out/
+check_cache.py
+detect.py
+extract_ast.py
+
+# LLM Related
+.claude

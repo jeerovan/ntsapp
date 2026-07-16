@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/ui/pages/page_user_task.dart';
@@ -72,6 +73,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
 
   /// Processes the validated 24 words further
   Future<void> _processWords(String words) async {
+    final loc = AppLocalizations.of(context)!;
     words = words.trim();
     setState(() {
       processing = true;
@@ -82,7 +84,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
     CryptoUtils cryptoUtils = CryptoUtils(sodium);
     if (!bip39.validateMnemonic(words)) {
       if (mounted) {
-        showAlertMessage(context, "Error", "Invalid word list");
+        showAlertMessage(context, loc.errorTitle, loc.invalidWordList);
         setState(() {
           processing = false;
         });
@@ -188,9 +190,10 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Enable Sync'),
+        title: Text(loc.accessKeyInputTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -211,7 +214,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
               children: [
                 // Text Widget
                 Text(
-                  "Please enter your 24-word recovery phrase or load a .txt file containing it.",
+                  loc.accessKeyInputDescription,
                   style: TextStyle(fontSize: 16.0),
                   textAlign: TextAlign.center,
                 ),
@@ -224,16 +227,16 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                   maxLines: null, // Allows all words to be visible
                   textInputAction: TextInputAction.done,
                   decoration: InputDecoration(
-                    labelText: 'Enter your 24-word phrase',
+                    labelText: loc.enterYour24WordPhrase,
                     border: OutlineInputBorder(),
-                    hintText: 'Enter your recovery phrase here',
+                    hintText: loc.enterYourRecoveryPhraseHere,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your recovery phrase';
+                      return loc.pleaseEnterYourRecoveryPhrase;
                     }
                     if (!_validateWordCount(value)) {
-                      return 'Recovery phrase must contain exactly 24 words';
+                      return loc.recoveryPhraseMustContain24Words;
                     }
                     return null;
                   },
@@ -268,7 +271,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                           ),
                         ),
                       Text(
-                        'Submit',
+                        loc.submitLabel,
                         style: TextStyle(fontSize: 16.0, color: Colors.black),
                       ),
                     ],
@@ -283,7 +286,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
-                        'Or',
+                        loc.orLabel,
                         style: TextStyle(
                             fontSize: 14.0, fontWeight: FontWeight.w500),
                       ),
@@ -301,7 +304,7 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
                     color: Colors.black,
                   ),
                   label: Text(
-                    "Select .txt File",
+                    loc.selectTxtFileLabel,
                     style: TextStyle(color: Colors.black),
                   ),
                 ),

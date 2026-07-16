@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
+import '../../l10n/app_localizations.dart';
 import '../../utils/common.dart';
 import '../../models/model_preferences.dart';
 import 'page_plan_status.dart';
@@ -114,9 +115,10 @@ class _PageAccessKeyState extends State<PageAccessKey> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Access Key'),
+        title: Text(loc.accessKeyTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -134,7 +136,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
           children: [
             // Description Text
             Text(
-              "Please save this key in a secure place. You'll need it to sync notes on another device.",
+              loc.accessKeyDescription,
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
@@ -162,7 +164,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
                 color: Colors.black,
               ),
               label: Text(
-                "Copy",
+                loc.copyLabel,
                 style: TextStyle(color: Colors.black),
               ),
             ),
@@ -175,7 +177,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
                 color: Colors.black,
               ),
               label: Text(
-                "Download as Text File",
+                loc.downloadAsTextFileLabel,
                 style: TextStyle(color: Colors.black),
               ),
             ),
@@ -192,7 +194,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
                 ),
               ),
               child: Text(
-                "Continue",
+                loc.continueLabel,
                 style: TextStyle(fontSize: 16.0),
               ),
             ),
