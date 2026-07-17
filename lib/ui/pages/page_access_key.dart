@@ -62,10 +62,11 @@ class _PageAccessKeyState extends State<PageAccessKey> {
       final file = File(filePath);
       await file.writeAsString(text);
 
-      await Share.shareXFiles(
-        [XFile(filePath)],
+      final params = ShareParams(
         text: 'Here is your access key.',
+        files: [XFile(filePath)],
       );
+      await SharePlus.instance.share(params);
     } catch (e) {
       if (mounted) {
         displaySnackBar(context, message: "Please try again.", seconds: 1);

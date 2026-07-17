@@ -1010,7 +1010,7 @@ Future<void> initializePackages(
   if (mode == ExecutionMode.appForeground) {
     MediaKit.ensureInitialized();
   }
-  CryptoUtils.init();
+  await CryptoUtils.init();
 }
 
 Future<void> initializeSupabase(
@@ -1023,7 +1023,8 @@ Future<void> initializeSupabase(
   final String supaUrl = const String.fromEnvironment("SUPABASE_URL");
   final String supaKey = const String.fromEnvironment("SUPABASE_KEY");
   if (supaUrl.isNotEmpty && supaKey.isNotEmpty) {
-    Supabase _ = await Supabase.initialize(url: supaUrl, anonKey: supaKey);
+    Supabase _ =
+        await Supabase.initialize(url: supaUrl, publishableKey: supaKey);
     await ModelSetting.set(AppString.supabaseInitialized.string, "yes");
     AppLogger(prefixes: [mode.string]).info("Initialized Supabase");
     EventStream().publish(AppEvent(type: EventType.checkPlanStatus));

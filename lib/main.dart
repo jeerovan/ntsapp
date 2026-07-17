@@ -348,8 +348,7 @@ class DataSync {
 
   // Mobile-specific initialization using Workmanager
   static Future<void> _initializeBackgroundForMobile() async {
-    await Workmanager()
-        .initialize(backgroundTaskDispatcher, isInDebugMode: isDebugEnabled);
+    await Workmanager().initialize(backgroundTaskDispatcher);
     await Workmanager().registerPeriodicTask(
       syncTaskId,
       syncTaskId,
@@ -358,7 +357,7 @@ class DataSync {
         networkType: NetworkType.connected,
         requiresBatteryNotLow: true,
       ),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
       backoffPolicy: BackoffPolicy.linear,
       backoffPolicyDelay: Duration(minutes: 15),
     );

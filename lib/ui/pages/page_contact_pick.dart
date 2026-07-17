@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class PageContacts extends StatefulWidget {
   const PageContacts({super.key});
@@ -23,13 +22,21 @@ class _PageContactsState extends State<PageContacts> {
     });
   }
 
-  Future _fetchContacts() async {
-    if (!await FlutterContacts.requestPermission()) {
-      setState(() => _permissionDenied = true);
-    } else {
-      final contacts = await FlutterContacts.getContacts(
-          withProperties: true, withThumbnail: true);
+  Future<void> _fetchContacts() async {
+    final status =
+        await FlutterContacts.permissions.request(PermissionType.readWrite);
+
+    // Support both granted and limited permissions (important on iOS/macOS)
+    if (status == PermissionStatus.granted ||
+        status == PermissionStatus.limited) {
+      final contacts = await FlutterContacts.getAll(properties: {
+        ContactProperty.name,
+        ContactProperty.phone,
+        ContactProperty.photoThumbnail,
+      });
       setState(() => _contacts = contacts);
+    } else {
+      setState(() => _permissionDenied = true);
     }
   }
 
@@ -37,28 +44,32 @@ class _PageContactsState extends State<PageContacts> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
-        appBar: AppBar(title: Text(loc.pickContactTitle)), body: _body());
+      appBar: AppBar(title: Text(loc.pickContactTitle)),
+      body: _body(),
+    );
   }
 
   Widget _body() {
     final loc = AppLocalizations.of(context)!;
     if (_permissionDenied) {
-      Center(
+      // FIXED: Added missing 'return' statement here
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               loc.permissionRequiredText,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
-                openAppSettings(); // Open app settings on tap
+                // Using the native API instead of the external permission_handler
+                FlutterContacts.permissions.openSettings();
               },
               child: Text(
                 loc.grantPermissionButtonLabel,
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
               ),
             ),
           ],
@@ -74,15 +85,16 @@ class _PageContactsState extends State<PageContacts> {
         Contact contact = _contacts![index];
 
         return ListTile(
-          leading: contact.thumbnail != null
-              ? CircleAvatar(
-                  backgroundImage: MemoryImage(contact.thumbnail!),
-                )
-              : const CircleAvatar(
-                  child: Icon(LucideIcons.userCircle),
-                ),
+          leading: CircleAvatar(
+            backgroundImage: contact.photo?.thumbnail != null
+                ? MemoryImage(contact.photo!.thumbnail!)
+                : null,
+            child: contact.photo?.thumbnail == null
+                ? const Icon(LucideIcons.userCircle)
+                : null,
+          ),
           title: Text(
-            contact.displayName.trim(),
+            contact.displayName ?? "",
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -94,7 +106,7 @@ class _PageContactsState extends State<PageContacts> {
               return Text(phone.number);
             }).toList(),
           ),
-          onTap: () async {
+          onTap: () {
             Navigator.of(context).pop(contact);
           },
         );

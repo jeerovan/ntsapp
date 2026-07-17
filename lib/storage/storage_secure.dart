@@ -13,10 +13,7 @@ class SecureStorage {
   SecureStorage._internal();
 
   // FlutterSecureStorage instance
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-      aOptions: AndroidOptions(
-    encryptedSharedPreferences: true,
-  ));
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // CRUD Methods
 

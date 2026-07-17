@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/services/service_logger.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:sodium/sodium_sumo.dart';
 import 'package:crypto/crypto.dart';
 import 'enums.dart';
 
@@ -19,8 +19,8 @@ class CryptoUtils {
   final SodiumSumo _sodium;
   CryptoUtils(this._sodium);
 
-  static init() {
-    SodiumSumoInit.init();
+  static Future<void> init() async {
+    await SodiumSumoInit.init();
   }
 
   SecureKey generateKey() {
@@ -32,7 +32,18 @@ class CryptoUtils {
     required String password,
     required Uint8List salt,
   }) async {
-    return await _sodium.runIsolated((sodium, secureKeys, keyPairs) {
+    // Capturing _sodium directly via 'this._sodium' inside the isolate closure
+    // will attempt to serialize the entire CryptoUtils class. This would raise
+    // an "Illegal argument in isolate message" error because of unsendable objects
+    // like the 'logger'.
+    //
+    // Assigning _sodium to a local variable ensures the closure only captures
+    // the sendable sodium instance.
+    final sodium = _sodium;
+
+    // runIsolated in sodium v4.x now accepts a callback with 2 arguments
+    // (secureKeys, keyPairs) instead of 3.
+    return await sodium.runIsolated((secureKeys, keyPairs) {
       return sodium.crypto.pwhash.call(
         password: password.toCharArray(),
         salt: salt,

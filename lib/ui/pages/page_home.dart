@@ -293,16 +293,14 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
   }
 
   Future<void> _authenticateOnStart() async {
+    final loc = AppLocalizations.of(context)!;
     try {
       AuthGuard.isAuthenticating = true;
       if (Platform.isIOS) await Future.delayed(Duration(milliseconds: 100));
       isAuthenticated = await _auth.authenticate(
-        localizedReason: AppLocalizations.of(context)!.pleaseAuthenticate,
-        options: const AuthenticationOptions(
-          biometricOnly: false, // Use only biometric
-          stickyAuth: true, // Keeps the authentication open
-        ),
-      );
+          localizedReason: loc.pleaseAuthenticate,
+          biometricOnly: false,
+          persistAcrossBackgrounding: true);
 
       if (!isAuthenticated) {
         _exitApp();

@@ -59,7 +59,10 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
       processing = true;
     });
     try {
-      CustomerInfo customerInfo = await Purchases.purchasePackage(package);
+      final params = PurchaseParams.package(package);
+      final purchaseResult = await Purchases.purchase(params);
+      logger.debug(purchaseResult.toString());
+      final customerInfo = purchaseResult.customerInfo;
       if (customerInfo.entitlements.active.isNotEmpty) {
         logger.info("Purchased Plan:${customerInfo.toString()}");
         // login should not be required

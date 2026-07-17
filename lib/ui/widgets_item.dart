@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:path/path.dart' as path;
-import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:sodium/sodium_sumo.dart';
 
 import '../utils/common.dart';
 import 'common_widgets.dart';

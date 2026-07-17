@@ -74,3 +74,6 @@ extract_ast.py
 
 # LLM Related
 .claude
+
+# codebase-memory
+.codebase-memory

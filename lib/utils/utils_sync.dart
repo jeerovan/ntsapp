@@ -21,7 +21,7 @@ import 'package:ntsapp/storage/storage_secure.dart';
 import 'package:ntsapp/utils/utils_crypto.dart';
 import 'package:ntsapp/utils/utils_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sodium_libs/sodium_libs_sumo.dart';
+import 'package:sodium/sodium_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;

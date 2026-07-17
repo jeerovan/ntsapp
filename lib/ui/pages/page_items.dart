@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_contacts/contact.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -859,7 +859,7 @@ class _PageItemsState extends State<PageItems> {
     clearSelection();
   }
 
-  void shareNotes() {
+  Future<void> shareNotes() async {
     final loc = AppLocalizations.of(context)!;
     List<String> texts = [];
     for (ModelItem item in _selectedItems) {
@@ -887,12 +887,18 @@ class _PageItemsState extends State<PageItems> {
           break;
         case ItemType.contact:
           Map<String, dynamic> contactData = item.data!;
-          String phones =
-              [loc.contactShareLabel, contactData["phones"].join("\n")].join("\n");
-          String emails =
-              [loc.emailsShareLabel, contactData["emails"].join("\n")].join("\n");
-          String addresses =
-              [loc.addressesShareLabel, contactData["addresses"].join("\n")].join("\n");
+          String phones = [
+            loc.contactShareLabel,
+            contactData["phones"].join("\n")
+          ].join("\n");
+          String emails = [
+            loc.emailsShareLabel,
+            contactData["emails"].join("\n")
+          ].join("\n");
+          String addresses = [
+            loc.addressesShareLabel,
+            contactData["addresses"].join("\n")
+          ].join("\n");
           texts
               .add([contactData["name"], phones, emails, addresses].join("\n"));
           break;
@@ -939,7 +945,8 @@ class _PageItemsState extends State<PageItems> {
           break;
       }
     }
-    Share.shareXFiles(medias, text: texts.join("\n"));
+    final params = ShareParams(text: texts.join("\n"), files: medias);
+    await SharePlus.instance.share(params);
     clearSelection();
   }
 
@@ -1017,8 +1024,7 @@ class _PageItemsState extends State<PageItems> {
     } else {
       if (mounted) {
         displaySnackBar(context,
-            message: loc.microphonePermissionRequired,
-            seconds: 1);
+            message: loc.microphonePermissionRequired, seconds: 1);
       }
     }
   }
@@ -1299,8 +1305,7 @@ class _PageItemsState extends State<PageItems> {
   void _addMedia(String type) async {
     if (type == "files") {
       try {
-        FilePickerResult? result = await FilePicker.platform.pickFiles(
-          allowMultiple: true,
+        FilePickerResult? result = await FilePicker.pickFiles(
           type: FileType.any, // Allows picking files of any type
         );
 
@@ -1322,8 +1327,7 @@ class _PageItemsState extends State<PageItems> {
             mounted) {
           final loc = AppLocalizations.of(context)!;
           displaySnackBar(context,
-              message: loc.externalStoragePermissionDenied,
-              seconds: 1);
+              message: loc.externalStoragePermissionDenied, seconds: 1);
         } else {
           logger.error("Error opening files", error: e, stackTrace: s);
         }
@@ -1366,25 +1370,37 @@ class _PageItemsState extends State<PageItems> {
           .then((value) {
         if (value != null) {
           Contact contact = value as Contact;
+
+          // Handle the nullable displayName and name properties
+          String displayName = contact.displayName ?? '';
+          String firstName = contact.name?.first ?? '';
+          String lastName = contact.name?.last ?? '';
+
           List<String> phones =
               contact.phones.map((phone) => phone.number).toList();
           List<String> emails =
               contact.emails.map((email) => email.address).toList();
-          List<String> addresses =
-              contact.addresses.map((address) => address.address).toList();
+
+          // Use the .formatted property instead of .address
+          List<String?> addresses =
+              contact.addresses.map((address) => address.formatted).toList();
+
           String phoneNumbers = phones.join("|");
           String details =
-              'DND|#contact|${contact.displayName}|${contact.name.first}|${contact.name.last}|$phoneNumbers';
+              'DND|#contact|$displayName|$firstName|$lastName|$phoneNumbers';
+
           Map<String, dynamic> data = {
-            "name": contact.displayName,
-            "first": contact.name.first,
-            "last": contact.name.last,
+            "name": displayName,
+            "first": firstName,
+            "last": lastName,
             "phones": phones,
             "emails": emails,
             "addresses": addresses
           };
+
+          // Access the thumbnail via the photo object
           _addItemToDbAndDisplayList(
-              details, ItemType.contact, contact.thumbnail, data);
+              details, ItemType.contact, contact.photo?.thumbnail, data);
         }
       });
     }
@@ -1450,29 +1466,29 @@ class _PageItemsState extends State<PageItems> {
         itemBuilder: (context) {
           final loc = AppLocalizations.of(context)!;
           return [
-          PopupMenuItem<int>(
-            value: 0,
-            child: Row(
-              children: [
-                Icon(LucideIcons.edit3, color: Colors.grey),
-                Container(width: 8),
-                const SizedBox(width: 8),
-                Text(loc.editMenuItemLabel),
-              ],
+            PopupMenuItem<int>(
+              value: 0,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.edit3, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 8),
+                  Text(loc.editMenuItemLabel),
+                ],
+              ),
             ),
-          ),
-          PopupMenuItem<int>(
-            value: 1,
-            child: Row(
-              children: [
-                Icon(LucideIcons.filter, color: Colors.grey),
-                Container(width: 8),
-                const SizedBox(width: 8),
-                Text(loc.filterMenuItemLabel),
-              ],
+            PopupMenuItem<int>(
+              value: 1,
+              child: Row(
+                children: [
+                  Icon(LucideIcons.filter, color: Colors.grey),
+                  Container(width: 8),
+                  const SizedBox(width: 8),
+                  Text(loc.filterMenuItemLabel),
+                ],
+              ),
             ),
-          ),
-        ];
+          ];
         },
       ),
     ];
@@ -1821,7 +1837,8 @@ class _PageItemsState extends State<PageItems> {
       File file = File(filePath);
       if (!file.existsSync()) {
         if (mounted) {
-          showAlertMessage(context, loc.pleaseWaitTitle, loc.fileNotAvailableYet);
+          showAlertMessage(
+              context, loc.pleaseWaitTitle, loc.fileNotAvailableYet);
         }
       } else {
         openMedia(filePath);
@@ -2145,7 +2162,9 @@ class _PageItemsState extends State<PageItems> {
                         );
                       },
                       child: Tooltip(
-                        message: _isTyping ? loc.addNoteTooltip : loc.recordStopAudioTooltip,
+                        message: _isTyping
+                            ? loc.addNoteTooltip
+                            : loc.recordStopAudioTooltip,
                         key: _recordtooltipKey,
                         triggerMode: TooltipTriggerMode.manual,
                         child: Icon(

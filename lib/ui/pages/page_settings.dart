@@ -74,12 +74,9 @@ class SettingsPageState extends State<SettingsPage> {
     final loc = AppLocalizations.of(context)!;
     try {
       bool isAuthenticated = await _auth.authenticate(
-        localizedReason: loc.pleaseAuthenticate,
-        options: const AuthenticationOptions(
-          biometricOnly: false, // Use only biometric
-          stickyAuth: true, // Keeps the authentication open
-        ),
-      );
+          localizedReason: loc.pleaseAuthenticate,
+          biometricOnly: false,
+          persistAcrossBackgrounding: true);
 
       if (isAuthenticated) {
         setAuthSetting();
@@ -143,10 +140,11 @@ class SettingsPageState extends State<SettingsPage> {
     } else {
       try {
         // Use Share package to trigger download or share intent
-        await Share.shareXFiles(
-          [XFile(backupFilePath)],
+        final params = ShareParams(
           text: loc.hereIsTheBackupFile,
+          files: [XFile(backupFilePath)],
         );
+        await SharePlus.instance.share(params);
       } catch (e) {
         status = e.toString();
       }
@@ -158,8 +156,7 @@ class SettingsPageState extends State<SettingsPage> {
 
   Future<void> restoreZipBackup() async {
     final loc = AppLocalizations.of(context)!;
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: false,
+    FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ["zip"],
     );
@@ -656,7 +653,8 @@ class SettingsPageState extends State<SettingsPage> {
     appName = appName ?? "";
     const String appLink =
         'https://play.google.com/store/apps/details?id=com.makenotetoself';
-    Share.share("Make a $appName: $appLink");
+    final params = ShareParams(text: "Make a $appName: $appLink");
+    await SharePlus.instance.share(params);
   }
 }
 
