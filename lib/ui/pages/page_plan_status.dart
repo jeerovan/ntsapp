@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/ui/pages/page_access_key.dart';
@@ -36,7 +37,6 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
   bool hasPlan = false;
   bool planExpired = false;
   String accessKeyType = "";
-  String keyManagementTitle = "";
   String? subscriptionManagementUrl;
 
   SupabaseClient supabaseClient = Supabase.instance.client;
@@ -87,11 +87,6 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
     String? keyType = await secureStorage.read(key: keyForKeyType);
     if (keyType != null) {
       accessKeyType = keyType;
-      if (accessKeyType == "key") {
-        keyManagementTitle = "View access key";
-      } else {
-        keyManagementTitle = "Change key password";
-      }
     }
     try {
       Map<String, dynamic> usedStorageResponse = {"b2_size": 12345678};
@@ -226,9 +221,10 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Account"),
+        title: Text(loc.accountMenuItemLabel),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -249,7 +245,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                     child: Column(
                       children: [
                         Text(
-                          "Could not fetch details",
+                          loc.couldNotFetchDetailsMessage,
                           style: TextStyle(fontSize: 15),
                         ),
                         SizedBox(
@@ -258,7 +254,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                         ElevatedButton(
                             onPressed: fetchPlanDetails,
                             child: Text(
-                              "Retry",
+                              loc.retryButtonLabel,
                               style: TextStyle(color: Colors.black),
                             ))
                       ],
@@ -268,7 +264,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Signed in as:",
+                        loc.signedInAsLabel,
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
@@ -283,7 +279,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       // Storage Usage
                       if (hasPlan) ...[
                         Text(
-                          "Storage Usage",
+                          loc.storageUsageLabel,
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w500),
                         ),
@@ -303,7 +299,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       ] else ...[
                         ListTile(
                           leading: Icon(LucideIcons.creditCard),
-                          title: Text("Subscribe"),
+                          title: Text(loc.subscribeLabel),
                           onTap: navigateToOnboardCheck,
                           trailing: Icon(Icons.arrow_forward_ios, size: 18),
                         ),
@@ -317,7 +313,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                             color: Colors.red,
                           ),
                           title: Text(
-                            "Plan expired! Renew",
+                            loc.planExpiredRenewLabel,
                           ),
                           onTap: navigateToOnboardCheck,
                           trailing: Icon(Icons.arrow_forward_ios, size: 18),
@@ -327,7 +323,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       // Manage Devices Button
                       ListTile(
                         leading: Icon(LucideIcons.monitorSmartphone),
-                        title: Text("Manage devices"),
+                        title: Text(loc.manageDevicesLabel),
                         onTap: manageDevices,
                         trailing: Icon(Icons.arrow_forward_ios, size: 18),
                       ),
@@ -337,7 +333,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       if (accessKeyType.isNotEmpty) ...[
                         ListTile(
                           leading: Icon(LucideIcons.key),
-                          title: Text(keyManagementTitle),
+                          title: Text(accessKeyType == "key" ? loc.viewAccessKeyLabel : loc.changeKeyPasswordLabel),
                           onTap: manageKey,
                           trailing: Icon(Icons.arrow_forward_ios, size: 18),
                         ),
@@ -348,7 +344,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       if (subscriptionManagementUrl != null) ...[
                         ListTile(
                           leading: Icon(LucideIcons.receipt),
-                          title: Text("Manage subscription"),
+                          title: Text(loc.manageSubscriptionLabel),
                           onTap: () {
                             openURL(subscriptionManagementUrl!);
                           },
@@ -360,7 +356,7 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       // Sign Out Button
                       ListTile(
                         leading: Icon(LucideIcons.logOut, color: Colors.red),
-                        title: Text("Sign Out",
+                        title: Text(loc.signOutButtonLabel,
                             style: TextStyle(color: Colors.red)),
                         onTap: signOut,
                       ),

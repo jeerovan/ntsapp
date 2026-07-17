@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/models/model_preferences.dart';
 import 'package:ntsapp/ui/pages/page_access_key_notice.dart';
@@ -39,6 +40,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       appBar: AppBar(
@@ -50,7 +52,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                 },
               )
             : null,
-        title: Text(welcomed ? 'Important' : 'Hello'),
+        title: Text(welcomed ? loc.importantTitle : loc.helloTitle),
         centerTitle: false,
         elevation: 0,
       ),
@@ -62,13 +64,13 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                 children: [
                   SizedBox(height: 20),
                   Text(
-                    'To encrypt your data, we’ll need a master encryption key.',
+                    loc.selectKeyMasterKeyDescription,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                   ),
                   SizedBox(height: 20),
                   Text(
-                    'There are 2 options - either you create a key yourself (similar to password) or we create it for you.',
+                    loc.selectKeyTwoOptionsDescription,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                   ),
@@ -86,9 +88,9 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                       SizedBox(
                         width: 10,
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'I understand that if I lose/forget encryption key, I may lose the data.',
+                          loc.understandLoseKeyAcknowledgement,
                           style: TextStyle(
                               fontSize: 12, fontWeight: FontWeight.w400),
                         ),
@@ -118,16 +120,16 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                         }
                       } else {
                         displaySnackBar(context,
-                            message: "Please acknowledge!", seconds: 2);
+                            message: loc.pleaseAcknowledgeMessage, seconds: 2);
                       }
                     },
                     child: Column(
                       children: [
                         Text(
-                          'Create the key for me',
+                          loc.createKeyForMeButtonLabel,
                           style: TextStyle(color: Colors.black),
                         ),
-                        Text('(Recommended)',
+                        Text(loc.recommendedLabel,
                             style: TextStyle(
                                 fontSize: 10,
                                 color: const Color.fromARGB(255, 53, 53, 53))),
@@ -157,11 +159,11 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                         }
                       } else {
                         displaySnackBar(context,
-                            message: "Please acknowledge!", seconds: 2);
+                            message: loc.pleaseAcknowledgeMessage, seconds: 2);
                       }
                     },
                     child: Text(
-                      'I’ll create the key myself',
+                      loc.createKeyMyselfButtonLabel,
                       style: TextStyle(
                         fontSize: 16,
                         decoration: TextDecoration.underline,
@@ -176,19 +178,19 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                 children: [
                   SizedBox(height: 20),
                   Text(
-                    'Welcome to $appName',
+                    loc.welcomeToAppName(appName ?? ""),
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                   ),
                   SizedBox(height: 20),
                   Text(
-                    'We use end-to-end encryption to make sure that all of your notes are safe and no one else can see them, not even us.',
+                    loc.e2eEncryptionDescription,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                   ),
                   SizedBox(height: 20),
                   Text(
-                    'Time to start the encryption!',
+                    loc.timeToStartEncryptionLabel,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                   ),
@@ -200,7 +202,7 @@ class _PageSelectKeyTypeState extends State<PageSelectKeyType> {
                       });
                     },
                     child: Text(
-                      'Next',
+                      loc.nextButtonLabel,
                       style: TextStyle(color: Colors.black),
                     ),
                   ),

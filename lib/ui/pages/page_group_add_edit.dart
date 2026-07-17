@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_category.dart';
 import 'package:ntsapp/models/model_category_group.dart';
@@ -227,12 +228,13 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (widget.category != null &&
         widget.category != previousCategory &&
         category != widget.category) {
       setColorCode();
     }
-    String pageTitle = widget.group == null ? "Add group" : "Edit group";
+    String pageTitle = widget.group == null ? loc.addGroupTitle : loc.editGroupTitle;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -256,7 +258,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Title",
+              loc.titleInputLabel,
               style: TextStyle(color: Colors.grey),
             ),
             TextField(
@@ -404,7 +406,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     const SizedBox(
                       width: 8,
                     ),
-                    const Text('Date/Time'),
+                    Text(loc.dateTimeToggleLabel),
                   ],
                 ),
                 Transform.scale(
@@ -431,7 +433,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     const SizedBox(
                       width: 8,
                     ),
-                    const Text('Note border'),
+                    Text(loc.noteBorderToggleLabel),
                   ],
                 ),
                 Transform.scale(
@@ -465,7 +467,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                       width: 8,
                     ),
                     Text(
-                      'Delete',
+                      loc.deleteGroupButtonLabel,
                       style:
                           TextStyle(color: Theme.of(context).colorScheme.error),
                     ),

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_preferences.dart';
@@ -82,8 +83,9 @@ class _PageUserTaskState extends State<PageUserTask> {
   }
 
   Future<void> pushLocalContent() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() {
-      taskTitle = "Encrypting notes";
+      taskTitle = loc.encryptingNotesTitle;
       processing = true;
     });
     Timer.periodic(Duration(seconds: 1), (timer) async {
@@ -103,8 +105,9 @@ class _PageUserTaskState extends State<PageUserTask> {
   }
 
   Future<void> checkCloudSync() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() {
-      taskTitle = "Fetching details";
+      taskTitle = loc.fetchingDetailsTitle;
       processing = true;
       errorFetching = false;
     });
@@ -178,8 +181,8 @@ class _PageUserTaskState extends State<PageUserTask> {
         setState(() {
           processing = false;
           errorFetching = true;
-          displayMessage = "Could not fetch";
-          buttonText = "Retry";
+          displayMessage = loc.couldNotFetchMessage;
+          buttonText = loc.retryButtonLabel;
         });
         return;
       }
@@ -199,11 +202,10 @@ class _PageUserTaskState extends State<PageUserTask> {
           processing = false;
           displayMessage = errorDetails["error"];
           if (displayMessage.contains("mismatch")) {
-            displayMessage =
-                "Your subscription is associated with another email. Please sign-out and use that to enable cloud storage.";
+            displayMessage = loc.subscriptionEmailMismatchMessage;
             userIdMismatch = true;
           }
-          buttonText = "Continue";
+          buttonText = loc.continueLabel;
         });
         return;
       } catch (e, s) {
@@ -211,8 +213,8 @@ class _PageUserTaskState extends State<PageUserTask> {
         setState(() {
           processing = false;
           errorFetching = true;
-          displayMessage = "Error checking plan details";
-          buttonText = "Retry";
+          displayMessage = loc.errorCheckingPlanDetailsMessage;
+          buttonText = loc.retryButtonLabel;
         });
         return;
       }
@@ -291,8 +293,9 @@ class _PageUserTaskState extends State<PageUserTask> {
   }
 
   Future<void> registerDevice() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() {
-      taskTitle = "Register device";
+      taskTitle = loc.registerDeviceTitle;
       processing = true;
       errorFetching = false;
     });
@@ -346,17 +349,17 @@ class _PageUserTaskState extends State<PageUserTask> {
       Map<String, dynamic> errorDetails =
           e.details is String ? jsonDecode(e.details) : e.details;
       displayMessage = errorDetails["error"];
-      buttonText = "Continue";
+      buttonText = loc.continueLabel;
       if (displayMessage.contains("limit")) {
         deviceLimitExceeded = true;
-        buttonText = "Manage";
+        buttonText = loc.manageButtonLabel;
       }
     } catch (e, s) {
       logger.error("registerDevice", error: e, stackTrace: s);
       setState(() {
         errorFetching = true;
-        displayMessage = "Could not fetch";
-        buttonText = "Retry";
+        displayMessage = loc.couldNotFetchMessage;
+        buttonText = loc.retryButtonLabel;
       });
     }
     setState(() {
@@ -365,8 +368,9 @@ class _PageUserTaskState extends State<PageUserTask> {
   }
 
   Future<void> checkEncryptionKeys() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() {
-      taskTitle = "Fetching Keys";
+      taskTitle = loc.fetchingKeysTitle;
       processing = true;
       errorFetching = false;
     });
@@ -444,8 +448,8 @@ class _PageUserTaskState extends State<PageUserTask> {
       logger.error("navigateAfterRegistering", error: e, stackTrace: s);
       setState(() {
         errorFetching = true;
-        displayMessage = "Could not fetch";
-        buttonText = "Retry";
+        displayMessage = loc.couldNotFetchMessage;
+        buttonText = loc.retryButtonLabel;
       });
     }
     setState(() {
@@ -454,10 +458,11 @@ class _PageUserTaskState extends State<PageUserTask> {
   }
 
   Future<void> signOut() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() {
       processing = true;
       errorFetching = false;
-      taskTitle = "Signing out";
+      taskTitle = loc.signingOutTitle;
     });
     // check internet
     bool hasInternet = await hasInternetConnection();
@@ -465,8 +470,8 @@ class _PageUserTaskState extends State<PageUserTask> {
       setState(() {
         errorFetching = true;
         processing = false;
-        displayMessage = "Please check internet";
-        buttonText = "Retry";
+        displayMessage = loc.pleaseCheckInternetMessage;
+        buttonText = loc.retryButtonLabel;
       });
     }
     bool success = await SyncUtils.signout();
@@ -481,8 +486,8 @@ class _PageUserTaskState extends State<PageUserTask> {
       setState(() {
         errorFetching = true;
         processing = false;
-        displayMessage = "Something went wrong";
-        buttonText = "Retry";
+        displayMessage = loc.somethingWentWrongMessage;
+        buttonText = loc.retryButtonLabel;
       });
     }
   }

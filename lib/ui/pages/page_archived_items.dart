@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/services/service_events.dart';
@@ -93,8 +94,9 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
           .publish(AppEvent(type: EventType.changedItemId, value: item.id));
     }
     if (mounted) {
+      final loc = AppLocalizations.of(context)!;
       clearSelection();
-      displaySnackBar(context, message: "Restored.", seconds: 1);
+      displaySnackBar(context, message: loc.restoredLabel, seconds: 1);
     }
     await fetchArchivedItems();
   }
@@ -105,8 +107,9 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
       await item.delete(withServerSync: true);
     }
     if (mounted) {
+      final loc = AppLocalizations.of(context)!;
       clearSelection();
-      displaySnackBar(context, message: "Deleted permanently.", seconds: 1);
+      displaySnackBar(context, message: loc.deletedPermanentlyLabel, seconds: 1);
     }
     await fetchArchivedItems();
   }
@@ -120,6 +123,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       body: Column(
@@ -160,7 +164,7 @@ class _PageArchivedItemsState extends State<PageArchivedItems> {
               child: ElevatedButton(
                   onPressed: selectAllItems,
                   child: Text(
-                    "Select all",
+                    loc.selectAllButtonLabel,
                     style: TextStyle(color: Colors.black),
                   )),
             ),

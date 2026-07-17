@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/widgets_item.dart';
 
@@ -94,10 +95,11 @@ class SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final edgeToEdgePadding = MediaQuery.of(context).padding;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Search notes"),
+        title: Text(loc.searchNotesTooltip),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -156,7 +158,7 @@ class SearchPageState extends State<SearchPage> {
                           color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: _buildDisplayItem(item),
+                        child: _buildDisplayItem(item, loc),
                       ),
                     );
                   },
@@ -187,7 +189,7 @@ class SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildDisplayItem(ModelSearchItem search) {
+  Widget _buildDisplayItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     switch (item.type) {
       case ItemType.text:
@@ -201,7 +203,7 @@ class SearchPageState extends State<SearchPage> {
       case ItemType.document:
         return _buildDocumentItem(search);
       case ItemType.location:
-        return _buildLocationItem(search);
+        return _buildLocationItem(search, loc);
       case ItemType.contact:
         return _buildContactItem(search);
       case ItemType.completedTask:
@@ -446,7 +448,7 @@ class SearchPageState extends State<SearchPage> {
     ]);
   }
 
-  Widget _buildLocationItem(ModelSearchItem search) {
+  Widget _buildLocationItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Column(
@@ -454,7 +456,7 @@ class SearchPageState extends State<SearchPage> {
       children: [
         _buildCategoryGroupHeader(search),
         const SizedBox(height: 5),
-        const Row(
+        Row(
           //mainAxisSize: MainAxisSize.max,
           //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -467,7 +469,7 @@ class SearchPageState extends State<SearchPage> {
               width: 10,
             ),
             Text(
-              "Location",
+              loc.locationItemLabel,
               style: TextStyle(fontSize: 15),
             ),
           ],

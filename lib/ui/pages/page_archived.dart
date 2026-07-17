@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/pages/page_archived_category.dart';
@@ -39,11 +40,12 @@ class _PageArchivedState extends State<PageArchived> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return DefaultTabController(
       length: 3, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Trash"),
+          title: Text(loc.trashMenuItemLabel),
           leading: widget.runningOnDesktop
               ? BackButton(
                   onPressed: () {
@@ -76,10 +78,10 @@ class _PageArchivedState extends State<PageArchived> {
             ),
           ],
           bottom: TabBar(
-            tabs: const [
-              Tab(text: "Notes"),
-              Tab(text: "Groups"),
-              Tab(text: 'Categories'),
+            tabs: [
+              Tab(text: loc.notesTabLabel),
+              Tab(text: loc.groupsTabLabel),
+              Tab(text: loc.categoriesTabLabel),
             ],
           ),
         ),

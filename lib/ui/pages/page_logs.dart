@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 
 import '../../utils/common.dart';
 
@@ -99,9 +100,10 @@ class _PageLogsState extends State<PageLogs> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Logs'),
+        title: Text(loc.logsMenuItemLabel),
         actions: [
           // Log type filter dropdown
           SizedBox(
@@ -164,7 +166,7 @@ class _PageLogsState extends State<PageLogs> {
                           borderRadius: BorderRadius.circular(12.0),
                           borderSide: BorderSide.none,
                         ),
-                        hintText: "Search logs..",
+                        hintText: loc.searchLogsHint,
                         hintStyle: TextStyle(
                           color: Theme.of(context)
                               .colorScheme
@@ -212,9 +214,9 @@ class _PageLogsState extends State<PageLogs> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(child: Text(loc.errorWithDetails(snapshot.error.toString())));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No logs available'));
+                    return Center(child: Text(loc.noLogsAvailable));
                   } else {
                     final logs = snapshot.data!;
                     return ListView.builder(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/models/model_category.dart';
 import 'package:ntsapp/models/model_item_group.dart';
@@ -362,6 +363,7 @@ class EmptyItemsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -369,7 +371,7 @@ class EmptyItemsScreen extends StatelessWidget {
           Icon(LucideIcons.edit, size: 100, color: Colors.grey[400]),
           SizedBox(height: 16),
           Text(
-            'Select a group to view notes',
+            loc.selectGroupToViewNotes,
             style: TextStyle(fontSize: 18, color: Colors.grey[600]),
           ),
         ],

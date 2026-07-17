@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/pages/page_desktop_categories_groups.dart';
 
@@ -100,27 +101,28 @@ class _PageMediaMigrationState extends State<PageMediaMigration> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Migrating Media"),
+        title: Text(loc.migratingMediaTitle),
       ),
-      body: const Center(
+      body: Center(
         child: Padding(
-          padding: EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(width: 20),
-                  Text("Processing...", style: TextStyle(fontSize: 18)),
+                  const CircularProgressIndicator(),
+                  const SizedBox(width: 20),
+                  Text(loc.processingMessage, style: const TextStyle(fontSize: 18)),
                 ],
               ),
-              SizedBox(height: 40),
-              Text("Please do not navigate away",
-                  style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 40),
+              Text(loc.doNotNavigateAwayMessage,
+                  style: const TextStyle(fontSize: 18)),
             ],
           ),
         ),

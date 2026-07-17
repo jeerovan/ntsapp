@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:ntsapp/models/model_preferences.dart';
 import 'package:ntsapp/ui/pages/page_signin.dart';
@@ -98,9 +99,10 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Yearly plans"),
+        title: Text(loc.yearlyPlansTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -127,7 +129,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                 }
               },
               child: Text(
-                'Login',
+                loc.loginLabel,
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
             ),
@@ -145,12 +147,12 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Sync all your notes',
+                        loc.syncAllYourNotesLabel,
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        'across your devices',
+                        loc.acrossYourDevicesLabel,
                         style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
@@ -161,9 +163,9 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildFeatureItem('End-to-end encryption'),
-                      _buildFeatureItem('Sync up to 3 devices'),
-                      _buildFeatureItem('Upgrade/Cancel anytime'),
+                      _buildFeatureItem(loc.featureEndToEndEncryption),
+                      _buildFeatureItem(loc.featureSyncUpTo3Devices),
+                      _buildFeatureItem(loc.featureUpgradeCancelAnytime),
                     ],
                   ),
 
@@ -172,7 +174,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                   /// ListView inside Expanded to prevent unbounded height issues
                   revenueCatSupported
                       ? _packages.isEmpty
-                          ? Center(child: Text("No plans available"))
+                          ? Center(child: Text(loc.noPlansAvailableMessage))
                           : ListView.builder(
                               shrinkWrap:
                                   true, // Ensures it works inside Column
@@ -199,7 +201,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                             SizedBox(
                               height: 20,
                             ),
-                            Text("Download the app & subscribe"),
+                            Text(loc.downloadAppSubscribeLabel),
                           ],
                         ),
 
@@ -208,7 +210,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                     padding: const EdgeInsets.only(top: 20),
                     child: Center(
                       child: Text(
-                        "Privacy • Terms",
+                        loc.privacyTermsLabel,
                         style: TextStyle(color: Colors.grey, fontSize: 10),
                       ),
                     ),
@@ -236,6 +238,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
   }
 
   Widget _buildPlanOption(Package package) {
+    final loc = AppLocalizations.of(context)!;
     StoreProduct product = package.storeProduct;
     final productId = product.identifier;
 
@@ -291,7 +294,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
-                          'Save 50%',
+                          loc.saveFiftyPercentLabel,
                           style: TextStyle(fontSize: 12, color: Colors.white),
                         ),
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/models/model_preferences.dart';
 import 'package:ntsapp/models/model_setting.dart';
@@ -59,6 +60,7 @@ class _PageSigninState extends State<PageSignin> {
 
   // OTP expire after 5min
   Future<void> sendOtp(String text) async {
+    final loc = AppLocalizations.of(context)!;
     if (processing) return;
     email = text.trim();
     if (email.isNotEmpty) {
@@ -84,7 +86,7 @@ class _PageSigninState extends State<PageSignin> {
         errorSendingOtp = true;
         if (mounted) {
           displaySnackBar(context,
-              message: 'Sending OTP failed. Please try again!', seconds: 2);
+              message: loc.sendingOtpFailedMessage, seconds: 2);
         }
       }
       if (mounted) {
@@ -97,6 +99,7 @@ class _PageSigninState extends State<PageSignin> {
 
   // cases: First time, Re-login
   Future<void> verifyOtp(String text) async {
+    final loc = AppLocalizations.of(context)!;
     if (processing) return;
     final otp = text.trim();
     final String email = ModelSetting.get(AppString.otpSentTo.string, "");
@@ -137,7 +140,7 @@ class _PageSigninState extends State<PageSignin> {
         errorVerifyingOtp = true;
         if (mounted) {
           displaySnackBar(context,
-              message: 'OTP verification failed. Please try again!',
+              message: loc.otpVerificationFailedMessage,
               seconds: 2);
         }
       }
@@ -177,9 +180,10 @@ class _PageSigninState extends State<PageSignin> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(otpSent ? 'Verify OTP' : 'Email SignIn'),
+        title: Text(otpSent ? loc.verifyOtpLabel : loc.emailSignInTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -199,7 +203,7 @@ class _PageSigninState extends State<PageSignin> {
                 TextField(
                   autofocus: true,
                   controller: emailController,
-                  decoration: InputDecoration(labelText: 'Enter Email'),
+                  decoration: InputDecoration(labelText: loc.enterEmailLabel),
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
                   onSubmitted: sendOtp,
@@ -229,7 +233,7 @@ class _PageSigninState extends State<PageSignin> {
                             ),
                           ),
                         Text(
-                          errorSendingOtp ? 'Retry' : 'Send OTP',
+                          errorSendingOtp ? loc.retryButtonLabel : loc.sendOtpLabel,
                           style: TextStyle(color: Colors.black),
                         ),
                       ],
@@ -239,13 +243,13 @@ class _PageSigninState extends State<PageSignin> {
               ),
               if (!signedIn && otpSent)
                 Text(
-                    "We have sent a one-time password (OTP) to your email $email"),
+                    loc.otpSentToEmailMessage(email)),
               SizedBox(height: 20),
               if (!signedIn && otpSent)
                 TextField(
                   autofocus: true,
                   controller: otpController,
-                  decoration: InputDecoration(labelText: 'Enter OTP'),
+                  decoration: InputDecoration(labelText: loc.enterOtpLabel),
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
                   onSubmitted: verifyOtp,
@@ -272,7 +276,7 @@ class _PageSigninState extends State<PageSignin> {
                           ),
                         ),
                       Text(
-                        errorVerifyingOtp ? 'Retry' : 'Verify OTP',
+                        errorVerifyingOtp ? loc.retryButtonLabel : loc.verifyOtpLabel,
                         style: TextStyle(color: Colors.black),
                       )
                     ])),
@@ -282,7 +286,7 @@ class _PageSigninState extends State<PageSignin> {
                 ),
               ),
               if (!signedIn && otpSent)
-                TextButton(onPressed: changeEmail, child: Text('Change email')),
+                TextButton(onPressed: changeEmail, child: Text(loc.changeEmailLabel)),
               SizedBox(
                 height: 20,
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_item.dart';
 import 'package:ntsapp/services/service_events.dart';
@@ -61,10 +62,11 @@ class _PageEditNoteState extends State<PageEditNote> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Edit",
+          loc.editMenuItemLabel,
           style: TextStyle(fontSize: 18),
         ),
         leading: widget.runningOnDesktop

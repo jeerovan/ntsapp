@@ -93,6 +93,30 @@ abstract class AppLocalizations {
     Locale('en')
   ];
 
+  /// Title for the important notice page.
+  ///
+  /// In en, this message translates to:
+  /// **'Important'**
+  String get importantTitle;
+
+  /// First paragraph of the access key notice.
+  ///
+  /// In en, this message translates to:
+  /// **'On the next page you\'ll see a series of 24 words. This is your unique and private encryption key and it is the ONLY way to recover your notes in case of logout, device loss or malfunction.'**
+  String get accessKeyNoticeDescription1;
+
+  /// Second paragraph of the access key notice.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not store the key. It is YOUR responsibility to store it in a safe place outside of {appName} app.'**
+  String accessKeyNoticeDescription2(String appName);
+
+  /// Button text to understand and show the key.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand.\nShow me the key.'**
+  String get iUnderstandShowMeTheKey;
+
   /// Placeholder text shown when no group is selected in desktop mode.
   ///
   /// In en, this message translates to:
@@ -596,6 +620,876 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter your 24-word recovery phrase or load a .txt file containing it.'**
   String get accessKeyInputDescription;
+
+  /// Label for the edit menu item in the app bar popup menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editMenuItemLabel;
+
+  /// Label for the filter menu item in the app bar popup menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filterMenuItemLabel;
+
+  /// Error message shown when external storage permission is denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission to access external storage was denied.'**
+  String get externalStoragePermissionDenied;
+
+  /// Hint message shown when the send button is pressed while not typing and not recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Press long to start recording.'**
+  String get pressLongToStartRecording;
+
+  /// Title for the tip dialog shown to first-time users.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know?'**
+  String get didYouKnowTitle;
+
+  /// Tooltip for the close button on dialogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeTooltip;
+
+  /// Description text about the app in the tip dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} is a completely private notes app. It doesn\'t collect your personal data or show you ads.\n\nWe hope you enjoy using it. Tell us what you think.'**
+  String appDescriptionContent(String appName);
+
+  /// Tooltip for the search notes button.
+  ///
+  /// In en, this message translates to:
+  /// **'Search notes'**
+  String get searchNotesTooltip;
+
+  /// Label for the sync menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get syncMenuItemLabel;
+
+  /// Label for the trash menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash'**
+  String get trashMenuItemLabel;
+
+  /// Label for the starred notes menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Starred notes'**
+  String get starredNotesMenuItemLabel;
+
+  /// Label for the settings menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsMenuItemLabel;
+
+  /// Label for the account menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountMenuItemLabel;
+
+  /// Label for the page menu item (shown in debug mode).
+  ///
+  /// In en, this message translates to:
+  /// **'Page'**
+  String get pageMenuItemLabel;
+
+  /// Label for the SQLite database viewer menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Sqlite'**
+  String get sqliteMenuItemLabel;
+
+  /// Label for the logs menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get logsMenuItemLabel;
+
+  /// Label for the reorder group menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder'**
+  String get reorderMenuItemLabel;
+
+  /// Label for the edit group menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editGroupMenuItemLabel;
+
+  /// Label for the delete group menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteGroupMenuItemLabel;
+
+  /// Tooltip message for drag handle on desktop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag handle to re-order'**
+  String get dragHandleReorderTooltip;
+
+  /// Tooltip message for hold and drag to re-order on mobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold and drag to re-order'**
+  String get holdAndDragReorderTooltip;
+
+  /// Empty state message shown when there are no groups on the home page.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi there!\n\nIt\'s kind of looking empty in here.\n\nTap the + button and create some notes to self. :)'**
+  String get emptyHomePageMessage;
+
+  /// Title shown when reordering groups on the home page.
+  ///
+  /// In en, this message translates to:
+  /// **'Reordering'**
+  String get reorderingTitle;
+
+  /// Placeholder label shown when shared contents are being loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Select...'**
+  String get selectEllipsisLabel;
+
+  /// Label for the date/time toggle switch in group settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Date/Time'**
+  String get dateTimeToggleLabel;
+
+  /// Label for the note border toggle switch in group settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Note border'**
+  String get noteBorderToggleLabel;
+
+  /// Label for the delete group button in group edit page.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteGroupButtonLabel;
+
+  /// Label for the notes tab in the trash page.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesTabLabel;
+
+  /// Label for the groups tab in the trash page.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groupsTabLabel;
+
+  /// Label for the categories tab in the trash page.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesTabLabel;
+
+  /// Label for location items in search results.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get locationItemLabel;
+
+  /// Page title for creating a new group.
+  ///
+  /// In en, this message translates to:
+  /// **'Add group'**
+  String get addGroupTitle;
+
+  /// Page title for editing an existing group.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get editGroupTitle;
+
+  /// Label for the title input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleInputLabel;
+
+  /// Title for the location permission dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Permission Required'**
+  String get locationPermissionRequiredTitle;
+
+  /// Content text for the location permission dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable location permissions in the app settings.'**
+  String get enableLocationPermissionsContent;
+
+  /// Label for the cancel button.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelButtonLabel;
+
+  /// Label for the open settings button.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettingsButtonLabel;
+
+  /// Title for the location services alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Services'**
+  String get locationServicesTitle;
+
+  /// Content text for the location services disabled alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable!'**
+  String get pleaseEnableLocationServicesContent;
+
+  /// Title for the location picker page.
+  ///
+  /// In en, this message translates to:
+  /// **'Select location'**
+  String get selectLocationTitle;
+
+  /// Tooltip for the use current location button.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get useCurrentLocationTooltip;
+
+  /// Label for the select all button in archived items.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAllButtonLabel;
+
+  /// Hint text for the search logs input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search logs..'**
+  String get searchLogsHint;
+
+  /// Message shown when there are no log entries to display.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs available'**
+  String get noLogsAvailable;
+
+  /// Title for the SQLite database viewer page.
+  ///
+  /// In en, this message translates to:
+  /// **'DB Viewer'**
+  String get dbViewerTitle;
+
+  /// Instruction text shown when no table is selected in the DB viewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a table to view its data'**
+  String get selectTableToViewData;
+
+  /// Hint text for the table selection dropdown in the DB viewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a table'**
+  String get selectTableDropdownHint;
+
+  /// Title for the contact picker page.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a contact'**
+  String get pickContactTitle;
+
+  /// Text shown when contact permission is required.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission required'**
+  String get permissionRequiredText;
+
+  /// Label for the grant permission button.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant permission'**
+  String get grantPermissionButtonLabel;
+
+  /// Title for the dummy/testing page.
+  ///
+  /// In en, this message translates to:
+  /// **'Page Dummy'**
+  String get pageDummyTitle;
+
+  /// Label for the simulate button on the dummy page.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulate'**
+  String get simulateButtonLabel;
+
+  /// Title for the select category page.
+  ///
+  /// In en, this message translates to:
+  /// **'Select category'**
+  String get selectCategoryTitle;
+
+  /// Title for the add category page.
+  ///
+  /// In en, this message translates to:
+  /// **'Add category'**
+  String get addCategoryTitle;
+
+  /// Title for the edit category page.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit category'**
+  String get editCategoryTitle;
+
+  /// Hint text for the category title input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Category title'**
+  String get categoryTitleHint;
+
+  /// Label for the color selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorLabel;
+
+  /// Label for the change color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Change color'**
+  String get changeColorLabel;
+
+  /// Toast message shown when a device is disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Device disabled!'**
+  String get deviceDisabledMessage;
+
+  /// Toast message shown when attempting to remove the current device.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t remove this device!'**
+  String get cannotRemoveThisDeviceMessage;
+
+  /// Title for the confirm remove device dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Remove'**
+  String get confirmRemoveTitle;
+
+  /// Content text for the confirm remove device dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure? This will delete all the data on the device.'**
+  String get confirmRemoveDeviceContent;
+
+  /// Label for the OK button.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get okButtonLabel;
+
+  /// Title for the registered devices page.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered Devices'**
+  String get registeredDevicesTitle;
+
+  /// Message shown when no devices are found.
+  ///
+  /// In en, this message translates to:
+  /// **'No devices found'**
+  String get noDevicesFoundMessage;
+
+  /// Label for an enabled device status.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabledLabel;
+
+  /// Label for a disabled device status.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get disabledLabel;
+
+  /// Title for the media migration page.
+  ///
+  /// In en, this message translates to:
+  /// **'Migrating Media'**
+  String get migratingMediaTitle;
+
+  /// Message shown while media is being processed.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get processingMessage;
+
+  /// Warning message asking the user not to navigate away during media migration.
+  ///
+  /// In en, this message translates to:
+  /// **'Please do not navigate away'**
+  String get doNotNavigateAwayMessage;
+
+  /// Error message shown when loading logs fails, including the error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorWithDetails(String error);
+
+  /// Validation error when the key contains a sequential pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Sequence not accepted'**
+  String get sequenceNotAcceptedError;
+
+  /// Validation error when the key matches one of the example keys.
+  ///
+  /// In en, this message translates to:
+  /// **'Examples not accepted'**
+  String get examplesNotAcceptedError;
+
+  /// Label and hint for the confirm key input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter key again'**
+  String get enterKeyAgainLabel;
+
+  /// Validation error when the confirm key field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter key again'**
+  String get pleaseEnterKeyAgainError;
+
+  /// Validation error when the two keys do not match.
+  ///
+  /// In en, this message translates to:
+  /// **'Keys do not match'**
+  String get keysDoNotMatchError;
+
+  /// Password rule description for one uppercase letter.
+  ///
+  /// In en, this message translates to:
+  /// **'1 uppercase letter'**
+  String get ruleUppercaseLetter;
+
+  /// Password rule description for one lowercase letter.
+  ///
+  /// In en, this message translates to:
+  /// **'1 lowercase letter'**
+  String get ruleLowercaseLetter;
+
+  /// Password rule description for one numeric character.
+  ///
+  /// In en, this message translates to:
+  /// **'1 numeric letter'**
+  String get ruleNumericLetter;
+
+  /// Password rule description for one special character.
+  ///
+  /// In en, this message translates to:
+  /// **'1 special character'**
+  String get ruleSpecialCharacter;
+
+  /// Password rule description for the minimum length.
+  ///
+  /// In en, this message translates to:
+  /// **'min 10 characters'**
+  String get ruleMinTenCharacters;
+
+  /// Title for the key examples dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Examples'**
+  String get examplesTitle;
+
+  /// Example key shown in the examples dialog. Do not translate.
+  ///
+  /// In en, this message translates to:
+  /// **'I would love 2 have @ll ...'**
+  String get passwordExample1;
+
+  /// Example key shown in the examples dialog. Do not translate.
+  ///
+  /// In en, this message translates to:
+  /// **'(A6r4K4D46r4)'**
+  String get passwordExample2;
+
+  /// Example key shown in the examples dialog. Do not translate.
+  ///
+  /// In en, this message translates to:
+  /// **'Mykey@2025'**
+  String get passwordExample3;
+
+  /// Example key shown in the examples dialog. Do not translate.
+  ///
+  /// In en, this message translates to:
+  /// **'C0ffee !s great f0r pr0ductivity'**
+  String get passwordExample4;
+
+  /// Label for the button to dismiss the examples dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotItButtonLabel;
+
+  /// Title for the encryption key creation page.
+  ///
+  /// In en, this message translates to:
+  /// **'Encryption key'**
+  String get encryptionKeyTitle;
+
+  /// Instructional text for creating an encryption key.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a long and hard to guess key (password). Remember to save it somewhere safe. If it lost/forgotten, it can not be recovered.'**
+  String get createKeyDescription;
+
+  /// Tooltip for the button that shows key examples.
+  ///
+  /// In en, this message translates to:
+  /// **'See examples'**
+  String get seeExamplesTooltip;
+
+  /// Message shown when plan details could not be fetched.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not fetch details'**
+  String get couldNotFetchDetailsMessage;
+
+  /// Label for the retry button.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryButtonLabel;
+
+  /// Label shown before the signed-in email.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as:'**
+  String get signedInAsLabel;
+
+  /// Label for the storage usage section.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Usage'**
+  String get storageUsageLabel;
+
+  /// Label for the subscribe option.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get subscribeLabel;
+
+  /// Label for the plan expired renew option.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan expired! Renew'**
+  String get planExpiredRenewLabel;
+
+  /// Label for the manage devices option.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage devices'**
+  String get manageDevicesLabel;
+
+  /// Label for the view access key option.
+  ///
+  /// In en, this message translates to:
+  /// **'View access key'**
+  String get viewAccessKeyLabel;
+
+  /// Label for the change key password option.
+  ///
+  /// In en, this message translates to:
+  /// **'Change key password'**
+  String get changeKeyPasswordLabel;
+
+  /// Label for the manage subscription option.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get manageSubscriptionLabel;
+
+  /// Label for the sign out option.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOutButtonLabel;
+
+  /// Title for the plan subscribe page.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly plans'**
+  String get yearlyPlansTitle;
+
+  /// Label for the login button.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginLabel;
+
+  /// Headline on the subscribe page.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync all your notes'**
+  String get syncAllYourNotesLabel;
+
+  /// Subheadline on the subscribe page.
+  ///
+  /// In en, this message translates to:
+  /// **'across your devices'**
+  String get acrossYourDevicesLabel;
+
+  /// Feature list item for end-to-end encryption.
+  ///
+  /// In en, this message translates to:
+  /// **'End-to-end encryption'**
+  String get featureEndToEndEncryption;
+
+  /// Feature list item for syncing up to 3 devices.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync up to 3 devices'**
+  String get featureSyncUpTo3Devices;
+
+  /// Feature list item for upgrading or cancelling anytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade/Cancel anytime'**
+  String get featureUpgradeCancelAnytime;
+
+  /// Message shown when no plans are available.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans available'**
+  String get noPlansAvailableMessage;
+
+  /// Label prompting the user to download the app and subscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the app & subscribe'**
+  String get downloadAppSubscribeLabel;
+
+  /// Label for the privacy and terms footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy • Terms'**
+  String get privacyTermsLabel;
+
+  /// Badge text showing the savings percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save 50%'**
+  String get saveFiftyPercentLabel;
+
+  /// Title for the select key type page before welcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello'**
+  String get helloTitle;
+
+  /// Description text on the select key type page.
+  ///
+  /// In en, this message translates to:
+  /// **'To encrypt your data, we’ll need a master encryption key.'**
+  String get selectKeyMasterKeyDescription;
+
+  /// Description of the two key creation options.
+  ///
+  /// In en, this message translates to:
+  /// **'There are 2 options - either you create a key yourself (similar to password) or we create it for you.'**
+  String get selectKeyTwoOptionsDescription;
+
+  /// Acknowledgement text for understanding the risk of losing the encryption key.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand that if I lose/forget encryption key, I may lose the data.'**
+  String get understandLoseKeyAcknowledgement;
+
+  /// Label for the button to let the app create the key.
+  ///
+  /// In en, this message translates to:
+  /// **'Create the key for me'**
+  String get createKeyForMeButtonLabel;
+
+  /// Label indicating a recommended option.
+  ///
+  /// In en, this message translates to:
+  /// **'(Recommended)'**
+  String get recommendedLabel;
+
+  /// Toast message asking the user to acknowledge the terms.
+  ///
+  /// In en, this message translates to:
+  /// **'Please acknowledge!'**
+  String get pleaseAcknowledgeMessage;
+
+  /// Label for the button to create the key yourself.
+  ///
+  /// In en, this message translates to:
+  /// **'I’ll create the key myself'**
+  String get createKeyMyselfButtonLabel;
+
+  /// Welcome message with the app name.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to {appName}'**
+  String welcomeToAppName(String appName);
+
+  /// Description of the end-to-end encryption used.
+  ///
+  /// In en, this message translates to:
+  /// **'We use end-to-end encryption to make sure that all of your notes are safe and no one else can see them, not even us.'**
+  String get e2eEncryptionDescription;
+
+  /// Message prompting the user to start encryption.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to start the encryption!'**
+  String get timeToStartEncryptionLabel;
+
+  /// Label for the next button.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextButtonLabel;
+
+  /// Toast message when sending the OTP fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending OTP failed. Please try again!'**
+  String get sendingOtpFailedMessage;
+
+  /// Toast message when verifying the OTP fails.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP verification failed. Please try again!'**
+  String get otpVerificationFailedMessage;
+
+  /// Title for the sign-in page before OTP is sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Email SignIn'**
+  String get emailSignInTitle;
+
+  /// Label for verifying the OTP (used as title and button).
+  ///
+  /// In en, this message translates to:
+  /// **'Verify OTP'**
+  String get verifyOtpLabel;
+
+  /// Label for the email input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Email'**
+  String get enterEmailLabel;
+
+  /// Label for the send OTP button.
+  ///
+  /// In en, this message translates to:
+  /// **'Send OTP'**
+  String get sendOtpLabel;
+
+  /// Message confirming the OTP was sent to the email.
+  ///
+  /// In en, this message translates to:
+  /// **'We have sent a one-time password (OTP) to your email {email}'**
+  String otpSentToEmailMessage(String email);
+
+  /// Label for the OTP input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter OTP'**
+  String get enterOtpLabel;
+
+  /// Label for the change email button.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email'**
+  String get changeEmailLabel;
+
+  /// Title shown while encrypting local notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypting notes'**
+  String get encryptingNotesTitle;
+
+  /// Title shown while fetching details.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching details'**
+  String get fetchingDetailsTitle;
+
+  /// Error message shown when fetching fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not fetch'**
+  String get couldNotFetchMessage;
+
+  /// Error message when the subscription email does not match.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription is associated with another email. Please sign-out and use that to enable cloud storage.'**
+  String get subscriptionEmailMismatchMessage;
+
+  /// Error message shown when checking plan details fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Error checking plan details'**
+  String get errorCheckingPlanDetailsMessage;
+
+  /// Title shown while registering the device.
+  ///
+  /// In en, this message translates to:
+  /// **'Register device'**
+  String get registerDeviceTitle;
+
+  /// Label for the manage button (e.g., manage devices).
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manageButtonLabel;
+
+  /// Title shown while fetching encryption keys.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching Keys'**
+  String get fetchingKeysTitle;
+
+  /// Title shown while signing out.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing out'**
+  String get signingOutTitle;
+
+  /// Error message asking the user to check internet connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check internet'**
+  String get pleaseCheckInternetMessage;
+
+  /// Generic error message when something goes wrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrongMessage;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

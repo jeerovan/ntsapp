@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
 import 'package:ntsapp/models/model_preferences.dart';
 import 'package:ntsapp/services/service_logger.dart';
 import 'package:ntsapp/utils/utils_sync.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../utils/common.dart';
 import '../common_widgets.dart';
 import '../../utils/enums.dart';
@@ -109,9 +111,10 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-          title: Text('Important'),
+          title: Text(loc.importantTitle),
           leading: widget.runningOnDesktop
               ? BackButton(
                   onPressed: () {
@@ -127,13 +130,13 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
           children: [
             SizedBox(height: 20),
             Text(
-              'On the next page you\'ll see a series of 24 words. This is your unique and private encryption key and it is the ONLY way to recover your notes in case of logout, device loss or malfunction.',
+              loc.accessKeyNoticeDescription1,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
             SizedBox(height: 20),
             Text(
-              'We do not store the key. It is YOUR responsibility to store it in a safe place outside of $appName app.',
+              loc.accessKeyNoticeDescription2(appName ?? ""),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
@@ -158,7 +161,7 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
                     ),
                   Text(
                     textAlign: TextAlign.center,
-                    'I understand.\nShow me the key.',
+                    loc.iUnderstandShowMeTheKey,
                     style: TextStyle(color: Colors.black),
                   ),
                 ],

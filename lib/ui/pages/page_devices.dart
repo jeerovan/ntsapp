@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/enums.dart';
@@ -52,6 +53,7 @@ class _PageDevicesState extends State<PageDevices> {
   }
 
   Future<void> disableDevice(String deviceId) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       setState(() {
         processing = true;
@@ -59,12 +61,12 @@ class _PageDevicesState extends State<PageDevices> {
       await supabase.functions
           .invoke("remove_device", body: {"deviceId": deviceId});
       if (mounted) {
-        displaySnackBar(context, message: 'Device disabled!', seconds: 2);
+        displaySnackBar(context, message: loc.deviceDisabledMessage, seconds: 2);
         fetchDevices(); // Refresh the list
       }
     } catch (e) {
       if (mounted) {
-        displaySnackBar(context, message: 'Please try again!', seconds: 2);
+        displaySnackBar(context, message: loc.pleaseTryAgain, seconds: 2);
       }
     } finally {
       if (mounted) {
@@ -76,31 +78,32 @@ class _PageDevicesState extends State<PageDevices> {
   }
 
   Future<void> showDisableDialog(String deviceId) async {
+    final loc = AppLocalizations.of(context)!;
     String? thisDeviceId =
         await ModelPreferences.get(AppString.deviceId.string);
     if (thisDeviceId != null && deviceId == thisDeviceId && mounted) {
       displaySnackBar(context,
-          message: "Can't remove this device!", seconds: 2);
+          message: loc.cannotRemoveThisDeviceMessage, seconds: 2);
       return;
     }
     if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Confirm Remove"),
+        title: Text(loc.confirmRemoveTitle),
         content:
-            Text("Are you sure? This will delete all the data on the device."),
+            Text(loc.confirmRemoveDeviceContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Cancel
-            child: Text("Cancel"),
+            child: Text(loc.cancelButtonLabel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
               disableDevice(deviceId);
             },
-            child: Text("OK", style: TextStyle(color: Colors.red)),
+            child: Text(loc.okButtonLabel, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -109,9 +112,10 @@ class _PageDevicesState extends State<PageDevices> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Registered Devices"),
+        title: Text(loc.registeredDevicesTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -124,7 +128,7 @@ class _PageDevicesState extends State<PageDevices> {
       body: processing
           ? Center(child: CircularProgressIndicator())
           : devices.isEmpty
-              ? Center(child: Text("No devices found"))
+              ? Center(child: Text(loc.noDevicesFoundMessage))
               : ListView.builder(
                   itemCount: devices.length,
                   itemBuilder: (context, index) {
@@ -141,7 +145,7 @@ class _PageDevicesState extends State<PageDevices> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            isEnabled ? "Enabled" : "Disabled",
+                            isEnabled ? loc.enabledLabel : loc.disabledLabel,
                             style: TextStyle(
                                 color: isEnabled ? Colors.green : Colors.red),
                           ),

@@ -1320,8 +1320,9 @@ class _PageItemsState extends State<PageItems> {
         if (e is PlatformException &&
             e.code == 'read_external_storage_denied' &&
             mounted) {
+          final loc = AppLocalizations.of(context)!;
           displaySnackBar(context,
-              message: 'Permission to access external storage was denied.',
+              message: loc.externalStoragePermissionDenied,
               seconds: 1);
         } else {
           logger.error("Error opening files", error: e, stackTrace: s);
@@ -1446,7 +1447,9 @@ class _PageItemsState extends State<PageItems> {
               break;
           }
         },
-        itemBuilder: (context) => [
+        itemBuilder: (context) {
+          final loc = AppLocalizations.of(context)!;
+          return [
           PopupMenuItem<int>(
             value: 0,
             child: Row(
@@ -1454,7 +1457,7 @@ class _PageItemsState extends State<PageItems> {
                 Icon(LucideIcons.edit3, color: Colors.grey),
                 Container(width: 8),
                 const SizedBox(width: 8),
-                const Text('Edit'),
+                Text(loc.editMenuItemLabel),
               ],
             ),
           ),
@@ -1465,11 +1468,12 @@ class _PageItemsState extends State<PageItems> {
                 Icon(LucideIcons.filter, color: Colors.grey),
                 Container(width: 8),
                 const SizedBox(width: 8),
-                const Text('Filters'),
+                Text(loc.filterMenuItemLabel),
               ],
             ),
           ),
-        ],
+        ];
+        },
       ),
     ];
   }
@@ -2111,8 +2115,9 @@ class _PageItemsState extends State<PageItems> {
                   _handleTextInput(text);
                 } else if (!_isTyping && !_isRecording) {
                   if (mounted) {
+                    final loc = AppLocalizations.of(context)!;
                     displaySnackBar(context,
-                        message: 'Press long to start recording.', seconds: 1);
+                        message: loc.pressLongToStartRecording, seconds: 1);
                   }
                 }
               },

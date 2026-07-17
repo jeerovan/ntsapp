@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/services/service_logger.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,9 +43,10 @@ class _PageDummyState extends State<PageDummy> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Page Dummy"),
+        title: Text(loc.pageDummyTitle),
       ),
       body: Column(
         children: [
@@ -53,7 +55,7 @@ class _PageDummyState extends State<PageDummy> {
           ElevatedButton(
               onPressed: simulate,
               child: Text(
-                "Simulate",
+                loc.simulateButtonLabel,
                 style: TextStyle(color: Colors.black),
               )),
         ],

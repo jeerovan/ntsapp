@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -34,18 +35,20 @@ class _PageContactsState extends State<PageContacts> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
-        appBar: AppBar(title: const Text('Pick a contact')), body: _body());
+        appBar: AppBar(title: Text(loc.pickContactTitle)), body: _body());
   }
 
   Widget _body() {
+    final loc = AppLocalizations.of(context)!;
     if (_permissionDenied) {
       Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Permission required',
+            Text(
+              loc.permissionRequiredText,
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
@@ -53,8 +56,8 @@ class _PageContactsState extends State<PageContacts> {
               onPressed: () {
                 openAppSettings(); // Open app settings on tap
               },
-              child: const Text(
-                "Grant permission",
+              child: Text(
+                loc.grantPermissionButtonLabel,
                 style: TextStyle(color: Colors.black),
               ),
             ),

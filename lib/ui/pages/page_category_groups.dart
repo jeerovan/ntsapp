@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/models/model_category_group.dart';
 import 'package:ntsapp/models/model_item_group.dart';
@@ -284,6 +285,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
+        final loc = AppLocalizations.of(context)!;
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -292,7 +294,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
               ListTile(
                 leading: const Icon(Icons.reorder, color: Colors.grey),
                 horizontalTitleGap: 24,
-                title: const Text('Reorder'),
+                title: Text(loc.reorderMenuItemLabel),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() {
@@ -303,7 +305,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
               ListTile(
                 leading: const Icon(LucideIcons.edit3, color: Colors.grey),
                 horizontalTitleGap: 24,
-                title: const Text('Edit'),
+                title: Text(loc.editGroupMenuItemLabel),
                 onTap: () {
                   Navigator.pop(context);
                   navigateToGroupAddEdit(group, category);
@@ -312,7 +314,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
               ListTile(
                 leading: const Icon(LucideIcons.trash, color: Colors.grey),
                 horizontalTitleGap: 24,
-                title: const Text('Delete'),
+                title: Text(loc.deleteGroupButtonLabel),
                 onTap: () {
                   Navigator.pop(context);
                   archiveGroup(group);
@@ -328,6 +330,7 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PopScope(
       canPop: !_isReordering,
       onPopInvokedWithResult: (didPop, result) {
@@ -341,10 +344,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
         appBar: AppBar(
           title: Text(
             _isReordering
-                ? "Reordering"
+                ? loc.reorderingTitle
                 : loadedSharedContents || widget.sharedContents.isEmpty
                     ? category.title
-                    : "Select...",
+                    : loc.selectEllipsisLabel,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 18,
@@ -382,12 +385,11 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
                         showCategorySign: false,
                       ),
                       onTap: () {
-                        String dragTitle = "Drag handle to re-order";
-                        if (Platform.isAndroid || Platform.isIOS) {
-                          dragTitle = "Hold and drag to re-order";
-                        }
                         displaySnackBar(context,
-                            message: dragTitle, seconds: 1);
+                            message: Platform.isAndroid || Platform.isIOS
+                                ? loc.holdAndDragReorderTooltip
+                                : loc.dragHandleReorderTooltip,
+                            seconds: 1);
                       },
                     );
                   },

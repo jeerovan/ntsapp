@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/enums.dart';
@@ -181,11 +182,12 @@ class _PageStarredItemsState extends State<PageStarredItems> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: _isSelecting
             ? _buildSelectionOptions()
-            : const Text("Starred notes"),
+            : Text(loc.starredNotesMenuItemLabel),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {

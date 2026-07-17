@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/pages/page_plan_status.dart';
@@ -105,6 +106,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
   }
 
   String? _validatePassword(String? password) {
+    final loc = AppLocalizations.of(context)!;
     if (password == null || password.isEmpty) {
       setState(() {
         hasTenChars = false;
@@ -113,7 +115,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
         hasDigits = false;
         hasSpecialChars = false;
       });
-      return 'Please enter key';
+      return loc.pleaseEnterKey;
     }
     setState(() {
       hasTenChars = password.replaceAll(' ', '').length >= 10;
@@ -131,13 +133,13 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
       return '';
     }
     if (_checkForSequences(password)) {
-      return 'Sequence not accepted';
+      return loc.sequenceNotAcceptedError;
     }
-    if (password == 'I would love 2 have @ll ...' ||
-        password == '(A6r4K4D46r4)' ||
-        password == 'Mykey@2025' ||
-        password == 'C0ffee !s great f0r pr0ductivity') {
-      return 'Examples not accepted';
+    if (password == loc.passwordExample1 ||
+        password == loc.passwordExample2 ||
+        password == loc.passwordExample3 ||
+        password == loc.passwordExample4) {
+      return loc.examplesNotAcceptedError;
     }
     return null;
   }
@@ -228,27 +230,28 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
   }
 
   void _showExamplesPopup(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Examples'),
+        title: Text(loc.examplesTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('I would love 2 have @ll ...'),
-            Divider(),
-            Text('(A6r4K4D46r4)'),
-            Divider(),
-            Text('Mykey@2025'),
-            Divider(),
-            Text('C0ffee !s great f0r pr0ductivity'),
+          children: [
+            Text(loc.passwordExample1),
+            const Divider(),
+            Text(loc.passwordExample2),
+            const Divider(),
+            Text(loc.passwordExample3),
+            const Divider(),
+            Text(loc.passwordExample4),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Got it'),
+            child: Text(loc.gotItButtonLabel),
           ),
         ],
       ),
@@ -257,9 +260,10 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Encryption key'),
+        title: Text(loc.encryptionKeyTitle),
         leading: widget.runningOnDesktop
             ? BackButton(
                 onPressed: () {
@@ -279,7 +283,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                    "Please enter a long and hard to guess key (password). Remember to save it somewhere safe. If it lost/forgotten, it can not be recovered."),
+                    loc.createKeyDescription),
                 SizedBox(
                   height: 40,
                 ),
@@ -288,12 +292,12 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                   autofocus: true,
                   maxLines: null, // Allows all words to be visible
                   decoration: InputDecoration(
-                    labelText: 'Enter key',
+                    labelText: loc.enterKeyLabel,
                     border: OutlineInputBorder(),
-                    hintText: 'Enter key',
+                    hintText: loc.enterKeyLabel,
                     suffixIcon: IconButton(
                       icon: Icon(Icons.info_outline),
-                      tooltip: 'See examples',
+                      tooltip: loc.seeExamplesTooltip,
                       onPressed: () {
                         _showExamplesPopup(context);
                       },
@@ -311,26 +315,26 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                   controller: _passwordCopyController,
                   maxLines: null, // Allows all words to be visible
                   decoration: InputDecoration(
-                    labelText: 'Enter key again',
+                    labelText: loc.enterKeyAgainLabel,
                     border: OutlineInputBorder(),
-                    hintText: 'Enter key again',
+                    hintText: loc.enterKeyAgainLabel,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter key again';
+                      return loc.pleaseEnterKeyAgainError;
                     }
                     if (value != _passwordController.text) {
-                      return 'Keys do not match';
+                      return loc.keysDoNotMatchError;
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: 20),
-                _buildRuleItem("1 uppercase letter", hasUppercase),
-                _buildRuleItem("1 lowercase letter", hasLowercase),
-                _buildRuleItem("1 numeric letter", hasDigits),
-                _buildRuleItem("1 special character", hasSpecialChars),
-                _buildRuleItem("min 10 characters", hasTenChars),
+                _buildRuleItem(loc.ruleUppercaseLetter, hasUppercase),
+                _buildRuleItem(loc.ruleLowercaseLetter, hasLowercase),
+                _buildRuleItem(loc.ruleNumericLetter, hasDigits),
+                _buildRuleItem(loc.ruleSpecialCharacter, hasSpecialChars),
+                _buildRuleItem(loc.ruleMinTenCharacters, hasTenChars),
                 SizedBox(height: 20.0),
 
                 // Submit Button
@@ -358,7 +362,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
                           ),
                         ),
                       Text(
-                        'Submit',
+                        loc.submitLabel,
                         style: TextStyle(fontSize: 16.0, color: Colors.black),
                       ),
                     ],

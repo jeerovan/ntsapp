@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_category_group.dart';
 import 'package:ntsapp/services/service_events.dart';
@@ -95,11 +96,11 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
 
   @override
   Widget build(BuildContext context) {
-    String task = category == null ? "Add" : "Edit";
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "$task category",
+          category == null ? loc.addCategoryTitle : loc.editCategoryTitle,
           style: const TextStyle(
             fontSize: 20,
           ),
@@ -118,7 +119,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Title"),
+            Text(loc.titleInputLabel),
             TextField(
               controller: categoryController,
               textCapitalization: TextCapitalization.sentences,
@@ -127,7 +128,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
               textInputAction: TextInputAction.done,
               onSubmitted: saveCategory,
               decoration: InputDecoration(
-                hintText: 'Category title',
+                hintText: loc.categoryTitleHint,
                 // Placeholder
                 hintStyle:
                     TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
@@ -161,7 +162,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
             const SizedBox(
               height: 30,
             ),
-            Text("Color"),
+            Text(loc.colorLabel),
             const SizedBox(
               height: 10,
             ),
@@ -191,7 +192,7 @@ class _PageCategoryAddEditState extends State<PageCategoryAddEdit> {
                   const SizedBox(
                     width: 12,
                   ),
-                  Text("Change color"),
+                  Text(loc.changeColorLabel),
                 ],
               ),
             ),

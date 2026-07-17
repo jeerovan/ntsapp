@@ -1,170 +1,965 @@
 {
+  "@@locale": "en",
+  "importantTitle": "Important",
+  "@importantTitle": {
+    "description": "Title for the important notice page."
+  },
+  "accessKeyNoticeDescription1": "On the next page you'll see a series of 24 words. This is your unique and private encryption key and it is the ONLY way to recover your notes in case of logout, device loss or malfunction.",
+  "@accessKeyNoticeDescription1": {
+    "description": "First paragraph of the access key notice."
+  },
+  "accessKeyNoticeDescription2": "We do not store the key. It is YOUR responsibility to store it in a safe place outside of {appName} app.",
+  "@accessKeyNoticeDescription2": {
+    "description": "Second paragraph of the access key notice.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "iUnderstandShowMeTheKey": "I understand.\nShow me the key.",
+  "@iUnderstandShowMeTheKey": {
+    "description": "Button text to understand and show the key."
+  },
   "selectGroupToViewNotes": "Select a group to view notes",
-  "@selectGroupToViewNotes": {"description": "Placeholder text shown when no group is selected in desktop mode."},
+  "@selectGroupToViewNotes": {
+    "description": "Placeholder text shown when no group is selected in desktop mode."
+  },
   "accessKeyShareText": "Here is your access key.",
-  "@accessKeyShareText": {"description": "Text used in share dialog when sharing the access key."},
+  "@accessKeyShareText": {
+    "description": "Text used in share dialog when sharing the access key."
+  },
   "pleaseTryAgain": "Please try again.",
-  "@pleaseTryAgain": {"description": "Generic error message shown when an operation fails."},
+  "@pleaseTryAgain": {
+    "description": "Generic error message shown when an operation fails."
+  },
   "copiedToClipboard": "Copied to clipboard",
-  "@copiedToClipboard": {"description": "Toast message shown when text is copied to the clipboard."},
+  "@copiedToClipboard": {
+    "description": "Toast message shown when text is copied to the clipboard."
+  },
   "accessKeyTitle": "Access Key",
-  "@accessKeyTitle": {"description": "Title for the access key page."},
+  "@accessKeyTitle": {
+    "description": "Title for the access key page."
+  },
   "accessKeyDescription": "Please save this key in a secure place. You'll need it to sync notes on another device.",
-  "@accessKeyDescription": {"description": "Instructional text for saving the access key."},
+  "@accessKeyDescription": {
+    "description": "Instructional text for saving the access key."
+  },
   "copyLabel": "Copy",
-  "@copyLabel": {"description": "Label for the copy button."},
+  "@copyLabel": {
+    "description": "Label for the copy button."
+  },
   "downloadAsTextFileLabel": "Download as Text File",
-  "@downloadAsTextFileLabel": {"description": "Label for the button that downloads the access key as a text file."},
+  "@downloadAsTextFileLabel": {
+    "description": "Label for the button that downloads the access key as a text file."
+  },
   "continueLabel": "Continue",
-  "@continueLabel": {"description": "Label for the continue button."},
+  "@continueLabel": {
+    "description": "Label for the continue button."
+  },
   "pleaseAuthenticate": "Please authenticate",
-  "@pleaseAuthenticate": {"description": "Reason shown in the biometric/device authentication prompt."},
+  "@pleaseAuthenticate": {
+    "description": "Reason shown in the biometric/device authentication prompt."
+  },
   "couldNotCreate": "Could not create",
-  "@couldNotCreate": {"description": "Error message title when backup creation fails."},
+  "@couldNotCreate": {
+    "description": "Error message title when backup creation fails."
+  },
   "couldNotShareFile": "Could not share file",
-  "@couldNotShareFile": {"description": "Error message title when sharing backup fails."},
+  "@couldNotShareFile": {
+    "description": "Error message title when sharing backup fails."
+  },
   "hereIsTheBackupFile": "Here is the backup file for your app.",
-  "@hereIsTheBackupFile": {"description": "Text used in share dialog when sharing the backup file."},
+  "@hereIsTheBackupFile": {
+    "description": "Text used in share dialog when sharing the backup file."
+  },
   "errorTitle": "Error",
-  "@errorTitle": {"description": "Generic error message title."},
+  "@errorTitle": {
+    "description": "Generic error message title."
+  },
   "backupLabel": "Backup",
-  "@backupLabel": {"description": "Label for the backup option."},
+  "@backupLabel": {
+    "description": "Label for the backup option."
+  },
   "restoreLabel": "Restore",
-  "@restoreLabel": {"description": "Label for the restore option."},
+  "@restoreLabel": {
+    "description": "Label for the restore option."
+  },
   "leaveAReviewLabel": "Leave a review",
-  "@leaveAReviewLabel": {"description": "Label for the feedback/review option."},
+  "@leaveAReviewLabel": {
+    "description": "Label for the feedback/review option."
+  },
   "shareLabel": "Share",
-  "@shareLabel": {"description": "Label for the share app option."},
+  "@shareLabel": {
+    "description": "Label for the share app option."
+  },
   "desktopAppLinkLabel": "Desktop App",
-  "@desktopAppLinkLabel": {"description": "Label for the link to the desktop version."},
+  "@desktopAppLinkLabel": {
+    "description": "Label for the link to the desktop version."
+  },
   "loggingLabel": "Logging",
-  "@loggingLabel": {"description": "Label for the logging toggle setting."},
+  "@loggingLabel": {
+    "description": "Label for the logging toggle setting."
+  },
   "versionLabel": "Version: {version}",
-  "@versionLabel": {"description": "Label showing app version.", "placeholders": {"version": {"type": "String"}}},
+  "@versionLabel": {
+    "description": "Label showing app version.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "loadingLabel": "Loading...",
-  "@loadingLabel": {"description": "Label for the loading state of the app version."},
+  "@loadingLabel": {
+    "description": "Label for the loading state of the app version."
+  },
   "restoredLabel": "Restored.",
-  "@restoredLabel": {"description": "Toast message shown after successfully restoring items."},
+  "@restoredLabel": {
+    "description": "Toast message shown after successfully restoring items."
+  },
   "deletedPermanentlyLabel": "Deleted permanently.",
-  "@deletedPermanentlyLabel": {"description": "Toast message shown after successfully deleting items permanently."},
+  "@deletedPermanentlyLabel": {
+    "description": "Toast message shown after successfully deleting items permanently."
+  },
   "mediaTitle": "Media",
-  "@mediaTitle": {"description": "Title for the media viewer page."},
+  "@mediaTitle": {
+    "description": "Title for the media viewer page."
+  },
   "invalidWordList": "Invalid word list",
-  "@invalidWordList": {"description": "Error message when invalid mnemonic phrase is entered."},
+  "@invalidWordList": {
+    "description": "Error message when invalid mnemonic phrase is entered."
+  },
   "enterYour24WordPhrase": "Enter your 24-word phrase",
-  "@enterYour24WordPhrase": {"description": "Label for the recovery phrase text input."},
+  "@enterYour24WordPhrase": {
+    "description": "Label for the recovery phrase text input."
+  },
   "enterYourRecoveryPhraseHere": "Enter your recovery phrase here",
-  "@enterYourRecoveryPhraseHere": {"description": "Hint text for the recovery phrase text input."},
+  "@enterYourRecoveryPhraseHere": {
+    "description": "Hint text for the recovery phrase text input."
+  },
   "pleaseEnterYourRecoveryPhrase": "Please enter your recovery phrase",
-  "@pleaseEnterYourRecoveryPhrase": {"description": "Error message when recovery phrase is empty."},
+  "@pleaseEnterYourRecoveryPhrase": {
+    "description": "Error message when recovery phrase is empty."
+  },
   "recoveryPhraseMustContain24Words": "Recovery phrase must contain exactly 24 words",
-  "@recoveryPhraseMustContain24Words": {"description": "Error message when recovery phrase does not have 24 words."},
+  "@recoveryPhraseMustContain24Words": {
+    "description": "Error message when recovery phrase does not have 24 words."
+  },
   "submitLabel": "Submit",
-  "@submitLabel": {"description": "Label for the submit button."},
+  "@submitLabel": {
+    "description": "Label for the submit button."
+  },
   "orLabel": "Or",
-  "@orLabel": {"description": "Separator text between input and file upload."},
+  "@orLabel": {
+    "description": "Separator text between input and file upload."
+  },
   "selectTxtFileLabel": "Select .txt File",
-  "@selectTxtFileLabel": {"description": "Label for the file selection button."},
+  "@selectTxtFileLabel": {
+    "description": "Label for the file selection button."
+  },
   "failureTitle": "Failure",
-  "@failureTitle": {"description": "Title for error dialog."},
+  "@failureTitle": {
+    "description": "Title for error dialog."
+  },
   "invalidPasswordKey": "Invalid password key",
-  "@invalidPasswordKey": {"description": "Error message when password key is invalid."},
+  "@invalidPasswordKey": {
+    "description": "Error message when password key is invalid."
+  },
   "enableSyncTitle": "Enable Sync",
-  "@enableSyncTitle": {"description": "Title for the password key input page."},
+  "@enableSyncTitle": {
+    "description": "Title for the password key input page."
+  },
   "passwordRequirementsDescription": "Please enter the key (password) you had created. Its a min 10 characters long with minimum 1 numeric, 1 lowercase, 1 uppercase and 1 special character.",
-  "@passwordRequirementsDescription": {"description": "Description of password requirements."},
+  "@passwordRequirementsDescription": {
+    "description": "Description of password requirements."
+  },
   "enterKeyLabel": "Enter key",
-  "@enterKeyLabel": {"description": "Label for password input."},
+  "@enterKeyLabel": {
+    "description": "Label for password input."
+  },
   "pleaseEnterKey": "Please enter key",
-  "@pleaseEnterKey": {"description": "Error message when password input is empty."},
+  "@pleaseEnterKey": {
+    "description": "Error message when password input is empty."
+  },
   "filterNotesTitle": "Filter notes",
-  "@filterNotesTitle": {"description": "Title for the filter notes dialog."},
+  "@filterNotesTitle": {
+    "description": "Title for the filter notes dialog."
+  },
   "filterPinnedNotesTooltip": "Filter pinned notes",
-  "@filterPinnedNotesTooltip": {"description": "Tooltip for filter pinned notes button."},
+  "@filterPinnedNotesTooltip": {
+    "description": "Tooltip for filter pinned notes button."
+  },
   "filterStarredNotesTooltip": "Filter starred notes",
-  "@filterStarredNotesTooltip": {"description": "Tooltip for filter starred notes button."},
+  "@filterStarredNotesTooltip": {
+    "description": "Tooltip for filter starred notes button."
+  },
   "filterTextNotesTooltip": "Filter text notes",
-  "@filterTextNotesTooltip": {"description": "Tooltip for filter text notes button."},
+  "@filterTextNotesTooltip": {
+    "description": "Tooltip for filter text notes button."
+  },
   "filterTasksTooltip": "Filter tasks",
-  "@filterTasksTooltip": {"description": "Tooltip for filter tasks button."},
+  "@filterTasksTooltip": {
+    "description": "Tooltip for filter tasks button."
+  },
   "filterLinksTooltip": "Filter links",
-  "@filterLinksTooltip": {"description": "Tooltip for filter links button."},
+  "@filterLinksTooltip": {
+    "description": "Tooltip for filter links button."
+  },
   "filterImagesTooltip": "Filter images",
-  "@filterImagesTooltip": {"description": "Tooltip for filter images button."},
+  "@filterImagesTooltip": {
+    "description": "Tooltip for filter images button."
+  },
   "filterAudioTooltip": "Filter audio",
-  "@filterAudioTooltip": {"description": "Tooltip for filter audio button."},
+  "@filterAudioTooltip": {
+    "description": "Tooltip for filter audio button."
+  },
   "filterVideoTooltip": "Filter video",
-  "@filterVideoTooltip": {"description": "Tooltip for filter video button."},
+  "@filterVideoTooltip": {
+    "description": "Tooltip for filter video button."
+  },
   "filterFilesTooltip": "Filter files",
-  "@filterFilesTooltip": {"description": "Tooltip for filter files button."},
+  "@filterFilesTooltip": {
+    "description": "Tooltip for filter files button."
+  },
   "filterContactsTooltip": "Filter contacts",
-  "@filterContactsTooltip": {"description": "Tooltip for filter contacts button."},
+  "@filterContactsTooltip": {
+    "description": "Tooltip for filter contacts button."
+  },
   "filterLocationTooltip": "Filter location",
-  "@filterLocationTooltip": {"description": "Tooltip for filter location button."},
+  "@filterLocationTooltip": {
+    "description": "Tooltip for filter location button."
+  },
   "movedToTrash": "Moved to trash",
-  "@movedToTrash": {"description": "Toast message when items are moved to trash."},
+  "@movedToTrash": {
+    "description": "Toast message when items are moved to trash."
+  },
   "copiedNotesToClipboard": "Copied to clipboard",
-  "@copiedNotesToClipboard": {"description": "Toast message when selected notes are copied to clipboard."},
+  "@copiedNotesToClipboard": {
+    "description": "Toast message when selected notes are copied to clipboard."
+  },
   "locationShareLabel": "Location:",
-  "@locationShareLabel": {"description": "Label used when sharing location."},
+  "@locationShareLabel": {
+    "description": "Label used when sharing location."
+  },
   "contactShareLabel": "Contact:",
-  "@contactShareLabel": {"description": "Label used when sharing contact."},
+  "@contactShareLabel": {
+    "description": "Label used when sharing contact."
+  },
   "emailsShareLabel": "Emails:",
-  "@emailsShareLabel": {"description": "Label used when sharing contact emails."},
+  "@emailsShareLabel": {
+    "description": "Label used when sharing contact emails."
+  },
   "addressesShareLabel": "Addresses:",
-  "@addressesShareLabel": {"description": "Label used when sharing contact addresses."},
+  "@addressesShareLabel": {
+    "description": "Label used when sharing contact addresses."
+  },
   "microphoneNotAvailable": "Microphone may not be available.",
-  "@microphoneNotAvailable": {"description": "Toast message when microphone is not available."},
+  "@microphoneNotAvailable": {
+    "description": "Toast message when microphone is not available."
+  },
   "microphonePermissionRequired": "Microphone permission is required to record audio.",
-  "@microphonePermissionRequired": {"description": "Toast message when microphone permission is required."},
+  "@microphonePermissionRequired": {
+    "description": "Toast message when microphone permission is required."
+  },
   "couldNotGetDuration": "Could not get duration",
-  "@couldNotGetDuration": {"description": "Error message when audio duration could not be retrieved."},
+  "@couldNotGetDuration": {
+    "description": "Error message when audio duration could not be retrieved."
+  },
   "errorOpeningFiles": "Error opening files",
-  "@errorOpeningFiles": {"description": "Error message when file picker fails."},
+  "@errorOpeningFiles": {
+    "description": "Error message when file picker fails."
+  },
   "pleaseWaitTitle": "Please wait",
-  "@pleaseWaitTitle": {"description": "Title for please wait dialog."},
+  "@pleaseWaitTitle": {
+    "description": "Title for please wait dialog."
+  },
   "fileNotAvailableYet": "File not available yet",
-  "@fileNotAvailableYet": {"description": "Message shown when file is not available yet."},
+  "@fileNotAvailableYet": {
+    "description": "Message shown when file is not available yet."
+  },
   "clearSelectionTooltip": "Clear selection",
-  "@clearSelectionTooltip": {"description": "Tooltip for clear selection button."},
+  "@clearSelectionTooltip": {
+    "description": "Tooltip for clear selection button."
+  },
   "copyNotesTooltip": "Copy notes",
-  "@copyNotesTooltip": {"description": "Tooltip for copy notes button."},
+  "@copyNotesTooltip": {
+    "description": "Tooltip for copy notes button."
+  },
   "changeTaskTypeTooltip": "Change task type",
-  "@changeTaskTypeTooltip": {"description": "Tooltip for change task type button."},
+  "@changeTaskTypeTooltip": {
+    "description": "Tooltip for change task type button."
+  },
   "shareNotesTooltip": "Share notes",
-  "@shareNotesTooltip": {"description": "Tooltip for share notes button."},
+  "@shareNotesTooltip": {
+    "description": "Tooltip for share notes button."
+  },
   "editNoteTooltip": "Edit note",
-  "@editNoteTooltip": {"description": "Tooltip for edit note button."},
+  "@editNoteTooltip": {
+    "description": "Tooltip for edit note button."
+  },
   "starUnstarNotesTooltip": "Star/unstar notes",
-  "@starUnstarNotesTooltip": {"description": "Tooltip for star/unstar notes button."},
+  "@starUnstarNotesTooltip": {
+    "description": "Tooltip for star/unstar notes button."
+  },
   "moveToTrashTooltip": "Move to trash",
-  "@moveToTrashTooltip": {"description": "Tooltip for move to trash button."},
+  "@moveToTrashTooltip": {
+    "description": "Tooltip for move to trash button."
+  },
   "pinUnpinNotesTooltip": "Pin/unpin notes",
-  "@pinUnpinNotesTooltip": {"description": "Tooltip for pin/unpin notes button."},
+  "@pinUnpinNotesTooltip": {
+    "description": "Tooltip for pin/unpin notes button."
+  },
   "cancelReplyTooltip": "Cancel reply item",
-  "@cancelReplyTooltip": {"description": "Tooltip for cancel reply button."},
+  "@cancelReplyTooltip": {
+    "description": "Tooltip for cancel reply button."
+  },
   "createTaskHint": "Create a task",
-  "@createTaskHint": {"description": "Hint text for creating a task."},
+  "@createTaskHint": {
+    "description": "Hint text for creating a task."
+  },
   "addNoteHint": "Add a note...",
-  "@addNoteHint": {"description": "Hint text for adding a note."},
+  "@addNoteHint": {
+    "description": "Hint text for adding a note."
+  },
   "attachTooltip": "Attach",
-  "@attachTooltip": {"description": "Tooltip for attach button."},
+  "@attachTooltip": {
+    "description": "Tooltip for attach button."
+  },
   "addNoteTooltip": "Add note",
-  "@addNoteTooltip": {"description": "Tooltip for add note button."},
+  "@addNoteTooltip": {
+    "description": "Tooltip for add note button."
+  },
   "recordStopAudioTooltip": "Record/stop audio",
-  "@recordStopAudioTooltip": {"description": "Tooltip for record/stop audio button."},
+  "@recordStopAudioTooltip": {
+    "description": "Tooltip for record/stop audio button."
+  },
   "contactAttachmentLabel": "Contact",
-  "@contactAttachmentLabel": {"description": "Label for contact attachment option."},
+  "@contactAttachmentLabel": {
+    "description": "Label for contact attachment option."
+  },
   "locationAttachmentLabel": "Location",
-  "@locationAttachmentLabel": {"description": "Label for location attachment option."},
+  "@locationAttachmentLabel": {
+    "description": "Label for location attachment option."
+  },
   "cameraAttachmentLabel": "Camera",
-  "@cameraAttachmentLabel": {"description": "Label for camera attachment option."},
+  "@cameraAttachmentLabel": {
+    "description": "Label for camera attachment option."
+  },
   "filesAttachmentLabel": "Files",
-  "@filesAttachmentLabel": {"description": "Label for files attachment option."},
+  "@filesAttachmentLabel": {
+    "description": "Label for files attachment option."
+  },
   "checklistAttachmentLabel": "Checklist",
-  "@checklistAttachmentLabel": {"description": "Label for checklist attachment option."},
+  "@checklistAttachmentLabel": {
+    "description": "Label for checklist attachment option."
+  },
   "accessKeyInputTitle": "Enable Sync",
-  "@accessKeyInputTitle": {"description": "Title for the access key input page."},
+  "@accessKeyInputTitle": {
+    "description": "Title for the access key input page."
+  },
   "accessKeyInputDescription": "Please enter your 24-word recovery phrase or load a .txt file containing it.",
-  "@accessKeyInputDescription": {"description": "Description text on the access key input page."}
+  "@accessKeyInputDescription": {
+    "description": "Description text on the access key input page."
+  },
+  "editMenuItemLabel": "Edit",
+  "@editMenuItemLabel": {
+    "description": "Label for the edit menu item in the app bar popup menu."
+  },
+  "filterMenuItemLabel": "Filters",
+  "@filterMenuItemLabel": {
+    "description": "Label for the filter menu item in the app bar popup menu."
+  },
+  "externalStoragePermissionDenied": "Permission to access external storage was denied.",
+  "@externalStoragePermissionDenied": {
+    "description": "Error message shown when external storage permission is denied."
+  },
+  "pressLongToStartRecording": "Press long to start recording.",
+  "@pressLongToStartRecording": {
+    "description": "Hint message shown when the send button is pressed while not typing and not recording."
+  },
+  "didYouKnowTitle": "Did you know?",
+  "@didYouKnowTitle": {
+    "description": "Title for the tip dialog shown to first-time users."
+  },
+  "closeTooltip": "Close",
+  "@closeTooltip": {
+    "description": "Tooltip for the close button on dialogs."
+  },
+  "appDescriptionContent": "{appName} is a completely private notes app. It doesn't collect your personal data or show you ads.\n\nWe hope you enjoy using it. Tell us what you think.",
+  "@appDescriptionContent": {
+    "description": "Description text about the app in the tip dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNotesTooltip": "Search notes",
+  "@searchNotesTooltip": {
+    "description": "Tooltip for the search notes button."
+  },
+  "syncMenuItemLabel": "Sync",
+  "@syncMenuItemLabel": {
+    "description": "Label for the sync menu item."
+  },
+  "trashMenuItemLabel": "Trash",
+  "@trashMenuItemLabel": {
+    "description": "Label for the trash menu item."
+  },
+  "starredNotesMenuItemLabel": "Starred notes",
+  "@starredNotesMenuItemLabel": {
+    "description": "Label for the starred notes menu item."
+  },
+  "settingsMenuItemLabel": "Settings",
+  "@settingsMenuItemLabel": {
+    "description": "Label for the settings menu item."
+  },
+  "accountMenuItemLabel": "Account",
+  "@accountMenuItemLabel": {
+    "description": "Label for the account menu item."
+  },
+  "pageMenuItemLabel": "Page",
+  "@pageMenuItemLabel": {
+    "description": "Label for the page menu item (shown in debug mode)."
+  },
+  "sqliteMenuItemLabel": "Sqlite",
+  "@sqliteMenuItemLabel": {
+    "description": "Label for the SQLite database viewer menu item."
+  },
+  "logsMenuItemLabel": "Logs",
+  "@logsMenuItemLabel": {
+    "description": "Label for the logs menu item."
+  },
+  "reorderMenuItemLabel": "Reorder",
+  "@reorderMenuItemLabel": {
+    "description": "Label for the reorder group menu item."
+  },
+  "editGroupMenuItemLabel": "Edit",
+  "@editGroupMenuItemLabel": {
+    "description": "Label for the edit group menu item."
+  },
+  "deleteGroupMenuItemLabel": "Delete",
+  "@deleteGroupMenuItemLabel": {
+    "description": "Label for the delete group menu item."
+  },
+  "dragHandleReorderTooltip": "Drag handle to re-order",
+  "@dragHandleReorderTooltip": {
+    "description": "Tooltip message for drag handle on desktop."
+  },
+  "holdAndDragReorderTooltip": "Hold and drag to re-order",
+  "@holdAndDragReorderTooltip": {
+    "description": "Tooltip message for hold and drag to re-order on mobile."
+  },
+  "emptyHomePageMessage": "Hi there!\n\nIt's kind of looking empty in here.\n\nTap the + button and create some notes to self. :)",
+  "@emptyHomePageMessage": {
+    "description": "Empty state message shown when there are no groups on the home page."
+  },
+  "reorderingTitle": "Reordering",
+  "@reorderingTitle": {
+    "description": "Title shown when reordering groups on the home page."
+  },
+  "selectEllipsisLabel": "Select...",
+  "@selectEllipsisLabel": {
+    "description": "Placeholder label shown when shared contents are being loaded."
+  },
+  "dateTimeToggleLabel": "Date/Time",
+  "@dateTimeToggleLabel": {
+    "description": "Label for the date/time toggle switch in group settings."
+  },
+  "noteBorderToggleLabel": "Note border",
+  "@noteBorderToggleLabel": {
+    "description": "Label for the note border toggle switch in group settings."
+  },
+  "deleteGroupButtonLabel": "Delete",
+  "@deleteGroupButtonLabel": {
+    "description": "Label for the delete group button in group edit page."
+  },
+  "notesTabLabel": "Notes",
+  "@notesTabLabel": {
+    "description": "Label for the notes tab in the trash page."
+  },
+  "groupsTabLabel": "Groups",
+  "@groupsTabLabel": {
+    "description": "Label for the groups tab in the trash page."
+  },
+  "categoriesTabLabel": "Categories",
+  "@categoriesTabLabel": {
+    "description": "Label for the categories tab in the trash page."
+  },
+  "locationItemLabel": "Location",
+  "@locationItemLabel": {
+    "description": "Label for location items in search results."
+  },
+  "addGroupTitle": "Add group",
+  "@addGroupTitle": {
+    "description": "Page title for creating a new group."
+  },
+  "editGroupTitle": "Edit group",
+  "@editGroupTitle": {
+    "description": "Page title for editing an existing group."
+  },
+  "titleInputLabel": "Title",
+  "@titleInputLabel": {
+    "description": "Label for the title input field."
+  },
+  "locationPermissionRequiredTitle": "Location Permission Required",
+  "@locationPermissionRequiredTitle": {
+    "description": "Title for the location permission dialog."
+  },
+  "enableLocationPermissionsContent": "Please enable location permissions in the app settings.",
+  "@enableLocationPermissionsContent": {
+    "description": "Content text for the location permission dialog."
+  },
+  "cancelButtonLabel": "Cancel",
+  "@cancelButtonLabel": {
+    "description": "Label for the cancel button."
+  },
+  "openSettingsButtonLabel": "Open Settings",
+  "@openSettingsButtonLabel": {
+    "description": "Label for the open settings button."
+  },
+  "locationServicesTitle": "Location Services",
+  "@locationServicesTitle": {
+    "description": "Title for the location services alert."
+  },
+  "pleaseEnableLocationServicesContent": "Please enable!",
+  "@pleaseEnableLocationServicesContent": {
+    "description": "Content text for the location services disabled alert."
+  },
+  "selectLocationTitle": "Select location",
+  "@selectLocationTitle": {
+    "description": "Title for the location picker page."
+  },
+  "useCurrentLocationTooltip": "Use current location",
+  "@useCurrentLocationTooltip": {
+    "description": "Tooltip for the use current location button."
+  },
+  "selectAllButtonLabel": "Select all",
+  "@selectAllButtonLabel": {
+    "description": "Label for the select all button in archived items."
+  },
+  "searchLogsHint": "Search logs..",
+  "@searchLogsHint": {
+    "description": "Hint text for the search logs input field."
+  },
+  "noLogsAvailable": "No logs available",
+  "@noLogsAvailable": {
+    "description": "Message shown when there are no log entries to display."
+  },
+  "dbViewerTitle": "DB Viewer",
+  "@dbViewerTitle": {
+    "description": "Title for the SQLite database viewer page."
+  },
+  "selectTableToViewData": "Select a table to view its data",
+  "@selectTableToViewData": {
+    "description": "Instruction text shown when no table is selected in the DB viewer."
+  },
+  "selectTableDropdownHint": "Select a table",
+  "@selectTableDropdownHint": {
+    "description": "Hint text for the table selection dropdown in the DB viewer."
+  },
+  "pickContactTitle": "Pick a contact",
+  "@pickContactTitle": {
+    "description": "Title for the contact picker page."
+  },
+  "permissionRequiredText": "Permission required",
+  "@permissionRequiredText": {
+    "description": "Text shown when contact permission is required."
+  },
+  "grantPermissionButtonLabel": "Grant permission",
+  "@grantPermissionButtonLabel": {
+    "description": "Label for the grant permission button."
+  },
+  "pageDummyTitle": "Page Dummy",
+  "@pageDummyTitle": {
+    "description": "Title for the dummy/testing page."
+  },
+  "simulateButtonLabel": "Simulate",
+  "@simulateButtonLabel": {
+    "description": "Label for the simulate button on the dummy page."
+  },
+  "selectCategoryTitle": "Select category",
+  "@selectCategoryTitle": {
+    "description": "Title for the select category page."
+  },
+  "addCategoryTitle": "Add category",
+  "@addCategoryTitle": {
+    "description": "Title for the add category page."
+  },
+  "editCategoryTitle": "Edit category",
+  "@editCategoryTitle": {
+    "description": "Title for the edit category page."
+  },
+  "categoryTitleHint": "Category title",
+  "@categoryTitleHint": {
+    "description": "Hint text for the category title input field."
+  },
+  "colorLabel": "Color",
+  "@colorLabel": {
+    "description": "Label for the color selector."
+  },
+  "changeColorLabel": "Change color",
+  "@changeColorLabel": {
+    "description": "Label for the change color option."
+  },
+  "deviceDisabledMessage": "Device disabled!",
+  "@deviceDisabledMessage": {
+    "description": "Toast message shown when a device is disabled."
+  },
+  "cannotRemoveThisDeviceMessage": "Can't remove this device!",
+  "@cannotRemoveThisDeviceMessage": {
+    "description": "Toast message shown when attempting to remove the current device."
+  },
+  "confirmRemoveTitle": "Confirm Remove",
+  "@confirmRemoveTitle": {
+    "description": "Title for the confirm remove device dialog."
+  },
+  "confirmRemoveDeviceContent": "Are you sure? This will delete all the data on the device.",
+  "@confirmRemoveDeviceContent": {
+    "description": "Content text for the confirm remove device dialog."
+  },
+  "okButtonLabel": "OK",
+  "@okButtonLabel": {
+    "description": "Label for the OK button."
+  },
+  "registeredDevicesTitle": "Registered Devices",
+  "@registeredDevicesTitle": {
+    "description": "Title for the registered devices page."
+  },
+  "noDevicesFoundMessage": "No devices found",
+  "@noDevicesFoundMessage": {
+    "description": "Message shown when no devices are found."
+  },
+  "enabledLabel": "Enabled",
+  "@enabledLabel": {
+    "description": "Label for an enabled device status."
+  },
+  "disabledLabel": "Disabled",
+  "@disabledLabel": {
+    "description": "Label for a disabled device status."
+  },
+  "migratingMediaTitle": "Migrating Media",
+  "@migratingMediaTitle": {
+    "description": "Title for the media migration page."
+  },
+  "processingMessage": "Processing...",
+  "@processingMessage": {
+    "description": "Message shown while media is being processed."
+  },
+  "doNotNavigateAwayMessage": "Please do not navigate away",
+  "@doNotNavigateAwayMessage": {
+    "description": "Warning message asking the user not to navigate away during media migration."
+  },
+  "errorWithDetails": "Error: {error}",
+  "@errorWithDetails": {
+    "description": "Error message shown when loading logs fails, including the error.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sequenceNotAcceptedError": "Sequence not accepted",
+  "@sequenceNotAcceptedError": {
+    "description": "Validation error when the key contains a sequential pattern."
+  },
+  "examplesNotAcceptedError": "Examples not accepted",
+  "@examplesNotAcceptedError": {
+    "description": "Validation error when the key matches one of the example keys."
+  },
+  "enterKeyAgainLabel": "Enter key again",
+  "@enterKeyAgainLabel": {
+    "description": "Label and hint for the confirm key input field."
+  },
+  "pleaseEnterKeyAgainError": "Please enter key again",
+  "@pleaseEnterKeyAgainError": {
+    "description": "Validation error when the confirm key field is empty."
+  },
+  "keysDoNotMatchError": "Keys do not match",
+  "@keysDoNotMatchError": {
+    "description": "Validation error when the two keys do not match."
+  },
+  "ruleUppercaseLetter": "1 uppercase letter",
+  "@ruleUppercaseLetter": {
+    "description": "Password rule description for one uppercase letter."
+  },
+  "ruleLowercaseLetter": "1 lowercase letter",
+  "@ruleLowercaseLetter": {
+    "description": "Password rule description for one lowercase letter."
+  },
+  "ruleNumericLetter": "1 numeric letter",
+  "@ruleNumericLetter": {
+    "description": "Password rule description for one numeric character."
+  },
+  "ruleSpecialCharacter": "1 special character",
+  "@ruleSpecialCharacter": {
+    "description": "Password rule description for one special character."
+  },
+  "ruleMinTenCharacters": "min 10 characters",
+  "@ruleMinTenCharacters": {
+    "description": "Password rule description for the minimum length."
+  },
+  "examplesTitle": "Examples",
+  "@examplesTitle": {
+    "description": "Title for the key examples dialog."
+  },
+  "passwordExample1": "I would love 2 have @ll ...",
+  "@passwordExample1": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample2": "(A6r4K4D46r4)",
+  "@passwordExample2": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample3": "Mykey@2025",
+  "@passwordExample3": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample4": "C0ffee !s great f0r pr0ductivity",
+  "@passwordExample4": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "gotItButtonLabel": "Got it",
+  "@gotItButtonLabel": {
+    "description": "Label for the button to dismiss the examples dialog."
+  },
+  "encryptionKeyTitle": "Encryption key",
+  "@encryptionKeyTitle": {
+    "description": "Title for the encryption key creation page."
+  },
+  "createKeyDescription": "Please enter a long and hard to guess key (password). Remember to save it somewhere safe. If it lost/forgotten, it can not be recovered.",
+  "@createKeyDescription": {
+    "description": "Instructional text for creating an encryption key."
+  },
+  "seeExamplesTooltip": "See examples",
+  "@seeExamplesTooltip": {
+    "description": "Tooltip for the button that shows key examples."
+  },
+  "couldNotFetchDetailsMessage": "Could not fetch details",
+  "@couldNotFetchDetailsMessage": {
+    "description": "Message shown when plan details could not be fetched."
+  },
+  "retryButtonLabel": "Retry",
+  "@retryButtonLabel": {
+    "description": "Label for the retry button."
+  },
+  "signedInAsLabel": "Signed in as:",
+  "@signedInAsLabel": {
+    "description": "Label shown before the signed-in email."
+  },
+  "storageUsageLabel": "Storage Usage",
+  "@storageUsageLabel": {
+    "description": "Label for the storage usage section."
+  },
+  "subscribeLabel": "Subscribe",
+  "@subscribeLabel": {
+    "description": "Label for the subscribe option."
+  },
+  "planExpiredRenewLabel": "Plan expired! Renew",
+  "@planExpiredRenewLabel": {
+    "description": "Label for the plan expired renew option."
+  },
+  "manageDevicesLabel": "Manage devices",
+  "@manageDevicesLabel": {
+    "description": "Label for the manage devices option."
+  },
+  "viewAccessKeyLabel": "View access key",
+  "@viewAccessKeyLabel": {
+    "description": "Label for the view access key option."
+  },
+  "changeKeyPasswordLabel": "Change key password",
+  "@changeKeyPasswordLabel": {
+    "description": "Label for the change key password option."
+  },
+  "manageSubscriptionLabel": "Manage subscription",
+  "@manageSubscriptionLabel": {
+    "description": "Label for the manage subscription option."
+  },
+  "signOutButtonLabel": "Sign Out",
+  "@signOutButtonLabel": {
+    "description": "Label for the sign out option."
+  },
+  "yearlyPlansTitle": "Yearly plans",
+  "@yearlyPlansTitle": {
+    "description": "Title for the plan subscribe page."
+  },
+  "loginLabel": "Login",
+  "@loginLabel": {
+    "description": "Label for the login button."
+  },
+  "syncAllYourNotesLabel": "Sync all your notes",
+  "@syncAllYourNotesLabel": {
+    "description": "Headline on the subscribe page."
+  },
+  "acrossYourDevicesLabel": "across your devices",
+  "@acrossYourDevicesLabel": {
+    "description": "Subheadline on the subscribe page."
+  },
+  "featureEndToEndEncryption": "End-to-end encryption",
+  "@featureEndToEndEncryption": {
+    "description": "Feature list item for end-to-end encryption."
+  },
+  "featureSyncUpTo3Devices": "Sync up to 3 devices",
+  "@featureSyncUpTo3Devices": {
+    "description": "Feature list item for syncing up to 3 devices."
+  },
+  "featureUpgradeCancelAnytime": "Upgrade/Cancel anytime",
+  "@featureUpgradeCancelAnytime": {
+    "description": "Feature list item for upgrading or cancelling anytime."
+  },
+  "noPlansAvailableMessage": "No plans available",
+  "@noPlansAvailableMessage": {
+    "description": "Message shown when no plans are available."
+  },
+  "downloadAppSubscribeLabel": "Download the app & subscribe",
+  "@downloadAppSubscribeLabel": {
+    "description": "Label prompting the user to download the app and subscribe."
+  },
+  "privacyTermsLabel": "Privacy • Terms",
+  "@privacyTermsLabel": {
+    "description": "Label for the privacy and terms footer."
+  },
+  "saveFiftyPercentLabel": "Save 50%",
+  "@saveFiftyPercentLabel": {
+    "description": "Badge text showing the savings percentage."
+  },
+  "helloTitle": "Hello",
+  "@helloTitle": {
+    "description": "Title for the select key type page before welcoming."
+  },
+  "selectKeyMasterKeyDescription": "To encrypt your data, we’ll need a master encryption key.",
+  "@selectKeyMasterKeyDescription": {
+    "description": "Description text on the select key type page."
+  },
+  "selectKeyTwoOptionsDescription": "There are 2 options - either you create a key yourself (similar to password) or we create it for you.",
+  "@selectKeyTwoOptionsDescription": {
+    "description": "Description of the two key creation options."
+  },
+  "understandLoseKeyAcknowledgement": "I understand that if I lose/forget encryption key, I may lose the data.",
+  "@understandLoseKeyAcknowledgement": {
+    "description": "Acknowledgement text for understanding the risk of losing the encryption key."
+  },
+  "createKeyForMeButtonLabel": "Create the key for me",
+  "@createKeyForMeButtonLabel": {
+    "description": "Label for the button to let the app create the key."
+  },
+  "recommendedLabel": "(Recommended)",
+  "@recommendedLabel": {
+    "description": "Label indicating a recommended option."
+  },
+  "pleaseAcknowledgeMessage": "Please acknowledge!",
+  "@pleaseAcknowledgeMessage": {
+    "description": "Toast message asking the user to acknowledge the terms."
+  },
+  "createKeyMyselfButtonLabel": "I’ll create the key myself",
+  "@createKeyMyselfButtonLabel": {
+    "description": "Label for the button to create the key yourself."
+  },
+  "welcomeToAppName": "Welcome to {appName}",
+  "@welcomeToAppName": {
+    "description": "Welcome message with the app name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "e2eEncryptionDescription": "We use end-to-end encryption to make sure that all of your notes are safe and no one else can see them, not even us.",
+  "@e2eEncryptionDescription": {
+    "description": "Description of the end-to-end encryption used."
+  },
+  "timeToStartEncryptionLabel": "Time to start the encryption!",
+  "@timeToStartEncryptionLabel": {
+    "description": "Message prompting the user to start encryption."
+  },
+  "nextButtonLabel": "Next",
+  "@nextButtonLabel": {
+    "description": "Label for the next button."
+  },
+  "sendingOtpFailedMessage": "Sending OTP failed. Please try again!",
+  "@sendingOtpFailedMessage": {
+    "description": "Toast message when sending the OTP fails."
+  },
+  "otpVerificationFailedMessage": "OTP verification failed. Please try again!",
+  "@otpVerificationFailedMessage": {
+    "description": "Toast message when verifying the OTP fails."
+  },
+  "emailSignInTitle": "Email SignIn",
+  "@emailSignInTitle": {
+    "description": "Title for the sign-in page before OTP is sent."
+  },
+  "verifyOtpLabel": "Verify OTP",
+  "@verifyOtpLabel": {
+    "description": "Label for verifying the OTP (used as title and button)."
+  },
+  "enterEmailLabel": "Enter Email",
+  "@enterEmailLabel": {
+    "description": "Label for the email input field."
+  },
+  "sendOtpLabel": "Send OTP",
+  "@sendOtpLabel": {
+    "description": "Label for the send OTP button."
+  },
+  "otpSentToEmailMessage": "We have sent a one-time password (OTP) to your email {email}",
+  "@otpSentToEmailMessage": {
+    "description": "Message confirming the OTP was sent to the email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "enterOtpLabel": "Enter OTP",
+  "@enterOtpLabel": {
+    "description": "Label for the OTP input field."
+  },
+  "changeEmailLabel": "Change email",
+  "@changeEmailLabel": {
+    "description": "Label for the change email button."
+  },
+  "encryptingNotesTitle": "Encrypting notes",
+  "@encryptingNotesTitle": {
+    "description": "Title shown while encrypting local notes."
+  },
+  "fetchingDetailsTitle": "Fetching details",
+  "@fetchingDetailsTitle": {
+    "description": "Title shown while fetching details."
+  },
+  "couldNotFetchMessage": "Could not fetch",
+  "@couldNotFetchMessage": {
+    "description": "Error message shown when fetching fails."
+  },
+  "subscriptionEmailMismatchMessage": "Your subscription is associated with another email. Please sign-out and use that to enable cloud storage.",
+  "@subscriptionEmailMismatchMessage": {
+    "description": "Error message when the subscription email does not match."
+  },
+  "errorCheckingPlanDetailsMessage": "Error checking plan details",
+  "@errorCheckingPlanDetailsMessage": {
+    "description": "Error message shown when checking plan details fails."
+  },
+  "registerDeviceTitle": "Register device",
+  "@registerDeviceTitle": {
+    "description": "Title shown while registering the device."
+  },
+  "manageButtonLabel": "Manage",
+  "@manageButtonLabel": {
+    "description": "Label for the manage button (e.g., manage devices)."
+  },
+  "fetchingKeysTitle": "Fetching Keys",
+  "@fetchingKeysTitle": {
+    "description": "Title shown while fetching encryption keys."
+  },
+  "signingOutTitle": "Signing out",
+  "@signingOutTitle": {
+    "description": "Title shown while signing out."
+  },
+  "pleaseCheckInternetMessage": "Please check internet",
+  "@pleaseCheckInternetMessage": {
+    "description": "Error message asking the user to check internet connection."
+  },
+  "somethingWentWrongMessage": "Something went wrong",
+  "@somethingWentWrongMessage": {
+    "description": "Generic error message when something goes wrong."
+  }
 }

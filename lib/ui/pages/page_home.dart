@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/auth_guard.dart';
 import 'package:ntsapp/utils/enums.dart';
@@ -296,7 +297,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
       AuthGuard.isAuthenticating = true;
       if (Platform.isIOS) await Future.delayed(Duration(milliseconds: 100));
       isAuthenticated = await _auth.authenticate(
-        localizedReason: 'Please authenticate',
+        localizedReason: AppLocalizations.of(context)!.pleaseAuthenticate,
         options: const AuthenticationOptions(
           biometricOnly: false, // Use only biometric
           stickyAuth: true, // Keeps the authentication open
@@ -442,7 +443,8 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     if (mounted) {
       setState(() {});
       if (mounted) {
-        displaySnackBar(context, message: "Moved to trash", seconds: 1);
+        final loc = AppLocalizations.of(context)!;
+        displaySnackBar(context, message: loc.movedToTrash, seconds: 1);
       }
     }
   }
@@ -520,18 +522,19 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
+          final loc = AppLocalizations.of(context)!;
           return AlertDialog(
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Did you know?',
+                  loc.didYouKnowTitle,
                   style: TextStyle(
                     fontSize: 22,
                   ),
                 ),
                 IconButton(
-                  tooltip: "Close",
+                  tooltip: loc.closeTooltip,
                   icon: Icon(Icons.close, color: Colors.grey),
                   onPressed: () {
                     Navigator.pop(context);
@@ -540,7 +543,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               ],
             ),
             content: Text(
-              '$appName is a completely private notes app. It doesn\'t collect your personal data or show you ads.\n\nWe hope you enjoy using it. Tell us what you think.',
+              loc.appDescriptionContent(appName!),
               style: TextStyle(
                 fontSize: 14,
               ),
@@ -556,7 +559,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                   openURL(url);
                 },
                 child: Text(
-                  'Leave a review',
+                  loc.leaveAReviewLabel,
                 ),
               ),
             ],
@@ -630,7 +633,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     setState(() {});
   }
 
-  List<Widget> _buildDefaultActions() {
+  List<Widget> _buildDefaultActions(AppLocalizations loc) {
     bool supabaseInitialized =
         ModelSetting.get(AppString.supabaseInitialized.string, "no") == "yes";
     bool showSync =
@@ -653,7 +656,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
             onPressed: navigateToOnboardCheck,
             onLongPress: hideSyncButton,
             child: Text(
-              "Sync",
+              loc.syncMenuItemLabel,
               style: TextStyle(
                   color: Theme.of(context).colorScheme.primary, fontSize: 12),
             ),
@@ -661,7 +664,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         ),
       if (!requiresAuthentication || isAuthenticated)
         IconButton(
-          tooltip: "Search notes",
+          tooltip: loc.searchNotesTooltip,
           onPressed: () {
             if (widget.runningOnDesktop) {
               widget.setShowHidePage!(PageType.search, true, PageParams());
@@ -789,104 +792,107 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               break;
           }
         },
-        itemBuilder: (context) => [
-          PopupMenuItem<int>(
-            value: 3,
-            child: Row(
-              children: [
-                Icon(LucideIcons.refreshCcw, color: Colors.grey),
-                Container(width: 8),
-                const SizedBox(width: 5),
-                const Text('Sync'),
-              ],
-            ),
-          ),
-          if (!requiresAuthentication || isAuthenticated)
+        itemBuilder: (context) {
+          final loc = AppLocalizations.of(context)!;
+          return [
             PopupMenuItem<int>(
-              value: 2,
+              value: 3,
               child: Row(
                 children: [
-                  Icon(LucideIcons.archiveRestore, color: Colors.grey),
+                  Icon(LucideIcons.refreshCcw, color: Colors.grey),
                   Container(width: 8),
                   const SizedBox(width: 5),
-                  const Text('Trash'),
+                  Text(loc.syncMenuItemLabel),
                 ],
               ),
             ),
-          if (!requiresAuthentication || isAuthenticated)
+            if (!requiresAuthentication || isAuthenticated)
+              PopupMenuItem<int>(
+                value: 2,
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.archiveRestore, color: Colors.grey),
+                    Container(width: 8),
+                    const SizedBox(width: 5),
+                    Text(loc.trashMenuItemLabel),
+                  ],
+                ),
+              ),
+            if (!requiresAuthentication || isAuthenticated)
+              PopupMenuItem<int>(
+                value: 1,
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.star, color: Colors.grey),
+                    Container(width: 8),
+                    const SizedBox(width: 5),
+                    Text(loc.starredNotesMenuItemLabel),
+                  ],
+                ),
+              ),
             PopupMenuItem<int>(
-              value: 1,
+              value: 0,
               child: Row(
                 children: [
-                  Icon(LucideIcons.star, color: Colors.grey),
+                  Icon(LucideIcons.settings, color: Colors.grey),
                   Container(width: 8),
                   const SizedBox(width: 5),
-                  const Text('Starred notes'),
+                  Text(loc.settingsMenuItemLabel),
                 ],
               ),
             ),
-          PopupMenuItem<int>(
-            value: 0,
-            child: Row(
-              children: [
-                Icon(LucideIcons.settings, color: Colors.grey),
-                Container(width: 8),
-                const SizedBox(width: 5),
-                const Text('Settings'),
-              ],
-            ),
-          ),
-          if (SyncUtils.getSignedInUserId() != null)
-            PopupMenuItem<int>(
-              value: 4,
-              child: Row(
-                children: [
-                  hasValidPlan
-                      ? Icon(LucideIcons.shield, color: Colors.grey)
-                      : Icon(LucideIcons.alertTriangle, color: Colors.red),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Account'),
-                ],
+            if (SyncUtils.getSignedInUserId() != null)
+              PopupMenuItem<int>(
+                value: 4,
+                child: Row(
+                  children: [
+                    hasValidPlan
+                        ? Icon(LucideIcons.shield, color: Colors.grey)
+                        : Icon(LucideIcons.alertTriangle, color: Colors.red),
+                    Container(width: 8),
+                    const SizedBox(width: 5),
+                    Text(loc.accountMenuItemLabel),
+                  ],
+                ),
               ),
-            ),
-          if (isDebugEnabled)
-            PopupMenuItem<int>(
-              value: 11,
-              child: Row(
-                children: [
-                  Icon(LucideIcons.file, color: Colors.grey),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Page'),
-                ],
+            if (isDebugEnabled)
+              PopupMenuItem<int>(
+                value: 11,
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.file, color: Colors.grey),
+                    Container(width: 8),
+                    const SizedBox(width: 5),
+                    Text(loc.pageMenuItemLabel),
+                  ],
+                ),
               ),
-            ),
-          if (isDebugEnabled)
-            PopupMenuItem<int>(
-              value: 12,
-              child: Row(
-                children: [
-                  Icon(LucideIcons.database, color: Colors.grey),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Sqlite'),
-                ],
+            if (isDebugEnabled)
+              PopupMenuItem<int>(
+                value: 12,
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.database, color: Colors.grey),
+                    Container(width: 8),
+                    const SizedBox(width: 5),
+                    Text(loc.sqliteMenuItemLabel),
+                  ],
+                ),
               ),
-            ),
-          if (loggingEnabled)
-            PopupMenuItem<int>(
-              value: 14,
-              child: Row(
-                children: [
-                  Icon(LucideIcons.list, color: Colors.grey),
-                  Container(width: 8),
-                  const SizedBox(width: 5),
-                  const Text('Logs'),
-                ],
+            if (loggingEnabled)
+              PopupMenuItem<int>(
+                value: 14,
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.list, color: Colors.grey),
+                    Container(width: 8),
+                    const SizedBox(width: 5),
+                    Text(loc.logsMenuItemLabel),
+                  ],
+                ),
               ),
-            ),
-        ],
+          ];
+        },
       ),
     ];
   }
@@ -895,6 +901,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
+        final loc = AppLocalizations.of(context)!;
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -903,7 +910,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               ListTile(
                 leading: const Icon(Icons.reorder, color: Colors.grey),
                 horizontalTitleGap: 24,
-                title: const Text('Reorder'),
+                title: Text(loc.reorderMenuItemLabel),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() {
@@ -914,7 +921,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               ListTile(
                 leading: const Icon(LucideIcons.edit3, color: Colors.grey),
                 horizontalTitleGap: 24,
-                title: const Text('Edit'),
+                title: Text(loc.editGroupMenuItemLabel),
                 onTap: () {
                   Navigator.pop(context);
                   editCategoryGroup(categoryGroup);
@@ -923,7 +930,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
               ListTile(
                 leading: const Icon(LucideIcons.trash, color: Colors.grey),
                 horizontalTitleGap: 24,
-                title: const Text('Delete'),
+                title: Text(loc.deleteGroupMenuItemLabel),
                 onTap: () {
                   Navigator.pop(context);
                   archiveCategoryGroup(categoryGroup);
@@ -939,6 +946,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (selectedGroup != widget.selectedGroup) {
       selectedGroup = widget.selectedGroup;
     }
@@ -955,12 +963,12 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
         appBar: AppBar(
           title: Text(
               _isReordering
-                  ? "Reordering"
+                  ? loc.reorderingTitle
                   : loadedSharedContents || widget.sharedContents.isEmpty
                       ? appName!
-                      : "Select...",
+                      : loc.selectEllipsisLabel,
               style: TextStyle(fontSize: 18)),
-          actions: _buildDefaultActions(),
+          actions: _buildDefaultActions(loc),
         ),
         body: _isReordering
             ? ReorderableListView.builder(
@@ -975,11 +983,11 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                       showCategorySign: false,
                     ),
                     onTap: () {
-                      String dragTitle = "Drag handle to re-order";
-                      if (Platform.isAndroid || Platform.isIOS) {
-                        dragTitle = "Hold and drag to re-order";
-                      }
-                      displaySnackBar(context, message: dragTitle, seconds: 1);
+                      displaySnackBar(context,
+                          message: Platform.isAndroid || Platform.isIOS
+                              ? loc.holdAndDragReorderTooltip
+                              : loc.dragHandleReorderTooltip,
+                          seconds: 1);
                     },
                   );
                 },
@@ -1056,9 +1064,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
                                   Padding(
                                     padding: const EdgeInsets.all(12.0),
                                     child: Text(
-                                      "Hi there!\n\n"
-                                      "It's kind of looking empty in here.\n\n"
-                                      "Tap the + button and create some notes to self. :)",
+                                      loc.emptyHomePageMessage,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge

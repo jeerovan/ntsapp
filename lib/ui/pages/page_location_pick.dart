@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 
 class LocationPicker extends StatefulWidget {
@@ -54,19 +55,19 @@ class _LocationPickerState extends State<LocationPicker> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final loc = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text("Location Permission Required"),
-          content: const Text(
-              "Please enable location permissions in the app settings."),
+          title: Text(loc.locationPermissionRequiredTitle),
+          content: Text(loc.enableLocationPermissionsContent),
           actions: [
             TextButton(
-              child: const Text("Cancel"),
+              child: Text(loc.cancelButtonLabel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text("Open Settings"),
+              child: Text(loc.openSettingsButtonLabel),
               onPressed: () {
                 Navigator.of(context).pop();
                 Geolocator.openAppSettings();
@@ -79,7 +80,8 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   void _showServiceDisabled() {
-    showAlertMessage(context, "Location Services", "Please enable!");
+    final loc = AppLocalizations.of(context)!;
+    showAlertMessage(context, loc.locationServicesTitle, loc.pleaseEnableLocationServicesContent);
   }
 
   Future<void> _getCurrentLocation() async {
@@ -143,9 +145,10 @@ class _LocationPickerState extends State<LocationPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select location"),
+        title: Text(loc.selectLocationTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
@@ -186,7 +189,7 @@ class _LocationPickerState extends State<LocationPicker> {
           : FloatingActionButton(
               heroTag: "get_current_location",
               onPressed: _getCurrentLocation,
-              tooltip: "Use current location",
+              tooltip: loc.useCurrentLocationTooltip,
               child: const Icon(LucideIcons.locate),
             ),
     );
