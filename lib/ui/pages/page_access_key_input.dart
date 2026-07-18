@@ -105,7 +105,10 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
         key: accessKeyBytes);
     if (masterKeyDecryptionResult.isFailure) {
       if (mounted) {
-        showAlertMessage(context, "Failure", "Invalid access key");
+        showAlertMessage(
+            context,
+            AppLocalizations.of(context)!.failureTitle,
+            AppLocalizations.of(context)!.invalidAccessKey);
       }
     } else {
       Uint8List decryptedMasterKeyBytes =
@@ -176,14 +179,18 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
           _processWords(_loadedFileContent);
         } else {
           if (mounted) {
-            showAlertMessage(context, "Error",
-                'The file does not contain exactly 24 words.');
+            showAlertMessage(
+                context,
+                AppLocalizations.of(context)!.errorTitle,
+                AppLocalizations.of(context)!.fileDoesNotContain24Words);
           }
         }
       }
     } catch (e) {
       if (mounted) {
-        displaySnackBar(context, message: "Error reading file", seconds: 2);
+        displaySnackBar(context,
+            message: AppLocalizations.of(context)!.errorReadingFile,
+            seconds: 2);
       }
     }
   }

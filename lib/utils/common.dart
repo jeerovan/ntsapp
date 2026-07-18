@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:mime/mime.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/models/model_setting.dart';
 import 'package:ntsapp/services/service_events.dart';
@@ -93,48 +94,48 @@ dynamic getValueFromMap(Map<String, dynamic> map, String key,
 }
 
 /* input validations -- starts */
-String? validateString(String? value) {
+String? validateString(BuildContext context, String? value) {
   if (value == null || value.isEmpty) {
-    return 'Please enter data';
+    return AppLocalizations.of(context)!.pleaseEnterData;
   }
   return null;
 }
 
-String? validateNumber(String? value) {
+String? validateNumber(BuildContext context, String? value) {
   if (value == null || value.isEmpty) {
     return null;
   }
   if (value.isNotEmpty && int.tryParse(value) == null) {
-    return 'A number';
+    return AppLocalizations.of(context)!.aNumber;
   }
   return null;
 }
 
-String? validateNonEmptyNumber(String? value) {
+String? validateNonEmptyNumber(BuildContext context, String? value) {
   if (value == null || value.isEmpty) {
-    return 'Enter data';
+    return AppLocalizations.of(context)!.enterDataLabel;
   }
   if (value.isNotEmpty && int.tryParse(value) == null) {
-    return 'A number';
+    return AppLocalizations.of(context)!.aNumber;
   }
   return null;
 }
 
-String? validateDecimal(String? value) {
+String? validateDecimal(BuildContext context, String? value) {
   if (value == null || value.isEmpty) {
     return null;
   }
   // Regular expression to match decimals and whole numbers
   RegExp regExp = RegExp(r'^\d*\.?\d+$');
   if (!regExp.hasMatch(value)) {
-    return 'Please enter valid data';
+    return AppLocalizations.of(context)!.pleaseEnterValidData;
   }
   return null;
 }
 
-String? validateSelection(String? value) {
+String? validateSelection(BuildContext context, String? value) {
   if (value == null || value.isEmpty) {
-    return 'Please select an option';
+    return AppLocalizations.of(context)!.pleaseSelectAnOption;
   }
   return null;
 }
@@ -172,7 +173,7 @@ void showAlertMessage(BuildContext context, String title, String message) {
         content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: const Text('OK'),
+            child: Text(AppLocalizations.of(context)!.okButtonLabel),
             onPressed: () {
               Navigator.of(context).pop(); // Dismiss the dialog
             },
@@ -188,17 +189,18 @@ void showProcessingDialog(BuildContext context) {
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
+      final loc = AppLocalizations.of(context)!;
       return Dialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        child: const Padding(
-          padding: EdgeInsets.all(24.0),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text("Processing...", style: TextStyle(fontSize: 18)),
+              const CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Text(loc.processingMessage, style: const TextStyle(fontSize: 18)),
             ],
           ),
         ),
@@ -236,10 +238,10 @@ DateTime dateFromStringDate(String date) {
   return DateTime(year, month, day);
 }
 
-String stringFromDateRange(DateTimeRange dateRange) {
+String stringFromDateRange(DateTimeRange dateRange, AppLocalizations loc) {
   String start = DateFormat('dd MMM yy').format(dateRange.start);
   String end = DateFormat('dd MMM yy').format(dateRange.end);
-  return '$start - $end';
+  return loc.dateRangeFormat(start, end);
 }
 
 int daysDifference(DateTime date1, DateTime date2) {
@@ -274,26 +276,78 @@ String getDateFromUtcMilliSeconds(int utcMilliSeconds) {
   return '$year$monthFormatted$dayFormatted';
 }
 
-String getReadableDate(DateTime date) {
+String getReadableDate(DateTime date, AppLocalizations loc) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final yesterday = today.subtract(const Duration(days: 1));
 
   if (date.isAfter(today)) {
-    return "Today";
+    return loc.todayLabel;
   } else if (date.isAfter(yesterday)) {
-    return "Yesterday";
+    return loc.yesterdayLabel;
   } else if (now.difference(date).inDays < 7) {
-    return DateFormat('EEEE')
-        .format(date); // Day of the week for the last 7 days
+    final weekday = date.weekday;
+    switch (weekday) {
+      case DateTime.monday:
+        return loc.mondayLabel;
+      case DateTime.tuesday:
+        return loc.tuesdayLabel;
+      case DateTime.wednesday:
+        return loc.wednesdayLabel;
+      case DateTime.thursday:
+        return loc.thursdayLabel;
+      case DateTime.friday:
+        return loc.fridayLabel;
+      case DateTime.saturday:
+        return loc.saturdayLabel;
+      case DateTime.sunday:
+        return loc.sundayLabel;
+      default:
+        return DateFormat('EEEE').format(date);
+    }
   } else {
     return DateFormat('MMMM d, yyyy')
         .format(date); // Full date for older messages
   }
 }
 
-String getNoteGroupDateTitle() {
-  const days = [
+String getNoteGroupDateTitle([AppLocalizations? loc]) {
+  final now = DateTime.now();
+  final dayOfWeek = _weekdayLabel(loc, now.weekday);
+  final day = now.day.toString().padLeft(2, '0'); // Ensure 2 digits
+  final month = _monthShortLabel(loc, now.month);
+  //final year = now.year % 100; // Last two digits of the year
+
+  if (loc != null) {
+    return loc.noteGroupDateTitleFormat(month, day, dayOfWeek);
+  }
+  return '$month $day, $dayOfWeek';
+}
+
+String _weekdayLabel(AppLocalizations? loc, int weekday) {
+  if (loc != null) {
+    switch (weekday) {
+      case DateTime.monday:
+        return loc.mondayLabel;
+      case DateTime.tuesday:
+        return loc.tuesdayLabel;
+      case DateTime.wednesday:
+        return loc.wednesdayLabel;
+      case DateTime.thursday:
+        return loc.thursdayLabel;
+      case DateTime.friday:
+        return loc.fridayLabel;
+      case DateTime.saturday:
+        return loc.saturdayLabel;
+      case DateTime.sunday:
+        return loc.sundayLabel;
+      default:
+        return '';
+    }
+  }
+  // English fallback (kept stable for non-localized callers such as the model).
+  const englishDays = [
+    '',
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -302,7 +356,43 @@ String getNoteGroupDateTitle() {
     'Saturday',
     'Sunday'
   ];
-  const months = [
+  if (weekday >= 1 && weekday < englishDays.length) return englishDays[weekday];
+  return '';
+}
+
+String _monthShortLabel(AppLocalizations? loc, int month) {
+  if (loc != null) {
+    switch (month) {
+      case 1:
+        return loc.januaryShortLabel;
+      case 2:
+        return loc.februaryShortLabel;
+      case 3:
+        return loc.marchShortLabel;
+      case 4:
+        return loc.aprilShortLabel;
+      case 5:
+        return loc.mayShortLabel;
+      case 6:
+        return loc.juneShortLabel;
+      case 7:
+        return loc.julyShortLabel;
+      case 8:
+        return loc.augustShortLabel;
+      case 9:
+        return loc.septemberShortLabel;
+      case 10:
+        return loc.octoberShortLabel;
+      case 11:
+        return loc.novemberShortLabel;
+      case 12:
+        return loc.decemberShortLabel;
+      default:
+        return '';
+    }
+  }
+  const englishMonths = [
+    '',
     'Jan',
     'Feb',
     'Mar',
@@ -316,13 +406,8 @@ String getNoteGroupDateTitle() {
     'Nov',
     'Dec'
   ];
-  final now = DateTime.now();
-  final dayOfWeek = days[now.weekday - 1];
-  final day = now.day.toString().padLeft(2, '0'); // Ensure 2 digits
-  final month = months[now.month - 1];
-  //final year = now.year % 100; // Last two digits of the year
-
-  return "$month $day, $dayOfWeek";
+  if (month >= 1 && month < englishMonths.length) return englishMonths[month];
+  return '';
 }
 
 String getFormattedTime(int utcMilliSeconds) {
@@ -359,7 +444,7 @@ DateTime getLocalDateFromUtcMilliSeconds(int utcMilliSeconds) {
   return DateTime(localDateTime.year, localDateTime.month, localDateTime.day);
 }
 
-String mediaFileDurationFromSeconds(int seconds) {
+String mediaFileDurationFromSeconds(int seconds, AppLocalizations loc) {
   final int hours = seconds ~/ 3600;
   final int minutes = (seconds % 3600) ~/ 60;
   final int secs = seconds % 60;
@@ -369,8 +454,8 @@ String mediaFileDurationFromSeconds(int seconds) {
   final String secondsStr = secs.toString().padLeft(2, '0');
 
   return hours > 0
-      ? "$hoursStr:$minutesStr:$secondsStr"
-      : "$minutesStr:$secondsStr";
+      ? loc.mediaDurationHoursFormat(hoursStr, minutesStr, secondsStr)
+      : loc.mediaDurationMinutesFormat(minutesStr, secondsStr);
 }
 
 int mediaFileDurationFromString(String duration) {
@@ -417,12 +502,30 @@ Map<String, int> getImageDimension(Uint8List bytes) {
   return {"width": 0, "height": 0};
 }
 
-String readableFileSizeFromBytes(int bytes, [int decimals = 2]) {
-  if (bytes <= 0) return "0 B";
-  const suffixes = ["B", "KB", "MB", "GB", "TB"];
+String readableFileSizeFromBytes(int bytes, AppLocalizations loc,
+    [int decimals = 2]) {
+  if (bytes <= 0) return loc.fileSizeZero;
   final i = (log(bytes) / log(1024)).floor();
   final size = bytes / pow(1024, i);
-  return "${size.toStringAsFixed(decimals)} ${suffixes[i]}";
+  final suffix = _fileSizeSuffix(loc, i);
+  return loc.fileSizeFormat(size.toStringAsFixed(decimals), suffix);
+}
+
+String _fileSizeSuffix(AppLocalizations loc, int i) {
+  switch (i) {
+    case 0:
+      return loc.fileSizeUnitBytes;
+    case 1:
+      return loc.fileSizeUnitKilobytes;
+    case 2:
+      return loc.fileSizeUnitMegabytes;
+    case 3:
+      return loc.fileSizeUnitGigabytes;
+    case 4:
+      return loc.fileSizeUnitTerabytes;
+    default:
+      return '';
+  }
 }
 
 Color getIndexedColor(int count) {
@@ -623,7 +726,8 @@ Future<Map<String, dynamic>> getDataToDownloadFile(String fileName) async {
   return downloadData;
 }
 
-Future<String?> getAudioDuration(String filePath) async {
+Future<String?> getAudioDuration(String filePath,
+    [AppLocalizations? loc]) async {
   final logger = AppLogger(prefixes: ["common", "getAudioDuration"]);
   final player = AudioPlayer();
   String? audioDuration;
@@ -667,7 +771,10 @@ Future<String?> getAudioDuration(String filePath) async {
     }
 
     // Convert duration to string format
-    audioDuration = mediaFileDurationFromSeconds(duration.inSeconds);
+    final AppLocalizations? locToUse = loc;
+    audioDuration = locToUse != null
+        ? mediaFileDurationFromSeconds(duration.inSeconds, locToUse)
+        : mediaFileDurationFromSecondsFallback(duration.inSeconds);
   } catch (e, s) {
     logger.error("Exception", error: e, stackTrace: s);
   } finally {
@@ -676,6 +783,24 @@ Future<String?> getAudioDuration(String filePath) async {
   }
 
   return audioDuration;
+}
+
+// Same formatting as mediaFileDurationFromSeconds but without an
+// AppLocalizations (used in non-widget code paths where no BuildContext
+// is available, e.g. backup/migration utilities).
+String mediaFileDurationFromSecondsFallback(int seconds) {
+  final hours = seconds ~/ 3600;
+  final int remainingAfterHours = seconds % 3600;
+  final int minutes = remainingAfterHours ~/ 60;
+  final int secs = seconds % 60;
+
+  final String hoursStr = hours.toString().padLeft(2, '0');
+  final String minutesStr = minutes.toString().padLeft(2, '0');
+  final String secondsStr = secs.toString().padLeft(2, '0');
+
+  return hours > 0
+      ? "$hoursStr:$minutesStr:$secondsStr"
+      : "$minutesStr:$secondsStr";
 }
 
 class VideoInfoExtractor {

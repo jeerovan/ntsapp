@@ -57,14 +57,14 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
     if (mounted) setState(() {});
   }
 
-  String formatStorage(int bytes) {
-    if (bytes < 1024) return "$bytes B";
+  String formatStorage(int bytes, AppLocalizations loc) {
+    if (bytes < 1024) return loc.storageBytesFormat(bytes.toString());
     double kb = bytes / 1024;
-    if (kb < 1024) return "${kb.toStringAsFixed(2)} KB";
+    if (kb < 1024) return loc.storageKilobytesFormat(kb.toStringAsFixed(2));
     double mb = kb / 1024;
-    if (mb < 1024) return "${mb.toStringAsFixed(2)} MB";
+    if (mb < 1024) return loc.storageMegabytesFormat(mb.toStringAsFixed(2));
     double gb = mb / 1024;
-    return "${gb.toStringAsFixed(2)} GB";
+    return loc.storageGigabytesFormat(gb.toStringAsFixed(2));
   }
 
   Future<void> fetchPlanDetails() async {
@@ -292,7 +292,10 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          "${formatStorage(usedStorageBytes)} / ${formatStorage(totalStorageBytes)}",
+                          loc.storageUsedTotalFormat(
+                            formatStorage(usedStorageBytes, loc),
+                            formatStorage(totalStorageBytes, loc),
+                          ),
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),

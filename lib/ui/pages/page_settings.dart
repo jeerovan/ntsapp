@@ -218,107 +218,107 @@ class SettingsPageState extends State<SettingsPage> {
   final List<_AppLanguageOption> _supportedLanguages = [
     _AppLanguageOption(
       code: 'ar',
-      nativeName: 'العربية',
+      nativeName: (loc) => loc.languageArabic,
       locale: Locale('ar'),
     ),
     _AppLanguageOption(
       code: 'de',
-      nativeName: 'Deutsch',
+      nativeName: (loc) => loc.languageGerman,
       locale: Locale('de'),
     ),
     _AppLanguageOption(
       code: 'el',
-      nativeName: 'Ελληνικά',
+      nativeName: (loc) => loc.languageGreek,
       locale: Locale('el'),
     ),
     _AppLanguageOption(
       code: 'en',
-      nativeName: 'English',
+      nativeName: (loc) => loc.languageEnglish,
       locale: Locale('en'),
     ),
     _AppLanguageOption(
       code: 'es',
-      nativeName: 'Español',
+      nativeName: (loc) => loc.languageSpanish,
       locale: Locale('es'),
     ),
     _AppLanguageOption(
       code: 'fa',
-      nativeName: 'فارسی',
+      nativeName: (loc) => loc.languagePersian,
       locale: Locale('fa'),
     ),
     _AppLanguageOption(
       code: 'fr',
-      nativeName: 'Français',
+      nativeName: (loc) => loc.languageFrench,
       locale: Locale('fr'),
     ),
     _AppLanguageOption(
       code: 'he',
-      nativeName: 'עברית',
+      nativeName: (loc) => loc.languageHebrew,
       locale: Locale('he'),
     ),
     _AppLanguageOption(
       code: 'hi',
-      nativeName: 'हिन्दी',
+      nativeName: (loc) => loc.languageHindi,
       locale: Locale('hi'),
     ),
     _AppLanguageOption(
       code: 'id',
-      nativeName: 'Bahasa Indonesia',
+      nativeName: (loc) => loc.languageIndonesian,
       locale: Locale('id'),
     ),
     _AppLanguageOption(
       code: 'it',
-      nativeName: 'Italiano',
+      nativeName: (loc) => loc.languageItalian,
       locale: Locale('it'),
     ),
     _AppLanguageOption(
       code: 'ja',
-      nativeName: '日本語',
+      nativeName: (loc) => loc.languageJapanese,
       locale: Locale('ja'),
     ),
     _AppLanguageOption(
       code: 'ko',
-      nativeName: '한국어',
+      nativeName: (loc) => loc.languageKorean,
       locale: Locale('ko'),
     ),
     _AppLanguageOption(
       code: 'nl',
-      nativeName: 'Nederlands',
+      nativeName: (loc) => loc.languageDutch,
       locale: Locale('nl'),
     ),
     _AppLanguageOption(
       code: 'pt',
-      nativeName: 'Português',
+      nativeName: (loc) => loc.languagePortuguese,
       locale: Locale('pt'),
     ),
     _AppLanguageOption(
       code: 'ru',
-      nativeName: 'Русский',
+      nativeName: (loc) => loc.languageRussian,
       locale: Locale('ru'),
     ),
     _AppLanguageOption(
       code: 'th',
-      nativeName: 'ไทย',
+      nativeName: (loc) => loc.languageThai,
       locale: Locale('th'),
     ),
     _AppLanguageOption(
       code: 'tr',
-      nativeName: 'Türkçe',
+      nativeName: (loc) => loc.languageTurkish,
       locale: Locale('tr'),
     ),
     _AppLanguageOption(
       code: 'uk',
-      nativeName: 'Українська',
+      nativeName: (loc) => loc.languageUkrainian,
       locale: Locale('uk'),
     ),
     _AppLanguageOption(
       code: 'vi',
-      nativeName: 'Tiếng Việt',
+      nativeName: (loc) => loc.languageVietnamese,
       locale: Locale('vi'),
     ),
     _AppLanguageOption(
       code: 'zh',
-      nativeName: '简体中文',
+      nativeName: (loc) => loc.languageChineseSimplified,
       locale: Locale('zh'),
     ),
   ];
@@ -355,6 +355,7 @@ class SettingsPageState extends State<SettingsPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
+        final loc = AppLocalizations.of(sheetContext)!;
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.65,
@@ -373,13 +374,13 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Select language',
-                      style: TextStyle(
+                      loc.selectLanguageTitle,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -401,7 +402,7 @@ class SettingsPageState extends State<SettingsPage> {
                           horizontal: 16,
                           vertical: 2,
                         ),
-                        title: Text(item.nativeName),
+                        title: Text(item.nativeName(loc)),
                         trailing: isSelected
                             ? const Icon(
                                 Icons.check_circle,
@@ -429,7 +430,7 @@ class SettingsPageState extends State<SettingsPage> {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Settings"),
+          title: Text(loc.settingsTitle),
           leading: widget.runningOnDesktop
               ? BackButton(
                   onPressed: () async {
@@ -446,11 +447,11 @@ class SettingsPageState extends State<SettingsPage> {
           children: <Widget>[
             ListTile(
               leading: const Icon(LucideIcons.sunMoon, color: Colors.grey),
-              title: const Text("Theme"),
+              title: Text(loc.themeLabel),
               horizontalTitleGap: 24.0,
               onTap: widget.onThemeToggle,
               trailing: IconButton(
-                tooltip: "Day/night theme",
+                tooltip: loc.dayNightThemeTooltip,
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 500),
                   transitionBuilder:
@@ -477,7 +478,7 @@ class SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               leading: const Icon(LucideIcons.lock, color: Colors.grey),
-              title: const Text("Lock"),
+              title: Text(loc.lockLabel),
               horizontalTitleGap: 24.0,
               trailing: Transform.scale(
                 scale: 0.7,
@@ -493,19 +494,19 @@ class SettingsPageState extends State<SettingsPage> {
               // The icon at the beginning of the ListTile.
               leading: const Icon(LucideIcons.timer, color: Colors.grey),
               // The main text of the ListTile.
-              title: const Text('Time Format'),
+              title: Text(loc.timeFormatLabel),
               // The widget at the end of the ListTile, in this case, a dropdown.
               trailing: DropdownButton<String>(
                 value: timeFormat,
                 // The items that will be displayed in the dropdown.
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: "H12",
-                    child: Text('H12'),
+                    child: Text(loc.h12Label),
                   ),
                   DropdownMenuItem(
                     value: "H24",
-                    child: Text('H24'),
+                    child: Text(loc.h24Label),
                   ),
                 ],
                 // The function that is called when a new item is selected.
@@ -514,14 +515,14 @@ class SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               leading: const Icon(Icons.text_fields, color: Colors.grey),
-              title: const Text("Font size"),
+              title: Text(loc.fontSizeLabel),
               horizontalTitleGap: 24.0,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    tooltip: "Reduce text size",
-                    icon: Icon(Icons.remove),
+                    tooltip: loc.reduceTextSizeTooltip,
+                    icon: const Icon(Icons.remove),
                     onPressed: () {
                       Provider.of<FontSizeController>(context, listen: false)
                           .decreaseFontSize();
@@ -537,8 +538,8 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
 */
                   IconButton(
-                    tooltip: "Increase text size",
-                    icon: Icon(Icons.add),
+                    tooltip: loc.increaseTextSizeTooltip,
+                    icon: const Icon(Icons.add),
                     onPressed: () {
                       Provider.of<FontSizeController>(context, listen: false)
                           .increaseFontSize();
@@ -549,7 +550,7 @@ class SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               leading: const Icon(LucideIcons.languages, color: Colors.grey),
-              title: Text("Language"),
+              title: Text(loc.languageLabel),
               horizontalTitleGap: 24.0,
               onTap: () => _showLanguagePicker(context),
               trailing: _selectedLanguageOption() != null
@@ -649,18 +650,19 @@ class SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _share() async {
+    final loc = AppLocalizations.of(context)!;
     String? appName = await secureStorage.read(key: AppString.appName.string);
     appName = appName ?? "";
     const String appLink =
         'https://play.google.com/store/apps/details?id=com.makenotetoself';
-    final params = ShareParams(text: "Make a $appName: $appLink");
+    final params = ShareParams(text: loc.shareAppMessage(appName, appLink));
     await SharePlus.instance.share(params);
   }
 }
 
 class _AppLanguageOption {
   final String code;
-  final String nativeName;
+  final String Function(AppLocalizations loc) nativeName;
   final Locale locale;
 
   const _AppLanguageOption({

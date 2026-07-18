@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/services/service_logger.dart';
 import 'package:ntsapp/ui/widgets_item.dart';
 import 'package:provider/provider.dart';
@@ -243,8 +244,12 @@ class WidgetCategoryGroup extends StatelessWidget {
                 )
               : Text(
                   (categoryGroup.category!.groupCount == 1)
-                      ? "${categoryGroup.category!.groupCount} note group"
-                      : "${categoryGroup.category!.groupCount} note groups",
+                      ? AppLocalizations.of(context)!
+                          .noteGroupCountSingle(
+                              categoryGroup.category!.groupCount!)
+                      : AppLocalizations.of(context)!
+                          .noteGroupCountPlural(
+                              categoryGroup.category!.groupCount!),
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 )
@@ -568,7 +573,10 @@ class _WidgetAudioState extends State<WidgetAudio> {
     File audioFile = File(filePath);
     if (!audioFile.existsSync()) {
       if (mounted) {
-        showAlertMessage(context, "Please wait", "File not available yet.");
+        showAlertMessage(
+            context,
+            AppLocalizations.of(context)!.pleaseWaitTitle,
+            AppLocalizations.of(context)!.fileNotAvailableYet);
       }
       return;
     }
@@ -587,6 +595,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     bool displayDownloadButton =
         widget.item.state == SyncState.downloadable.value;
 
@@ -604,7 +613,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
                 iconSize: 30,
               )
             : IconButton(
-                tooltip: "Play/pause",
+                tooltip: AppLocalizations.of(context)!.playPauseTooltip,
                 icon: Icon(
                   _isPlaying ? Icons.pause_circle : Icons.play_circle,
                   size: 40,
@@ -639,8 +648,9 @@ class _WidgetAudioState extends State<WidgetAudio> {
         Text(
           _currentPosition > Duration.zero
               ? mediaFileDurationFromSeconds(
-                  max(0, _totalDuration.inSeconds - _currentPosition.inSeconds))
-              : mediaFileDurationFromSeconds(_totalDuration.inSeconds),
+                  max(0, _totalDuration.inSeconds - _currentPosition.inSeconds),
+                  loc)
+              : mediaFileDurationFromSeconds(_totalDuration.inSeconds, loc),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
@@ -806,10 +816,10 @@ class TimerWidgetState extends State<TimerWidget> {
     });
   }
 
-  String get _formattedTime {
+  String _formattedTime(AppLocalizations loc) {
     final minutes = (_secondsElapsed ~/ 60).toString().padLeft(2, '0');
     final seconds = (_secondsElapsed % 60).toString().padLeft(2, '0');
-    return "$minutes:$seconds";
+    return loc.timerFormattedTime(minutes, seconds);
   }
 
   void setRunningState() {
@@ -825,8 +835,9 @@ class TimerWidgetState extends State<TimerWidget> {
   @override
   Widget build(BuildContext context) {
     setRunningState();
+    final loc = AppLocalizations.of(context)!;
     return Text(
-      _formattedTime,
+      _formattedTime(loc),
       style: TextStyle(
         color: Colors.red,
         fontSize: 16.0,
@@ -868,6 +879,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       content: Padding(
@@ -966,13 +978,13 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
           onPressed: () {
             Navigator.of(context).pop(null); // Cancel action
           },
-          child: const Text('Cancel'),
+          child: Text(loc.cancelButtonLabel),
         ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pop(selectedColor); // Return selected color
           },
-          child: const Text('Ok'),
+          child: Text(loc.okButtonLabel),
         ),
       ],
     );
@@ -1192,7 +1204,7 @@ class _DownloadButtonState extends State<DownloadButton> {
         ),
       ),
       child: IconButton(
-        tooltip: "Download",
+        tooltip: AppLocalizations.of(context)!.downloadTooltip,
         icon: Opacity(
           opacity: 0.5,
           child: Icon(
@@ -1234,7 +1246,7 @@ class VideoPlayDownloadButton extends StatelessWidget {
               size: iconSize / 2,
             )
           : IconButton(
-              tooltip: "Download",
+              tooltip: AppLocalizations.of(context)!.downloadTooltip,
               icon: Icon(
                 Icons.arrow_downward,
                 color: Colors.white,
@@ -1273,7 +1285,7 @@ class _ImageDownloadButtonState extends State<ImageDownloadButton> {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        tooltip: "Download",
+        tooltip: AppLocalizations.of(context)!.downloadTooltip,
         icon: Icon(
           Icons.arrow_downward,
           color: Colors.white,

@@ -718,4 +718,346 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get somethingWentWrongMessage => 'Something went wrong';
+
+  @override
+  String get playPauseTooltip => 'Play/pause';
+
+  @override
+  String timerFormattedTime(String minutes, String seconds) {
+    return '$minutes:$seconds';
+  }
+
+  @override
+  String get downloadTooltip => 'Download';
+
+  @override
+  String get invalidAccessKey => 'Invalid access key';
+
+  @override
+  String get fileDoesNotContain24Words => 'The file does not contain exactly 24 words.';
+
+  @override
+  String get errorReadingFile => 'Error reading file';
+
+  @override
+  String get allLabel => 'All';
+
+  @override
+  String get logTypeDebug => 'DEBUG';
+
+  @override
+  String get logTypeError => 'ERROR';
+
+  @override
+  String get logTypeInfo => 'INFO';
+
+  @override
+  String get logTypeWarning => 'WARNING';
+
+  @override
+  String get groupTitleHint => 'Group title';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get selectCategoryPlaceholder => 'Select category';
+
+  @override
+  String storageBytesFormat(String bytes) {
+    return '$bytes B';
+  }
+
+  @override
+  String storageKilobytesFormat(String kb) {
+    return '$kb KB';
+  }
+
+  @override
+  String storageMegabytesFormat(String mb) {
+    return '$mb MB';
+  }
+
+  @override
+  String storageGigabytesFormat(String gb) {
+    return '$gb GB';
+  }
+
+  @override
+  String storageUsedTotalFormat(String used, String total) {
+    return '$used / $total';
+  }
+
+  @override
+  String planStorageSizeFormat(String size, String unit) {
+    return '$size $unit';
+  }
+
+  @override
+  String get searchHint => 'query, #document etc..';
+
+  @override
+  String get categoryGroupSeparator => ' > ';
+
+  @override
+  String get audioFileLabel => 'Audio file';
+
+  @override
+  String get languageArabic => 'العربية';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get languageGreek => 'Ελληνικά';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languagePersian => 'فارسی';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageHebrew => 'עברית';
+
+  @override
+  String get languageHindi => 'हिन्दी';
+
+  @override
+  String get languageIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String get languageItalian => 'Italiano';
+
+  @override
+  String get languageJapanese => '日本語';
+
+  @override
+  String get languageKorean => '한국어';
+
+  @override
+  String get languageDutch => 'Nederlands';
+
+  @override
+  String get languagePortuguese => 'Português';
+
+  @override
+  String get languageRussian => 'Русский';
+
+  @override
+  String get languageThai => 'ไทย';
+
+  @override
+  String get languageTurkish => 'Türkçe';
+
+  @override
+  String get languageUkrainian => 'Українська';
+
+  @override
+  String get languageVietnamese => 'Tiếng Việt';
+
+  @override
+  String get languageChineseSimplified => '简体中文';
+
+  @override
+  String get selectLanguageTitle => 'Select language';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get themeLabel => 'Theme';
+
+  @override
+  String get dayNightThemeTooltip => 'Day/night theme';
+
+  @override
+  String get lockLabel => 'Lock';
+
+  @override
+  String get timeFormatLabel => 'Time Format';
+
+  @override
+  String get h12Label => 'H12';
+
+  @override
+  String get h24Label => 'H24';
+
+  @override
+  String get fontSizeLabel => 'Font size';
+
+  @override
+  String get reduceTextSizeTooltip => 'Reduce text size';
+
+  @override
+  String get increaseTextSizeTooltip => 'Increase text size';
+
+  @override
+  String get languageLabel => 'Language';
+
+  @override
+  String shareAppMessage(String appName, String appLink) {
+    return 'Make a $appName: $appLink';
+  }
+
+  @override
+  String get noteTypeEmpty => 'Empty';
+
+  @override
+  String get noteTypeImage => 'Image';
+
+  @override
+  String get noteTypeVideo => 'Video';
+
+  @override
+  String get noteTypeAudio => 'Audio';
+
+  @override
+  String get noteTypeDocument => 'Document';
+
+  @override
+  String get noteTypeContact => 'Contact';
+
+  @override
+  String get noteTypeLocation => 'Location';
+
+  @override
+  String get noteTypeUnknown => 'Unknown';
+
+  @override
+  String get pleaseEnterData => 'Please enter data';
+
+  @override
+  String get aNumber => 'A number';
+
+  @override
+  String get enterDataLabel => 'Enter data';
+
+  @override
+  String get pleaseEnterValidData => 'Please enter valid data';
+
+  @override
+  String get pleaseSelectAnOption => 'Please select an option';
+
+  @override
+  String dateRangeFormat(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get todayLabel => 'Today';
+
+  @override
+  String get yesterdayLabel => 'Yesterday';
+
+  @override
+  String get mondayLabel => 'Monday';
+
+  @override
+  String get tuesdayLabel => 'Tuesday';
+
+  @override
+  String get wednesdayLabel => 'Wednesday';
+
+  @override
+  String get thursdayLabel => 'Thursday';
+
+  @override
+  String get fridayLabel => 'Friday';
+
+  @override
+  String get saturdayLabel => 'Saturday';
+
+  @override
+  String get sundayLabel => 'Sunday';
+
+  @override
+  String get januaryShortLabel => 'Jan';
+
+  @override
+  String get februaryShortLabel => 'Feb';
+
+  @override
+  String get marchShortLabel => 'Mar';
+
+  @override
+  String get aprilShortLabel => 'Apr';
+
+  @override
+  String get mayShortLabel => 'May';
+
+  @override
+  String get juneShortLabel => 'Jun';
+
+  @override
+  String get julyShortLabel => 'Jul';
+
+  @override
+  String get augustShortLabel => 'Aug';
+
+  @override
+  String get septemberShortLabel => 'Sep';
+
+  @override
+  String get octoberShortLabel => 'Oct';
+
+  @override
+  String get novemberShortLabel => 'Nov';
+
+  @override
+  String get decemberShortLabel => 'Dec';
+
+  @override
+  String noteGroupDateTitleFormat(String month, String day, String dayOfWeek) {
+    return '$month $day, $dayOfWeek';
+  }
+
+  @override
+  String mediaDurationHoursFormat(String hours, String minutes, String seconds) {
+    return '$hours:$minutes:$seconds';
+  }
+
+  @override
+  String mediaDurationMinutesFormat(String minutes, String seconds) {
+    return '$minutes:$seconds';
+  }
+
+  @override
+  String get fileSizeZero => '0 B';
+
+  @override
+  String get fileSizeUnitBytes => 'B';
+
+  @override
+  String get fileSizeUnitKilobytes => 'KB';
+
+  @override
+  String get fileSizeUnitMegabytes => 'MB';
+
+  @override
+  String get fileSizeUnitGigabytes => 'GB';
+
+  @override
+  String get fileSizeUnitTerabytes => 'TB';
+
+  @override
+  String fileSizeFormat(String size, String suffix) {
+    return '$size $suffix';
+  }
+
+  @override
+  String noteGroupCountSingle(int count) {
+    return '$count note group';
+  }
+
+  @override
+  String noteGroupCountPlural(int count) {
+    return '$count note groups';
+  }
 }

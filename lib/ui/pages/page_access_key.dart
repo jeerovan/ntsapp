@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/pages/page_user_task.dart';
@@ -13,7 +14,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:bip39/bip39.dart' as bip39;
-import '../../l10n/app_localizations.dart';
 import '../../utils/common.dart';
 import '../../models/model_preferences.dart';
 import 'page_plan_status.dart';
@@ -56,6 +56,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
   }
 
   Future<void> _downloadTextFile(String text) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       final directory = await getTemporaryDirectory();
       final filePath = path.join(directory.path, 'nts_access_key.txt');
@@ -63,13 +64,13 @@ class _PageAccessKeyState extends State<PageAccessKey> {
       await file.writeAsString(text);
 
       final params = ShareParams(
-        text: 'Here is your access key.',
+        text: loc.accessKeyShareText,
         files: [XFile(filePath)],
       );
       await SharePlus.instance.share(params);
     } catch (e) {
       if (mounted) {
-        displaySnackBar(context, message: "Please try again.", seconds: 1);
+        displaySnackBar(context, message: loc.pleaseTryAgain, seconds: 1);
       }
     }
   }
@@ -77,7 +78,9 @@ class _PageAccessKeyState extends State<PageAccessKey> {
   void copyToClipboard() {
     Clipboard.setData(ClipboardData(text: sentence));
     if (mounted) {
-      displaySnackBar(context, message: "Copied to clipboard", seconds: 1);
+      final loc = AppLocalizations.of(context)!;
+      displaySnackBar(context,
+          message: loc.copiedToClipboard, seconds: 1);
     }
   }
 

@@ -277,6 +277,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> _addItemsToDisplayList(
       List<ModelItem> items, bool addOlder) async {
+    final loc = AppLocalizations.of(context)!;
     DateTime? lastDate;
     int? lastItemAt;
     if (addOlder) {
@@ -297,7 +298,7 @@ class _PageItemsState extends State<PageItems> {
           if (currentDate != lastDate) {
             final ModelItem dateItem = await ModelItem.fromMap({
               "group_id": noteGroup!.id,
-              "text": getReadableDate(lastDate),
+              "text": getReadableDate(lastDate, loc),
               "type": 170000,
               "at": lastItemAt! - 1
             });
@@ -311,7 +312,7 @@ class _PageItemsState extends State<PageItems> {
       if (lastDate != null) {
         final ModelItem dateItem = await ModelItem.fromMap({
           "group_id": noteGroup!.id,
-          "text": getReadableDate(lastDate),
+          "text": getReadableDate(lastDate, loc),
           "type": 170000,
           "at": lastItemAt! - 1
         });
@@ -327,7 +328,7 @@ class _PageItemsState extends State<PageItems> {
           if (currentDate != lastDate) {
             final ModelItem dateItem = await ModelItem.fromMap({
               "group_id": noteGroup!.id,
-              "text": getReadableDate(currentDate),
+              "text": getReadableDate(currentDate, loc),
               "type": 170000,
               "at": item.at! - 1
             });
@@ -336,7 +337,7 @@ class _PageItemsState extends State<PageItems> {
         } else {
           final ModelItem dateItem = await ModelItem.fromMap({
             "group_id": noteGroup!.id,
-            "text": getReadableDate(currentDate),
+            "text": getReadableDate(currentDate, loc),
             "type": 170000,
             "at": item.at! - 1
           });
@@ -1224,6 +1225,7 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> processFiles(List<String> filePaths) async {
     if (filePaths.isEmpty) return;
+    final loc = AppLocalizations.of(context)!;
     showProcessing();
     for (String filePath in filePaths) {
       Map<String, dynamic>? attrs = await processAndGetFileAttributes(filePath);
@@ -1251,7 +1253,8 @@ class _PageItemsState extends State<PageItems> {
           try {
             final mediaInfo = await extractor.getVideoInfo();
             int durationSeconds = mediaInfo['duration'];
-            String duration = mediaFileDurationFromSeconds(durationSeconds);
+            String duration =
+                mediaFileDurationFromSeconds(durationSeconds, loc);
             double aspect = mediaInfo['aspect'];
             Uint8List? thumbnail = await extractor.getThumbnail(
                 seekPosition:
@@ -1272,7 +1275,7 @@ class _PageItemsState extends State<PageItems> {
             extractor.dispose();
           }
         case "audio":
-          String? duration = await getAudioDuration(newPath);
+          String? duration = await getAudioDuration(newPath, loc);
           if (duration != null) {
             Map<String, dynamic> data = {
               "path": newPath,

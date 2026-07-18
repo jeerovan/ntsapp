@@ -173,7 +173,7 @@ class SearchPageState extends State<SearchPage> {
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
                 prefixIcon: const Icon(LucideIcons.search),
-                hintText: "query, #document etc..",
+                hintText: loc.searchHint,
                 hintStyle:
                     TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
                 border: OutlineInputBorder(
@@ -193,36 +193,36 @@ class SearchPageState extends State<SearchPage> {
     ModelItem item = search.item;
     switch (item.type) {
       case ItemType.text:
-        return _buildTextItem(search);
+        return _buildTextItem(search, loc);
       case ItemType.image:
-        return _buildImageItem(search);
+        return _buildImageItem(search, loc);
       case ItemType.video:
-        return _buildVideoItem(search);
+        return _buildVideoItem(search, loc);
       case ItemType.audio:
-        return _buildAudioItem(search);
+        return _buildAudioItem(search, loc);
       case ItemType.document:
-        return _buildDocumentItem(search);
+        return _buildDocumentItem(search, loc);
       case ItemType.location:
         return _buildLocationItem(search, loc);
       case ItemType.contact:
-        return _buildContactItem(search);
+        return _buildContactItem(search, loc);
       case ItemType.completedTask:
-        return _buildTaskItem(search);
+        return _buildTaskItem(search, loc);
       case ItemType.task:
-        return _buildTaskItem(search);
+        return _buildTaskItem(search, loc);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildCategoryGroupHeader(ModelSearchItem search) {
+  Widget _buildCategoryGroupHeader(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     List<String> headerParts = [];
     if (search.category!.title != "DND") {
       headerParts.add(search.category!.title);
     }
     headerParts.add(search.group!.title);
-    String header = headerParts.join(" > ");
+    String header = headerParts.join(loc.categoryGroupSeparator);
     return Row(
       children: [
         Text(
@@ -246,10 +246,10 @@ class SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildTaskItem(ModelSearchItem search) {
+  Widget _buildTaskItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _buildCategoryGroupHeader(search),
+      _buildCategoryGroupHeader(search, loc),
       ItemWidgetTask(
         item: item,
         showTimestamp: false,
@@ -257,11 +257,11 @@ class SearchPageState extends State<SearchPage> {
     ]);
   }
 
-  Widget _buildTextItem(ModelSearchItem search) {
+  Widget _buildTextItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _buildCategoryGroupHeader(search),
+      _buildCategoryGroupHeader(search, loc),
       const SizedBox(height: 5),
       Text(item.text),
       const SizedBox(height: 5),
@@ -272,7 +272,7 @@ class SearchPageState extends State<SearchPage> {
     ]);
   }
 
-  Widget _buildImageItem(ModelSearchItem search) {
+  Widget _buildImageItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Row(
@@ -281,7 +281,7 @@ class SearchPageState extends State<SearchPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCategoryGroupHeader(search),
+            _buildCategoryGroupHeader(search, loc),
             const SizedBox(height: 5),
             Text(
               formattedTime,
@@ -303,7 +303,7 @@ class SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildVideoItem(ModelSearchItem search) {
+  Widget _buildVideoItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Row(
@@ -312,7 +312,7 @@ class SearchPageState extends State<SearchPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCategoryGroupHeader(search),
+            _buildCategoryGroupHeader(search, loc),
             const SizedBox(height: 5),
             Row(
               children: [
@@ -363,11 +363,11 @@ class SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildAudioItem(ModelSearchItem search) {
+  Widget _buildAudioItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _buildCategoryGroupHeader(search),
+      _buildCategoryGroupHeader(search, loc),
       const SizedBox(height: 5),
       Row(
         children: [
@@ -387,7 +387,7 @@ class SearchPageState extends State<SearchPage> {
           Padding(
             padding: const EdgeInsets.all(4.0),
             child: Text(
-              "Audio file",
+              loc.audioFileLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 15),
@@ -402,14 +402,14 @@ class SearchPageState extends State<SearchPage> {
     ]);
   }
 
-  Widget _buildDocumentItem(ModelSearchItem search) {
+  Widget _buildDocumentItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     String title = item.data!.containsKey("title")
         ? item.data!["title"]
         : item.data!["name"];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _buildCategoryGroupHeader(search),
+      _buildCategoryGroupHeader(search, loc),
       const SizedBox(height: 5),
       Row(
         children: [
@@ -421,7 +421,7 @@ class SearchPageState extends State<SearchPage> {
                 width: 2,
               ),
               Text(
-                readableFileSizeFromBytes(item.data!["size"]),
+                readableFileSizeFromBytes(item.data!["size"], loc),
                 style: const TextStyle(fontSize: 10),
               ),
             ],
@@ -454,7 +454,7 @@ class SearchPageState extends State<SearchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildCategoryGroupHeader(search),
+        _buildCategoryGroupHeader(search, loc),
         const SizedBox(height: 5),
         Row(
           //mainAxisSize: MainAxisSize.max,
@@ -482,13 +482,13 @@ class SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildContactItem(ModelSearchItem search) {
+  Widget _buildContactItem(ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     String formattedTime = getFormattedTime(item.at!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildCategoryGroupHeader(search),
+        _buildCategoryGroupHeader(search, loc),
         ListTile(
           leading: item.thumbnail != null
               ? CircleAvatar(

@@ -222,7 +222,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     await group.update(["archived_at"]);
     categoryGroupsDisplayList.remove(group);
     if (mounted) {
-      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+      displaySnackBar(
+          context,
+          message: AppLocalizations.of(context)!.movedToTrash,
+          seconds: 1);
     }
     await signalToUpdateHome();
   }
@@ -238,7 +241,10 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   Future<void> onNoteGroupDeleted() async {
     loadGroups();
     if (mounted) {
-      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+      displaySnackBar(
+          context,
+          message: AppLocalizations.of(context)!.movedToTrash,
+          seconds: 1);
     }
   }
 

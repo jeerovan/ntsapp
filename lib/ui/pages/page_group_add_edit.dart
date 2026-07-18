@@ -43,7 +43,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   Uint8List? thumbnail;
   String? colorCode;
   ModelCategory? category;
-  String dateTitle = getNoteGroupDateTitle();
+  String? dateTitle;
   Map<String, dynamic>? groupData;
 
   ModelCategory? previousCategory;
@@ -60,6 +60,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   }
 
   Future<void> init() async {
+    final loc = AppLocalizations.of(context)!;
     if (widget.group == null) {
       itemChanged = true;
       await setColorCode();
@@ -82,7 +83,9 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
 
     if (mounted) {
       setState(() {
-        title = widget.group == null ? dateTitle : widget.group!.title;
+        title = widget.group == null
+            ? (dateTitle ?? getNoteGroupDateTitle(loc))
+            : widget.group!.title;
         titleController.text = title;
         thumbnail = widget.group?.thumbnail;
       });
@@ -269,7 +272,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               textInputAction: TextInputAction.done,
               onSubmitted: saveGroup,
               decoration: InputDecoration(
-                hintText: 'Group title',
+                hintText: loc.groupTitleHint,
                 // Placeholder
                 hintStyle:
                     TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
@@ -304,7 +307,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               height: 32,
             ),
             Text(
-              "Color",
+              loc.colorLabel,
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(
@@ -336,7 +339,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                   const SizedBox(
                     width: 12,
                   ),
-                  Text("Change color"),
+                  Text(loc.changeColorLabel),
                 ],
               ),
             ),
@@ -344,7 +347,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
               height: 32,
             ),
             Text(
-              "Category",
+              loc.categoryLabel,
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(
@@ -359,13 +362,13 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
                     },
                     child: category == null
                         ? Text(
-                            "Select category",
+                            loc.selectCategoryPlaceholder,
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface),
                           )
                         : category!.title == "DND"
                             ? Text(
-                                "Select category",
+                                loc.selectCategoryPlaceholder,
                                 style: TextStyle(
                                     color: Theme.of(context)
                                         .colorScheme

@@ -1490,6 +1490,630 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong'**
   String get somethingWentWrongMessage;
+
+  /// Tooltip for the play/pause audio button.
+  ///
+  /// In en, this message translates to:
+  /// **'Play/pause'**
+  String get playPauseTooltip;
+
+  /// Formatted timer display showing minutes and seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}:{seconds}'**
+  String timerFormattedTime(String minutes, String seconds);
+
+  /// Tooltip for the download button.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get downloadTooltip;
+
+  /// Error message when the access key is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid access key'**
+  String get invalidAccessKey;
+
+  /// Error message when the selected file does not contain a 24-word recovery phrase.
+  ///
+  /// In en, this message translates to:
+  /// **'The file does not contain exactly 24 words.'**
+  String get fileDoesNotContain24Words;
+
+  /// Toast message when an error occurs while reading a file.
+  ///
+  /// In en, this message translates to:
+  /// **'Error reading file'**
+  String get errorReadingFile;
+
+  /// Label for the 'All' filter option.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allLabel;
+
+  /// Log type label for debug entries.
+  ///
+  /// In en, this message translates to:
+  /// **'DEBUG'**
+  String get logTypeDebug;
+
+  /// Log type label for error entries.
+  ///
+  /// In en, this message translates to:
+  /// **'ERROR'**
+  String get logTypeError;
+
+  /// Log type label for info entries.
+  ///
+  /// In en, this message translates to:
+  /// **'INFO'**
+  String get logTypeInfo;
+
+  /// Log type label for warning entries.
+  ///
+  /// In en, this message translates to:
+  /// **'WARNING'**
+  String get logTypeWarning;
+
+  /// Hint text for the group title input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Group title'**
+  String get groupTitleHint;
+
+  /// Label for the category selector section.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// Placeholder text prompting the user to select a category.
+  ///
+  /// In en, this message translates to:
+  /// **'Select category'**
+  String get selectCategoryPlaceholder;
+
+  /// Formatted storage size in bytes.
+  ///
+  /// In en, this message translates to:
+  /// **'{bytes} B'**
+  String storageBytesFormat(String bytes);
+
+  /// Formatted storage size in kilobytes.
+  ///
+  /// In en, this message translates to:
+  /// **'{kb} KB'**
+  String storageKilobytesFormat(String kb);
+
+  /// Formatted storage size in megabytes.
+  ///
+  /// In en, this message translates to:
+  /// **'{mb} MB'**
+  String storageMegabytesFormat(String mb);
+
+  /// Formatted storage size in gigabytes.
+  ///
+  /// In en, this message translates to:
+  /// **'{gb} GB'**
+  String storageGigabytesFormat(String gb);
+
+  /// Formatted used vs total storage display.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} / {total}'**
+  String storageUsedTotalFormat(String used, String total);
+
+  /// Formatted plan storage size with unit (e.g. '100 GB').
+  ///
+  /// In en, this message translates to:
+  /// **'{size} {unit}'**
+  String planStorageSizeFormat(String size, String unit);
+
+  /// Hint text for the search input field.
+  ///
+  /// In en, this message translates to:
+  /// **'query, #document etc..'**
+  String get searchHint;
+
+  /// Separator used between category and group in search result headers.
+  ///
+  /// In en, this message translates to:
+  /// **' > '**
+  String get categoryGroupSeparator;
+
+  /// Label shown for audio file search results.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio file'**
+  String get audioFileLabel;
+
+  /// Native name of the Arabic language.
+  ///
+  /// In en, this message translates to:
+  /// **'العربية'**
+  String get languageArabic;
+
+  /// Native name of the German language.
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get languageGerman;
+
+  /// Native name of the Greek language.
+  ///
+  /// In en, this message translates to:
+  /// **'Ελληνικά'**
+  String get languageGreek;
+
+  /// Native name of the English language.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// Native name of the Spanish language.
+  ///
+  /// In en, this message translates to:
+  /// **'Español'**
+  String get languageSpanish;
+
+  /// Native name of the Persian (Farsi) language.
+  ///
+  /// In en, this message translates to:
+  /// **'فارسی'**
+  String get languagePersian;
+
+  /// Native name of the French language.
+  ///
+  /// In en, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// Native name of the Hebrew language.
+  ///
+  /// In en, this message translates to:
+  /// **'עברית'**
+  String get languageHebrew;
+
+  /// Native name of the Hindi language.
+  ///
+  /// In en, this message translates to:
+  /// **'हिन्दी'**
+  String get languageHindi;
+
+  /// Native name of the Indonesian language.
+  ///
+  /// In en, this message translates to:
+  /// **'Bahasa Indonesia'**
+  String get languageIndonesian;
+
+  /// Native name of the Italian language.
+  ///
+  /// In en, this message translates to:
+  /// **'Italiano'**
+  String get languageItalian;
+
+  /// Native name of the Japanese language.
+  ///
+  /// In en, this message translates to:
+  /// **'日本語'**
+  String get languageJapanese;
+
+  /// Native name of the Korean language.
+  ///
+  /// In en, this message translates to:
+  /// **'한국어'**
+  String get languageKorean;
+
+  /// Native name of the Dutch language.
+  ///
+  /// In en, this message translates to:
+  /// **'Nederlands'**
+  String get languageDutch;
+
+  /// Native name of the Portuguese language.
+  ///
+  /// In en, this message translates to:
+  /// **'Português'**
+  String get languagePortuguese;
+
+  /// Native name of the Russian language.
+  ///
+  /// In en, this message translates to:
+  /// **'Русский'**
+  String get languageRussian;
+
+  /// Native name of the Thai language.
+  ///
+  /// In en, this message translates to:
+  /// **'ไทย'**
+  String get languageThai;
+
+  /// Native name of the Turkish language.
+  ///
+  /// In en, this message translates to:
+  /// **'Türkçe'**
+  String get languageTurkish;
+
+  /// Native name of the Ukrainian language.
+  ///
+  /// In en, this message translates to:
+  /// **'Українська'**
+  String get languageUkrainian;
+
+  /// Native name of the Vietnamese language.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiếng Việt'**
+  String get languageVietnamese;
+
+  /// Native name of the Simplified Chinese language.
+  ///
+  /// In en, this message translates to:
+  /// **'简体中文'**
+  String get languageChineseSimplified;
+
+  /// Header label for the language selection menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Select language'**
+  String get selectLanguageTitle;
+
+  /// Title of the settings page displayed in the AppBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// Label for the theme settings list tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeLabel;
+
+  /// Tooltip for the theme toggle button.
+  ///
+  /// In en, this message translates to:
+  /// **'Day/night theme'**
+  String get dayNightThemeTooltip;
+
+  /// Label for the app lock setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get lockLabel;
+
+  /// Label for the time format dropdown setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Format'**
+  String get timeFormatLabel;
+
+  /// Label for the 12-hour time format option.
+  ///
+  /// In en, this message translates to:
+  /// **'H12'**
+  String get h12Label;
+
+  /// Label for the 24-hour time format option.
+  ///
+  /// In en, this message translates to:
+  /// **'H24'**
+  String get h24Label;
+
+  /// Label for the font size setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get fontSizeLabel;
+
+  /// Tooltip for the decrease font size button.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce text size'**
+  String get reduceTextSizeTooltip;
+
+  /// Tooltip for the increase font size button.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase text size'**
+  String get increaseTextSizeTooltip;
+
+  /// Label for the language setting list tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageLabel;
+
+  /// Content of the share intent for sharing the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a {appName}: {appLink}'**
+  String shareAppMessage(String appName, String appLink);
+
+  /// Label for an empty note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty'**
+  String get noteTypeEmpty;
+
+  /// Label for an image note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get noteTypeImage;
+
+  /// Label for a video note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get noteTypeVideo;
+
+  /// Label for an audio note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get noteTypeAudio;
+
+  /// Label for a document note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get noteTypeDocument;
+
+  /// Label for a contact note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get noteTypeContact;
+
+  /// Label for a location note preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get noteTypeLocation;
+
+  /// Label for a note preview of an unrecognized type.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get noteTypeUnknown;
+
+  /// Validation error message when a field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter data'**
+  String get pleaseEnterData;
+
+  /// Validation error message when the input must be a number.
+  ///
+  /// In en, this message translates to:
+  /// **'A number'**
+  String get aNumber;
+
+  /// Validation error message prompting the user to enter data.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter data'**
+  String get enterDataLabel;
+
+  /// Validation error message for invalid input data.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid data'**
+  String get pleaseEnterValidData;
+
+  /// Validation error message prompting the user to select an option.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an option'**
+  String get pleaseSelectAnOption;
+
+  /// Formatted date range string.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} - {end}'**
+  String dateRangeFormat(String start, String end);
+
+  /// Human-readable label for today's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayLabel;
+
+  /// Human-readable label for yesterday's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterdayLabel;
+
+  /// Day-of-week name for Monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get mondayLabel;
+
+  /// Day-of-week name for Tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get tuesdayLabel;
+
+  /// Day-of-week name for Wednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get wednesdayLabel;
+
+  /// Day-of-week name for Thursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get thursdayLabel;
+
+  /// Day-of-week name for Friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get fridayLabel;
+
+  /// Day-of-week name for Saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get saturdayLabel;
+
+  /// Day-of-week name for Sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get sundayLabel;
+
+  /// Short month name for January.
+  ///
+  /// In en, this message translates to:
+  /// **'Jan'**
+  String get januaryShortLabel;
+
+  /// Short month name for February.
+  ///
+  /// In en, this message translates to:
+  /// **'Feb'**
+  String get februaryShortLabel;
+
+  /// Short month name for March.
+  ///
+  /// In en, this message translates to:
+  /// **'Mar'**
+  String get marchShortLabel;
+
+  /// Short month name for April.
+  ///
+  /// In en, this message translates to:
+  /// **'Apr'**
+  String get aprilShortLabel;
+
+  /// Short month name for May.
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get mayShortLabel;
+
+  /// Short month name for June.
+  ///
+  /// In en, this message translates to:
+  /// **'Jun'**
+  String get juneShortLabel;
+
+  /// Short month name for July.
+  ///
+  /// In en, this message translates to:
+  /// **'Jul'**
+  String get julyShortLabel;
+
+  /// Short month name for August.
+  ///
+  /// In en, this message translates to:
+  /// **'Aug'**
+  String get augustShortLabel;
+
+  /// Short month name for September.
+  ///
+  /// In en, this message translates to:
+  /// **'Sep'**
+  String get septemberShortLabel;
+
+  /// Short month name for October.
+  ///
+  /// In en, this message translates to:
+  /// **'Oct'**
+  String get octoberShortLabel;
+
+  /// Short month name for November.
+  ///
+  /// In en, this message translates to:
+  /// **'Nov'**
+  String get novemberShortLabel;
+
+  /// Short month name for December.
+  ///
+  /// In en, this message translates to:
+  /// **'Dec'**
+  String get decemberShortLabel;
+
+  /// Formatted note group date title.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} {day}, {dayOfWeek}'**
+  String noteGroupDateTitleFormat(String month, String day, String dayOfWeek);
+
+  /// Formatted media duration with hours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}:{minutes}:{seconds}'**
+  String mediaDurationHoursFormat(String hours, String minutes, String seconds);
+
+  /// Formatted media duration without hours.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}:{seconds}'**
+  String mediaDurationMinutesFormat(String minutes, String seconds);
+
+  /// Display string when file size is zero.
+  ///
+  /// In en, this message translates to:
+  /// **'0 B'**
+  String get fileSizeZero;
+
+  /// File size unit for bytes.
+  ///
+  /// In en, this message translates to:
+  /// **'B'**
+  String get fileSizeUnitBytes;
+
+  /// File size unit for kilobytes.
+  ///
+  /// In en, this message translates to:
+  /// **'KB'**
+  String get fileSizeUnitKilobytes;
+
+  /// File size unit for megabytes.
+  ///
+  /// In en, this message translates to:
+  /// **'MB'**
+  String get fileSizeUnitMegabytes;
+
+  /// File size unit for gigabytes.
+  ///
+  /// In en, this message translates to:
+  /// **'GB'**
+  String get fileSizeUnitGigabytes;
+
+  /// File size unit for terabytes.
+  ///
+  /// In en, this message translates to:
+  /// **'TB'**
+  String get fileSizeUnitTerabytes;
+
+  /// Formatted file size string with suffix unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} {suffix}'**
+  String fileSizeFormat(String size, String suffix);
+
+  /// Pluralized label for a single note group count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} note group'**
+  String noteGroupCountSingle(int count);
+
+  /// Pluralized label for multiple note groups count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} note groups'**
+  String noteGroupCountPlural(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

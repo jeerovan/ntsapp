@@ -18,8 +18,19 @@ class PageLogs extends StatefulWidget {
 class _PageLogsState extends State<PageLogs> {
   late Future<List<String>> _logsFuture;
   String? _filterText;
-  String _filterType = 'All';
-  final List<String> _logTypes = ['All', 'INFO', 'DEBUG', 'WARNING', 'ERROR'];
+  String _filterType = _kAllLogType;
+  // Display keys used to look up the localized label for each filter entry.
+  // The first entry maps to "All" (no filter), the rest are actual log type
+  // identifiers (kept as constants because they are also used to parse the
+  // log file contents).
+  static const String _kAllLogType = 'All';
+  final List<MapEntry<String, String>> _logTypes = [
+    MapEntry('All', 'allLabel'),
+    MapEntry('INFO', 'logTypeInfo'),
+    MapEntry('DEBUG', 'logTypeDebug'),
+    MapEntry('WARNING', 'logTypeWarning'),
+    MapEntry('ERROR', 'logTypeError'),
+  ];
   late final TextEditingController _searchController;
 
   Timer? _debounce;
@@ -56,7 +67,7 @@ class _PageLogsState extends State<PageLogs> {
 
       return lines.where((line) {
         // Filter by type
-        if (_filterType != 'All') {
+        if (_filterType != _kAllLogType) {
           if (!line.contains('[$_filterType]')) {
             return false;
           }
@@ -88,6 +99,23 @@ class _PageLogsState extends State<PageLogs> {
     _loadLogs();
   }
 
+  String _localizedLogTypeLabel(AppLocalizations loc, String key) {
+    switch (key) {
+      case 'allLabel':
+        return loc.allLabel;
+      case 'logTypeInfo':
+        return loc.logTypeInfo;
+      case 'logTypeDebug':
+        return loc.logTypeDebug;
+      case 'logTypeWarning':
+        return loc.logTypeWarning;
+      case 'logTypeError':
+        return loc.logTypeError;
+      default:
+        return key;
+    }
+  }
+
   void onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) {
       _debounce!.cancel();
@@ -117,11 +145,11 @@ class _PageLogsState extends State<PageLogs> {
                   _loadLogs();
                 }
               },
-              items: _logTypes.map<DropdownMenuItem<String>>((String value) {
+              items: _logTypes.map<DropdownMenuItem<String>>((MapEntry<String, String> entry) {
                 return DropdownMenuItem<String>(
-                  value: value,
+                  value: entry.key,
                   child: Text(
-                    value,
+                    _localizedLogTypeLabel(loc, entry.value),
                     style: TextStyle(fontSize: 14),
                   ),
                 );

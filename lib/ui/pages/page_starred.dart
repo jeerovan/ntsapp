@@ -132,7 +132,10 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
-      displaySnackBar(context, message: "Moved to trash", seconds: 1);
+      displaySnackBar(
+          context,
+          message: AppLocalizations.of(context)!.movedToTrash,
+          seconds: 1);
     }
     clearSelection();
     fetchStarredItemsOnInit();

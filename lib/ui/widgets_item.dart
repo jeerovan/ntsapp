@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:path/path.dart' as path;
 import 'package:sodium/sodium_sumo.dart';
@@ -18,8 +19,9 @@ class ItemWidgetDate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     String dateText = getReadableDate(
-        DateTime.fromMillisecondsSinceEpoch(item.at!, isUtc: true));
+        DateTime.fromMillisecondsSinceEpoch(item.at!, isUtc: true), loc);
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min, // Shrinks to fit the text width
@@ -452,6 +454,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     bool displayDownloadButton =
         widget.item.state == SyncState.downloadable.value;
     String title = widget.item.data!.containsKey("title")
@@ -505,7 +508,7 @@ class _ItemWidgetDocumentState extends State<ItemWidgetDocument> {
               Opacity(
                 opacity: 0.6,
                 child: Text(
-                  readableFileSizeFromBytes(widget.item.data!["size"]),
+                  readableFileSizeFromBytes(widget.item.data!["size"], loc),
                   style: const TextStyle(fontSize: 10),
                 ),
               ),
@@ -534,6 +537,7 @@ class ItemWidgetLocation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     double size = 200;
     return GestureDetector(
       onTap: () {
@@ -544,20 +548,20 @@ class ItemWidgetLocation extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
+                const Icon(
                   LucideIcons.mapPin,
                   color: Colors.blue,
                   size: 40,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 5,
                 ),
                 Text(
-                  "Location",
-                  style: TextStyle(fontSize: 15),
+                  loc.locationItemLabel,
+                  style: const TextStyle(fontSize: 15),
                 ),
               ],
             ),
@@ -721,30 +725,30 @@ class NotePreviewSummary extends StatelessWidget {
     this.expanded,
   });
 
-  String _getMessageText() {
+  String _getMessageText(AppLocalizations loc) {
     if (item == null) {
-      return "Empty";
+      return loc.noteTypeEmpty;
     } else {
       switch (item!.type) {
         case ItemType.text:
           return item!.text; // Text content
         case ItemType.image:
-          return "Image";
+          return loc.noteTypeImage;
         case ItemType.video:
-          return "Video";
+          return loc.noteTypeVideo;
         case ItemType.audio:
-          return "Audio";
+          return loc.noteTypeAudio;
         case ItemType.document:
-          return "Document";
+          return loc.noteTypeDocument;
         case ItemType.contact:
-          return "Contact";
+          return loc.noteTypeContact;
         case ItemType.location:
-          return "Location";
+          return loc.noteTypeLocation;
         case ItemType.task:
         case ItemType.completedTask:
           return item!.text;
         default:
-          return "Unknown";
+          return loc.noteTypeUnknown;
       }
     }
   }
@@ -773,6 +777,7 @@ class NotePreviewSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -785,7 +790,7 @@ class NotePreviewSummary extends StatelessWidget {
         expanded == true
             ? Expanded(
                 child: Text(
-                  _getMessageText(),
+                  _getMessageText(loc),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(
@@ -796,7 +801,7 @@ class NotePreviewSummary extends StatelessWidget {
               )
             : Flexible(
                 child: Text(
-                  _getMessageText(),
+                  _getMessageText(loc),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(

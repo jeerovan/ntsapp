@@ -261,7 +261,7 @@ class _PagePlanSubscribeState extends State<PagePlanSubscribe> {
     if (storageMatch != null) {
       final String size = storageMatch.group(1)!;
       final String unit = storageMatch.group(2)!;
-      storageSize = '$size ${unit.toUpperCase()}';
+      storageSize = loc.planStorageSizeFormat(size, unit.toUpperCase());
     }
 
     return GestureDetector(

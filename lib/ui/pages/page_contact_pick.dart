@@ -94,7 +94,7 @@ class _PageContactsState extends State<PageContacts> {
                 : null,
           ),
           title: Text(
-            contact.displayName ?? "",
+            contact.displayName ?? loc.noteTypeUnknown,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
