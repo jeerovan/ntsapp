@@ -628,14 +628,18 @@ class _WidgetAudioState extends State<WidgetAudio> {
             max: sliderMax,
             value: sliderValue,
             onChanged: (value) async {
-              if (mounted) {
-                // Seek to the new position in the audio
-                Duration newPosition = Duration(milliseconds: value.toInt());
-                await _audioPlayer.seek(newPosition);
-                // Update position immediately for more responsive UI
-                setState(() {
-                  _currentPosition = newPosition;
-                });
+              try {
+                if (mounted) {
+                  // Seek to the new position in the audio
+                  Duration newPosition = Duration(milliseconds: value.toInt());
+                  await _audioPlayer.seek(newPosition);
+                  // Update position immediately for more responsive UI
+                  setState(() {
+                    _currentPosition = newPosition;
+                  });
+                }
+              } catch (e) {
+                // ignore seek error when widget is disposed.
               }
             },
           ),
