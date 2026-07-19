@@ -60,7 +60,6 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
   }
 
   Future<void> init() async {
-    final loc = AppLocalizations.of(context)!;
     if (widget.group == null) {
       itemChanged = true;
       await setColorCode();
@@ -83,6 +82,7 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
 
     if (mounted) {
       setState(() {
+        final loc = AppLocalizations.of(context)!;
         title = widget.group == null
             ? (dateTitle ?? getNoteGroupDateTitle(loc))
             : widget.group!.title;
@@ -237,7 +237,8 @@ class PageGroupAddEditState extends State<PageGroupAddEdit> {
         category != widget.category) {
       setColorCode();
     }
-    String pageTitle = widget.group == null ? loc.addGroupTitle : loc.editGroupTitle;
+    String pageTitle =
+        widget.group == null ? loc.addGroupTitle : loc.editGroupTitle;
     return Scaffold(
       appBar: AppBar(
         title: Text(

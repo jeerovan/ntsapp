@@ -77,3 +77,8 @@ extract_ast.py
 
 # codebase-memory
 .codebase-memory
+
+# Markdown
+SPEC.md
+GEMINI.md
+

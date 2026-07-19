@@ -63,7 +63,13 @@ class _PageUserTaskState extends State<PageUserTask> {
   @override
   void initState() {
     super.initState();
-    switch (widget.task) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      init(widget.task);
+    });
+  }
+
+  void init(AppTask task) {
+    switch (task) {
       case AppTask.registerDevice:
         registerDevice();
         break;
