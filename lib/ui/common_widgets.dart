@@ -244,12 +244,10 @@ class WidgetCategoryGroup extends StatelessWidget {
                 )
               : Text(
                   (categoryGroup.category!.groupCount == 1)
-                      ? AppLocalizations.of(context)!
-                          .noteGroupCountSingle(
-                              categoryGroup.category!.groupCount!)
-                      : AppLocalizations.of(context)!
-                          .noteGroupCountPlural(
-                              categoryGroup.category!.groupCount!),
+                      ? AppLocalizations.of(context)!.noteGroupCountSingle(
+                          categoryGroup.category!.groupCount!)
+                      : AppLocalizations.of(context)!.noteGroupCountPlural(
+                          categoryGroup.category!.groupCount!),
                   overflow: TextOverflow.ellipsis, // Ellipsis for long text
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 )
@@ -573,9 +571,7 @@ class _WidgetAudioState extends State<WidgetAudio> {
     File audioFile = File(filePath);
     if (!audioFile.existsSync()) {
       if (mounted) {
-        showAlertMessage(
-            context,
-            AppLocalizations.of(context)!.pleaseWaitTitle,
+        showAlertMessage(context, AppLocalizations.of(context)!.pleaseWaitTitle,
             AppLocalizations.of(context)!.fileNotAvailableYet);
       }
       return;
@@ -632,12 +628,11 @@ class _WidgetAudioState extends State<WidgetAudio> {
             max: sliderMax,
             value: sliderValue,
             onChanged: (value) async {
-              // Seek to the new position in the audio
-              Duration newPosition = Duration(milliseconds: value.toInt());
-              await _audioPlayer.seek(newPosition);
-
-              // Update position immediately for more responsive UI
               if (mounted) {
+                // Seek to the new position in the audio
+                Duration newPosition = Duration(milliseconds: value.toInt());
+                await _audioPlayer.seek(newPosition);
+                // Update position immediately for more responsive UI
                 setState(() {
                   _currentPosition = newPosition;
                 });

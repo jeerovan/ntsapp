@@ -76,8 +76,8 @@ class ModelSearchItem {
             '''SELECT item.*
                FROM item
                JOIN ${ftsConfig.tableName} AS fts
-                 ON item.rowid = fts.docid
-               WHERE fts MATCH ?
+                 ON item.id = fts.rowid
+               WHERE fts.text MATCH ?
                ORDER BY item.at DESC
                LIMIT ? OFFSET ?''',
             [matchExpression, limit, offset],

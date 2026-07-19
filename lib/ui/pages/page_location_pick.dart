@@ -81,7 +81,8 @@ class _LocationPickerState extends State<LocationPicker> {
 
   void _showServiceDisabled() {
     final loc = AppLocalizations.of(context)!;
-    showAlertMessage(context, loc.locationServicesTitle, loc.pleaseEnableLocationServicesContent);
+    showAlertMessage(context, loc.locationServicesTitle,
+        loc.pleaseEnableLocationServicesContent);
   }
 
   Future<void> _getCurrentLocation() async {
@@ -170,6 +171,7 @@ class _LocationPickerState extends State<LocationPicker> {
         children: [
           TileLayer(
             urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            userAgentPackageName: 'com.makenotetoself',
           ),
           MarkerLayer(markers: [
             Marker(
