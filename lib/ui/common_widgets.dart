@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../utils/common.dart';
 import '../utils/enums.dart';
@@ -1001,7 +1002,7 @@ class AnimatedWidgetSwap extends StatefulWidget {
     required this.firstWidget,
     required this.secondWidget,
     required this.showFirst,
-    this.duration = const Duration(milliseconds: 300),
+    this.duration = const Duration(milliseconds: 200),
   });
 
   @override
@@ -1010,38 +1011,26 @@ class AnimatedWidgetSwap extends StatefulWidget {
 
 class _AnimatedWidgetSwapState extends State<AnimatedWidgetSwap>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slideOutAnimation;
-  late Animation<Offset> _slideInAnimation;
+  late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.duration,
+      value: widget.showFirst ? 0.0 : 1.0,
     );
-
-    _slideOutAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(1.0, 0.0),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-
-    _slideInAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
-  void didUpdateWidget(AnimatedWidgetSwap oldWidget) {
+  void didUpdateWidget(covariant AnimatedWidgetSwap oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.showFirst != widget.showFirst) {
-      if (widget.showFirst) {
-        _controller.reverse();
-      } else {
-        _controller.forward();
-      }
+      _controller.animateTo(
+        widget.showFirst ? 0.0 : 1.0,
+        duration: widget.duration,
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -1055,13 +1044,19 @@ class _AnimatedWidgetSwapState extends State<AnimatedWidgetSwap>
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        SlideTransition(
-          position: _slideOutAnimation,
-          child: widget.showFirst ? widget.firstWidget : Container(),
+        IgnorePointer(
+          ignoring: !widget.showFirst,
+          child: widget.firstWidget
+              .animate(controller: _controller, autoPlay: false)
+              .fade(begin: 1.0, end: 0.0, duration: widget.duration)
+              .slideY(begin: 0.0, end: 0.03, duration: widget.duration),
         ),
-        SlideTransition(
-          position: _slideInAnimation,
-          child: widget.showFirst ? Container() : widget.secondWidget,
+        IgnorePointer(
+          ignoring: widget.showFirst,
+          child: widget.secondWidget
+              .animate(controller: _controller, autoPlay: false)
+              .fade(begin: 0.0, end: 1.0, duration: widget.duration)
+              .slideY(begin: -0.03, end: 0.0, duration: widget.duration),
         ),
       ],
     );
