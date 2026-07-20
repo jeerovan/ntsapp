@@ -50,7 +50,7 @@ dependencies:
   provider: ^6.1.2
   purchases_flutter: ^10.4.1
   random_string: ^2.3.1
-  receive_sharing_intent: ^1.8.1
+  receive_sharing_intent: 1.8.1
   record: ^6.0.0
   scrollable_positioned_list: ^0.3.8
   share_plus: ^13.2.1
