@@ -206,115 +206,116 @@ class _PageAccessKeyInputState extends State<PageAccessKeyInput> {
               )
             : null,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Text Widget
-                Text(
-                  loc.accessKeyInputDescription,
-                  style: TextStyle(fontSize: 16.0),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20.0),
-
-                // TextField with Validation
-                TextFormField(
-                  controller: _textController,
-                  autofocus: true,
-                  maxLines: null, // Allows all words to be visible
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: loc.enterYour24WordPhrase,
-                    border: OutlineInputBorder(),
-                    hintText: loc.enterYourRecoveryPhraseHere,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return loc.pleaseEnterYourRecoveryPhrase;
-                    }
-                    if (!_validateWordCount(value)) {
-                      return loc.recoveryPhraseMustContain24Words;
-                    }
-                    return null;
-                  },
-                  onEditingComplete: () {
-                    _processWords(_textController.text);
-                  },
-                ),
-                SizedBox(height: 20.0),
-
-                // Submit Button
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _processWords(_textController.text);
-                    }
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (processing)
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      loc.accessKeyInputDescription,
+                      style: TextStyle(fontSize: 16.0),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20.0),
+                    TextFormField(
+                      controller: _textController,
+                      autofocus: true,
+                      maxLines: null,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        labelText: loc.enterYour24WordPhrase,
+                        border: OutlineInputBorder(),
+                        hintText: loc.enterYourRecoveryPhraseHere,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return loc.pleaseEnterYourRecoveryPhrase;
+                        }
+                        if (!_validateWordCount(value)) {
+                          return loc.recoveryPhraseMustContain24Words;
+                        }
+                        return null;
+                      },
+                      onEditingComplete: () {
+                        if (_formKey.currentState!.validate()) {
+                          _processWords(_textController.text);
+                        }
+                      },
+                    ),
+                    SizedBox(height: 20.0),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(thickness: 1)),
                         Padding(
-                          padding: const EdgeInsets.only(
-                              right:
-                                  8.0), // Add spacing between indicator and text
-                          child: SizedBox(
-                            width: 16, // Set width and height for the indicator
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.black,
-                              strokeWidth: 2, // Set color to white
-                            ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            loc.orLabel,
+                            style: TextStyle(
+                                fontSize: 14.0, fontWeight: FontWeight.w500),
                           ),
                         ),
-                      Text(
-                        loc.submitLabel,
-                        style: TextStyle(fontSize: 16.0, color: Colors.black),
+                        Expanded(child: Divider(thickness: 1)),
+                      ],
+                    ),
+                    SizedBox(height: 20.0),
+                    ElevatedButton.icon(
+                      onPressed: _selectFile,
+                      icon: Icon(
+                        LucideIcons.upload,
+                        color: Colors.black,
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 30.0),
-
-                // Separator Line
-                Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        loc.orLabel,
-                        style: TextStyle(
-                            fontSize: 14.0, fontWeight: FontWeight.w500),
+                      label: Text(
+                        loc.selectTxtFileLabel,
+                        style: TextStyle(color: Colors.black),
                       ),
                     ),
-                    Expanded(child: Divider(thickness: 1)),
                   ],
                 ),
-                SizedBox(height: 20.0),
-
-                // File Upload Button
-                ElevatedButton.icon(
-                  onPressed: _selectFile,
-                  icon: Icon(
-                    LucideIcons.upload,
-                    color: Colors.black,
-                  ),
-                  label: Text(
-                    loc.selectTxtFileLabel,
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: processing
+                    ? null
+                    : () {
+                        if (_formKey.currentState!.validate()) {
+                          _processWords(_textController.text);
+                        }
+                      },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (processing)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      loc.submitLabel,
+                      style: TextStyle(fontSize: 16.0, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

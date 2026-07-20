@@ -70,6 +70,7 @@ class _PageItemsState extends State<PageItems> {
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textControllerFocus = FocusNode();
+  final FocusNode _keyboardListenerFocus = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
@@ -125,6 +126,7 @@ class _PageItemsState extends State<PageItems> {
     EventStream().notifier.removeListener(_handleAppEvent);
     _recordingTimer?.cancel();
     _textController.dispose();
+    _keyboardListenerFocus.dispose();
     _textControllerFocus.dispose();
     _audioRecorder.dispose();
     super.dispose();
@@ -2044,71 +2046,84 @@ class _PageItemsState extends State<PageItems> {
                               ],
                             ),
                           ),
-                        TextField(
-                          controller: _textController,
-                          focusNode: _textControllerFocus,
-                          maxLines: 10,
-                          minLines: 1,
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          onSubmitted: _handleTextInput,
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface),
-                          decoration: InputDecoration(
-                            filled: true,
-                            hintText: _isCreatingTask
-                                ? loc.createTaskHint
-                                : loc.addNoteHint,
-                            hintStyle: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant,
-                                fontWeight: FontWeight.w400),
-                            fillColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                              borderSide: BorderSide(
-                                  width: 1.0,
+                        Focus(
+                          focusNode: _keyboardListenerFocus,
+                          onKeyEvent: (node, event) {
+                            if (widget.runningOnDesktop &&
+                                event is KeyDownEvent &&
+                                HardwareKeyboard.instance.isControlPressed &&
+                                event.logicalKey == LogicalKeyboardKey.enter) {
+                              _handleTextInput(_textController.text);
+                              return KeyEventResult.handled;
+                            }
+                            return KeyEventResult.ignored;
+                          },
+                          child: TextField(
+                            controller: _textController,
+                            focusNode: _textControllerFocus,
+                            maxLines: 10,
+                            minLines: 1,
+                            keyboardType: TextInputType.multiline,
+                            textCapitalization: TextCapitalization.sentences,
+                            onSubmitted: _handleTextInput,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface),
+                            decoration: InputDecoration(
+                              filled: true,
+                              hintText: _isCreatingTask
+                                  ? loc.createTaskHint
+                                  : loc.addNoteHint,
+                              hintStyle: TextStyle(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .outlineVariant),
+                                      .outlineVariant,
+                                  fontWeight: FontWeight.w400),
+                              fillColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                                borderSide: BorderSide(
+                                    width: 1.0,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                                borderSide: BorderSide(
+                                    width: 0.5,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                                borderSide: BorderSide(
+                                    width: 0.5,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              suffixIcon: _isTyping
+                                  ? null
+                                  : IconButton(
+                                      tooltip: loc.attachTooltip,
+                                      icon: const Icon(LucideIcons.plus),
+                                      color:
+                                          Theme.of(context).colorScheme.outline,
+                                      onPressed: () {
+                                        _showAttachmentOptions();
+                                      },
+                                    ),
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                              borderSide: BorderSide(
-                                  width: 0.5,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                              borderSide: BorderSide(
-                                  width: 0.5,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            suffixIcon: _isTyping
-                                ? null
-                                : IconButton(
-                                    tooltip: loc.attachTooltip,
-                                    icon: const Icon(LucideIcons.plus),
-                                    color:
-                                        Theme.of(context).colorScheme.outline,
-                                    onPressed: () {
-                                      _showAttachmentOptions();
-                                    },
-                                  ),
+                            onChanged: (value) => _onInputTextChanged(value),
+                            scrollController: ScrollController(),
+                            // Enable scrolling
+                            textAlignVertical:
+                                TextAlignVertical.top, // Align text to the top
                           ),
-                          onChanged: (value) => _onInputTextChanged(value),
-                          scrollController: ScrollController(),
-                          // Enable scrolling
-                          textAlignVertical:
-                              TextAlignVertical.top, // Align text to the top
                         ),
                       ],
                     ),

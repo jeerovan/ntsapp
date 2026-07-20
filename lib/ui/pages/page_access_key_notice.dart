@@ -123,52 +123,60 @@ class _PageAccessKeyNoticeState extends State<PageAccessKeyNotice> {
                   },
                 )
               : null),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            Text(
-              loc.accessKeyNoticeDescription1,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-            ),
-            SizedBox(height: 20),
-            Text(
-              loc.accessKeyNoticeDescription2(appName ?? ""),
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: generateKeys,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (processing)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          right: 8.0), // Add spacing between indicator and text
-                      child: SizedBox(
-                        width: 16, // Set width and height for the indicator
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          color: Colors.black,
-                          strokeWidth: 2, // Set color to white
-                        ),
-                      ),
-                    ),
                   Text(
+                    loc.accessKeyNoticeDescription1,
                     textAlign: TextAlign.center,
-                    loc.iUnderstandShowMeTheKey,
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    loc.accessKeyNoticeDescription2(appName ?? ""),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: processing ? null : generateKeys,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (processing)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      loc.iUnderstandShowMeTheKey,
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

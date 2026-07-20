@@ -140,8 +140,7 @@ class _PageSigninState extends State<PageSignin> {
         errorVerifyingOtp = true;
         if (mounted) {
           displaySnackBar(context,
-              message: loc.otpVerificationFailedMessage,
-              seconds: 2);
+              message: loc.otpVerificationFailedMessage, seconds: 2);
         }
       }
       if (mounted) {
@@ -192,107 +191,80 @@ class _PageSigninState extends State<PageSignin> {
               )
             : null,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              if (!signedIn && !otpSent)
-                TextField(
-                  autofocus: true,
-                  controller: emailController,
-                  decoration: InputDecoration(labelText: loc.enterEmailLabel),
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: sendOtp,
-                ),
-              SizedBox(height: 20),
-              if (!signedIn && !otpSent)
-                ElevatedButton(
-                    onPressed: () {
-                      sendOtp(emailController.text);
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (processing)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                right:
-                                    8.0), // Add spacing between indicator and text
-                            child: SizedBox(
-                              width:
-                                  16, // Set width and height for the indicator
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                color: Colors.black,
-                                strokeWidth: 2, // Set color to white
-                              ),
-                            ),
-                          ),
-                        Text(
-                          errorSendingOtp ? loc.retryButtonLabel : loc.sendOtpLabel,
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ],
-                    )),
-              SizedBox(
-                height: 40,
-              ),
-              if (!signedIn && otpSent)
-                Text(
-                    loc.otpSentToEmailMessage(email)),
-              SizedBox(height: 20),
-              if (!signedIn && otpSent)
-                TextField(
-                  autofocus: true,
-                  controller: otpController,
-                  decoration: InputDecoration(labelText: loc.enterOtpLabel),
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: verifyOtp,
-                ),
-              SizedBox(height: 20),
-              if (!signedIn && otpSent)
-                ElevatedButton(
-                    onPressed: () {
-                      verifyOtp(otpController.text);
-                    },
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      if (processing)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              right:
-                                  8.0), // Add spacing between indicator and text
-                          child: SizedBox(
-                            width: 16, // Set width and height for the indicator
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.black,
-                              strokeWidth: 2, // Set color to white
-                            ),
-                          ),
-                        ),
-                      Text(
-                        errorVerifyingOtp ? loc.retryButtonLabel : loc.verifyOtpLabel,
-                        style: TextStyle(color: Colors.black),
-                      )
-                    ])),
-              Expanded(
-                child: SizedBox(
-                  height: 20,
-                ),
-              ),
-              if (!signedIn && otpSent)
-                TextButton(onPressed: changeEmail, child: Text(loc.changeEmailLabel)),
-              SizedBox(
-                height: 20,
-              ),
-            ],
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                if (!signedIn && !otpSent)
+                  TextField(
+                    autofocus: true,
+                    controller: emailController,
+                    decoration: InputDecoration(labelText: loc.enterEmailLabel),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: sendOtp,
+                  ),
+                if (!signedIn && otpSent) ...[
+                  Text(loc.otpSentToEmailMessage(email)),
+                  const SizedBox(height: 20),
+                  TextField(
+                    autofocus: true,
+                    controller: otpController,
+                    decoration: InputDecoration(labelText: loc.enterOtpLabel),
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: verifyOtp,
+                  ),
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: changeEmail,
+                    child: Text(loc.changeEmailLabel),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => otpSent
+                    ? verifyOtp(otpController.text)
+                    : sendOtp(emailController.text),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (processing)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      otpSent
+                          ? (errorVerifyingOtp
+                              ? loc.retryButtonLabel
+                              : loc.verifyOtpLabel)
+                          : (errorSendingOtp
+                              ? loc.retryButtonLabel
+                              : loc.sendOtpLabel),
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

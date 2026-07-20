@@ -131,78 +131,63 @@ class _PageAccessKeyState extends State<PageAccessKey> {
               )
             : null,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Description Text
-            Text(
-              loc.accessKeyDescription,
-              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20.0),
-
-            // Sentence Display
-            Container(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(color: Colors.grey),
-              ),
-              child: Text(
-                sentence,
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w400),
-                textAlign: TextAlign.justify,
-              ),
-            ),
-            SizedBox(height: 30.0),
-            // Button to copy
-            ElevatedButton.icon(
-              onPressed: () => copyToClipboard(),
-              icon: Icon(
-                LucideIcons.copy,
-                color: Colors.black,
-              ),
-              label: Text(
-                loc.copyLabel,
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            SizedBox(height: 20.0),
-            // Button to Download and Save as Text File
-            ElevatedButton.icon(
-              onPressed: () => _downloadTextFile(sentence),
-              icon: Icon(
-                LucideIcons.download,
-                color: Colors.black,
-              ),
-              label: Text(
-                loc.downloadAsTextFileLabel,
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            SizedBox(height: 20.0),
-
-            // Button to Continue to Next Page
-            OutlinedButton(
-              onPressed: continueToNext,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                side: BorderSide(color: Theme.of(context).primaryColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-              ),
-              child: Text(
-                loc.continueLabel,
-                style: TextStyle(fontSize: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    loc.accessKeyDescription,
+                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20.0),
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(color: Colors.grey),
+                    ),
+                    child: Text(
+                      sentence,
+                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w400),
+                      textAlign: TextAlign.justify,
+                    ),
+                  ),
+                  SizedBox(height: 20.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: copyToClipboard,
+                        icon: Icon(LucideIcons.copy),
+                        tooltip: loc.copyLabel,
+                      ),
+                      IconButton(
+                        onPressed: () => _downloadTextFile(sentence),
+                        icon: Icon(LucideIcons.download),
+                        tooltip: loc.downloadAsTextFileLabel,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: continueToNext,
+                child: Text(loc.continueLabel),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
