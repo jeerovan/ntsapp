@@ -252,7 +252,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     await checkUpdateStateVariables();
     setState(() {});
     try {
-      if (ModelSetting.get("local_auth", "no") == "no") {
+      if (ModelSetting.get("local_auth", "no") == "no" || Platform.isLinux) {
         await loadCategoriesGroups();
       } else {
         logger.info("Requires authentication");

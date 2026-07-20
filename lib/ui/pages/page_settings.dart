@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -139,12 +140,23 @@ class SettingsPageState extends State<SettingsPage> {
       if (mounted) showAlertMessage(context, loc.couldNotCreate, status);
     } else {
       try {
-        // Use Share package to trigger download or share intent
-        final params = ShareParams(
-          text: loc.hereIsTheBackupFile,
-          files: [XFile(backupFilePath)],
-        );
-        await SharePlus.instance.share(params);
+        if (widget.runningOnDesktop) {
+          final Uint8List bytes = await backupFile.readAsBytes();
+          await FilePicker.saveFile(
+            dialogTitle: loc.backupLabel,
+            fileName: path.basename(backupFilePath),
+            type: FileType.custom,
+            allowedExtensions: ["zip"],
+            bytes: bytes,
+          );
+        } else {
+          // Use Share package to trigger download or share intent
+          final params = ShareParams(
+            text: loc.hereIsTheBackupFile,
+            files: [XFile(backupFilePath)],
+          );
+          await SharePlus.instance.share(params);
+        }
       } catch (e) {
         status = e.toString();
       }

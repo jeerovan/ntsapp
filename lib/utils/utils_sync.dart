@@ -523,6 +523,10 @@ class SyncUtils {
         cryptoUtils.getEncryptedBytesMap(thumbnailBytes, masterKeyBytes);
     String cipherText = encryptedThumbnailMap[AppString.cipherText.string];
     Uint8List cipherBytes = base64Decode(cipherText);
+    if (simulateOnboarding()) {
+      await ModelChange.upgradeSyncTask(changeId);
+      return;
+    }
     try {
       SupabaseClient supabaseClient = Supabase.instance.client;
       await supabaseClient.storage.from('thmbs').uploadBinary(
