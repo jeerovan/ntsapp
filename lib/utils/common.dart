@@ -1135,7 +1135,7 @@ Future<void> initializePackages(
   if (mode == ExecutionMode.appForeground) {
     MediaKit.ensureInitialized();
   }
-  await CryptoUtils.init();
+  CryptoUtils.init();
 }
 
 Future<void> initializeSupabase(

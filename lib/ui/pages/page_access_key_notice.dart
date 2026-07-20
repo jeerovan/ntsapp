@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ntsapp/models/model_preferences.dart';
 import 'package:ntsapp/services/service_logger.dart';
 import 'package:ntsapp/utils/utils_sync.dart';
-import 'package:sodium/sodium_sumo.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../l10n/app_localizations.dart';

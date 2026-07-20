@@ -15,6 +15,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   permission_handler_windows
   record_windows
   share_plus
+  sodium_libs
   url_launcher_windows
   window_size
 )

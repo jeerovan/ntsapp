@@ -10,7 +10,7 @@ import 'package:ntsapp/ui/pages/page_user_task.dart';
 import 'package:ntsapp/storage/storage_secure.dart';
 import 'package:ntsapp/utils/utils_crypto.dart';
 import 'package:ntsapp/utils/utils_sync.dart';
-import 'package:sodium/sodium_sumo.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../common_widgets.dart';
@@ -282,8 +282,7 @@ class _PagePasswordKeyCreateState extends State<PagePasswordKeyCreate> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                    loc.createKeyDescription),
+                Text(loc.createKeyDescription),
                 SizedBox(
                   height: 40,
                 ),

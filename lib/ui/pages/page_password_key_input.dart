@@ -5,7 +5,7 @@ import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/storage/storage_secure.dart';
 import 'package:ntsapp/utils/utils_crypto.dart';
-import 'package:sodium/sodium_sumo.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 
 import '../common_widgets.dart';
 import '../../utils/enums.dart';

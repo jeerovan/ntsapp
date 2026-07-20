@@ -21,7 +21,7 @@ import 'package:ntsapp/storage/storage_secure.dart';
 import 'package:ntsapp/utils/utils_crypto.dart';
 import 'package:ntsapp/utils/utils_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sodium/sodium_sumo.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
@@ -658,7 +658,8 @@ class SyncUtils {
                     if (fileOut.existsSync()) {
                       // duplicate note item (may be different group)
                       if (item.id == null) {
-                        logger.warning("fetchMapChanges|Item ID is null, skipping file check");
+                        logger.warning(
+                            "fetchMapChanges|Item ID is null, skipping file check");
                       } else {
                         ModelItemFile itemFile =
                             ModelItemFile(id: item.id!, fileHash: fileName);
@@ -673,7 +674,8 @@ class SyncUtils {
                     if (item.id != null) {
                       await checkDownloadNetworkImage(item.id!, imageUrl);
                     } else {
-                      logger.warning("fetchMapChanges|Item ID is null, skipping image check");
+                      logger.warning(
+                          "fetchMapChanges|Item ID is null, skipping image check");
                     }
                   } else {
                     // remove if exists
@@ -1013,7 +1015,8 @@ class SyncUtils {
               // start actual upload
               await pushFile(modelFile);
             } else if (fileEncryptionResult.failureReason != null &&
-                fileEncryptionResult.failureReason!.contains("PathNotFoundException")) {
+                fileEncryptionResult.failureReason!
+                    .contains("PathNotFoundException")) {
               change.deleteWithItem();
             }
           }
@@ -1243,7 +1246,8 @@ class SyncUtils {
             nonce: keyNonceBytes,
             key: masterKeyBytes);
         if (!keyDecryptionResult.isSuccess) {
-          logger.error("getCreateEncryptedFileToUpload|Key decryption failed: ${keyDecryptionResult.failureReason}");
+          logger.error(
+              "getCreateEncryptedFileToUpload|Key decryption failed: ${keyDecryptionResult.failureReason}");
           return null;
         }
         Uint8List fileEncryptionKey =

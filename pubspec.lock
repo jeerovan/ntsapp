@@ -1587,13 +1587,21 @@ packages:
     source: sdk
     version: "0.0.0"
   sodium:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sodium
-      sha256: "19e3153ef4d1d10087d78d551d78e56909d159047a578ec692814c65ca450dfc"
+      sha256: "515b86c186f4caca49051caf858d878ca7cc4ff4542411e9febb50654eac8a62"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.2+1"
+    version: "3.4.6"
+  sodium_libs:
+    dependency: "direct main"
+    description:
+      name: sodium_libs
+      sha256: f3f9c516b4183226b7a08ca43a765ebc9e02cfd92e46e8a6cc490f98ffe73052
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.6+4"
   source_span:
     dependency: transitive
     description:

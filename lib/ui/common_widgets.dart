@@ -13,7 +13,7 @@ import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/services/service_logger.dart';
 import 'package:ntsapp/ui/widgets_item.dart';
 import 'package:provider/provider.dart';
-import 'package:sodium/sodium_sumo.dart';
+import 'package:sodium_libs/sodium_libs_sumo.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
