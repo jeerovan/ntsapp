@@ -38,6 +38,13 @@ lib/firebase_options.dart
 .pub/
 /build/
 
+# Generated Plugins (Flutter)
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugins.cmake
+macos/Flutter/GeneratedPluginRegistrant.swift
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugins.cmake
+
 # Symbolication related
 app.*.symbols
 
@@ -74,6 +81,7 @@ extract_ast.py
 
 # LLM Related
 .claude
+.clinerules
 
 # codebase-memory
 .codebase-memory
