@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
 import 'package:ntsapp/utils/enums.dart';
@@ -79,8 +79,7 @@ class _PageAccessKeyState extends State<PageAccessKey> {
     Clipboard.setData(ClipboardData(text: sentence));
     if (mounted) {
       final loc = AppLocalizations.of(context)!;
-      displaySnackBar(context,
-          message: loc.copiedToClipboard, seconds: 1);
+      displaySnackBar(context, message: loc.copiedToClipboard, seconds: 1);
     }
   }
 

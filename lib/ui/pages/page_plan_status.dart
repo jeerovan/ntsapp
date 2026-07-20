@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
@@ -336,7 +336,9 @@ class _PagePlanStatusState extends State<PagePlanStatus> {
                       if (accessKeyType.isNotEmpty) ...[
                         ListTile(
                           leading: Icon(LucideIcons.key),
-                          title: Text(accessKeyType == "key" ? loc.viewAccessKeyLabel : loc.changeKeyPasswordLabel),
+                          title: Text(accessKeyType == "key"
+                              ? loc.viewAccessKeyLabel
+                              : loc.changeKeyPasswordLabel),
                           onTap: manageKey,
                           trailing: Icon(Icons.arrow_forward_ios, size: 18),
                         ),

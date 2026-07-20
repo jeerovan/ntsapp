@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/ui/widgets_item.dart';
@@ -215,7 +215,8 @@ class SearchPageState extends State<SearchPage> {
     }
   }
 
-  Widget _buildCategoryGroupHeader(ModelSearchItem search, AppLocalizations loc) {
+  Widget _buildCategoryGroupHeader(
+      ModelSearchItem search, AppLocalizations loc) {
     ModelItem item = search.item;
     List<String> headerParts = [];
     if (search.category!.title != "DND") {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/ui/common_widgets.dart';
@@ -132,10 +132,8 @@ class _PageStarredItemsState extends State<PageStarredItems> {
       await item.update(["archived_at"]);
     }
     if (mounted) {
-      displaySnackBar(
-          context,
-          message: AppLocalizations.of(context)!.movedToTrash,
-          seconds: 1);
+      displaySnackBar(context,
+          message: AppLocalizations.of(context)!.movedToTrash, seconds: 1);
     }
     clearSelection();
     fetchStarredItemsOnInit();

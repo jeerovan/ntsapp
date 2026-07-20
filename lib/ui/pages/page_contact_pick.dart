@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PageContacts extends StatefulWidget {
   const PageContacts({super.key});

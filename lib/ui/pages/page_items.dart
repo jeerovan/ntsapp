@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/ui/common_widgets.dart';

@@ -3,7 +3,7 @@ import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 
 import '../../utils/common.dart';
@@ -145,7 +145,8 @@ class _PageLogsState extends State<PageLogs> {
                   _loadLogs();
                 }
               },
-              items: _logTypes.map<DropdownMenuItem<String>>((MapEntry<String, String> entry) {
+              items: _logTypes.map<DropdownMenuItem<String>>(
+                  (MapEntry<String, String> entry) {
                 return DropdownMenuItem<String>(
                   value: entry.key,
                   child: Text(
@@ -242,7 +243,9 @@ class _PageLogsState extends State<PageLogs> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(child: Text(loc.errorWithDetails(snapshot.error.toString())));
+                    return Center(
+                        child: Text(
+                            loc.errorWithDetails(snapshot.error.toString())));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Center(child: Text(loc.noLogsAvailable));
                   } else {

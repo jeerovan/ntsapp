@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/common.dart';
 import 'package:ntsapp/models/model_category_group.dart';
@@ -222,10 +222,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
     await group.update(["archived_at"]);
     categoryGroupsDisplayList.remove(group);
     if (mounted) {
-      displaySnackBar(
-          context,
-          message: AppLocalizations.of(context)!.movedToTrash,
-          seconds: 1);
+      displaySnackBar(context,
+          message: AppLocalizations.of(context)!.movedToTrash, seconds: 1);
     }
     await signalToUpdateHome();
   }
@@ -241,10 +239,8 @@ class _PageCategoryGroupsState extends State<PageCategoryGroups> {
   Future<void> onNoteGroupDeleted() async {
     loadGroups();
     if (mounted) {
-      displaySnackBar(
-          context,
-          message: AppLocalizations.of(context)!.movedToTrash,
-          seconds: 1);
+      displaySnackBar(context,
+          message: AppLocalizations.of(context)!.movedToTrash, seconds: 1);
     }
   }
 

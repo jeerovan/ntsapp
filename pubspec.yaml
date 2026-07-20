@@ -36,7 +36,7 @@ dependencies:
   intl: any
   latlong2: ^0.10.1
   local_auth: ^3.0.2
-  lucide_icons: ^0.257.0
+  lucide_icons_flutter: ^3.1.15
   media_kit: ^1.1.11
   media_kit_libs_video: ^1.0.5
   media_kit_video: ^2.0.1
