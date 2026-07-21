@@ -152,6 +152,14 @@ class ModelGroup {
     return await Future.wait(rows.map((map) => fromMap(map)));
   }
 
+  static Future<List<ModelGroup>> allActive() async {
+    final dbHelper = StorageSqlite.instance;
+    final db = await dbHelper.database;
+    List<Map<String, dynamic>> rows = await db.query("itemgroup",
+        where: 'archived_at = 0', orderBy: "position ASC");
+    return await Future.wait(rows.map((map) => fromMap(map)));
+  }
+
   static Future<List<ModelGroup>> inCategory(String categoryId) async {
     final dbHelper = StorageSqlite.instance;
     final db = await dbHelper.database;

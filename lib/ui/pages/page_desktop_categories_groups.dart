@@ -191,9 +191,9 @@ class _PageCategoriesGroupsPaneState extends State<PageCategoriesGroupsPane> {
         builder: (context, constraints) {
           double totalWidth = constraints.maxWidth;
 
-          double listPaneMinWidth = 300;
-          double listPaneMaxWidth = 400;
-          double listPaneWidth = totalWidth * 0.30;
+          double listPaneMinWidth = 350;
+          double listPaneMaxWidth = 450;
+          double listPaneWidth = totalWidth * 0.40;
 
           listPaneWidth =
               listPaneWidth.clamp(listPaneMinWidth, listPaneMaxWidth);

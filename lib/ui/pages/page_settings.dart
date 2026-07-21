@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ntsapp/l10n/app_localizations.dart';
 import 'package:ntsapp/utils/backup_restore.dart';
 import 'package:ntsapp/utils/enums.dart';
+import 'package:ntsapp/models/model_item_group.dart';
 import 'package:ntsapp/models/model_setting.dart';
 import 'package:ntsapp/services/service_events.dart';
 import 'package:ntsapp/services/service_logger.dart';
@@ -49,12 +50,130 @@ class SettingsPageState extends State<SettingsPage> {
   bool loggingEnabled =
       ModelSetting.get(AppString.loggingEnabled.string, "no") == "yes";
   String timeFormat = "H12";
+  String autoOpenGroupId = "";
+  String autoOpenGroupTitle = "";
 
   @override
   void initState() {
     super.initState();
     timeFormat = ModelSetting.get(AppString.timeFormat.string, "H12");
     isAuthEnabled = ModelSetting.get("local_auth", "no") == "yes";
+    _loadAutoOpenGroup();
+  }
+
+  Future<void> _loadAutoOpenGroup() async {
+    String groupId =
+        ModelSetting.get(AppString.autoopengroup.string, "") as String;
+    if (groupId.isNotEmpty) {
+      ModelGroup? group = await ModelGroup.get(groupId);
+      if (mounted) {
+        setState(() {
+          autoOpenGroupId = groupId;
+          autoOpenGroupTitle = group?.title ?? "";
+        });
+      }
+    }
+  }
+
+  Future<void> _setAutoOpenGroup(ModelGroup group) async {
+    await ModelSetting.set(AppString.autoopengroup.string, group.id!);
+    if (mounted) {
+      setState(() {
+        autoOpenGroupId = group.id!;
+        autoOpenGroupTitle = group.title;
+      });
+    }
+  }
+
+  Future<void> _clearAutoOpenGroup() async {
+    await ModelSetting.delete(AppString.autoopengroup.string);
+    if (mounted) {
+      setState(() {
+        autoOpenGroupId = "";
+        autoOpenGroupTitle = "";
+      });
+    }
+  }
+
+  Future<void> _showAutoOpenGroupPicker() async {
+    List<ModelGroup> groups = await ModelGroup.allActive();
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.65,
+          minChildSize: 0.35,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Select group',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView.separated(
+                    controller: scrollController,
+                    itemCount: groups.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final group = groups[index];
+                      final isSelected = group.id == autoOpenGroupId;
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 2,
+                        ),
+                        title: Text(group.title),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              )
+                            : null,
+                        onTap: () {
+                          _setAutoOpenGroup(group);
+                          Navigator.of(sheetContext).pop();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> checkDeviceAuth() async {
@@ -571,6 +690,21 @@ class SettingsPageState extends State<SettingsPage> {
                         clearLocale();
                       },
                       icon: const Icon(LucideIcons.rotateCcw))
+                  : null,
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.folderOpen, color: Colors.grey),
+              title: const Text('Auto-open group'),
+              subtitle: autoOpenGroupTitle.isNotEmpty
+                  ? Text(autoOpenGroupTitle)
+                  : null,
+              horizontalTitleGap: 24.0,
+              onTap: _showAutoOpenGroupPicker,
+              trailing: autoOpenGroupId.isNotEmpty
+                  ? IconButton(
+                      onPressed: _clearAutoOpenGroup,
+                      icon: const Icon(LucideIcons.x),
+                    )
                   : null,
             ),
             if (widget.canShowBackupRestore)

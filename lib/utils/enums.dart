@@ -134,6 +134,7 @@ enum AppString {
   dataSeeded,
   timeFormat,
   simulateTesting,
+  autoopengroup,
 
   // Supabase
   supabaseInitialized,
@@ -171,6 +172,8 @@ enum AppString {
 extension AppStringExtension on AppString {
   String get string {
     switch (this) {
+      case AppString.autoopengroup:
+        return "auto_open_group";
       case AppString.timeFormat:
         return 'time_format';
       case AppString.locale:
