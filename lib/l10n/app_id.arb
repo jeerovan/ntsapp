@@ -1,0 +1,1497 @@
+{
+  "@@locale": "id",
+  "importantTitle": "Penting",
+  "@importantTitle": {
+    "description": "Title for the important notice page."
+  },
+  "accessKeyNoticeDescription1": "Di halaman berikutnya Anda akan melihat 24 kata. Ini adalah kunci enkripsi pribadi yang unik bagi Anda dan merupakan SATU-SATUNYA cara untuk memulihkan catatan Anda jika Anda keluar (logout), kehilangan perangkat, atau perangkat rusak.",
+  "@accessKeyNoticeDescription1": {
+    "description": "First paragraph of the access key notice."
+  },
+  "accessKeyNoticeDescription2": "Kami tidak menyimpan kunci tersebut. Adalah tanggung jawab ANDA untuk menyimpannya di tempat yang aman di luar aplikasi {appName}.",
+  "@accessKeyNoticeDescription2": {
+    "description": "Second paragraph of the access key notice.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "iUnderstandShowMeTheKey": "Saya mengerti.\nTampilkan kuncinya.",
+  "@iUnderstandShowMeTheKey": {
+    "description": "Button text to understand and show the key."
+  },
+  "selectGroupToViewNotes": "Pilih grup untuk melihat catatan",
+  "@selectGroupToViewNotes": {
+    "description": "Placeholder text shown when no group is selected in desktop mode."
+  },
+  "accessKeyShareText": "Ini adalah kunci akses Anda.",
+  "@accessKeyShareText": {
+    "description": "Text used in share dialog when sharing the access key."
+  },
+  "pleaseTryAgain": "Silakan coba lagi.",
+  "@pleaseTryAgain": {
+    "description": "Generic error message shown when an operation fails."
+  },
+  "copiedToClipboard": "Disalin ke papan klip",
+  "@copiedToClipboard": {
+    "description": "Toast message shown when text is copied to the clipboard."
+  },
+  "accessKeyTitle": "Kunci Akses",
+  "@accessKeyTitle": {
+    "description": "Title for the access key page."
+  },
+  "accessKeyDescription": "Harap simpan kunci ini di tempat yang aman. Anda akan membutuhkannya untuk menyinkronkan catatan di perangkat lain.",
+  "@accessKeyDescription": {
+    "description": "Instructional text for saving the access key."
+  },
+  "copyLabel": "Salin",
+  "@copyLabel": {
+    "description": "Label for the copy button."
+  },
+  "downloadAsTextFileLabel": "Unduh sebagai File Teks",
+  "@downloadAsTextFileLabel": {
+    "description": "Label for the button that downloads the access key as a text file."
+  },
+  "continueLabel": "Lanjutkan",
+  "@continueLabel": {
+    "description": "Label for the continue button."
+  },
+  "pleaseAuthenticate": "Harap autentikasi",
+  "@pleaseAuthenticate": {
+    "description": "Reason shown in the biometric/device authentication prompt."
+  },
+  "couldNotCreate": "Gagal membuat",
+  "@couldNotCreate": {
+    "description": "Error message title when backup creation fails."
+  },
+  "couldNotShareFile": "Gagal membagikan file",
+  "@couldNotShareFile": {
+    "description": "Error message title when sharing backup fails."
+  },
+  "hereIsTheBackupFile": "Ini adalah file cadangan untuk aplikasi Anda.",
+  "@hereIsTheBackupFile": {
+    "description": "Text used in share dialog when sharing the backup file."
+  },
+  "errorTitle": "Kesalahan",
+  "@errorTitle": {
+    "description": "Generic error message title."
+  },
+  "backupLabel": "Cadangkan",
+  "@backupLabel": {
+    "description": "Label for the backup option."
+  },
+  "restoreLabel": "Pulihkan",
+  "@restoreLabel": {
+    "description": "Label for the restore option."
+  },
+  "leaveAReviewLabel": "Beri ulasan",
+  "@leaveAReviewLabel": {
+    "description": "Label for the feedback/review option."
+  },
+  "shareLabel": "Bagikan",
+  "@shareLabel": {
+    "description": "Label for the share app option."
+  },
+  "desktopAppLinkLabel": "Aplikasi Desktop",
+  "@desktopAppLinkLabel": {
+    "description": "Label for the link to the desktop version."
+  },
+  "loggingLabel": "Pencatatan (Logging)",
+  "@loggingLabel": {
+    "description": "Label for the logging toggle setting."
+  },
+  "versionLabel": "Versi: {version}",
+  "@versionLabel": {
+    "description": "Label showing app version.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingLabel": "Memuat...",
+  "@loadingLabel": {
+    "description": "Label for the loading state of the app version."
+  },
+  "restoredLabel": "Dipulihkan.",
+  "@restoredLabel": {
+    "description": "Toast message shown after successfully restoring items."
+  },
+  "deletedPermanentlyLabel": "Dihapus permanen.",
+  "@deletedPermanentlyLabel": {
+    "description": "Toast message shown after successfully deleting items permanently."
+  },
+  "mediaTitle": "Media",
+  "@mediaTitle": {
+    "description": "Title for the media viewer page."
+  },
+  "invalidWordList": "Daftar kata tidak valid",
+  "@invalidWordList": {
+    "description": "Error message when invalid mnemonic phrase is entered."
+  },
+  "enterYour24WordPhrase": "Masukkan 24 kata frasa Anda",
+  "@enterYour24WordPhrase": {
+    "description": "Label for the recovery phrase text input."
+  },
+  "enterYourRecoveryPhraseHere": "Masukkan frasa pemulihan Anda di sini",
+  "@enterYourRecoveryPhraseHere": {
+    "description": "Hint text for the recovery phrase text input."
+  },
+  "pleaseEnterYourRecoveryPhrase": "Harap masukkan frasa pemulihan Anda",
+  "@pleaseEnterYourRecoveryPhrase": {
+    "description": "Error message when recovery phrase is empty."
+  },
+  "recoveryPhraseMustContain24Words": "Frasa pemulihan harus berisi tepat 24 kata",
+  "@recoveryPhraseMustContain24Words": {
+    "description": "Error message when recovery phrase does not have 24 words."
+  },
+  "submitLabel": "Kirim",
+  "@submitLabel": {
+    "description": "Label for the submit button."
+  },
+  "orLabel": "Atau",
+  "@orLabel": {
+    "description": "Separator text between input and file upload."
+  },
+  "selectTxtFileLabel": "Pilih File .txt",
+  "@selectTxtFileLabel": {
+    "description": "Label for the file selection button."
+  },
+  "failureTitle": "Kegagalan",
+  "@failureTitle": {
+    "description": "Title for error dialog."
+  },
+  "invalidPasswordKey": "Kunci sandi tidak valid",
+  "@invalidPasswordKey": {
+    "description": "Error message when password key is invalid."
+  },
+  "enableSyncTitle": "Aktifkan Sinkronisasi",
+  "@enableSyncTitle": {
+    "description": "Title for the password key input page."
+  },
+  "passwordRequirementsDescription": "Harap masukkan kunci (sandi) yang telah Anda buat. Minimal 10 karakter dengan minimal 1 angka, 1 huruf kecil, 1 huruf besar, dan 1 karakter khusus.",
+  "@passwordRequirementsDescription": {
+    "description": "Description of password requirements."
+  },
+  "enterKeyLabel": "Masukkan kunci",
+  "@enterKeyLabel": {
+    "description": "Label for password input."
+  },
+  "pleaseEnterKey": "Harap masukkan kunci",
+  "@pleaseEnterKey": {
+    "description": "Error message when password input is empty."
+  },
+  "filterNotesTitle": "Filter catatan",
+  "@filterNotesTitle": {
+    "description": "Title for the filter notes dialog."
+  },
+  "filterPinnedNotesTooltip": "Filter catatan yang disematkan",
+  "@filterPinnedNotesTooltip": {
+    "description": "Tooltip for filter pinned notes button."
+  },
+  "filterStarredNotesTooltip": "Filter catatan berbintang",
+  "@filterStarredNotesTooltip": {
+    "description": "Tooltip for filter starred notes button."
+  },
+  "filterTextNotesTooltip": "Filter catatan teks",
+  "@filterTextNotesTooltip": {
+    "description": "Tooltip for filter text notes button."
+  },
+  "filterTasksTooltip": "Filter tugas",
+  "@filterTasksTooltip": {
+    "description": "Tooltip for filter tasks button."
+  },
+  "filterLinksTooltip": "Filter tautan",
+  "@filterLinksTooltip": {
+    "description": "Tooltip for filter links button."
+  },
+  "filterImagesTooltip": "Filter gambar",
+  "@filterImagesTooltip": {
+    "description": "Tooltip for filter images button."
+  },
+  "filterAudioTooltip": "Filter audio",
+  "@filterAudioTooltip": {
+    "description": "Tooltip for filter audio button."
+  },
+  "filterVideoTooltip": "Filter video",
+  "@filterVideoTooltip": {
+    "description": "Tooltip for filter video button."
+  },
+  "filterFilesTooltip": "Filter file",
+  "@filterFilesTooltip": {
+    "description": "Tooltip for filter files button."
+  },
+  "filterContactsTooltip": "Filter kontak",
+  "@filterContactsTooltip": {
+    "description": "Tooltip for filter contacts button."
+  },
+  "filterLocationTooltip": "Filter lokasi",
+  "@filterLocationTooltip": {
+    "description": "Tooltip for filter location button."
+  },
+  "movedToTrash": "Dipindahkan ke sampah",
+  "@movedToTrash": {
+    "description": "Toast message when items are moved to trash."
+  },
+  "copiedNotesToClipboard": "Disalin ke papan klip",
+  "@copiedNotesToClipboard": {
+    "description": "Toast message when selected notes are copied to clipboard."
+  },
+  "locationShareLabel": "Lokasi:",
+  "@locationShareLabel": {
+    "description": "Label used when sharing location."
+  },
+  "contactShareLabel": "Kontak:",
+  "@contactShareLabel": {
+    "description": "Label used when sharing contact."
+  },
+  "emailsShareLabel": "Email:",
+  "@emailsShareLabel": {
+    "description": "Label used when sharing contact emails."
+  },
+  "addressesShareLabel": "Alamat:",
+  "@addressesShareLabel": {
+    "description": "Label used when sharing contact addresses."
+  },
+  "microphoneNotAvailable": "Mikrofon mungkin tidak tersedia.",
+  "@microphoneNotAvailable": {
+    "description": "Toast message when microphone is not available."
+  },
+  "microphonePermissionRequired": "Izin mikrofon diperlukan untuk merekam audio.",
+  "@microphonePermissionRequired": {
+    "description": "Toast message when microphone permission is required."
+  },
+  "couldNotGetDuration": "Tidak bisa mendapatkan durasi",
+  "@couldNotGetDuration": {
+    "description": "Error message when audio duration could not be retrieved."
+  },
+  "errorOpeningFiles": "Kesalahan saat membuka file",
+  "@errorOpeningFiles": {
+    "description": "Error message when file picker fails."
+  },
+  "pleaseWaitTitle": "Harap tunggu",
+  "@pleaseWaitTitle": {
+    "description": "Title for please wait dialog."
+  },
+  "fileNotAvailableYet": "File belum tersedia",
+  "@fileNotAvailableYet": {
+    "description": "Message shown when file is not available yet."
+  },
+  "clearSelectionTooltip": "Bersihkan pilihan",
+  "@clearSelectionTooltip": {
+    "description": "Tooltip for clear selection button."
+  },
+  "copyNotesTooltip": "Salin catatan",
+  "@copyNotesTooltip": {
+    "description": "Tooltip for copy notes button."
+  },
+  "changeTaskTypeTooltip": "Ubah tipe tugas",
+  "@changeTaskTypeTooltip": {
+    "description": "Tooltip for change task type button."
+  },
+  "shareNotesTooltip": "Bagikan catatan",
+  "@shareNotesTooltip": {
+    "description": "Tooltip for share notes button."
+  },
+  "editNoteTooltip": "Edit catatan",
+  "@editNoteTooltip": {
+    "description": "Tooltip for edit note button."
+  },
+  "starUnstarNotesTooltip": "Beri/hapus bintang catatan",
+  "@starUnstarNotesTooltip": {
+    "description": "Tooltip for star/unstar notes button."
+  },
+  "moveToTrashTooltip": "Pindahkan ke sampah",
+  "@moveToTrashTooltip": {
+    "description": "Tooltip for move to trash button."
+  },
+  "pinUnpinNotesTooltip": "Sematkan/lepas sematan catatan",
+  "@pinUnpinNotesTooltip": {
+    "description": "Tooltip for pin/unpin notes button."
+  },
+  "cancelReplyTooltip": "Batalkan balasan item",
+  "@cancelReplyTooltip": {
+    "description": "Tooltip for cancel reply button."
+  },
+  "createTaskHint": "Buat tugas",
+  "@createTaskHint": {
+    "description": "Hint text for creating a task."
+  },
+  "addNoteHint": "Tambah catatan...",
+  "@addNoteHint": {
+    "description": "Hint text for adding a note."
+  },
+  "attachTooltip": "Lampirkan",
+  "@attachTooltip": {
+    "description": "Tooltip for attach button."
+  },
+  "addNoteTooltip": "Tambah catatan",
+  "@addNoteTooltip": {
+    "description": "Tooltip for add note button."
+  },
+  "recordStopAudioTooltip": "Rekam/hentikan audio",
+  "@recordStopAudioTooltip": {
+    "description": "Tooltip for record/stop audio button."
+  },
+  "contactAttachmentLabel": "Kontak",
+  "@contactAttachmentLabel": {
+    "description": "Label for contact attachment option."
+  },
+  "locationAttachmentLabel": "Lokasi",
+  "@locationAttachmentLabel": {
+    "description": "Label for location attachment option."
+  },
+  "cameraAttachmentLabel": "Kamera",
+  "@cameraAttachmentLabel": {
+    "description": "Label for camera attachment option."
+  },
+  "filesAttachmentLabel": "File",
+  "@filesAttachmentLabel": {
+    "description": "Label for files attachment option."
+  },
+  "checklistAttachmentLabel": "Daftar periksa",
+  "@checklistAttachmentLabel": {
+    "description": "Label for checklist attachment option."
+  },
+  "accessKeyInputTitle": "Aktifkan Sinkronisasi",
+  "@accessKeyInputTitle": {
+    "description": "Title for the access key input page."
+  },
+  "accessKeyInputDescription": "Harap masukkan frasa pemulihan 24 kata Anda atau muat file .txt yang berisi frasa tersebut.",
+  "@accessKeyInputDescription": {
+    "description": "Description text on the access key input page."
+  },
+  "editMenuItemLabel": "Edit",
+  "@editMenuItemLabel": {
+    "description": "Label for the edit menu item in the app bar popup menu."
+  },
+  "filterMenuItemLabel": "Filter",
+  "@filterMenuItemLabel": {
+    "description": "Label for the filter menu item in the app bar popup menu."
+  },
+  "externalStoragePermissionDenied": "Izin untuk mengakses penyimpanan eksternal ditolak.",
+  "@externalStoragePermissionDenied": {
+    "description": "Error message shown when external storage permission is denied."
+  },
+  "pressLongToStartRecording": "Tekan lama untuk mulai merekam.",
+  "@pressLongToStartRecording": {
+    "description": "Hint message shown when the send button is pressed while not typing and not recording."
+  },
+  "didYouKnowTitle": "Tahukah Anda?",
+  "@didYouKnowTitle": {
+    "description": "Title for the tip dialog shown to first-time users."
+  },
+  "closeTooltip": "Tutup",
+  "@closeTooltip": {
+    "description": "Tooltip for the close button on dialogs."
+  },
+  "appDescriptionContent": "{appName} adalah aplikasi catatan yang sepenuhnya pribadi. Aplikasi ini tidak mengumpulkan data pribadi Anda atau menampilkan iklan.\n\nKami harap Anda menikmati aplikasinya. Beri tahu kami pendapat Anda.",
+  "@appDescriptionContent": {
+    "description": "Description text about the app in the tip dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNotesTooltip": "Cari catatan",
+  "@searchNotesTooltip": {
+    "description": "Tooltip for the search notes button."
+  },
+  "syncMenuItemLabel": "Sinkronisasi",
+  "@syncMenuItemLabel": {
+    "description": "Label for the sync menu item."
+  },
+  "trashMenuItemLabel": "Sampah",
+  "@trashMenuItemLabel": {
+    "description": "Label for the trash menu item."
+  },
+  "starredNotesMenuItemLabel": "Catatan berbintang",
+  "@starredNotesMenuItemLabel": {
+    "description": "Label for the starred notes menu item."
+  },
+  "settingsMenuItemLabel": "Pengaturan",
+  "@settingsMenuItemLabel": {
+    "description": "Label for the settings menu item."
+  },
+  "accountMenuItemLabel": "Akun",
+  "@accountMenuItemLabel": {
+    "description": "Label for the account menu item."
+  },
+  "pageMenuItemLabel": "Halaman",
+  "@pageMenuItemLabel": {
+    "description": "Label for the page menu item (shown in debug mode)."
+  },
+  "sqliteMenuItemLabel": "Sqlite",
+  "@sqliteMenuItemLabel": {
+    "description": "Label for the SQLite database viewer menu item."
+  },
+  "logsMenuItemLabel": "Log",
+  "@logsMenuItemLabel": {
+    "description": "Label for the logs menu item."
+  },
+  "reorderMenuItemLabel": "Susun ulang",
+  "@reorderMenuItemLabel": {
+    "description": "Label for the reorder group menu item."
+  },
+  "editGroupMenuItemLabel": "Edit",
+  "@editGroupMenuItemLabel": {
+    "description": "Label for the edit group menu item."
+  },
+  "deleteGroupMenuItemLabel": "Hapus",
+  "@deleteGroupMenuItemLabel": {
+    "description": "Label for the delete group menu item."
+  },
+  "dragHandleReorderTooltip": "Seret pegangan untuk menyusun ulang",
+  "@dragHandleReorderTooltip": {
+    "description": "Tooltip message for drag handle on desktop."
+  },
+  "holdAndDragReorderTooltip": "Tahan dan seret untuk menyusun ulang",
+  "@holdAndDragReorderTooltip": {
+    "description": "Tooltip message for hold and drag to re-order on mobile."
+  },
+  "emptyHomePageMessage": "Halo!\n\nDi sini tampak kosong.\n\nKetuk tombol + dan buat catatan untuk diri sendiri. :)",
+  "@emptyHomePageMessage": {
+    "description": "Empty state message shown when there are no groups on the home page."
+  },
+  "reorderingTitle": "Menyusun ulang",
+  "@reorderingTitle": {
+    "description": "Title shown when reordering groups on the home page."
+  },
+  "selectEllipsisLabel": "Pilih...",
+  "@selectEllipsisLabel": {
+    "description": "Placeholder label shown when shared contents are being loaded."
+  },
+  "dateTimeToggleLabel": "Tanggal/Waktu",
+  "@dateTimeToggleLabel": {
+    "description": "Label for the date/time toggle switch in group settings."
+  },
+  "noteBorderToggleLabel": "Batas catatan",
+  "@noteBorderToggleLabel": {
+    "description": "Label for the note border toggle switch in group settings."
+  },
+  "deleteGroupButtonLabel": "Hapus",
+  "@deleteGroupButtonLabel": {
+    "description": "Label for the delete group button in group edit page."
+  },
+  "notesTabLabel": "Catatan",
+  "@notesTabLabel": {
+    "description": "Label for the notes tab in the trash page."
+  },
+  "groupsTabLabel": "Grup",
+  "@groupsTabLabel": {
+    "description": "Label for the groups tab in the trash page."
+  },
+  "categoriesTabLabel": "Kategori",
+  "@categoriesTabLabel": {
+    "description": "Label for the categories tab in the trash page."
+  },
+  "locationItemLabel": "Lokasi",
+  "@locationItemLabel": {
+    "description": "Label for location items in search results."
+  },
+  "addGroupTitle": "Tambah grup",
+  "@addGroupTitle": {
+    "description": "Page title for creating a new group."
+  },
+  "editGroupTitle": "Edit grup",
+  "@editGroupTitle": {
+    "description": "Page title for editing an existing group."
+  },
+  "titleInputLabel": "Judul",
+  "@titleInputLabel": {
+    "description": "Label for the title input field."
+  },
+  "locationPermissionRequiredTitle": "Izin Lokasi Diperlukan",
+  "@locationPermissionRequiredTitle": {
+    "description": "Title for the location permission dialog."
+  },
+  "enableLocationPermissionsContent": "Harap aktifkan izin lokasi di pengaturan aplikasi.",
+  "@enableLocationPermissionsContent": {
+    "description": "Content text for the location permission dialog."
+  },
+  "cancelButtonLabel": "Batal",
+  "@cancelButtonLabel": {
+    "description": "Label for the cancel button."
+  },
+  "openSettingsButtonLabel": "Buka Pengaturan",
+  "@openSettingsButtonLabel": {
+    "description": "Label for the open settings button."
+  },
+  "locationServicesTitle": "Layanan Lokasi",
+  "@locationServicesTitle": {
+    "description": "Title for the location services alert."
+  },
+  "pleaseEnableLocationServicesContent": "Harap aktifkan!",
+  "@pleaseEnableLocationServicesContent": {
+    "description": "Content text for the location services disabled alert."
+  },
+  "selectLocationTitle": "Pilih lokasi",
+  "@selectLocationTitle": {
+    "description": "Title for the location picker page."
+  },
+  "useCurrentLocationTooltip": "Gunakan lokasi saat ini",
+  "@useCurrentLocationTooltip": {
+    "description": "Tooltip for the use current location button."
+  },
+  "selectAllButtonLabel": "Pilih semua",
+  "@selectAllButtonLabel": {
+    "description": "Label for the select all button in archived items."
+  },
+  "searchLogsHint": "Cari log..",
+  "@searchLogsHint": {
+    "description": "Hint text for the search logs input field."
+  },
+  "noLogsAvailable": "Tidak ada log yang tersedia",
+  "@noLogsAvailable": {
+    "description": "Message shown when there are no log entries to display."
+  },
+  "dbViewerTitle": "Penampil DB",
+  "@dbViewerTitle": {
+    "description": "Title for the SQLite database viewer page."
+  },
+  "selectTableToViewData": "Pilih tabel untuk melihat datanya",
+  "@selectTableToViewData": {
+    "description": "Instruction text shown when no table is selected in the DB viewer."
+  },
+  "selectTableDropdownHint": "Pilih tabel",
+  "@selectTableDropdownHint": {
+    "description": "Hint text for the table selection dropdown in the DB viewer."
+  },
+  "pickContactTitle": "Pilih kontak",
+  "@pickContactTitle": {
+    "description": "Title for the contact picker page."
+  },
+  "permissionRequiredText": "Izin diperlukan",
+  "@permissionRequiredText": {
+    "description": "Text shown when contact permission is required."
+  },
+  "grantPermissionButtonLabel": "Berikan izin",
+  "@grantPermissionButtonLabel": {
+    "description": "Label for the grant permission button."
+  },
+  "pageDummyTitle": "Halaman Dummy",
+  "@pageDummyTitle": {
+    "description": "Title for the dummy/testing page."
+  },
+  "simulateButtonLabel": "Simulasikan",
+  "@simulateButtonLabel": {
+    "description": "Label for the simulate button on the dummy page."
+  },
+  "selectCategoryTitle": "Pilih kategori",
+  "@selectCategoryTitle": {
+    "description": "Title for the select category page."
+  },
+  "addCategoryTitle": "Tambah kategori",
+  "@addCategoryTitle": {
+    "description": "Title for the add category page."
+  },
+  "editCategoryTitle": "Edit kategori",
+  "@editCategoryTitle": {
+    "description": "Title for the edit category page."
+  },
+  "categoryTitleHint": "Judul kategori",
+  "@categoryTitleHint": {
+    "description": "Hint text for the category title input field."
+  },
+  "colorLabel": "Warna",
+  "@colorLabel": {
+    "description": "Label for the color selector."
+  },
+  "changeColorLabel": "Ubah warna",
+  "@changeColorLabel": {
+    "description": "Label for the change color option."
+  },
+  "deviceDisabledMessage": "Perangkat dinonaktifkan!",
+  "@deviceDisabledMessage": {
+    "description": "Toast message shown when a device is disabled."
+  },
+  "cannotRemoveThisDeviceMessage": "Tidak dapat menghapus perangkat ini!",
+  "@cannotRemoveThisDeviceMessage": {
+    "description": "Toast message shown when attempting to remove the current device."
+  },
+  "confirmRemoveTitle": "Konfirmasi Hapus",
+  "@confirmRemoveTitle": {
+    "description": "Title for the confirm remove device dialog."
+  },
+  "confirmRemoveDeviceContent": "Anda yakin? Ini akan menghapus semua data di perangkat tersebut.",
+  "@confirmRemoveDeviceContent": {
+    "description": "Content text for the confirm remove device dialog."
+  },
+  "okButtonLabel": "OK",
+  "@okButtonLabel": {
+    "description": "Label for the OK button."
+  },
+  "registeredDevicesTitle": "Perangkat Terdaftar",
+  "@registeredDevicesTitle": {
+    "description": "Title for the registered devices page."
+  },
+  "noDevicesFoundMessage": "Tidak ada perangkat ditemukan",
+  "@noDevicesFoundMessage": {
+    "description": "Message shown when no devices are found."
+  },
+  "enabledLabel": "Diaktifkan",
+  "@enabledLabel": {
+    "description": "Label for an enabled device status."
+  },
+  "disabledLabel": "Dinonaktifkan",
+  "@disabledLabel": {
+    "description": "Label for a disabled device status."
+  },
+  "migratingMediaTitle": "Memigrasikan Media",
+  "@migratingMediaTitle": {
+    "description": "Title for the media migration page."
+  },
+  "processingMessage": "Memproses...",
+  "@processingMessage": {
+    "description": "Message shown while media is being processed."
+  },
+  "doNotNavigateAwayMessage": "Mohon jangan berpindah halaman",
+  "@doNotNavigateAwayMessage": {
+    "description": "Warning message asking the user not to navigate away during media migration."
+  },
+  "errorWithDetails": "Kesalahan: {error}",
+  "@errorWithDetails": {
+    "description": "Error message shown when loading logs fails, including the error.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sequenceNotAcceptedError": "Urutan tidak diterima",
+  "@sequenceNotAcceptedError": {
+    "description": "Validation error when the key contains a sequential pattern."
+  },
+  "examplesNotAcceptedError": "Contoh tidak diterima",
+  "@examplesNotAcceptedError": {
+    "description": "Validation error when the key matches one of the example keys."
+  },
+  "enterKeyAgainLabel": "Masukkan kunci lagi",
+  "@enterKeyAgainLabel": {
+    "description": "Label and hint for the confirm key input field."
+  },
+  "pleaseEnterKeyAgainError": "Harap masukkan kunci lagi",
+  "@pleaseEnterKeyAgainError": {
+    "description": "Validation error when the confirm key field is empty."
+  },
+  "keysDoNotMatchError": "Kunci tidak cocok",
+  "@keysDoNotMatchError": {
+    "description": "Validation error when the two keys do not match."
+  },
+  "ruleUppercaseLetter": "1 huruf besar",
+  "@ruleUppercaseLetter": {
+    "description": "Password rule description for one uppercase letter."
+  },
+  "ruleLowercaseLetter": "1 huruf kecil",
+  "@ruleLowercaseLetter": {
+    "description": "Password rule description for one lowercase letter."
+  },
+  "ruleNumericLetter": "1 angka",
+  "@ruleNumericLetter": {
+    "description": "Password rule description for one numeric character."
+  },
+  "ruleSpecialCharacter": "1 karakter khusus",
+  "@ruleSpecialCharacter": {
+    "description": "Password rule description for one special character."
+  },
+  "ruleMinTenCharacters": "min 10 karakter",
+  "@ruleMinTenCharacters": {
+    "description": "Password rule description for the minimum length."
+  },
+  "examplesTitle": "Contoh",
+  "@examplesTitle": {
+    "description": "Title for the key examples dialog."
+  },
+  "passwordExample1": "I would love 2 have @ll ...",
+  "@passwordExample1": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample2": "(A6r4K4D46r4)",
+  "@passwordExample2": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample3": "Mykey@2025",
+  "@passwordExample3": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample4": "C0ffee !s great f0r pr0ductivity",
+  "@passwordExample4": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "gotItButtonLabel": "Mengerti",
+  "@gotItButtonLabel": {
+    "description": "Label for the button to dismiss the examples dialog."
+  },
+  "encryptionKeyTitle": "Kunci enkripsi",
+  "@encryptionKeyTitle": {
+    "description": "Title for the encryption key creation page."
+  },
+  "createKeyDescription": "Harap masukkan kunci (sandi) yang panjang dan sulit ditebak. Ingatlah untuk menyimpannya di tempat yang aman. Jika hilang/lupa, kunci tidak dapat dipulihkan.",
+  "@createKeyDescription": {
+    "description": "Instructional text for creating an encryption key."
+  },
+  "seeExamplesTooltip": "Lihat contoh",
+  "@seeExamplesTooltip": {
+    "description": "Tooltip for the button that shows key examples."
+  },
+  "couldNotFetchDetailsMessage": "Tidak bisa mengambil detail",
+  "@couldNotFetchDetailsMessage": {
+    "description": "Message shown when plan details could not be fetched."
+  },
+  "retryButtonLabel": "Coba lagi",
+  "@retryButtonLabel": {
+    "description": "Label for the retry button."
+  },
+  "signedInAsLabel": "Masuk sebagai:",
+  "@signedInAsLabel": {
+    "description": "Label shown before the signed-in email."
+  },
+  "storageUsageLabel": "Penggunaan Penyimpanan",
+  "@storageUsageLabel": {
+    "description": "Label for the storage usage section."
+  },
+  "subscribeLabel": "Berlangganan",
+  "@subscribeLabel": {
+    "description": "Label for the subscribe option."
+  },
+  "planExpiredRenewLabel": "Paket kedaluwarsa! Perbarui",
+  "@planExpiredRenewLabel": {
+    "description": "Label for the plan expired renew option."
+  },
+  "manageDevicesLabel": "Kelola perangkat",
+  "@manageDevicesLabel": {
+    "description": "Label for the manage devices option."
+  },
+  "viewAccessKeyLabel": "Lihat kunci akses",
+  "@viewAccessKeyLabel": {
+    "description": "Label for the view access key option."
+  },
+  "changeKeyPasswordLabel": "Ubah kunci sandi",
+  "@changeKeyPasswordLabel": {
+    "description": "Label for the change key password option."
+  },
+  "manageSubscriptionLabel": "Kelola langganan",
+  "@manageSubscriptionLabel": {
+    "description": "Label for the manage subscription option."
+  },
+  "signOutButtonLabel": "Keluar",
+  "@signOutButtonLabel": {
+    "description": "Label for the sign out option."
+  },
+  "yearlyPlansTitle": "Paket tahunan",
+  "@yearlyPlansTitle": {
+    "description": "Title for the plan subscribe page."
+  },
+  "loginLabel": "Masuk",
+  "@loginLabel": {
+    "description": "Label for the login button."
+  },
+  "syncAllYourNotesLabel": "Sinkronkan semua catatan Anda",
+  "@syncAllYourNotesLabel": {
+    "description": "Headline on the subscribe page."
+  },
+  "acrossYourDevicesLabel": "di seluruh perangkat Anda",
+  "@acrossYourDevicesLabel": {
+    "description": "Subheadline on the subscribe page."
+  },
+  "featureEndToEndEncryption": "Enkripsi end-to-end",
+  "@featureEndToEndEncryption": {
+    "description": "Feature list item for end-to-end encryption."
+  },
+  "featureSyncUpTo3Devices": "Sinkronkan hingga 3 perangkat",
+  "@featureSyncUpTo3Devices": {
+    "description": "Feature list item for syncing up to 3 devices."
+  },
+  "featureUpgradeCancelAnytime": "Tingkatkan/Batalkan kapan saja",
+  "@featureUpgradeCancelAnytime": {
+    "description": "Feature list item for upgrading or cancelling anytime."
+  },
+  "noPlansAvailableMessage": "Tidak ada paket tersedia",
+  "@noPlansAvailableMessage": {
+    "description": "Message shown when no plans are available."
+  },
+  "downloadAppSubscribeLabel": "Unduh aplikasi & berlangganan",
+  "@downloadAppSubscribeLabel": {
+    "description": "Label prompting the user to download the app and subscribe."
+  },
+  "privacyTermsLabel": "Privasi • Ketentuan",
+  "@privacyTermsLabel": {
+    "description": "Label for the privacy and terms footer."
+  },
+  "saveFiftyPercentLabel": "Hemat 50%",
+  "@saveFiftyPercentLabel": {
+    "description": "Badge text showing the savings percentage."
+  },
+  "helloTitle": "Halo",
+  "@helloTitle": {
+    "description": "Title for the select key type page before welcoming."
+  },
+  "selectKeyMasterKeyDescription": "Untuk mengenkripsi data Anda, kami memerlukan kunci enkripsi utama.",
+  "@selectKeyMasterKeyDescription": {
+    "description": "Description text on the select key type page."
+  },
+  "selectKeyTwoOptionsDescription": "Ada 2 pilihan - Anda membuat kunci sendiri (seperti kata sandi) atau kami yang membuatnya untuk Anda.",
+  "@selectKeyTwoOptionsDescription": {
+    "description": "Description of the two key creation options."
+  },
+  "understandLoseKeyAcknowledgement": "Saya mengerti bahwa jika saya kehilangan/lupa kunci enkripsi, saya mungkin kehilangan data.",
+  "@understandLoseKeyAcknowledgement": {
+    "description": "Acknowledgement text for understanding the risk of losing the encryption key."
+  },
+  "createKeyForMeButtonLabel": "Buatkan kunci untuk saya",
+  "@createKeyForMeButtonLabel": {
+    "description": "Label for the button to let the app create the key."
+  },
+  "recommendedLabel": "(Disarankan)",
+  "@recommendedLabel": {
+    "description": "Label indicating a recommended option."
+  },
+  "pleaseAcknowledgeMessage": "Harap setujui!",
+  "@pleaseAcknowledgeMessage": {
+    "description": "Toast message asking the user to acknowledge the terms."
+  },
+  "createKeyMyselfButtonLabel": "Saya akan membuat kunci sendiri",
+  "@createKeyMyselfButtonLabel": {
+    "description": "Label for the button to create the key yourself."
+  },
+  "welcomeToAppName": "Selamat datang di {appName}",
+  "@welcomeToAppName": {
+    "description": "Welcome message with the app name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "e2eEncryptionDescription": "Kami menggunakan enkripsi end-to-end untuk memastikan bahwa semua catatan Anda aman dan tidak ada orang lain yang bisa melihatnya, bahkan kami.",
+  "@e2eEncryptionDescription": {
+    "description": "Description of the end-to-end encryption used."
+  },
+  "timeToStartEncryptionLabel": "Waktunya memulai enkripsi!",
+  "@timeToStartEncryptionLabel": {
+    "description": "Message prompting the user to start encryption."
+  },
+  "nextButtonLabel": "Berikutnya",
+  "@nextButtonLabel": {
+    "description": "Label for the next button."
+  },
+  "sendingOtpFailedMessage": "Gagal mengirim OTP. Harap coba lagi!",
+  "@sendingOtpFailedMessage": {
+    "description": "Toast message when sending the OTP fails."
+  },
+  "otpVerificationFailedMessage": "Verifikasi OTP gagal. Harap coba lagi!",
+  "@otpVerificationFailedMessage": {
+    "description": "Toast message when verifying the OTP fails."
+  },
+  "emailSignInTitle": "Masuk dengan Email",
+  "@emailSignInTitle": {
+    "description": "Title for the sign-in page before OTP is sent."
+  },
+  "verifyOtpLabel": "Verifikasi OTP",
+  "@verifyOtpLabel": {
+    "description": "Label for verifying the OTP (used as title and button)."
+  },
+  "enterEmailLabel": "Masukkan Email",
+  "@enterEmailLabel": {
+    "description": "Label for the email input field."
+  },
+  "sendOtpLabel": "Kirim OTP",
+  "@sendOtpLabel": {
+    "description": "Label for the send OTP button."
+  },
+  "otpSentToEmailMessage": "Kami telah mengirimkan kata sandi satu kali (OTP) ke email Anda {email}",
+  "@otpSentToEmailMessage": {
+    "description": "Message confirming the OTP was sent to the email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "enterOtpLabel": "Masukkan OTP",
+  "@enterOtpLabel": {
+    "description": "Label for the OTP input field."
+  },
+  "changeEmailLabel": "Ubah email",
+  "@changeEmailLabel": {
+    "description": "Label for the change email button."
+  },
+  "encryptingNotesTitle": "Mengenkripsi catatan",
+  "@encryptingNotesTitle": {
+    "description": "Title shown while encrypting local notes."
+  },
+  "fetchingDetailsTitle": "Mengambil detail",
+  "@fetchingDetailsTitle": {
+    "description": "Title shown while fetching details."
+  },
+  "couldNotFetchMessage": "Tidak bisa mengambil",
+  "@couldNotFetchMessage": {
+    "description": "Error message shown when fetching fails."
+  },
+  "subscriptionEmailMismatchMessage": "Langganan Anda terkait dengan email lain. Silakan keluar dan gunakan email tersebut untuk mengaktifkan penyimpanan cloud.",
+  "@subscriptionEmailMismatchMessage": {
+    "description": "Error message when the subscription email does not match."
+  },
+  "errorCheckingPlanDetailsMessage": "Kesalahan memeriksa detail paket",
+  "@errorCheckingPlanDetailsMessage": {
+    "description": "Error message shown when checking plan details fails."
+  },
+  "registerDeviceTitle": "Daftarkan perangkat",
+  "@registerDeviceTitle": {
+    "description": "Title shown while registering the device."
+  },
+  "manageButtonLabel": "Kelola",
+  "@manageButtonLabel": {
+    "description": "Label for the manage button (e.g., manage devices)."
+  },
+  "fetchingKeysTitle": "Mengambil Kunci",
+  "@fetchingKeysTitle": {
+    "description": "Title shown while fetching encryption keys."
+  },
+  "signingOutTitle": "Keluar",
+  "@signingOutTitle": {
+    "description": "Title shown while signing out."
+  },
+  "pleaseCheckInternetMessage": "Harap periksa internet",
+  "@pleaseCheckInternetMessage": {
+    "description": "Error message asking the user to check internet connection."
+  },
+  "somethingWentWrongMessage": "Terjadi kesalahan",
+  "@somethingWentWrongMessage": {
+    "description": "Generic error message when something goes wrong."
+  },
+  "playPauseTooltip": "Putar/jeda",
+  "@playPauseTooltip": {
+    "description": "Tooltip for the play/pause audio button."
+  },
+  "timerFormattedTime": "{minutes}:{seconds}",
+  "@timerFormattedTime": {
+    "description": "Formatted timer display showing minutes and seconds.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadTooltip": "Unduh",
+  "@downloadTooltip": {
+    "description": "Tooltip for the download button."
+  },
+  "invalidAccessKey": "Kunci akses tidak valid",
+  "@invalidAccessKey": {
+    "description": "Error message when the access key is invalid."
+  },
+  "fileDoesNotContain24Words": "File tidak berisi tepat 24 kata.",
+  "@fileDoesNotContain24Words": {
+    "description": "Error message when the selected file does not contain a 24-word recovery phrase."
+  },
+  "errorReadingFile": "Kesalahan saat membaca file",
+  "@errorReadingFile": {
+    "description": "Toast message when an error occurs while reading a file."
+  },
+  "allLabel": "Semua",
+  "@allLabel": {
+    "description": "Label for the 'All' filter option."
+  },
+  "logTypeDebug": "DEBUG",
+  "@logTypeDebug": {
+    "description": "Log type label for debug entries."
+  },
+  "logTypeError": "ERROR",
+  "@logTypeError": {
+    "description": "Log type label for error entries."
+  },
+  "logTypeInfo": "INFO",
+  "@logTypeInfo": {
+    "description": "Log type label for info entries."
+  },
+  "logTypeWarning": "WARNING",
+  "@logTypeWarning": {
+    "description": "Log type label for warning entries."
+  },
+  "groupTitleHint": "Judul grup",
+  "@groupTitleHint": {
+    "description": "Hint text for the group title input field."
+  },
+  "categoryLabel": "Kategori",
+  "@categoryLabel": {
+    "description": "Label for the category selector section."
+  },
+  "selectCategoryPlaceholder": "Pilih kategori",
+  "@selectCategoryPlaceholder": {
+    "description": "Placeholder text prompting the user to select a category."
+  },
+  "storageBytesFormat": "{bytes} B",
+  "@storageBytesFormat": {
+    "description": "Formatted storage size in bytes.",
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "storageKilobytesFormat": "{kb} KB",
+  "@storageKilobytesFormat": {
+    "description": "Formatted storage size in kilobytes.",
+    "placeholders": {
+      "kb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageMegabytesFormat": "{mb} MB",
+  "@storageMegabytesFormat": {
+    "description": "Formatted storage size in megabytes.",
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageGigabytesFormat": "{gb} GB",
+  "@storageGigabytesFormat": {
+    "description": "Formatted storage size in gigabytes.",
+    "placeholders": {
+      "gb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsedTotalFormat": "{used} / {total}",
+  "@storageUsedTotalFormat": {
+    "description": "Formatted used vs total storage display.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "planStorageSizeFormat": "{size} {unit}",
+  "@planStorageSizeFormat": {
+    "description": "Formatted plan storage size with unit (e.g. '100 GB').",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "searchHint": "kueri, #dokumen dll..",
+  "@searchHint": {
+    "description": "Hint text for the search input field."
+  },
+  "categoryGroupSeparator": " > ",
+  "@categoryGroupSeparator": {
+    "description": "Separator used between category and group in search result headers."
+  },
+  "audioFileLabel": "File audio",
+  "@audioFileLabel": {
+    "description": "Label shown for audio file search results."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Native name of the Arabic language."
+  },
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "Native name of the German language."
+  },
+  "languageGreek": "Ελληνικά",
+  "@languageGreek": {
+    "description": "Native name of the Greek language."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Native name of the English language."
+  },
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Native name of the Spanish language."
+  },
+  "languagePersian": "فارسی",
+  "@languagePersian": {
+    "description": "Native name of the Persian (Farsi) language."
+  },
+  "languageFrench": "Français",
+  "@languageFrench": {
+    "description": "Native name of the French language."
+  },
+  "languageHebrew": "עברית",
+  "@languageHebrew": {
+    "description": "Native name of the Hebrew language."
+  },
+  "languageHindi": "हिन्दी",
+  "@languageHindi": {
+    "description": "Native name of the Hindi language."
+  },
+  "languageIndonesian": "Bahasa Indonesia",
+  "@languageIndonesian": {
+    "description": "Native name of the Indonesian language."
+  },
+  "languageItalian": "Italiano",
+  "@languageItalian": {
+    "description": "Native name of the Italian language."
+  },
+  "languageJapanese": "日本語",
+  "@languageJapanese": {
+    "description": "Native name of the Japanese language."
+  },
+  "languageKorean": "한국어",
+  "@languageKorean": {
+    "description": "Native name of the Korean language."
+  },
+  "languageDutch": "Nederlands",
+  "@languageDutch": {
+    "description": "Native name of the Dutch language."
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Native name of the Portuguese language."
+  },
+  "languageRussian": "Русский",
+  "@languageRussian": {
+    "description": "Native name of the Russian language."
+  },
+  "languageThai": "ไทย",
+  "@languageThai": {
+    "description": "Native name of the Thai language."
+  },
+  "languageTurkish": "Türkçe",
+  "@languageTurkish": {
+    "description": "Native name of the Turkish language."
+  },
+  "languageUkrainian": "Українська",
+  "@languageUkrainian": {
+    "description": "Native name of the Ukrainian language."
+  },
+  "languageVietnamese": "Tiếng Việt",
+  "@languageVietnamese": {
+    "description": "Native name of the Vietnamese language."
+  },
+  "languageChineseSimplified": "简体中文",
+  "@languageChineseSimplified": {
+    "description": "Native name of the Simplified Chinese language."
+  },
+  "selectLanguageTitle": "Pilih bahasa",
+  "@selectLanguageTitle": {
+    "description": "Header label for the language selection menu."
+  },
+  "settingsTitle": "Pengaturan",
+  "@settingsTitle": {
+    "description": "Title of the settings page displayed in the AppBar."
+  },
+  "themeLabel": "Tema",
+  "@themeLabel": {
+    "description": "Label for the theme settings list tile."
+  },
+  "dayNightThemeTooltip": "Tema siang/malam",
+  "@dayNightThemeTooltip": {
+    "description": "Tooltip for the theme toggle button."
+  },
+  "lockLabel": "Kunci",
+  "@lockLabel": {
+    "description": "Label for the app lock setting."
+  },
+  "timeFormatLabel": "Format Waktu",
+  "@timeFormatLabel": {
+    "description": "Label for the time format dropdown setting."
+  },
+  "h12Label": "12J",
+  "@h12Label": {
+    "description": "Label for the 12-hour time format option."
+  },
+  "h24Label": "24J",
+  "@h24Label": {
+    "description": "Label for the 24-hour time format option."
+  },
+  "fontSizeLabel": "Ukuran font",
+  "@fontSizeLabel": {
+    "description": "Label for the font size setting."
+  },
+  "reduceTextSizeTooltip": "Kecilkan ukuran teks",
+  "@reduceTextSizeTooltip": {
+    "description": "Tooltip for the decrease font size button."
+  },
+  "increaseTextSizeTooltip": "Besarkan ukuran teks",
+  "@increaseTextSizeTooltip": {
+    "description": "Tooltip for the increase font size button."
+  },
+  "languageLabel": "Bahasa",
+  "@languageLabel": {
+    "description": "Label for the language setting list tile."
+  },
+  "autoOpenGroupLabel": "Buka grup otomatis",
+  "@autoOpenGroupLabel": {
+    "description": "Label for the auto-open group setting list tile."
+  },
+  "selectGroupTitle": "Pilih grup",
+  "@selectGroupTitle": {
+    "description": "Header label for the group selection menu."
+  },
+  "shareAppMessage": "Buat {appName}: {appLink}",
+  "@shareAppMessage": {
+    "description": "Content of the share intent for sharing the app.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "appLink": {
+        "type": "String"
+      }
+    }
+  },
+  "noteTypeEmpty": "Kosong",
+  "@noteTypeEmpty": {
+    "description": "Label for an empty note preview."
+  },
+  "noteTypeImage": "Gambar",
+  "@noteTypeImage": {
+    "description": "Label for an image note preview."
+  },
+  "noteTypeVideo": "Video",
+  "@noteTypeVideo": {
+    "description": "Label for a video note preview."
+  },
+  "noteTypeAudio": "Audio",
+  "@noteTypeAudio": {
+    "description": "Label for an audio note preview."
+  },
+  "noteTypeDocument": "Dokumen",
+  "@noteTypeDocument": {
+    "description": "Label for a document note preview."
+  },
+  "noteTypeContact": "Kontak",
+  "@noteTypeContact": {
+    "description": "Label for a contact note preview."
+  },
+  "noteTypeLocation": "Lokasi",
+  "@noteTypeLocation": {
+    "description": "Label for a location note preview."
+  },
+  "noteTypeUnknown": "Tidak diketahui",
+  "@noteTypeUnknown": {
+    "description": "Label for a note preview of an unrecognized type."
+  },
+  "pleaseEnterData": "Harap masukkan data",
+  "@pleaseEnterData": {
+    "description": "Validation error message when a field is empty."
+  },
+  "aNumber": "Sebuah angka",
+  "@aNumber": {
+    "description": "Validation error message when the input must be a number."
+  },
+  "enterDataLabel": "Masukkan data",
+  "@enterDataLabel": {
+    "description": "Validation error message prompting the user to enter data."
+  },
+  "pleaseEnterValidData": "Harap masukkan data yang valid",
+  "@pleaseEnterValidData": {
+    "description": "Validation error message for invalid input data."
+  },
+  "pleaseSelectAnOption": "Harap pilih opsi",
+  "@pleaseSelectAnOption": {
+    "description": "Validation error message prompting the user to select an option."
+  },
+  "dateRangeFormat": "{start} - {end}",
+  "@dateRangeFormat": {
+    "description": "Formatted date range string.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "todayLabel": "Hari ini",
+  "@todayLabel": {
+    "description": "Human-readable label for today's date."
+  },
+  "yesterdayLabel": "Kemarin",
+  "@yesterdayLabel": {
+    "description": "Human-readable label for yesterday's date."
+  },
+  "mondayLabel": "Senin",
+  "@mondayLabel": {
+    "description": "Day-of-week name for Monday."
+  },
+  "tuesdayLabel": "Selasa",
+  "@tuesdayLabel": {
+    "description": "Day-of-week name for Tuesday."
+  },
+  "wednesdayLabel": "Rabu",
+  "@wednesdayLabel": {
+    "description": "Day-of-week name for Wednesday."
+  },
+  "thursdayLabel": "Kamis",
+  "@thursdayLabel": {
+    "description": "Day-of-week name for Thursday."
+  },
+  "fridayLabel": "Jumat",
+  "@fridayLabel": {
+    "description": "Day-of-week name for Friday."
+  },
+  "saturdayLabel": "Sabtu",
+  "@saturdayLabel": {
+    "description": "Day-of-week name for Saturday."
+  },
+  "sundayLabel": "Minggu",
+  "@sundayLabel": {
+    "description": "Day-of-week name for Sunday."
+  },
+  "januaryShortLabel": "Jan",
+  "@januaryShortLabel": {
+    "description": "Short month name for January."
+  },
+  "februaryShortLabel": "Feb",
+  "@februaryShortLabel": {
+    "description": "Short month name for February."
+  },
+  "marchShortLabel": "Mar",
+  "@marchShortLabel": {
+    "description": "Short month name for March."
+  },
+  "aprilShortLabel": "Apr",
+  "@aprilShortLabel": {
+    "description": "Short month name for April."
+  },
+  "mayShortLabel": "Mei",
+  "@mayShortLabel": {
+    "description": "Short month name for May."
+  },
+  "juneShortLabel": "Jun",
+  "@juneShortLabel": {
+    "description": "Short month name for June."
+  },
+  "julyShortLabel": "Jul",
+  "@julyShortLabel": {
+    "description": "Short month name for July."
+  },
+  "augustShortLabel": "Agu",
+  "@augustShortLabel": {
+    "description": "Short month name for August."
+  },
+  "septemberShortLabel": "Sep",
+  "@septemberShortLabel": {
+    "description": "Short month name for September."
+  },
+  "octoberShortLabel": "Okt",
+  "@octoberShortLabel": {
+    "description": "Short month name for October."
+  },
+  "novemberShortLabel": "Nov",
+  "@novemberShortLabel": {
+    "description": "Short month name for November."
+  },
+  "decemberShortLabel": "Des",
+  "@decemberShortLabel": {
+    "description": "Short month name for December."
+  },
+  "noteGroupDateTitleFormat": "{dayOfWeek}, {day} {month}",
+  "@noteGroupDateTitleFormat": {
+    "description": "Formatted note group date title.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "dayOfWeek": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationHoursFormat": "{hours}:{minutes}:{seconds}",
+  "@mediaDurationHoursFormat": {
+    "description": "Formatted media duration with hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationMinutesFormat": "{minutes}:{seconds}",
+  "@mediaDurationMinutesFormat": {
+    "description": "Formatted media duration without hours.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeZero": "0 B",
+  "@fileSizeZero": {
+    "description": "Display string when file size is zero."
+  },
+  "fileSizeUnitBytes": "B",
+  "@fileSizeUnitBytes": {
+    "description": "File size unit for bytes."
+  },
+  "fileSizeUnitKilobytes": "KB",
+  "@fileSizeUnitKilobytes": {
+    "description": "File size unit for kilobytes."
+  },
+  "fileSizeUnitMegabytes": "MB",
+  "@fileSizeUnitMegabytes": {
+    "description": "File size unit for megabytes."
+  },
+  "fileSizeUnitGigabytes": "GB",
+  "@fileSizeUnitGigabytes": {
+    "description": "File size unit for gigabytes."
+  },
+  "fileSizeUnitTerabytes": "TB",
+  "@fileSizeUnitTerabytes": {
+    "description": "File size unit for terabytes."
+  },
+  "fileSizeFormat": "{size} {suffix}",
+  "@fileSizeFormat": {
+    "description": "Formatted file size string with suffix unit.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "noteGroupCountSingle": "{count} grup catatan",
+  "@noteGroupCountSingle": {
+    "description": "Pluralized label for a single note group count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteGroupCountPlural": "{count} grup catatan",
+  "@noteGroupCountPlural": {
+    "description": "Pluralized label for multiple note groups count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

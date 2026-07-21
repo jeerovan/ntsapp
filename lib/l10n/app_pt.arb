@@ -1,0 +1,1497 @@
+{
+  "@@locale": "pt",
+  "importantTitle": "Importante",
+  "@importantTitle": {
+    "description": "Title for the important notice page."
+  },
+  "accessKeyNoticeDescription1": "Na próxima página, você verá uma série de 24 palavras. Esta é a sua chave de criptografia exclusiva e privada, e é a ÚNICA maneira de recuperar suas notas em caso de logout, perda ou mau funcionamento do dispositivo.",
+  "@accessKeyNoticeDescription1": {
+    "description": "First paragraph of the access key notice."
+  },
+  "accessKeyNoticeDescription2": "Nós não armazenamos a chave. É SUA responsabilidade armazená-la em um local seguro fora do aplicativo {appName}.",
+  "@accessKeyNoticeDescription2": {
+    "description": "Second paragraph of the access key notice.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "iUnderstandShowMeTheKey": "Eu entendo.\nMostrar a chave.",
+  "@iUnderstandShowMeTheKey": {
+    "description": "Button text to understand and show the key."
+  },
+  "selectGroupToViewNotes": "Selecione um grupo para visualizar notas",
+  "@selectGroupToViewNotes": {
+    "description": "Placeholder text shown when no group is selected in desktop mode."
+  },
+  "accessKeyShareText": "Aqui está sua chave de acesso.",
+  "@accessKeyShareText": {
+    "description": "Text used in share dialog when sharing the access key."
+  },
+  "pleaseTryAgain": "Por favor, tente novamente.",
+  "@pleaseTryAgain": {
+    "description": "Generic error message shown when an operation fails."
+  },
+  "copiedToClipboard": "Copiado para a área de transferência",
+  "@copiedToClipboard": {
+    "description": "Toast message shown when text is copied to the clipboard."
+  },
+  "accessKeyTitle": "Chave de Acesso",
+  "@accessKeyTitle": {
+    "description": "Title for the access key page."
+  },
+  "accessKeyDescription": "Por favor, salve esta chave em um local seguro. Você precisará dela para sincronizar notas em outro dispositivo.",
+  "@accessKeyDescription": {
+    "description": "Instructional text for saving the access key."
+  },
+  "copyLabel": "Copiar",
+  "@copyLabel": {
+    "description": "Label for the copy button."
+  },
+  "downloadAsTextFileLabel": "Baixar como arquivo de texto",
+  "@downloadAsTextFileLabel": {
+    "description": "Label for the button that downloads the access key as a text file."
+  },
+  "continueLabel": "Continuar",
+  "@continueLabel": {
+    "description": "Label for the continue button."
+  },
+  "pleaseAuthenticate": "Por favor, autentique-se",
+  "@pleaseAuthenticate": {
+    "description": "Reason shown in the biometric/device authentication prompt."
+  },
+  "couldNotCreate": "Não foi possível criar",
+  "@couldNotCreate": {
+    "description": "Error message title when backup creation fails."
+  },
+  "couldNotShareFile": "Não foi possível compartilhar o arquivo",
+  "@couldNotShareFile": {
+    "description": "Error message title when sharing backup fails."
+  },
+  "hereIsTheBackupFile": "Aqui está o arquivo de backup do seu aplicativo.",
+  "@hereIsTheBackupFile": {
+    "description": "Text used in share dialog when sharing the backup file."
+  },
+  "errorTitle": "Erro",
+  "@errorTitle": {
+    "description": "Generic error message title."
+  },
+  "backupLabel": "Backup",
+  "@backupLabel": {
+    "description": "Label for the backup option."
+  },
+  "restoreLabel": "Restaurar",
+  "@restoreLabel": {
+    "description": "Label for the restore option."
+  },
+  "leaveAReviewLabel": "Deixar uma avaliação",
+  "@leaveAReviewLabel": {
+    "description": "Label for the feedback/review option."
+  },
+  "shareLabel": "Compartilhar",
+  "@shareLabel": {
+    "description": "Label for the share app option."
+  },
+  "desktopAppLinkLabel": "Aplicativo Desktop",
+  "@desktopAppLinkLabel": {
+    "description": "Label for the link to the desktop version."
+  },
+  "loggingLabel": "Logs",
+  "@loggingLabel": {
+    "description": "Label for the logging toggle setting."
+  },
+  "versionLabel": "Versão: {version}",
+  "@versionLabel": {
+    "description": "Label showing app version.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingLabel": "Carregando...",
+  "@loadingLabel": {
+    "description": "Label for the loading state of the app version."
+  },
+  "restoredLabel": "Restaurado.",
+  "@restoredLabel": {
+    "description": "Toast message shown after successfully restoring items."
+  },
+  "deletedPermanentlyLabel": "Excluído permanentemente.",
+  "@deletedPermanentlyLabel": {
+    "description": "Toast message shown after successfully deleting items permanently."
+  },
+  "mediaTitle": "Mídia",
+  "@mediaTitle": {
+    "description": "Title for the media viewer page."
+  },
+  "invalidWordList": "Lista de palavras inválida",
+  "@invalidWordList": {
+    "description": "Error message when invalid mnemonic phrase is entered."
+  },
+  "enterYour24WordPhrase": "Insira sua frase de 24 palavras",
+  "@enterYour24WordPhrase": {
+    "description": "Label for the recovery phrase text input."
+  },
+  "enterYourRecoveryPhraseHere": "Insira sua frase de recuperação aqui",
+  "@enterYourRecoveryPhraseHere": {
+    "description": "Hint text for the recovery phrase text input."
+  },
+  "pleaseEnterYourRecoveryPhrase": "Por favor, insira sua frase de recuperação",
+  "@pleaseEnterYourRecoveryPhrase": {
+    "description": "Error message when recovery phrase is empty."
+  },
+  "recoveryPhraseMustContain24Words": "A frase de recuperação deve conter exatamente 24 palavras",
+  "@recoveryPhraseMustContain24Words": {
+    "description": "Error message when recovery phrase does not have 24 words."
+  },
+  "submitLabel": "Enviar",
+  "@submitLabel": {
+    "description": "Label for the submit button."
+  },
+  "orLabel": "Ou",
+  "@orLabel": {
+    "description": "Separator text between input and file upload."
+  },
+  "selectTxtFileLabel": "Selecionar arquivo .txt",
+  "@selectTxtFileLabel": {
+    "description": "Label for the file selection button."
+  },
+  "failureTitle": "Falha",
+  "@failureTitle": {
+    "description": "Title for error dialog."
+  },
+  "invalidPasswordKey": "Chave de senha inválida",
+  "@invalidPasswordKey": {
+    "description": "Error message when password key is invalid."
+  },
+  "enableSyncTitle": "Ativar Sincronização",
+  "@enableSyncTitle": {
+    "description": "Title for the password key input page."
+  },
+  "passwordRequirementsDescription": "Por favor, insira a chave (senha) que você criou. Ela deve ter no mínimo 10 caracteres, incluindo 1 número, 1 letra minúscula, 1 letra maiúscula e 1 caractere especial.",
+  "@passwordRequirementsDescription": {
+    "description": "Description of password requirements."
+  },
+  "enterKeyLabel": "Inserir chave",
+  "@enterKeyLabel": {
+    "description": "Label for password input."
+  },
+  "pleaseEnterKey": "Por favor, insira a chave",
+  "@pleaseEnterKey": {
+    "description": "Error message when password input is empty."
+  },
+  "filterNotesTitle": "Filtrar notas",
+  "@filterNotesTitle": {
+    "description": "Title for the filter notes dialog."
+  },
+  "filterPinnedNotesTooltip": "Filtrar notas fixadas",
+  "@filterPinnedNotesTooltip": {
+    "description": "Tooltip for filter pinned notes button."
+  },
+  "filterStarredNotesTooltip": "Filtrar notas marcadas com estrela",
+  "@filterStarredNotesTooltip": {
+    "description": "Tooltip for filter starred notes button."
+  },
+  "filterTextNotesTooltip": "Filtrar notas de texto",
+  "@filterTextNotesTooltip": {
+    "description": "Tooltip for filter text notes button."
+  },
+  "filterTasksTooltip": "Filtrar tarefas",
+  "@filterTasksTooltip": {
+    "description": "Tooltip for filter tasks button."
+  },
+  "filterLinksTooltip": "Filtrar links",
+  "@filterLinksTooltip": {
+    "description": "Tooltip for filter links button."
+  },
+  "filterImagesTooltip": "Filtrar imagens",
+  "@filterImagesTooltip": {
+    "description": "Tooltip for filter images button."
+  },
+  "filterAudioTooltip": "Filtrar áudio",
+  "@filterAudioTooltip": {
+    "description": "Tooltip for filter audio button."
+  },
+  "filterVideoTooltip": "Filtrar vídeos",
+  "@filterVideoTooltip": {
+    "description": "Tooltip for filter video button."
+  },
+  "filterFilesTooltip": "Filtrar arquivos",
+  "@filterFilesTooltip": {
+    "description": "Tooltip for filter files button."
+  },
+  "filterContactsTooltip": "Filtrar contatos",
+  "@filterContactsTooltip": {
+    "description": "Tooltip for filter contacts button."
+  },
+  "filterLocationTooltip": "Filtrar localizações",
+  "@filterLocationTooltip": {
+    "description": "Tooltip for filter location button."
+  },
+  "movedToTrash": "Movido para a lixeira",
+  "@movedToTrash": {
+    "description": "Toast message when items are moved to trash."
+  },
+  "copiedNotesToClipboard": "Copiado para a área de transferência",
+  "@copiedNotesToClipboard": {
+    "description": "Toast message when selected notes are copied to clipboard."
+  },
+  "locationShareLabel": "Localização:",
+  "@locationShareLabel": {
+    "description": "Label used when sharing location."
+  },
+  "contactShareLabel": "Contato:",
+  "@contactShareLabel": {
+    "description": "Label used when sharing contact."
+  },
+  "emailsShareLabel": "E-mails:",
+  "@emailsShareLabel": {
+    "description": "Label used when sharing contact emails."
+  },
+  "addressesShareLabel": "Endereços:",
+  "@addressesShareLabel": {
+    "description": "Label used when sharing contact addresses."
+  },
+  "microphoneNotAvailable": "O microfone pode não estar disponível.",
+  "@microphoneNotAvailable": {
+    "description": "Toast message when microphone is not available."
+  },
+  "microphonePermissionRequired": "A permissão de microfone é necessária para gravar áudio.",
+  "@microphonePermissionRequired": {
+    "description": "Toast message when microphone permission is required."
+  },
+  "couldNotGetDuration": "Não foi possível obter a duração",
+  "@couldNotGetDuration": {
+    "description": "Error message when audio duration could not be retrieved."
+  },
+  "errorOpeningFiles": "Erro ao abrir arquivos",
+  "@errorOpeningFiles": {
+    "description": "Error message when file picker fails."
+  },
+  "pleaseWaitTitle": "Por favor, aguarde",
+  "@pleaseWaitTitle": {
+    "description": "Title for please wait dialog."
+  },
+  "fileNotAvailableYet": "Arquivo ainda não disponível",
+  "@fileNotAvailableYet": {
+    "description": "Message shown when file is not available yet."
+  },
+  "clearSelectionTooltip": "Limpar seleção",
+  "@clearSelectionTooltip": {
+    "description": "Tooltip for clear selection button."
+  },
+  "copyNotesTooltip": "Copiar notas",
+  "@copyNotesTooltip": {
+    "description": "Tooltip for copy notes button."
+  },
+  "changeTaskTypeTooltip": "Alterar tipo de tarefa",
+  "@changeTaskTypeTooltip": {
+    "description": "Tooltip for change task type button."
+  },
+  "shareNotesTooltip": "Compartilhar notas",
+  "@shareNotesTooltip": {
+    "description": "Tooltip for share notes button."
+  },
+  "editNoteTooltip": "Editar nota",
+  "@editNoteTooltip": {
+    "description": "Tooltip for edit note button."
+  },
+  "starUnstarNotesTooltip": "Marcar/desmarcar com estrela",
+  "@starUnstarNotesTooltip": {
+    "description": "Tooltip for star/unstar notes button."
+  },
+  "moveToTrashTooltip": "Mover para a lixeira",
+  "@moveToTrashTooltip": {
+    "description": "Tooltip for move to trash button."
+  },
+  "pinUnpinNotesTooltip": "Fixar/desfixar notas",
+  "@pinUnpinNotesTooltip": {
+    "description": "Tooltip for pin/unpin notes button."
+  },
+  "cancelReplyTooltip": "Cancelar resposta",
+  "@cancelReplyTooltip": {
+    "description": "Tooltip for cancel reply button."
+  },
+  "createTaskHint": "Criar uma tarefa",
+  "@createTaskHint": {
+    "description": "Hint text for creating a task."
+  },
+  "addNoteHint": "Adicionar uma nota...",
+  "@addNoteHint": {
+    "description": "Hint text for adding a note."
+  },
+  "attachTooltip": "Anexar",
+  "@attachTooltip": {
+    "description": "Tooltip for attach button."
+  },
+  "addNoteTooltip": "Adicionar nota",
+  "@addNoteTooltip": {
+    "description": "Tooltip for add note button."
+  },
+  "recordStopAudioTooltip": "Gravar/parar áudio",
+  "@recordStopAudioTooltip": {
+    "description": "Tooltip for record/stop audio button."
+  },
+  "contactAttachmentLabel": "Contato",
+  "@contactAttachmentLabel": {
+    "description": "Label for contact attachment option."
+  },
+  "locationAttachmentLabel": "Localização",
+  "@locationAttachmentLabel": {
+    "description": "Label for location attachment option."
+  },
+  "cameraAttachmentLabel": "Câmera",
+  "@cameraAttachmentLabel": {
+    "description": "Label for camera attachment option."
+  },
+  "filesAttachmentLabel": "Arquivos",
+  "@filesAttachmentLabel": {
+    "description": "Label for files attachment option."
+  },
+  "checklistAttachmentLabel": "Lista de verificação",
+  "@checklistAttachmentLabel": {
+    "description": "Label for checklist attachment option."
+  },
+  "accessKeyInputTitle": "Ativar Sincronização",
+  "@accessKeyInputTitle": {
+    "description": "Title for the access key input page."
+  },
+  "accessKeyInputDescription": "Por favor, insira sua frase de recuperação de 24 palavras ou carregue um arquivo .txt que a contenha.",
+  "@accessKeyInputDescription": {
+    "description": "Description text on the access key input page."
+  },
+  "editMenuItemLabel": "Editar",
+  "@editMenuItemLabel": {
+    "description": "Label for the edit menu item in the app bar popup menu."
+  },
+  "filterMenuItemLabel": "Filtros",
+  "@filterMenuItemLabel": {
+    "description": "Label for the filter menu item in the app bar popup menu."
+  },
+  "externalStoragePermissionDenied": "A permissão para acessar o armazenamento externo foi negada.",
+  "@externalStoragePermissionDenied": {
+    "description": "Error message shown when external storage permission is denied."
+  },
+  "pressLongToStartRecording": "Pressione e segure para começar a gravar.",
+  "@pressLongToStartRecording": {
+    "description": "Hint message shown when the send button is pressed while not typing and not recording."
+  },
+  "didYouKnowTitle": "Você sabia?",
+  "@didYouKnowTitle": {
+    "description": "Title for the tip dialog shown to first-time users."
+  },
+  "closeTooltip": "Fechar",
+  "@closeTooltip": {
+    "description": "Tooltip for the close button on dialogs."
+  },
+  "appDescriptionContent": "O {appName} é um aplicativo de notas totalmente privado. Ele não coleta seus dados pessoais nem exibe anúncios.\n\nEsperamos que você goste de usá-lo. Diga-nos o que você acha.",
+  "@appDescriptionContent": {
+    "description": "Description text about the app in the tip dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNotesTooltip": "Pesquisar notas",
+  "@searchNotesTooltip": {
+    "description": "Tooltip for the search notes button."
+  },
+  "syncMenuItemLabel": "Sincronizar",
+  "@syncMenuItemLabel": {
+    "description": "Label for the sync menu item."
+  },
+  "trashMenuItemLabel": "Lixeira",
+  "@trashMenuItemLabel": {
+    "description": "Label for the trash menu item."
+  },
+  "starredNotesMenuItemLabel": "Notas marcadas",
+  "@starredNotesMenuItemLabel": {
+    "description": "Label for the starred notes menu item."
+  },
+  "settingsMenuItemLabel": "Configurações",
+  "@settingsMenuItemLabel": {
+    "description": "Label for the settings menu item."
+  },
+  "accountMenuItemLabel": "Conta",
+  "@accountMenuItemLabel": {
+    "description": "Label for the account menu item."
+  },
+  "pageMenuItemLabel": "Página",
+  "@pageMenuItemLabel": {
+    "description": "Label for the page menu item (shown in debug mode)."
+  },
+  "sqliteMenuItemLabel": "Sqlite",
+  "@sqliteMenuItemLabel": {
+    "description": "Label for the SQLite database viewer menu item."
+  },
+  "logsMenuItemLabel": "Logs",
+  "@logsMenuItemLabel": {
+    "description": "Label for the logs menu item."
+  },
+  "reorderMenuItemLabel": "Reordenar",
+  "@reorderMenuItemLabel": {
+    "description": "Label for the reorder group menu item."
+  },
+  "editGroupMenuItemLabel": "Editar",
+  "@editGroupMenuItemLabel": {
+    "description": "Label for the edit group menu item."
+  },
+  "deleteGroupMenuItemLabel": "Excluir",
+  "@deleteGroupMenuItemLabel": {
+    "description": "Label for the delete group menu item."
+  },
+  "dragHandleReorderTooltip": "Arraste para reordenar",
+  "@dragHandleReorderTooltip": {
+    "description": "Tooltip message for drag handle on desktop."
+  },
+  "holdAndDragReorderTooltip": "Segure e arraste para reordenar",
+  "@holdAndDragReorderTooltip": {
+    "description": "Tooltip message for hold and drag to re-order on mobile."
+  },
+  "emptyHomePageMessage": "Olá!\n\nParece um pouco vazio por aqui.\n\nToque no botão + e crie algumas notas para si mesmo. :)",
+  "@emptyHomePageMessage": {
+    "description": "Empty state message shown when there are no groups on the home page."
+  },
+  "reorderingTitle": "Reordenando",
+  "@reorderingTitle": {
+    "description": "Title shown when reordering groups on the home page."
+  },
+  "selectEllipsisLabel": "Selecionar...",
+  "@selectEllipsisLabel": {
+    "description": "Placeholder label shown when shared contents are being loaded."
+  },
+  "dateTimeToggleLabel": "Data/Hora",
+  "@dateTimeToggleLabel": {
+    "description": "Label for the date/time toggle switch in group settings."
+  },
+  "noteBorderToggleLabel": "Borda da nota",
+  "@noteBorderToggleLabel": {
+    "description": "Label for the note border toggle switch in group settings."
+  },
+  "deleteGroupButtonLabel": "Excluir",
+  "@deleteGroupButtonLabel": {
+    "description": "Label for the delete group button in group edit page."
+  },
+  "notesTabLabel": "Notas",
+  "@notesTabLabel": {
+    "description": "Label for the notes tab in the trash page."
+  },
+  "groupsTabLabel": "Grupos",
+  "@groupsTabLabel": {
+    "description": "Label for the groups tab in the trash page."
+  },
+  "categoriesTabLabel": "Categorias",
+  "@categoriesTabLabel": {
+    "description": "Label for the categories tab in the trash page."
+  },
+  "locationItemLabel": "Localização",
+  "@locationItemLabel": {
+    "description": "Label for location items in search results."
+  },
+  "addGroupTitle": "Adicionar grupo",
+  "@addGroupTitle": {
+    "description": "Page title for creating a new group."
+  },
+  "editGroupTitle": "Editar grupo",
+  "@editGroupTitle": {
+    "description": "Page title for editing an existing group."
+  },
+  "titleInputLabel": "Título",
+  "@titleInputLabel": {
+    "description": "Label for the title input field."
+  },
+  "locationPermissionRequiredTitle": "Permissão de Localização Necessária",
+  "@locationPermissionRequiredTitle": {
+    "description": "Title for the location permission dialog."
+  },
+  "enableLocationPermissionsContent": "Por favor, ative as permissões de localização nas configurações do aplicativo.",
+  "@enableLocationPermissionsContent": {
+    "description": "Content text for the location permission dialog."
+  },
+  "cancelButtonLabel": "Cancelar",
+  "@cancelButtonLabel": {
+    "description": "Label for the cancel button."
+  },
+  "openSettingsButtonLabel": "Abrir Configurações",
+  "@openSettingsButtonLabel": {
+    "description": "Label for the open settings button."
+  },
+  "locationServicesTitle": "Serviços de Localização",
+  "@locationServicesTitle": {
+    "description": "Title for the location services alert."
+  },
+  "pleaseEnableLocationServicesContent": "Por favor, ative!",
+  "@pleaseEnableLocationServicesContent": {
+    "description": "Content text for the location services disabled alert."
+  },
+  "selectLocationTitle": "Selecionar localização",
+  "@selectLocationTitle": {
+    "description": "Title for the location picker page."
+  },
+  "useCurrentLocationTooltip": "Usar localização atual",
+  "@useCurrentLocationTooltip": {
+    "description": "Tooltip for the use current location button."
+  },
+  "selectAllButtonLabel": "Selecionar tudo",
+  "@selectAllButtonLabel": {
+    "description": "Label for the select all button in archived items."
+  },
+  "searchLogsHint": "Pesquisar logs..",
+  "@searchLogsHint": {
+    "description": "Hint text for the search logs input field."
+  },
+  "noLogsAvailable": "Nenhum log disponível",
+  "@noLogsAvailable": {
+    "description": "Message shown when there are no log entries to display."
+  },
+  "dbViewerTitle": "Visualizador de DB",
+  "@dbViewerTitle": {
+    "description": "Title for the SQLite database viewer page."
+  },
+  "selectTableToViewData": "Selecione uma tabela para ver seus dados",
+  "@selectTableToViewData": {
+    "description": "Instruction text shown when no table is selected in the DB viewer."
+  },
+  "selectTableDropdownHint": "Selecione uma tabela",
+  "@selectTableDropdownHint": {
+    "description": "Hint text for the table selection dropdown in the DB viewer."
+  },
+  "pickContactTitle": "Escolher um contato",
+  "@pickContactTitle": {
+    "description": "Title for the contact picker page."
+  },
+  "permissionRequiredText": "Permissão necessária",
+  "@permissionRequiredText": {
+    "description": "Text shown when contact permission is required."
+  },
+  "grantPermissionButtonLabel": "Conceder permissão",
+  "@grantPermissionButtonLabel": {
+    "description": "Label for the grant permission button."
+  },
+  "pageDummyTitle": "Página Dummy",
+  "@pageDummyTitle": {
+    "description": "Title for the dummy/testing page."
+  },
+  "simulateButtonLabel": "Simular",
+  "@simulateButtonLabel": {
+    "description": "Label for the simulate button on the dummy page."
+  },
+  "selectCategoryTitle": "Selecionar categoria",
+  "@selectCategoryTitle": {
+    "description": "Title for the select category page."
+  },
+  "addCategoryTitle": "Adicionar categoria",
+  "@addCategoryTitle": {
+    "description": "Title for the add category page."
+  },
+  "editCategoryTitle": "Editar categoria",
+  "@editCategoryTitle": {
+    "description": "Title for the edit category page."
+  },
+  "categoryTitleHint": "Título da categoria",
+  "@categoryTitleHint": {
+    "description": "Hint text for the category title input field."
+  },
+  "colorLabel": "Cor",
+  "@colorLabel": {
+    "description": "Label for the color selector."
+  },
+  "changeColorLabel": "Alterar cor",
+  "@changeColorLabel": {
+    "description": "Label for the change color option."
+  },
+  "deviceDisabledMessage": "Dispositivo desativado!",
+  "@deviceDisabledMessage": {
+    "description": "Toast message shown when a device is disabled."
+  },
+  "cannotRemoveThisDeviceMessage": "Não é possível remover este dispositivo!",
+  "@cannotRemoveThisDeviceMessage": {
+    "description": "Toast message shown when attempting to remove the current device."
+  },
+  "confirmRemoveTitle": "Confirmar Remoção",
+  "@confirmRemoveTitle": {
+    "description": "Title for the confirm remove device dialog."
+  },
+  "confirmRemoveDeviceContent": "Tem certeza? Isso excluirá todos os dados do dispositivo.",
+  "@confirmRemoveDeviceContent": {
+    "description": "Content text for the confirm remove device dialog."
+  },
+  "okButtonLabel": "OK",
+  "@okButtonLabel": {
+    "description": "Label for the OK button."
+  },
+  "registeredDevicesTitle": "Dispositivos Registrados",
+  "@registeredDevicesTitle": {
+    "description": "Title for the registered devices page."
+  },
+  "noDevicesFoundMessage": "Nenhum dispositivo encontrado",
+  "@noDevicesFoundMessage": {
+    "description": "Message shown when no devices are found."
+  },
+  "enabledLabel": "Ativado",
+  "@enabledLabel": {
+    "description": "Label for an enabled device status."
+  },
+  "disabledLabel": "Desativado",
+  "@disabledLabel": {
+    "description": "Label for a disabled device status."
+  },
+  "migratingMediaTitle": "Migrando Mídia",
+  "@migratingMediaTitle": {
+    "description": "Title for the media migration page."
+  },
+  "processingMessage": "Processando...",
+  "@processingMessage": {
+    "description": "Message shown while media is being processed."
+  },
+  "doNotNavigateAwayMessage": "Por favor, não saia desta página",
+  "@doNotNavigateAwayMessage": {
+    "description": "Warning message asking the user not to navigate away during media migration."
+  },
+  "errorWithDetails": "Erro: {error}",
+  "@errorWithDetails": {
+    "description": "Error message shown when loading logs fails, including the error.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sequenceNotAcceptedError": "Sequência não aceita",
+  "@sequenceNotAcceptedError": {
+    "description": "Validation error when the key contains a sequential pattern."
+  },
+  "examplesNotAcceptedError": "Exemplos não aceitos",
+  "@examplesNotAcceptedError": {
+    "description": "Validation error when the key matches one of the example keys."
+  },
+  "enterKeyAgainLabel": "Insira a chave novamente",
+  "@enterKeyAgainLabel": {
+    "description": "Label and hint for the confirm key input field."
+  },
+  "pleaseEnterKeyAgainError": "Por favor, insira a chave novamente",
+  "@pleaseEnterKeyAgainError": {
+    "description": "Validation error when the confirm key field is empty."
+  },
+  "keysDoNotMatchError": "As chaves não coincidem",
+  "@keysDoNotMatchError": {
+    "description": "Validation error when the two keys do not match."
+  },
+  "ruleUppercaseLetter": "1 letra maiúscula",
+  "@ruleUppercaseLetter": {
+    "description": "Password rule description for one uppercase letter."
+  },
+  "ruleLowercaseLetter": "1 letra minúscula",
+  "@ruleLowercaseLetter": {
+    "description": "Password rule description for one lowercase letter."
+  },
+  "ruleNumericLetter": "1 número",
+  "@ruleNumericLetter": {
+    "description": "Password rule description for one numeric character."
+  },
+  "ruleSpecialCharacter": "1 caractere especial",
+  "@ruleSpecialCharacter": {
+    "description": "Password rule description for one special character."
+  },
+  "ruleMinTenCharacters": "mínimo 10 caracteres",
+  "@ruleMinTenCharacters": {
+    "description": "Password rule description for the minimum length."
+  },
+  "examplesTitle": "Exemplos",
+  "@examplesTitle": {
+    "description": "Title for the key examples dialog."
+  },
+  "passwordExample1": "I would love 2 have @ll ...",
+  "@passwordExample1": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample2": "(A6r4K4D46r4)",
+  "@passwordExample2": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample3": "Mykey@2025",
+  "@passwordExample3": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample4": "C0ffee !s great f0r pr0ductivity",
+  "@passwordExample4": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "gotItButtonLabel": "Entendi",
+  "@gotItButtonLabel": {
+    "description": "Label for the button to dismiss the examples dialog."
+  },
+  "encryptionKeyTitle": "Chave de criptografia",
+  "@encryptionKeyTitle": {
+    "description": "Title for the encryption key creation page."
+  },
+  "createKeyDescription": "Por favor, insira uma chave (senha) longa e difícil de adivinhar. Lembre-se de salvá-la em um lugar seguro. Se ela for perdida ou esquecida, não poderá ser recuperada.",
+  "@createKeyDescription": {
+    "description": "Instructional text for creating an encryption key."
+  },
+  "seeExamplesTooltip": "Ver exemplos",
+  "@seeExamplesTooltip": {
+    "description": "Tooltip for the button that shows key examples."
+  },
+  "couldNotFetchDetailsMessage": "Não foi possível obter detalhes",
+  "@couldNotFetchDetailsMessage": {
+    "description": "Message shown when plan details could not be fetched."
+  },
+  "retryButtonLabel": "Tentar novamente",
+  "@retryButtonLabel": {
+    "description": "Label for the retry button."
+  },
+  "signedInAsLabel": "Conectado como:",
+  "@signedInAsLabel": {
+    "description": "Label shown before the signed-in email."
+  },
+  "storageUsageLabel": "Uso de armazenamento",
+  "@storageUsageLabel": {
+    "description": "Label for the storage usage section."
+  },
+  "subscribeLabel": "Assinar",
+  "@subscribeLabel": {
+    "description": "Label for the subscribe option."
+  },
+  "planExpiredRenewLabel": "Plano expirou! Renovar",
+  "@planExpiredRenewLabel": {
+    "description": "Label for the plan expired renew option."
+  },
+  "manageDevicesLabel": "Gerenciar dispositivos",
+  "@manageDevicesLabel": {
+    "description": "Label for the manage devices option."
+  },
+  "viewAccessKeyLabel": "Ver chave de acesso",
+  "@viewAccessKeyLabel": {
+    "description": "Label for the view access key option."
+  },
+  "changeKeyPasswordLabel": "Alterar senha da chave",
+  "@changeKeyPasswordLabel": {
+    "description": "Label for the change key password option."
+  },
+  "manageSubscriptionLabel": "Gerenciar assinatura",
+  "@manageSubscriptionLabel": {
+    "description": "Label for the manage subscription option."
+  },
+  "signOutButtonLabel": "Sair",
+  "@signOutButtonLabel": {
+    "description": "Label for the sign out option."
+  },
+  "yearlyPlansTitle": "Planos anuais",
+  "@yearlyPlansTitle": {
+    "description": "Title for the plan subscribe page."
+  },
+  "loginLabel": "Entrar",
+  "@loginLabel": {
+    "description": "Label for the login button."
+  },
+  "syncAllYourNotesLabel": "Sincronize todas as suas notas",
+  "@syncAllYourNotesLabel": {
+    "description": "Headline on the subscribe page."
+  },
+  "acrossYourDevicesLabel": "em todos os seus dispositivos",
+  "@acrossYourDevicesLabel": {
+    "description": "Subheadline on the subscribe page."
+  },
+  "featureEndToEndEncryption": "Criptografia de ponta a ponta",
+  "@featureEndToEndEncryption": {
+    "description": "Feature list item for end-to-end encryption."
+  },
+  "featureSyncUpTo3Devices": "Sincronize até 3 dispositivos",
+  "@featureSyncUpTo3Devices": {
+    "description": "Feature list item for syncing up to 3 devices."
+  },
+  "featureUpgradeCancelAnytime": "Faça upgrade/Cancele a qualquer momento",
+  "@featureUpgradeCancelAnytime": {
+    "description": "Feature list item for upgrading or cancelling anytime."
+  },
+  "noPlansAvailableMessage": "Nenhum plano disponível",
+  "@noPlansAvailableMessage": {
+    "description": "Message shown when no plans are available."
+  },
+  "downloadAppSubscribeLabel": "Baixe o aplicativo e assine",
+  "@downloadAppSubscribeLabel": {
+    "description": "Label prompting the user to download the app and subscribe."
+  },
+  "privacyTermsLabel": "Privacidade • Termos",
+  "@privacyTermsLabel": {
+    "description": "Label for the privacy and terms footer."
+  },
+  "saveFiftyPercentLabel": "Economize 50%",
+  "@saveFiftyPercentLabel": {
+    "description": "Badge text showing the savings percentage."
+  },
+  "helloTitle": "Olá",
+  "@helloTitle": {
+    "description": "Title for the select key type page before welcoming."
+  },
+  "selectKeyMasterKeyDescription": "Para criptografar seus dados, precisaremos de uma chave mestra de criptografia.",
+  "@selectKeyMasterKeyDescription": {
+    "description": "Description text on the select key type page."
+  },
+  "selectKeyTwoOptionsDescription": "Existem 2 opções - ou você cria uma chave (como uma senha) ou nós criamos uma para você.",
+  "@selectKeyTwoOptionsDescription": {
+    "description": "Description of the two key creation options."
+  },
+  "understandLoseKeyAcknowledgement": "Entendo que se eu perder/esquecer a chave de criptografia, posso perder meus dados.",
+  "@understandLoseKeyAcknowledgement": {
+    "description": "Acknowledgement text for understanding the risk of losing the encryption key."
+  },
+  "createKeyForMeButtonLabel": "Criar a chave para mim",
+  "@createKeyForMeButtonLabel": {
+    "description": "Label for the button to let the app create the key."
+  },
+  "recommendedLabel": "(Recomendado)",
+  "@recommendedLabel": {
+    "description": "Label indicating a recommended option."
+  },
+  "pleaseAcknowledgeMessage": "Por favor, aceite os termos!",
+  "@pleaseAcknowledgeMessage": {
+    "description": "Toast message asking the user to acknowledge the terms."
+  },
+  "createKeyMyselfButtonLabel": "Eu mesmo criarei a chave",
+  "@createKeyMyselfButtonLabel": {
+    "description": "Label for the button to create the key yourself."
+  },
+  "welcomeToAppName": "Bem-vindo ao {appName}",
+  "@welcomeToAppName": {
+    "description": "Welcome message with the app name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "e2eEncryptionDescription": "Usamos criptografia de ponta a ponta para garantir que todas as suas notas estejam seguras e que ninguém mais possa vê-las, nem mesmo nós.",
+  "@e2eEncryptionDescription": {
+    "description": "Description of the end-to-end encryption used."
+  },
+  "timeToStartEncryptionLabel": "Hora de iniciar a criptografia!",
+  "@timeToStartEncryptionLabel": {
+    "description": "Message prompting the user to start encryption."
+  },
+  "nextButtonLabel": "Próximo",
+  "@nextButtonLabel": {
+    "description": "Label for the next button."
+  },
+  "sendingOtpFailedMessage": "Falha ao enviar OTP. Por favor, tente novamente!",
+  "@sendingOtpFailedMessage": {
+    "description": "Toast message when sending the OTP fails."
+  },
+  "otpVerificationFailedMessage": "Falha na verificação do OTP. Por favor, tente novamente!",
+  "@otpVerificationFailedMessage": {
+    "description": "Toast message when verifying the OTP fails."
+  },
+  "emailSignInTitle": "Entrar com E-mail",
+  "@emailSignInTitle": {
+    "description": "Title for the sign-in page before OTP is sent."
+  },
+  "verifyOtpLabel": "Verificar OTP",
+  "@verifyOtpLabel": {
+    "description": "Label for verifying the OTP (used as title and button)."
+  },
+  "enterEmailLabel": "Insira o E-mail",
+  "@enterEmailLabel": {
+    "description": "Label for the email input field."
+  },
+  "sendOtpLabel": "Enviar OTP",
+  "@sendOtpLabel": {
+    "description": "Label for the send OTP button."
+  },
+  "otpSentToEmailMessage": "Enviamos uma senha única (OTP) para seu e-mail {email}",
+  "@otpSentToEmailMessage": {
+    "description": "Message confirming the OTP was sent to the email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "enterOtpLabel": "Insira o OTP",
+  "@enterOtpLabel": {
+    "description": "Label for the OTP input field."
+  },
+  "changeEmailLabel": "Alterar e-mail",
+  "@changeEmailLabel": {
+    "description": "Label for the change email button."
+  },
+  "encryptingNotesTitle": "Criptografando notas",
+  "@encryptingNotesTitle": {
+    "description": "Title shown while encrypting local notes."
+  },
+  "fetchingDetailsTitle": "Buscando detalhes",
+  "@fetchingDetailsTitle": {
+    "description": "Title shown while fetching details."
+  },
+  "couldNotFetchMessage": "Não foi possível buscar",
+  "@couldNotFetchMessage": {
+    "description": "Error message shown when fetching fails."
+  },
+  "subscriptionEmailMismatchMessage": "Sua assinatura está associada a outro e-mail. Por favor, saia e use esse e-mail para ativar o armazenamento na nuvem.",
+  "@subscriptionEmailMismatchMessage": {
+    "description": "Error message when the subscription email does not match."
+  },
+  "errorCheckingPlanDetailsMessage": "Erro ao verificar detalhes do plano",
+  "@errorCheckingPlanDetailsMessage": {
+    "description": "Error message shown when checking plan details fails."
+  },
+  "registerDeviceTitle": "Registrar dispositivo",
+  "@registerDeviceTitle": {
+    "description": "Title shown while registering the device."
+  },
+  "manageButtonLabel": "Gerenciar",
+  "@manageButtonLabel": {
+    "description": "Label for the manage button (e.g., manage devices)."
+  },
+  "fetchingKeysTitle": "Buscando Chaves",
+  "@fetchingKeysTitle": {
+    "description": "Title shown while fetching encryption keys."
+  },
+  "signingOutTitle": "Saindo",
+  "@signingOutTitle": {
+    "description": "Title shown while signing out."
+  },
+  "pleaseCheckInternetMessage": "Por favor, verifique a internet",
+  "@pleaseCheckInternetMessage": {
+    "description": "Error message asking the user to check internet connection."
+  },
+  "somethingWentWrongMessage": "Algo deu errado",
+  "@somethingWentWrongMessage": {
+    "description": "Generic error message when something goes wrong."
+  },
+  "playPauseTooltip": "Reproduzir/pausar",
+  "@playPauseTooltip": {
+    "description": "Tooltip for the play/pause audio button."
+  },
+  "timerFormattedTime": "{minutes}:{seconds}",
+  "@timerFormattedTime": {
+    "description": "Formatted timer display showing minutes and seconds.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadTooltip": "Baixar",
+  "@downloadTooltip": {
+    "description": "Tooltip for the download button."
+  },
+  "invalidAccessKey": "Chave de acesso inválida",
+  "@invalidAccessKey": {
+    "description": "Error message when the access key is invalid."
+  },
+  "fileDoesNotContain24Words": "O arquivo não contém exatamente 24 palavras.",
+  "@fileDoesNotContain24Words": {
+    "description": "Error message when the selected file does not contain a 24-word recovery phrase."
+  },
+  "errorReadingFile": "Erro ao ler arquivo",
+  "@errorReadingFile": {
+    "description": "Toast message when an error occurs while reading a file."
+  },
+  "allLabel": "Tudo",
+  "@allLabel": {
+    "description": "Label for the 'All' filter option."
+  },
+  "logTypeDebug": "DEBUG",
+  "@logTypeDebug": {
+    "description": "Log type label for debug entries."
+  },
+  "logTypeError": "ERRO",
+  "@logTypeError": {
+    "description": "Log type label for error entries."
+  },
+  "logTypeInfo": "INFO",
+  "@logTypeInfo": {
+    "description": "Log type label for info entries."
+  },
+  "logTypeWarning": "AVISO",
+  "@logTypeWarning": {
+    "description": "Log type label for warning entries."
+  },
+  "groupTitleHint": "Título do grupo",
+  "@groupTitleHint": {
+    "description": "Hint text for the group title input field."
+  },
+  "categoryLabel": "Categoria",
+  "@categoryLabel": {
+    "description": "Label for the category selector section."
+  },
+  "selectCategoryPlaceholder": "Selecionar categoria",
+  "@selectCategoryPlaceholder": {
+    "description": "Placeholder text prompting the user to select a category."
+  },
+  "storageBytesFormat": "{bytes} B",
+  "@storageBytesFormat": {
+    "description": "Formatted storage size in bytes.",
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "storageKilobytesFormat": "{kb} KB",
+  "@storageKilobytesFormat": {
+    "description": "Formatted storage size in kilobytes.",
+    "placeholders": {
+      "kb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageMegabytesFormat": "{mb} MB",
+  "@storageMegabytesFormat": {
+    "description": "Formatted storage size in megabytes.",
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageGigabytesFormat": "{gb} GB",
+  "@storageGigabytesFormat": {
+    "description": "Formatted storage size in gigabytes.",
+    "placeholders": {
+      "gb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsedTotalFormat": "{used} / {total}",
+  "@storageUsedTotalFormat": {
+    "description": "Formatted used vs total storage display.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "planStorageSizeFormat": "{size} {unit}",
+  "@planStorageSizeFormat": {
+    "description": "Formatted plan storage size with unit (e.g. '100 GB').",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "searchHint": "consulta, #documento etc..",
+  "@searchHint": {
+    "description": "Hint text for the search input field."
+  },
+  "categoryGroupSeparator": " > ",
+  "@categoryGroupSeparator": {
+    "description": "Separator used between category and group in search result headers."
+  },
+  "audioFileLabel": "Arquivo de áudio",
+  "@audioFileLabel": {
+    "description": "Label shown for audio file search results."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Native name of the Arabic language."
+  },
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "Native name of the German language."
+  },
+  "languageGreek": "Ελληνικά",
+  "@languageGreek": {
+    "description": "Native name of the Greek language."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Native name of the English language."
+  },
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Native name of the Spanish language."
+  },
+  "languagePersian": "فارسی",
+  "@languagePersian": {
+    "description": "Native name of the Persian (Farsi) language."
+  },
+  "languageFrench": "Français",
+  "@languageFrench": {
+    "description": "Native name of the French language."
+  },
+  "languageHebrew": "עברית",
+  "@languageHebrew": {
+    "description": "Native name of the Hebrew language."
+  },
+  "languageHindi": "हिन्दी",
+  "@languageHindi": {
+    "description": "Native name of the Hindi language."
+  },
+  "languageIndonesian": "Bahasa Indonesia",
+  "@languageIndonesian": {
+    "description": "Native name of the Indonesian language."
+  },
+  "languageItalian": "Italiano",
+  "@languageItalian": {
+    "description": "Native name of the Italian language."
+  },
+  "languageJapanese": "日本語",
+  "@languageJapanese": {
+    "description": "Native name of the Japanese language."
+  },
+  "languageKorean": "한국어",
+  "@languageKorean": {
+    "description": "Native name of the Korean language."
+  },
+  "languageDutch": "Nederlands",
+  "@languageDutch": {
+    "description": "Native name of the Dutch language."
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Native name of the Portuguese language."
+  },
+  "languageRussian": "Русский",
+  "@languageRussian": {
+    "description": "Native name of the Russian language."
+  },
+  "languageThai": "ไทย",
+  "@languageThai": {
+    "description": "Native name of the Thai language."
+  },
+  "languageTurkish": "Türkçe",
+  "@languageTurkish": {
+    "description": "Native name of the Turkish language."
+  },
+  "languageUkrainian": "Українська",
+  "@languageUkrainian": {
+    "description": "Native name of the Ukrainian language."
+  },
+  "languageVietnamese": "Tiếng Việt",
+  "@languageVietnamese": {
+    "description": "Native name of the Vietnamese language."
+  },
+  "languageChineseSimplified": "简体中文",
+  "@languageChineseSimplified": {
+    "description": "Native name of the Simplified Chinese language."
+  },
+  "selectLanguageTitle": "Selecionar idioma",
+  "@selectLanguageTitle": {
+    "description": "Header label for the language selection menu."
+  },
+  "settingsTitle": "Configurações",
+  "@settingsTitle": {
+    "description": "Title of the settings page displayed in the AppBar."
+  },
+  "themeLabel": "Tema",
+  "@themeLabel": {
+    "description": "Label for the theme settings list tile."
+  },
+  "dayNightThemeTooltip": "Tema diurno/noturno",
+  "@dayNightThemeTooltip": {
+    "description": "Tooltip for the theme toggle button."
+  },
+  "lockLabel": "Bloqueio",
+  "@lockLabel": {
+    "description": "Label for the app lock setting."
+  },
+  "timeFormatLabel": "Formato de Hora",
+  "@timeFormatLabel": {
+    "description": "Label for the time format dropdown setting."
+  },
+  "h12Label": "H12",
+  "@h12Label": {
+    "description": "Label for the 12-hour time format option."
+  },
+  "h24Label": "H24",
+  "@h24Label": {
+    "description": "Label for the 24-hour time format option."
+  },
+  "fontSizeLabel": "Tamanho da fonte",
+  "@fontSizeLabel": {
+    "description": "Label for the font size setting."
+  },
+  "reduceTextSizeTooltip": "Reduzir tamanho da fonte",
+  "@reduceTextSizeTooltip": {
+    "description": "Tooltip for the decrease font size button."
+  },
+  "increaseTextSizeTooltip": "Aumentar tamanho da fonte",
+  "@increaseTextSizeTooltip": {
+    "description": "Tooltip for the increase font size button."
+  },
+  "languageLabel": "Idioma",
+  "@languageLabel": {
+    "description": "Label for the language setting list tile."
+  },
+  "autoOpenGroupLabel": "Abrir grupo automaticamente",
+  "@autoOpenGroupLabel": {
+    "description": "Label for the auto-open group setting list tile."
+  },
+  "selectGroupTitle": "Selecionar grupo",
+  "@selectGroupTitle": {
+    "description": "Header label for the group selection menu."
+  },
+  "shareAppMessage": "Crie um {appName}: {appLink}",
+  "@shareAppMessage": {
+    "description": "Content of the share intent for sharing the app.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "appLink": {
+        "type": "String"
+      }
+    }
+  },
+  "noteTypeEmpty": "Vazio",
+  "@noteTypeEmpty": {
+    "description": "Label for an empty note preview."
+  },
+  "noteTypeImage": "Imagem",
+  "@noteTypeImage": {
+    "description": "Label for an image note preview."
+  },
+  "noteTypeVideo": "Vídeo",
+  "@noteTypeVideo": {
+    "description": "Label for a video note preview."
+  },
+  "noteTypeAudio": "Áudio",
+  "@noteTypeAudio": {
+    "description": "Label for an audio note preview."
+  },
+  "noteTypeDocument": "Documento",
+  "@noteTypeDocument": {
+    "description": "Label for a document note preview."
+  },
+  "noteTypeContact": "Contato",
+  "@noteTypeContact": {
+    "description": "Label for a contact note preview."
+  },
+  "noteTypeLocation": "Localização",
+  "@noteTypeLocation": {
+    "description": "Label for a location note preview."
+  },
+  "noteTypeUnknown": "Desconhecido",
+  "@noteTypeUnknown": {
+    "description": "Label for a note preview of an unrecognized type."
+  },
+  "pleaseEnterData": "Por favor, insira dados",
+  "@pleaseEnterData": {
+    "description": "Validation error message when a field is empty."
+  },
+  "aNumber": "Um número",
+  "@aNumber": {
+    "description": "Validation error message when the input must be a number."
+  },
+  "enterDataLabel": "Insira dados",
+  "@enterDataLabel": {
+    "description": "Validation error message prompting the user to enter data."
+  },
+  "pleaseEnterValidData": "Por favor, insira dados válidos",
+  "@pleaseEnterValidData": {
+    "description": "Validation error message for invalid input data."
+  },
+  "pleaseSelectAnOption": "Por favor, selecione uma opção",
+  "@pleaseSelectAnOption": {
+    "description": "Validation error message prompting the user to select an option."
+  },
+  "dateRangeFormat": "{start} - {end}",
+  "@dateRangeFormat": {
+    "description": "Formatted date range string.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "todayLabel": "Hoje",
+  "@todayLabel": {
+    "description": "Human-readable label for today's date."
+  },
+  "yesterdayLabel": "Ontem",
+  "@yesterdayLabel": {
+    "description": "Human-readable label for yesterday's date."
+  },
+  "mondayLabel": "Segunda-feira",
+  "@mondayLabel": {
+    "description": "Day-of-week name for Monday."
+  },
+  "tuesdayLabel": "Terça-feira",
+  "@tuesdayLabel": {
+    "description": "Day-of-week name for Tuesday."
+  },
+  "wednesdayLabel": "Quarta-feira",
+  "@wednesdayLabel": {
+    "description": "Day-of-week name for Wednesday."
+  },
+  "thursdayLabel": "Quinta-feira",
+  "@thursdayLabel": {
+    "description": "Day-of-week name for Thursday."
+  },
+  "fridayLabel": "Sexta-feira",
+  "@fridayLabel": {
+    "description": "Day-of-week name for Friday."
+  },
+  "saturdayLabel": "Sábado",
+  "@saturdayLabel": {
+    "description": "Day-of-week name for Saturday."
+  },
+  "sundayLabel": "Domingo",
+  "@sundayLabel": {
+    "description": "Day-of-week name for Sunday."
+  },
+  "januaryShortLabel": "Jan",
+  "@januaryShortLabel": {
+    "description": "Short month name for January."
+  },
+  "februaryShortLabel": "Fev",
+  "@februaryShortLabel": {
+    "description": "Short month name for February."
+  },
+  "marchShortLabel": "Mar",
+  "@marchShortLabel": {
+    "description": "Short month name for March."
+  },
+  "aprilShortLabel": "Abr",
+  "@aprilShortLabel": {
+    "description": "Short month name for April."
+  },
+  "mayShortLabel": "Mai",
+  "@mayShortLabel": {
+    "description": "Short month name for May."
+  },
+  "juneShortLabel": "Jun",
+  "@juneShortLabel": {
+    "description": "Short month name for June."
+  },
+  "julyShortLabel": "Jul",
+  "@julyShortLabel": {
+    "description": "Short month name for July."
+  },
+  "augustShortLabel": "Ago",
+  "@augustShortLabel": {
+    "description": "Short month name for August."
+  },
+  "septemberShortLabel": "Set",
+  "@septemberShortLabel": {
+    "description": "Short month name for September."
+  },
+  "octoberShortLabel": "Out",
+  "@octoberShortLabel": {
+    "description": "Short month name for October."
+  },
+  "novemberShortLabel": "Nov",
+  "@novemberShortLabel": {
+    "description": "Short month name for November."
+  },
+  "decemberShortLabel": "Dez",
+  "@decemberShortLabel": {
+    "description": "Short month name for December."
+  },
+  "noteGroupDateTitleFormat": "{month} {day}, {dayOfWeek}",
+  "@noteGroupDateTitleFormat": {
+    "description": "Formatted note group date title.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "dayOfWeek": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationHoursFormat": "{hours}:{minutes}:{seconds}",
+  "@mediaDurationHoursFormat": {
+    "description": "Formatted media duration with hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationMinutesFormat": "{minutes}:{seconds}",
+  "@mediaDurationMinutesFormat": {
+    "description": "Formatted media duration without hours.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeZero": "0 B",
+  "@fileSizeZero": {
+    "description": "Display string when file size is zero."
+  },
+  "fileSizeUnitBytes": "B",
+  "@fileSizeUnitBytes": {
+    "description": "File size unit for bytes."
+  },
+  "fileSizeUnitKilobytes": "KB",
+  "@fileSizeUnitKilobytes": {
+    "description": "File size unit for kilobytes."
+  },
+  "fileSizeUnitMegabytes": "MB",
+  "@fileSizeUnitMegabytes": {
+    "description": "File size unit for megabytes."
+  },
+  "fileSizeUnitGigabytes": "GB",
+  "@fileSizeUnitGigabytes": {
+    "description": "File size unit for gigabytes."
+  },
+  "fileSizeUnitTerabytes": "TB",
+  "@fileSizeUnitTerabytes": {
+    "description": "File size unit for terabytes."
+  },
+  "fileSizeFormat": "{size} {suffix}",
+  "@fileSizeFormat": {
+    "description": "Formatted file size string with suffix unit.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "noteGroupCountSingle": "{count} grupo de notas",
+  "@noteGroupCountSingle": {
+    "description": "Pluralized label for a single note group count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteGroupCountPlural": "{count} grupos de notas",
+  "@noteGroupCountPlural": {
+    "description": "Pluralized label for multiple note groups count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

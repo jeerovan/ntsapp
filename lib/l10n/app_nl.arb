@@ -1,0 +1,1497 @@
+{
+  "@@locale": "nl",
+  "importantTitle": "Belangrijk",
+  "@importantTitle": {
+    "description": "Title for the important notice page."
+  },
+  "accessKeyNoticeDescription1": "Op de volgende pagina krijg je een reeks van 24 woorden te zien. Dit is je unieke en privé-versleutelingssleutel en het is de ENIGE manier om je notities te herstellen in het geval van uitloggen, verlies van het apparaat of een storing.",
+  "@accessKeyNoticeDescription1": {
+    "description": "First paragraph of the access key notice."
+  },
+  "accessKeyNoticeDescription2": "Wij slaan de sleutel niet op. Het is JOUW verantwoordelijkheid om deze op een veilige plek buiten de {appName}-app te bewaren.",
+  "@accessKeyNoticeDescription2": {
+    "description": "Second paragraph of the access key notice.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "iUnderstandShowMeTheKey": "Ik begrijp het.\nToon de sleutel.",
+  "@iUnderstandShowMeTheKey": {
+    "description": "Button text to understand and show the key."
+  },
+  "selectGroupToViewNotes": "Selecteer een groep om notities te bekijken",
+  "@selectGroupToViewNotes": {
+    "description": "Placeholder text shown when no group is selected in desktop mode."
+  },
+  "accessKeyShareText": "Hier is je toegangssleutel.",
+  "@accessKeyShareText": {
+    "description": "Text used in share dialog when sharing the access key."
+  },
+  "pleaseTryAgain": "Probeer het opnieuw.",
+  "@pleaseTryAgain": {
+    "description": "Generic error message shown when an operation fails."
+  },
+  "copiedToClipboard": "Gekopieerd naar klembord",
+  "@copiedToClipboard": {
+    "description": "Toast message shown when text is copied to the clipboard."
+  },
+  "accessKeyTitle": "Toegangssleutel",
+  "@accessKeyTitle": {
+    "description": "Title for the access key page."
+  },
+  "accessKeyDescription": "Sla deze sleutel op een veilige plek op. Je hebt hem nodig om notities te synchroniseren op een ander apparaat.",
+  "@accessKeyDescription": {
+    "description": "Instructional text for saving the access key."
+  },
+  "copyLabel": "Kopiëren",
+  "@copyLabel": {
+    "description": "Label for the copy button."
+  },
+  "downloadAsTextFileLabel": "Downloaden als tekstbestand",
+  "@downloadAsTextFileLabel": {
+    "description": "Label for the button that downloads the access key as a text file."
+  },
+  "continueLabel": "Doorgaan",
+  "@continueLabel": {
+    "description": "Label for the continue button."
+  },
+  "pleaseAuthenticate": "Graag verifiëren",
+  "@pleaseAuthenticate": {
+    "description": "Reason shown in the biometric/device authentication prompt."
+  },
+  "couldNotCreate": "Kon niet aanmaken",
+  "@couldNotCreate": {
+    "description": "Error message title when backup creation fails."
+  },
+  "couldNotShareFile": "Kon bestand niet delen",
+  "@couldNotShareFile": {
+    "description": "Error message title when sharing backup fails."
+  },
+  "hereIsTheBackupFile": "Hier is het back-upbestand voor je app.",
+  "@hereIsTheBackupFile": {
+    "description": "Text used in share dialog when sharing the backup file."
+  },
+  "errorTitle": "Fout",
+  "@errorTitle": {
+    "description": "Generic error message title."
+  },
+  "backupLabel": "Back-up",
+  "@backupLabel": {
+    "description": "Label for the backup option."
+  },
+  "restoreLabel": "Herstellen",
+  "@restoreLabel": {
+    "description": "Label for the restore option."
+  },
+  "leaveAReviewLabel": "Schrijf een beoordeling",
+  "@leaveAReviewLabel": {
+    "description": "Label for the feedback/review option."
+  },
+  "shareLabel": "Delen",
+  "@shareLabel": {
+    "description": "Label for the share app option."
+  },
+  "desktopAppLinkLabel": "Desktop-app",
+  "@desktopAppLinkLabel": {
+    "description": "Label for the link to the desktop version."
+  },
+  "loggingLabel": "Logging",
+  "@loggingLabel": {
+    "description": "Label for the logging toggle setting."
+  },
+  "versionLabel": "Versie: {version}",
+  "@versionLabel": {
+    "description": "Label showing app version.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingLabel": "Laden...",
+  "@loadingLabel": {
+    "description": "Label for the loading state of the app version."
+  },
+  "restoredLabel": "Hersteld.",
+  "@restoredLabel": {
+    "description": "Toast message shown after successfully restoring items."
+  },
+  "deletedPermanentlyLabel": "Permanent verwijderd.",
+  "@deletedPermanentlyLabel": {
+    "description": "Toast message shown after successfully deleting items permanently."
+  },
+  "mediaTitle": "Media",
+  "@mediaTitle": {
+    "description": "Title for the media viewer page."
+  },
+  "invalidWordList": "Ongeldige woordenlijst",
+  "@invalidWordList": {
+    "description": "Error message when invalid mnemonic phrase is entered."
+  },
+  "enterYour24WordPhrase": "Voer je 24-woordige zin in",
+  "@enterYour24WordPhrase": {
+    "description": "Label for the recovery phrase text input."
+  },
+  "enterYourRecoveryPhraseHere": "Voer hier je herstelzin in",
+  "@enterYourRecoveryPhraseHere": {
+    "description": "Hint text for the recovery phrase text input."
+  },
+  "pleaseEnterYourRecoveryPhrase": "Voer je herstelzin in",
+  "@pleaseEnterYourRecoveryPhrase": {
+    "description": "Error message when recovery phrase is empty."
+  },
+  "recoveryPhraseMustContain24Words": "De herstelzin moet exact 24 woorden bevatten",
+  "@recoveryPhraseMustContain24Words": {
+    "description": "Error message when recovery phrase does not have 24 words."
+  },
+  "submitLabel": "Verzenden",
+  "@submitLabel": {
+    "description": "Label for the submit button."
+  },
+  "orLabel": "Of",
+  "@orLabel": {
+    "description": "Separator text between input and file upload."
+  },
+  "selectTxtFileLabel": "Selecteer .txt-bestand",
+  "@selectTxtFileLabel": {
+    "description": "Label for the file selection button."
+  },
+  "failureTitle": "Mislukt",
+  "@failureTitle": {
+    "description": "Title for error dialog."
+  },
+  "invalidPasswordKey": "Ongeldige wachtwoordsleutel",
+  "@invalidPasswordKey": {
+    "description": "Error message when password key is invalid."
+  },
+  "enableSyncTitle": "Synchronisatie inschakelen",
+  "@enableSyncTitle": {
+    "description": "Title for the password key input page."
+  },
+  "passwordRequirementsDescription": "Voer de sleutel (wachtwoord) in die je hebt aangemaakt. Deze moet minimaal 10 tekens lang zijn en minstens 1 cijfer, 1 kleine letter, 1 hoofdletter en 1 speciaal teken bevatten.",
+  "@passwordRequirementsDescription": {
+    "description": "Description of password requirements."
+  },
+  "enterKeyLabel": "Voer sleutel in",
+  "@enterKeyLabel": {
+    "description": "Label for password input."
+  },
+  "pleaseEnterKey": "Voer de sleutel in",
+  "@pleaseEnterKey": {
+    "description": "Error message when password input is empty."
+  },
+  "filterNotesTitle": "Notities filteren",
+  "@filterNotesTitle": {
+    "description": "Title for the filter notes dialog."
+  },
+  "filterPinnedNotesTooltip": "Vastgezette notities filteren",
+  "@filterPinnedNotesTooltip": {
+    "description": "Tooltip for filter pinned notes button."
+  },
+  "filterStarredNotesTooltip": "Notities met ster filteren",
+  "@filterStarredNotesTooltip": {
+    "description": "Tooltip for filter starred notes button."
+  },
+  "filterTextNotesTooltip": "Tekstnotities filteren",
+  "@filterTextNotesTooltip": {
+    "description": "Tooltip for filter text notes button."
+  },
+  "filterTasksTooltip": "Taken filteren",
+  "@filterTasksTooltip": {
+    "description": "Tooltip for filter tasks button."
+  },
+  "filterLinksTooltip": "Links filteren",
+  "@filterLinksTooltip": {
+    "description": "Tooltip for filter links button."
+  },
+  "filterImagesTooltip": "Afbeeldingen filteren",
+  "@filterImagesTooltip": {
+    "description": "Tooltip for filter images button."
+  },
+  "filterAudioTooltip": "Audio filteren",
+  "@filterAudioTooltip": {
+    "description": "Tooltip for filter audio button."
+  },
+  "filterVideoTooltip": "Video's filteren",
+  "@filterVideoTooltip": {
+    "description": "Tooltip for filter video button."
+  },
+  "filterFilesTooltip": "Bestanden filteren",
+  "@filterFilesTooltip": {
+    "description": "Tooltip for filter files button."
+  },
+  "filterContactsTooltip": "Contacten filteren",
+  "@filterContactsTooltip": {
+    "description": "Tooltip for filter contacts button."
+  },
+  "filterLocationTooltip": "Locaties filteren",
+  "@filterLocationTooltip": {
+    "description": "Tooltip for filter location button."
+  },
+  "movedToTrash": "Verplaatst naar prullenbak",
+  "@movedToTrash": {
+    "description": "Toast message when items are moved to trash."
+  },
+  "copiedNotesToClipboard": "Gekopieerd naar klembord",
+  "@copiedNotesToClipboard": {
+    "description": "Toast message when selected notes are copied to clipboard."
+  },
+  "locationShareLabel": "Locatie:",
+  "@locationShareLabel": {
+    "description": "Label used when sharing location."
+  },
+  "contactShareLabel": "Contact:",
+  "@contactShareLabel": {
+    "description": "Label used when sharing contact."
+  },
+  "emailsShareLabel": "E-mails:",
+  "@emailsShareLabel": {
+    "description": "Label used when sharing contact emails."
+  },
+  "addressesShareLabel": "Adressen:",
+  "@addressesShareLabel": {
+    "description": "Label used when sharing contact addresses."
+  },
+  "microphoneNotAvailable": "Microfoon is mogelijk niet beschikbaar.",
+  "@microphoneNotAvailable": {
+    "description": "Toast message when microphone is not available."
+  },
+  "microphonePermissionRequired": "Microfoontoestemming is vereist om audio op te nemen.",
+  "@microphonePermissionRequired": {
+    "description": "Toast message when microphone permission is required."
+  },
+  "couldNotGetDuration": "Kon duur niet ophalen",
+  "@couldNotGetDuration": {
+    "description": "Error message when audio duration could not be retrieved."
+  },
+  "errorOpeningFiles": "Fout bij openen bestanden",
+  "@errorOpeningFiles": {
+    "description": "Error message when file picker fails."
+  },
+  "pleaseWaitTitle": "Even geduld",
+  "@pleaseWaitTitle": {
+    "description": "Title for please wait dialog."
+  },
+  "fileNotAvailableYet": "Bestand nog niet beschikbaar",
+  "@fileNotAvailableYet": {
+    "description": "Message shown when file is not available yet."
+  },
+  "clearSelectionTooltip": "Selectie wissen",
+  "@clearSelectionTooltip": {
+    "description": "Tooltip for clear selection button."
+  },
+  "copyNotesTooltip": "Notities kopiëren",
+  "@copyNotesTooltip": {
+    "description": "Tooltip for copy notes button."
+  },
+  "changeTaskTypeTooltip": "Taaktype wijzigen",
+  "@changeTaskTypeTooltip": {
+    "description": "Tooltip for change task type button."
+  },
+  "shareNotesTooltip": "Notities delen",
+  "@shareNotesTooltip": {
+    "description": "Tooltip for share notes button."
+  },
+  "editNoteTooltip": "Notitie bewerken",
+  "@editNoteTooltip": {
+    "description": "Tooltip for edit note button."
+  },
+  "starUnstarNotesTooltip": "Ster toevoegen/verwijderen",
+  "@starUnstarNotesTooltip": {
+    "description": "Tooltip for star/unstar notes button."
+  },
+  "moveToTrashTooltip": "Verplaatsen naar prullenbak",
+  "@moveToTrashTooltip": {
+    "description": "Tooltip for move to trash button."
+  },
+  "pinUnpinNotesTooltip": "Vastzetten/losmaken",
+  "@pinUnpinNotesTooltip": {
+    "description": "Tooltip for pin/unpin notes button."
+  },
+  "cancelReplyTooltip": "Antwoord annuleren",
+  "@cancelReplyTooltip": {
+    "description": "Tooltip for cancel reply button."
+  },
+  "createTaskHint": "Een taak aanmaken",
+  "@createTaskHint": {
+    "description": "Hint text for creating a task."
+  },
+  "addNoteHint": "Notitie toevoegen...",
+  "@addNoteHint": {
+    "description": "Hint text for adding a note."
+  },
+  "attachTooltip": "Bijvoegen",
+  "@attachTooltip": {
+    "description": "Tooltip for attach button."
+  },
+  "addNoteTooltip": "Notitie toevoegen",
+  "@addNoteTooltip": {
+    "description": "Tooltip for add note button."
+  },
+  "recordStopAudioTooltip": "Audio opnemen/stoppen",
+  "@recordStopAudioTooltip": {
+    "description": "Tooltip for record/stop audio button."
+  },
+  "contactAttachmentLabel": "Contact",
+  "@contactAttachmentLabel": {
+    "description": "Label for contact attachment option."
+  },
+  "locationAttachmentLabel": "Locatie",
+  "@locationAttachmentLabel": {
+    "description": "Label for location attachment option."
+  },
+  "cameraAttachmentLabel": "Camera",
+  "@cameraAttachmentLabel": {
+    "description": "Label for camera attachment option."
+  },
+  "filesAttachmentLabel": "Bestanden",
+  "@filesAttachmentLabel": {
+    "description": "Label for files attachment option."
+  },
+  "checklistAttachmentLabel": "Checklist",
+  "@checklistAttachmentLabel": {
+    "description": "Label for checklist attachment option."
+  },
+  "accessKeyInputTitle": "Synchronisatie inschakelen",
+  "@accessKeyInputTitle": {
+    "description": "Title for the access key input page."
+  },
+  "accessKeyInputDescription": "Voer je 24-woordige herstelzin in of laad een .txt-bestand dat deze bevat.",
+  "@accessKeyInputDescription": {
+    "description": "Description text on the access key input page."
+  },
+  "editMenuItemLabel": "Bewerken",
+  "@editMenuItemLabel": {
+    "description": "Label for the edit menu item in the app bar popup menu."
+  },
+  "filterMenuItemLabel": "Filters",
+  "@filterMenuItemLabel": {
+    "description": "Label for the filter menu item in the app bar popup menu."
+  },
+  "externalStoragePermissionDenied": "Toestemming voor toegang tot externe opslag geweigerd.",
+  "@externalStoragePermissionDenied": {
+    "description": "Error message shown when external storage permission is denied."
+  },
+  "pressLongToStartRecording": "Houd ingedrukt om opname te starten.",
+  "@pressLongToStartRecording": {
+    "description": "Hint message shown when the send button is pressed while not typing and not recording."
+  },
+  "didYouKnowTitle": "Wist je dat?",
+  "@didYouKnowTitle": {
+    "description": "Title for the tip dialog shown to first-time users."
+  },
+  "closeTooltip": "Sluiten",
+  "@closeTooltip": {
+    "description": "Tooltip for the close button on dialogs."
+  },
+  "appDescriptionContent": "{appName} is een volledig privé-notitie-app. Het verzamelt geen persoonlijke gegevens en toont geen advertenties.\n\nWe hopen dat je er met plezier gebruik van maakt. Laat ons weten wat je ervan vindt.",
+  "@appDescriptionContent": {
+    "description": "Description text about the app in the tip dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNotesTooltip": "Notities doorzoeken",
+  "@searchNotesTooltip": {
+    "description": "Tooltip for the search notes button."
+  },
+  "syncMenuItemLabel": "Synchroniseren",
+  "@syncMenuItemLabel": {
+    "description": "Label for the sync menu item."
+  },
+  "trashMenuItemLabel": "Prullenbak",
+  "@trashMenuItemLabel": {
+    "description": "Label for the trash menu item."
+  },
+  "starredNotesMenuItemLabel": "Notities met ster",
+  "@starredNotesMenuItemLabel": {
+    "description": "Label for the starred notes menu item."
+  },
+  "settingsMenuItemLabel": "Instellingen",
+  "@settingsMenuItemLabel": {
+    "description": "Label for the settings menu item."
+  },
+  "accountMenuItemLabel": "Account",
+  "@accountMenuItemLabel": {
+    "description": "Label for the account menu item."
+  },
+  "pageMenuItemLabel": "Pagina",
+  "@pageMenuItemLabel": {
+    "description": "Label for the page menu item (shown in debug mode)."
+  },
+  "sqliteMenuItemLabel": "Sqlite",
+  "@sqliteMenuItemLabel": {
+    "description": "Label for the SQLite database viewer menu item."
+  },
+  "logsMenuItemLabel": "Logs",
+  "@logsMenuItemLabel": {
+    "description": "Label for the logs menu item."
+  },
+  "reorderMenuItemLabel": "Sorteren",
+  "@reorderMenuItemLabel": {
+    "description": "Label for the reorder group menu item."
+  },
+  "editGroupMenuItemLabel": "Bewerken",
+  "@editGroupMenuItemLabel": {
+    "description": "Label for the edit group menu item."
+  },
+  "deleteGroupMenuItemLabel": "Verwijderen",
+  "@deleteGroupMenuItemLabel": {
+    "description": "Label for the delete group menu item."
+  },
+  "dragHandleReorderTooltip": "Sleepgreep om te sorteren",
+  "@dragHandleReorderTooltip": {
+    "description": "Tooltip message for drag handle on desktop."
+  },
+  "holdAndDragReorderTooltip": "Houd vast en sleep om te sorteren",
+  "@holdAndDragReorderTooltip": {
+    "description": "Tooltip message for hold and drag to re-order on mobile."
+  },
+  "emptyHomePageMessage": "Hallo!\n\nHet ziet er hier nogal leeg uit.\n\nTik op de +-knop en maak wat notities voor jezelf. :)",
+  "@emptyHomePageMessage": {
+    "description": "Empty state message shown when there are no groups on the home page."
+  },
+  "reorderingTitle": "Sorteren",
+  "@reorderingTitle": {
+    "description": "Title shown when reordering groups on the home page."
+  },
+  "selectEllipsisLabel": "Selecteren...",
+  "@selectEllipsisLabel": {
+    "description": "Placeholder label shown when shared contents are being loaded."
+  },
+  "dateTimeToggleLabel": "Datum/Tijd",
+  "@dateTimeToggleLabel": {
+    "description": "Label for the date/time toggle switch in group settings."
+  },
+  "noteBorderToggleLabel": "Notitierand",
+  "@noteBorderToggleLabel": {
+    "description": "Label for the note border toggle switch in group settings."
+  },
+  "deleteGroupButtonLabel": "Verwijderen",
+  "@deleteGroupButtonLabel": {
+    "description": "Label for the delete group button in group edit page."
+  },
+  "notesTabLabel": "Notities",
+  "@notesTabLabel": {
+    "description": "Label for the notes tab in the trash page."
+  },
+  "groupsTabLabel": "Groepen",
+  "@groupsTabLabel": {
+    "description": "Label for the groups tab in the trash page."
+  },
+  "categoriesTabLabel": "Categorieën",
+  "@categoriesTabLabel": {
+    "description": "Label for the categories tab in the trash page."
+  },
+  "locationItemLabel": "Locatie",
+  "@locationItemLabel": {
+    "description": "Label for location items in search results."
+  },
+  "addGroupTitle": "Groep toevoegen",
+  "@addGroupTitle": {
+    "description": "Page title for creating a new group."
+  },
+  "editGroupTitle": "Groep bewerken",
+  "@editGroupTitle": {
+    "description": "Page title for editing an existing group."
+  },
+  "titleInputLabel": "Titel",
+  "@titleInputLabel": {
+    "description": "Label for the title input field."
+  },
+  "locationPermissionRequiredTitle": "Locatietoestemming vereist",
+  "@locationPermissionRequiredTitle": {
+    "description": "Title for the location permission dialog."
+  },
+  "enableLocationPermissionsContent": "Schakel locatietoestemmingen in bij de app-instellingen.",
+  "@enableLocationPermissionsContent": {
+    "description": "Content text for the location permission dialog."
+  },
+  "cancelButtonLabel": "Annuleren",
+  "@cancelButtonLabel": {
+    "description": "Label for the cancel button."
+  },
+  "openSettingsButtonLabel": "Instellingen openen",
+  "@openSettingsButtonLabel": {
+    "description": "Label for the open settings button."
+  },
+  "locationServicesTitle": "Locatievoorzieningen",
+  "@locationServicesTitle": {
+    "description": "Title for the location services alert."
+  },
+  "pleaseEnableLocationServicesContent": "Schakel deze in!",
+  "@pleaseEnableLocationServicesContent": {
+    "description": "Content text for the location services disabled alert."
+  },
+  "selectLocationTitle": "Locatie selecteren",
+  "@selectLocationTitle": {
+    "description": "Title for the location picker page."
+  },
+  "useCurrentLocationTooltip": "Huidige locatie gebruiken",
+  "@useCurrentLocationTooltip": {
+    "description": "Tooltip for the use current location button."
+  },
+  "selectAllButtonLabel": "Alles selecteren",
+  "@selectAllButtonLabel": {
+    "description": "Label for the select all button in archived items."
+  },
+  "searchLogsHint": "Logs doorzoeken..",
+  "@searchLogsHint": {
+    "description": "Hint text for the search logs input field."
+  },
+  "noLogsAvailable": "Geen logs beschikbaar",
+  "@noLogsAvailable": {
+    "description": "Message shown when there are no log entries to display."
+  },
+  "dbViewerTitle": "DB-viewer",
+  "@dbViewerTitle": {
+    "description": "Title for the SQLite database viewer page."
+  },
+  "selectTableToViewData": "Selecteer een tabel om de data te bekijken",
+  "@selectTableToViewData": {
+    "description": "Instruction text shown when no table is selected in the DB viewer."
+  },
+  "selectTableDropdownHint": "Selecteer een tabel",
+  "@selectTableDropdownHint": {
+    "description": "Hint text for the table selection dropdown in the DB viewer."
+  },
+  "pickContactTitle": "Kies een contact",
+  "@pickContactTitle": {
+    "description": "Title for the contact picker page."
+  },
+  "permissionRequiredText": "Toestemming vereist",
+  "@permissionRequiredText": {
+    "description": "Text shown when contact permission is required."
+  },
+  "grantPermissionButtonLabel": "Toestemming verlenen",
+  "@grantPermissionButtonLabel": {
+    "description": "Label for the grant permission button."
+  },
+  "pageDummyTitle": "Dummy-pagina",
+  "@pageDummyTitle": {
+    "description": "Title for the dummy/testing page."
+  },
+  "simulateButtonLabel": "Simuleren",
+  "@simulateButtonLabel": {
+    "description": "Label for the simulate button on the dummy page."
+  },
+  "selectCategoryTitle": "Categorie selecteren",
+  "@selectCategoryTitle": {
+    "description": "Title for the select category page."
+  },
+  "addCategoryTitle": "Categorie toevoegen",
+  "@addCategoryTitle": {
+    "description": "Title for the add category page."
+  },
+  "editCategoryTitle": "Categorie bewerken",
+  "@editCategoryTitle": {
+    "description": "Title for the edit category page."
+  },
+  "categoryTitleHint": "Categorietitel",
+  "@categoryTitleHint": {
+    "description": "Hint text for the category title input field."
+  },
+  "colorLabel": "Kleur",
+  "@colorLabel": {
+    "description": "Label for the color selector."
+  },
+  "changeColorLabel": "Kleur wijzigen",
+  "@changeColorLabel": {
+    "description": "Label for the change color option."
+  },
+  "deviceDisabledMessage": "Apparaat uitgeschakeld!",
+  "@deviceDisabledMessage": {
+    "description": "Toast message shown when a device is disabled."
+  },
+  "cannotRemoveThisDeviceMessage": "Kan dit apparaat niet verwijderen!",
+  "@cannotRemoveThisDeviceMessage": {
+    "description": "Toast message shown when attempting to remove the current device."
+  },
+  "confirmRemoveTitle": "Verwijderen bevestigen",
+  "@confirmRemoveTitle": {
+    "description": "Title for the confirm remove device dialog."
+  },
+  "confirmRemoveDeviceContent": "Weet je het zeker? Dit verwijdert alle gegevens op dit apparaat.",
+  "@confirmRemoveDeviceContent": {
+    "description": "Content text for the confirm remove device dialog."
+  },
+  "okButtonLabel": "OK",
+  "@okButtonLabel": {
+    "description": "Label for the OK button."
+  },
+  "registeredDevicesTitle": "Geregistreerde apparaten",
+  "@registeredDevicesTitle": {
+    "description": "Title for the registered devices page."
+  },
+  "noDevicesFoundMessage": "Geen apparaten gevonden",
+  "@noDevicesFoundMessage": {
+    "description": "Message shown when no devices are found."
+  },
+  "enabledLabel": "Ingeschakeld",
+  "@enabledLabel": {
+    "description": "Label for an enabled device status."
+  },
+  "disabledLabel": "Uitgeschakeld",
+  "@disabledLabel": {
+    "description": "Label for a disabled device status."
+  },
+  "migratingMediaTitle": "Media migreren",
+  "@migratingMediaTitle": {
+    "description": "Title for the media migration page."
+  },
+  "processingMessage": "Verwerken...",
+  "@processingMessage": {
+    "description": "Message shown while media is being processed."
+  },
+  "doNotNavigateAwayMessage": "Navigeer alstublieft niet weg",
+  "@doNotNavigateAwayMessage": {
+    "description": "Warning message asking the user not to navigate away during media migration."
+  },
+  "errorWithDetails": "Fout: {error}",
+  "@errorWithDetails": {
+    "description": "Error message shown when loading logs fails, including the error.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sequenceNotAcceptedError": "Reeks niet geaccepteerd",
+  "@sequenceNotAcceptedError": {
+    "description": "Validation error when the key contains a sequential pattern."
+  },
+  "examplesNotAcceptedError": "Voorbeelden niet geaccepteerd",
+  "@examplesNotAcceptedError": {
+    "description": "Validation error when the key matches one of the example keys."
+  },
+  "enterKeyAgainLabel": "Voer sleutel opnieuw in",
+  "@enterKeyAgainLabel": {
+    "description": "Label and hint for the confirm key input field."
+  },
+  "pleaseEnterKeyAgainError": "Voer de sleutel opnieuw in",
+  "@pleaseEnterKeyAgainError": {
+    "description": "Validation error when the confirm key field is empty."
+  },
+  "keysDoNotMatchError": "Sleutels komen niet overeen",
+  "@keysDoNotMatchError": {
+    "description": "Validation error when the two keys do not match."
+  },
+  "ruleUppercaseLetter": "1 hoofdletter",
+  "@ruleUppercaseLetter": {
+    "description": "Password rule description for one uppercase letter."
+  },
+  "ruleLowercaseLetter": "1 kleine letter",
+  "@ruleLowercaseLetter": {
+    "description": "Password rule description for one lowercase letter."
+  },
+  "ruleNumericLetter": "1 cijfer",
+  "@ruleNumericLetter": {
+    "description": "Password rule description for one numeric character."
+  },
+  "ruleSpecialCharacter": "1 speciaal teken",
+  "@ruleSpecialCharacter": {
+    "description": "Password rule description for one special character."
+  },
+  "ruleMinTenCharacters": "minstens 10 tekens",
+  "@ruleMinTenCharacters": {
+    "description": "Password rule description for the minimum length."
+  },
+  "examplesTitle": "Voorbeelden",
+  "@examplesTitle": {
+    "description": "Title for the key examples dialog."
+  },
+  "passwordExample1": "I would love 2 have @ll ...",
+  "@passwordExample1": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample2": "(A6r4K4D46r4)",
+  "@passwordExample2": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample3": "Mykey@2025",
+  "@passwordExample3": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample4": "C0ffee !s great f0r pr0ductivity",
+  "@passwordExample4": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "gotItButtonLabel": "Begrepen",
+  "@gotItButtonLabel": {
+    "description": "Label for the button to dismiss the examples dialog."
+  },
+  "encryptionKeyTitle": "Versleutelingssleutel",
+  "@encryptionKeyTitle": {
+    "description": "Title for the encryption key creation page."
+  },
+  "createKeyDescription": "Voer een lange en moeilijk te raden sleutel (wachtwoord) in. Vergeet niet deze ergens veilig op te slaan. Als deze verloren gaat of vergeten wordt, kan deze niet worden hersteld.",
+  "@createKeyDescription": {
+    "description": "Instructional text for creating an encryption key."
+  },
+  "seeExamplesTooltip": "Bekijk voorbeelden",
+  "@seeExamplesTooltip": {
+    "description": "Tooltip for the button that shows key examples."
+  },
+  "couldNotFetchDetailsMessage": "Kon details niet ophalen",
+  "@couldNotFetchDetailsMessage": {
+    "description": "Message shown when plan details could not be fetched."
+  },
+  "retryButtonLabel": "Opnieuw proberen",
+  "@retryButtonLabel": {
+    "description": "Label for the retry button."
+  },
+  "signedInAsLabel": "Ingelogd als:",
+  "@signedInAsLabel": {
+    "description": "Label shown before the signed-in email."
+  },
+  "storageUsageLabel": "Opslaggebruik",
+  "@storageUsageLabel": {
+    "description": "Label for the storage usage section."
+  },
+  "subscribeLabel": "Abonneren",
+  "@subscribeLabel": {
+    "description": "Label for the subscribe option."
+  },
+  "planExpiredRenewLabel": "Abonnement verlopen! Vernieuwen",
+  "@planExpiredRenewLabel": {
+    "description": "Label for the plan expired renew option."
+  },
+  "manageDevicesLabel": "Apparaten beheren",
+  "@manageDevicesLabel": {
+    "description": "Label for the manage devices option."
+  },
+  "viewAccessKeyLabel": "Toegangssleutel bekijken",
+  "@viewAccessKeyLabel": {
+    "description": "Label for the view access key option."
+  },
+  "changeKeyPasswordLabel": "Sleutelwachtwoord wijzigen",
+  "@changeKeyPasswordLabel": {
+    "description": "Label for the change key password option."
+  },
+  "manageSubscriptionLabel": "Abonnement beheren",
+  "@manageSubscriptionLabel": {
+    "description": "Label for the manage subscription option."
+  },
+  "signOutButtonLabel": "Uitloggen",
+  "@signOutButtonLabel": {
+    "description": "Label for the sign out option."
+  },
+  "yearlyPlansTitle": "Jaarplannen",
+  "@yearlyPlansTitle": {
+    "description": "Title for the plan subscribe page."
+  },
+  "loginLabel": "Inloggen",
+  "@loginLabel": {
+    "description": "Label for the login button."
+  },
+  "syncAllYourNotesLabel": "Synchroniseer al je notities",
+  "@syncAllYourNotesLabel": {
+    "description": "Headline on the subscribe page."
+  },
+  "acrossYourDevicesLabel": "tussen al je apparaten",
+  "@acrossYourDevicesLabel": {
+    "description": "Subheadline on the subscribe page."
+  },
+  "featureEndToEndEncryption": "End-to-end versleuteling",
+  "@featureEndToEndEncryption": {
+    "description": "Feature list item for end-to-end encryption."
+  },
+  "featureSyncUpTo3Devices": "Synchroniseer tot 3 apparaten",
+  "@featureSyncUpTo3Devices": {
+    "description": "Feature list item for syncing up to 3 devices."
+  },
+  "featureUpgradeCancelAnytime": "Altijd upgraden/opzeggen",
+  "@featureUpgradeCancelAnytime": {
+    "description": "Feature list item for upgrading or cancelling anytime."
+  },
+  "noPlansAvailableMessage": "Geen abonnementen beschikbaar",
+  "@noPlansAvailableMessage": {
+    "description": "Message shown when no plans are available."
+  },
+  "downloadAppSubscribeLabel": "Download de app & abonneer",
+  "@downloadAppSubscribeLabel": {
+    "description": "Label prompting the user to download the app and subscribe."
+  },
+  "privacyTermsLabel": "Privacy • Voorwaarden",
+  "@privacyTermsLabel": {
+    "description": "Label for the privacy and terms footer."
+  },
+  "saveFiftyPercentLabel": "Bespaar 50%",
+  "@saveFiftyPercentLabel": {
+    "description": "Badge text showing the savings percentage."
+  },
+  "helloTitle": "Hallo",
+  "@helloTitle": {
+    "description": "Title for the select key type page before welcoming."
+  },
+  "selectKeyMasterKeyDescription": "Om je gegevens te versleutelen, hebben we een hoofd-versleutelingssleutel nodig.",
+  "@selectKeyMasterKeyDescription": {
+    "description": "Description text on the select key type page."
+  },
+  "selectKeyTwoOptionsDescription": "Er zijn 2 opties: of je maakt zelf een sleutel aan (vergelijkbaar met een wachtwoord), of wij maken deze voor je aan.",
+  "@selectKeyTwoOptionsDescription": {
+    "description": "Description of the two key creation options."
+  },
+  "understandLoseKeyAcknowledgement": "Ik begrijp dat als ik de versleutelingssleutel kwijtraak/vergeet, ik de gegevens kan verliezen.",
+  "@understandLoseKeyAcknowledgement": {
+    "description": "Acknowledgement text for understanding the risk of losing the encryption key."
+  },
+  "createKeyForMeButtonLabel": "Maak de sleutel voor mij aan",
+  "@createKeyForMeButtonLabel": {
+    "description": "Label for the button to let the app create the key."
+  },
+  "recommendedLabel": "(Aanbevolen)",
+  "@recommendedLabel": {
+    "description": "Label indicating a recommended option."
+  },
+  "pleaseAcknowledgeMessage": "Bevestig dit alstublieft!",
+  "@pleaseAcknowledgeMessage": {
+    "description": "Toast message asking the user to acknowledge the terms."
+  },
+  "createKeyMyselfButtonLabel": "Ik maak zelf de sleutel aan",
+  "@createKeyMyselfButtonLabel": {
+    "description": "Label for the button to create the key yourself."
+  },
+  "welcomeToAppName": "Welkom bij {appName}",
+  "@welcomeToAppName": {
+    "description": "Welcome message with the app name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "e2eEncryptionDescription": "Wij gebruiken end-to-end versleuteling om ervoor te zorgen dat al je notities veilig zijn en niemand anders ze kan zien, zelfs wij niet.",
+  "@e2eEncryptionDescription": {
+    "description": "Description of the end-to-end encryption used."
+  },
+  "timeToStartEncryptionLabel": "Tijd om de versleuteling te starten!",
+  "@timeToStartEncryptionLabel": {
+    "description": "Message prompting the user to start encryption."
+  },
+  "nextButtonLabel": "Volgende",
+  "@nextButtonLabel": {
+    "description": "Label for the next button."
+  },
+  "sendingOtpFailedMessage": "Verzenden van OTP mislukt. Probeer het opnieuw!",
+  "@sendingOtpFailedMessage": {
+    "description": "Toast message when sending the OTP fails."
+  },
+  "otpVerificationFailedMessage": "OTP-verificatie mislukt. Probeer het opnieuw!",
+  "@otpVerificationFailedMessage": {
+    "description": "Toast message when verifying the OTP fails."
+  },
+  "emailSignInTitle": "E-mail inloggen",
+  "@emailSignInTitle": {
+    "description": "Title for the sign-in page before OTP is sent."
+  },
+  "verifyOtpLabel": "OTP verifiëren",
+  "@verifyOtpLabel": {
+    "description": "Label for verifying the OTP (used as title and button)."
+  },
+  "enterEmailLabel": "E-mail invoeren",
+  "@enterEmailLabel": {
+    "description": "Label for the email input field."
+  },
+  "sendOtpLabel": "OTP verzenden",
+  "@sendOtpLabel": {
+    "description": "Label for the send OTP button."
+  },
+  "otpSentToEmailMessage": "We hebben een eenmalig wachtwoord (OTP) naar je e-mail {email} gestuurd",
+  "@otpSentToEmailMessage": {
+    "description": "Message confirming the OTP was sent to the email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "enterOtpLabel": "OTP invoeren",
+  "@enterOtpLabel": {
+    "description": "Label for the OTP input field."
+  },
+  "changeEmailLabel": "E-mail wijzigen",
+  "@changeEmailLabel": {
+    "description": "Label for the change email button."
+  },
+  "encryptingNotesTitle": "Notities versleutelen",
+  "@encryptingNotesTitle": {
+    "description": "Title shown while encrypting local notes."
+  },
+  "fetchingDetailsTitle": "Details ophalen",
+  "@fetchingDetailsTitle": {
+    "description": "Title shown while fetching details."
+  },
+  "couldNotFetchMessage": "Kon niet ophalen",
+  "@couldNotFetchMessage": {
+    "description": "Error message shown when fetching fails."
+  },
+  "subscriptionEmailMismatchMessage": "Je abonnement is gekoppeld aan een ander e-mailadres. Log uit en gebruik dat e-mailadres om cloudopslag in te schakelen.",
+  "@subscriptionEmailMismatchMessage": {
+    "description": "Error message when the subscription email does not match."
+  },
+  "errorCheckingPlanDetailsMessage": "Fout bij controleren abonnementsdetails",
+  "@errorCheckingPlanDetailsMessage": {
+    "description": "Error message shown when checking plan details fails."
+  },
+  "registerDeviceTitle": "Apparaat registreren",
+  "@registerDeviceTitle": {
+    "description": "Title shown while registering the device."
+  },
+  "manageButtonLabel": "Beheren",
+  "@manageButtonLabel": {
+    "description": "Label for the manage button (e.g., manage devices)."
+  },
+  "fetchingKeysTitle": "Sleutels ophalen",
+  "@fetchingKeysTitle": {
+    "description": "Title shown while fetching encryption keys."
+  },
+  "signingOutTitle": "Uitloggen",
+  "@signingOutTitle": {
+    "description": "Title shown while signing out."
+  },
+  "pleaseCheckInternetMessage": "Controleer je internetverbinding",
+  "@pleaseCheckInternetMessage": {
+    "description": "Error message asking the user to check internet connection."
+  },
+  "somethingWentWrongMessage": "Er is iets misgegaan",
+  "@somethingWentWrongMessage": {
+    "description": "Generic error message when something goes wrong."
+  },
+  "playPauseTooltip": "Afspelen/pauzeren",
+  "@playPauseTooltip": {
+    "description": "Tooltip for the play/pause audio button."
+  },
+  "timerFormattedTime": "{minutes}:{seconds}",
+  "@timerFormattedTime": {
+    "description": "Formatted timer display showing minutes and seconds.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadTooltip": "Downloaden",
+  "@downloadTooltip": {
+    "description": "Tooltip for the download button."
+  },
+  "invalidAccessKey": "Ongeldige toegangssleutel",
+  "@invalidAccessKey": {
+    "description": "Error message when the access key is invalid."
+  },
+  "fileDoesNotContain24Words": "Het bestand bevat niet precies 24 woorden.",
+  "@fileDoesNotContain24Words": {
+    "description": "Error message when the selected file does not contain a 24-word recovery phrase."
+  },
+  "errorReadingFile": "Fout bij lezen bestand",
+  "@errorReadingFile": {
+    "description": "Toast message when an error occurs while reading a file."
+  },
+  "allLabel": "Alles",
+  "@allLabel": {
+    "description": "Label for the 'All' filter option."
+  },
+  "logTypeDebug": "DEBUG",
+  "@logTypeDebug": {
+    "description": "Log type label for debug entries."
+  },
+  "logTypeError": "FOUT",
+  "@logTypeError": {
+    "description": "Log type label for error entries."
+  },
+  "logTypeInfo": "INFO",
+  "@logTypeInfo": {
+    "description": "Log type label for info entries."
+  },
+  "logTypeWarning": "WAARSCHUWING",
+  "@logTypeWarning": {
+    "description": "Log type label for warning entries."
+  },
+  "groupTitleHint": "Groeptitel",
+  "@groupTitleHint": {
+    "description": "Hint text for the group title input field."
+  },
+  "categoryLabel": "Categorie",
+  "@categoryLabel": {
+    "description": "Label for the category selector section."
+  },
+  "selectCategoryPlaceholder": "Categorie selecteren",
+  "@selectCategoryPlaceholder": {
+    "description": "Placeholder text prompting the user to select a category."
+  },
+  "storageBytesFormat": "{bytes} B",
+  "@storageBytesFormat": {
+    "description": "Formatted storage size in bytes.",
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "storageKilobytesFormat": "{kb} KB",
+  "@storageKilobytesFormat": {
+    "description": "Formatted storage size in kilobytes.",
+    "placeholders": {
+      "kb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageMegabytesFormat": "{mb} MB",
+  "@storageMegabytesFormat": {
+    "description": "Formatted storage size in megabytes.",
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageGigabytesFormat": "{gb} GB",
+  "@storageGigabytesFormat": {
+    "description": "Formatted storage size in gigabytes.",
+    "placeholders": {
+      "gb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsedTotalFormat": "{used} / {total}",
+  "@storageUsedTotalFormat": {
+    "description": "Formatted used vs total storage display.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "planStorageSizeFormat": "{size} {unit}",
+  "@planStorageSizeFormat": {
+    "description": "Formatted plan storage size with unit (e.g. '100 GB').",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "searchHint": "zoekopdracht, #document enz..",
+  "@searchHint": {
+    "description": "Hint text for the search input field."
+  },
+  "categoryGroupSeparator": " > ",
+  "@categoryGroupSeparator": {
+    "description": "Separator used between category and group in search result headers."
+  },
+  "audioFileLabel": "Audiobestand",
+  "@audioFileLabel": {
+    "description": "Label shown for audio file search results."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Native name of the Arabic language."
+  },
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "Native name of the German language."
+  },
+  "languageGreek": "Ελληνικά",
+  "@languageGreek": {
+    "description": "Native name of the Greek language."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Native name of the English language."
+  },
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Native name of the Spanish language."
+  },
+  "languagePersian": "فارسی",
+  "@languagePersian": {
+    "description": "Native name of the Persian (Farsi) language."
+  },
+  "languageFrench": "Français",
+  "@languageFrench": {
+    "description": "Native name of the French language."
+  },
+  "languageHebrew": "עברית",
+  "@languageHebrew": {
+    "description": "Native name of the Hebrew language."
+  },
+  "languageHindi": "हिन्दी",
+  "@languageHindi": {
+    "description": "Native name of the Hindi language."
+  },
+  "languageIndonesian": "Bahasa Indonesia",
+  "@languageIndonesian": {
+    "description": "Native name of the Indonesian language."
+  },
+  "languageItalian": "Italiano",
+  "@languageItalian": {
+    "description": "Native name of the Italian language."
+  },
+  "languageJapanese": "日本語",
+  "@languageJapanese": {
+    "description": "Native name of the Japanese language."
+  },
+  "languageKorean": "한국어",
+  "@languageKorean": {
+    "description": "Native name of the Korean language."
+  },
+  "languageDutch": "Nederlands",
+  "@languageDutch": {
+    "description": "Native name of the Dutch language."
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Native name of the Portuguese language."
+  },
+  "languageRussian": "Русский",
+  "@languageRussian": {
+    "description": "Native name of the Russian language."
+  },
+  "languageThai": "ไทย",
+  "@languageThai": {
+    "description": "Native name of the Thai language."
+  },
+  "languageTurkish": "Türkçe",
+  "@languageTurkish": {
+    "description": "Native name of the Turkish language."
+  },
+  "languageUkrainian": "Українська",
+  "@languageUkrainian": {
+    "description": "Native name of the Ukrainian language."
+  },
+  "languageVietnamese": "Tiếng Việt",
+  "@languageVietnamese": {
+    "description": "Native name of the Vietnamese language."
+  },
+  "languageChineseSimplified": "简体中文",
+  "@languageChineseSimplified": {
+    "description": "Native name of the Simplified Chinese language."
+  },
+  "selectLanguageTitle": "Taal selecteren",
+  "@selectLanguageTitle": {
+    "description": "Header label for the language selection menu."
+  },
+  "settingsTitle": "Instellingen",
+  "@settingsTitle": {
+    "description": "Title of the settings page displayed in the AppBar."
+  },
+  "themeLabel": "Thema",
+  "@themeLabel": {
+    "description": "Label for the theme settings list tile."
+  },
+  "dayNightThemeTooltip": "Dag/nacht thema",
+  "@dayNightThemeTooltip": {
+    "description": "Tooltip for the theme toggle button."
+  },
+  "lockLabel": "Vergrendelen",
+  "@lockLabel": {
+    "description": "Label for the app lock setting."
+  },
+  "timeFormatLabel": "Tijdnotatie",
+  "@timeFormatLabel": {
+    "description": "Label for the time format dropdown setting."
+  },
+  "h12Label": "12-uurs",
+  "@h12Label": {
+    "description": "Label for the 12-hour time format option."
+  },
+  "h24Label": "24-uurs",
+  "@h24Label": {
+    "description": "Label for the 24-hour time format option."
+  },
+  "fontSizeLabel": "Tekstgrootte",
+  "@fontSizeLabel": {
+    "description": "Label for the font size setting."
+  },
+  "reduceTextSizeTooltip": "Tekstgrootte verkleinen",
+  "@reduceTextSizeTooltip": {
+    "description": "Tooltip for the decrease font size button."
+  },
+  "increaseTextSizeTooltip": "Tekstgrootte vergroten",
+  "@increaseTextSizeTooltip": {
+    "description": "Tooltip for the increase font size button."
+  },
+  "languageLabel": "Taal",
+  "@languageLabel": {
+    "description": "Label for the language setting list tile."
+  },
+  "autoOpenGroupLabel": "Groep automatisch openen",
+  "@autoOpenGroupLabel": {
+    "description": "Label for the auto-open group setting list tile."
+  },
+  "selectGroupTitle": "Groep selecteren",
+  "@selectGroupTitle": {
+    "description": "Header label for the group selection menu."
+  },
+  "shareAppMessage": "Gebruik een {appName}: {appLink}",
+  "@shareAppMessage": {
+    "description": "Content of the share intent for sharing the app.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "appLink": {
+        "type": "String"
+      }
+    }
+  },
+  "noteTypeEmpty": "Leeg",
+  "@noteTypeEmpty": {
+    "description": "Label for an empty note preview."
+  },
+  "noteTypeImage": "Afbeelding",
+  "@noteTypeImage": {
+    "description": "Label for an image note preview."
+  },
+  "noteTypeVideo": "Video",
+  "@noteTypeVideo": {
+    "description": "Label for a video note preview."
+  },
+  "noteTypeAudio": "Audio",
+  "@noteTypeAudio": {
+    "description": "Label for an audio note preview."
+  },
+  "noteTypeDocument": "Document",
+  "@noteTypeDocument": {
+    "description": "Label for a document note preview."
+  },
+  "noteTypeContact": "Contact",
+  "@noteTypeContact": {
+    "description": "Label for a contact note preview."
+  },
+  "noteTypeLocation": "Locatie",
+  "@noteTypeLocation": {
+    "description": "Label for a location note preview."
+  },
+  "noteTypeUnknown": "Onbekend",
+  "@noteTypeUnknown": {
+    "description": "Label for a note preview of an unrecognized type."
+  },
+  "pleaseEnterData": "Voer gegevens in",
+  "@pleaseEnterData": {
+    "description": "Validation error message when a field is empty."
+  },
+  "aNumber": "Een nummer",
+  "@aNumber": {
+    "description": "Validation error message when the input must be a number."
+  },
+  "enterDataLabel": "Gegevens invoeren",
+  "@enterDataLabel": {
+    "description": "Validation error message prompting the user to enter data."
+  },
+  "pleaseEnterValidData": "Voer geldige gegevens in",
+  "@pleaseEnterValidData": {
+    "description": "Validation error message for invalid input data."
+  },
+  "pleaseSelectAnOption": "Selecteer een optie",
+  "@pleaseSelectAnOption": {
+    "description": "Validation error message prompting the user to select an option."
+  },
+  "dateRangeFormat": "{start} - {end}",
+  "@dateRangeFormat": {
+    "description": "Formatted date range string.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "todayLabel": "Vandaag",
+  "@todayLabel": {
+    "description": "Human-readable label for today's date."
+  },
+  "yesterdayLabel": "Gisteren",
+  "@yesterdayLabel": {
+    "description": "Human-readable label for yesterday's date."
+  },
+  "mondayLabel": "Maandag",
+  "@mondayLabel": {
+    "description": "Day-of-week name for Monday."
+  },
+  "tuesdayLabel": "Dinsdag",
+  "@tuesdayLabel": {
+    "description": "Day-of-week name for Tuesday."
+  },
+  "wednesdayLabel": "Woensdag",
+  "@wednesdayLabel": {
+    "description": "Day-of-week name for Wednesday."
+  },
+  "thursdayLabel": "Donderdag",
+  "@thursdayLabel": {
+    "description": "Day-of-week name for Thursday."
+  },
+  "fridayLabel": "Vrijdag",
+  "@fridayLabel": {
+    "description": "Day-of-week name for Friday."
+  },
+  "saturdayLabel": "Zaterdag",
+  "@saturdayLabel": {
+    "description": "Day-of-week name for Saturday."
+  },
+  "sundayLabel": "Zondag",
+  "@sundayLabel": {
+    "description": "Day-of-week name for Sunday."
+  },
+  "januaryShortLabel": "Jan",
+  "@januaryShortLabel": {
+    "description": "Short month name for January."
+  },
+  "februaryShortLabel": "Feb",
+  "@februaryShortLabel": {
+    "description": "Short month name for February."
+  },
+  "marchShortLabel": "Mrt",
+  "@marchShortLabel": {
+    "description": "Short month name for March."
+  },
+  "aprilShortLabel": "Apr",
+  "@aprilShortLabel": {
+    "description": "Short month name for April."
+  },
+  "mayShortLabel": "Mei",
+  "@mayShortLabel": {
+    "description": "Short month name for May."
+  },
+  "juneShortLabel": "Jun",
+  "@juneShortLabel": {
+    "description": "Short month name for June."
+  },
+  "julyShortLabel": "Jul",
+  "@julyShortLabel": {
+    "description": "Short month name for July."
+  },
+  "augustShortLabel": "Aug",
+  "@augustShortLabel": {
+    "description": "Short month name for August."
+  },
+  "septemberShortLabel": "Sep",
+  "@septemberShortLabel": {
+    "description": "Short month name for September."
+  },
+  "octoberShortLabel": "Okt",
+  "@octoberShortLabel": {
+    "description": "Short month name for October."
+  },
+  "novemberShortLabel": "Nov",
+  "@novemberShortLabel": {
+    "description": "Short month name for November."
+  },
+  "decemberShortLabel": "Dec",
+  "@decemberShortLabel": {
+    "description": "Short month name for December."
+  },
+  "noteGroupDateTitleFormat": "{day} {month}, {dayOfWeek}",
+  "@noteGroupDateTitleFormat": {
+    "description": "Formatted note group date title.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "dayOfWeek": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationHoursFormat": "{hours}:{minutes}:{seconds}",
+  "@mediaDurationHoursFormat": {
+    "description": "Formatted media duration with hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationMinutesFormat": "{minutes}:{seconds}",
+  "@mediaDurationMinutesFormat": {
+    "description": "Formatted media duration without hours.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeZero": "0 B",
+  "@fileSizeZero": {
+    "description": "Display string when file size is zero."
+  },
+  "fileSizeUnitBytes": "B",
+  "@fileSizeUnitBytes": {
+    "description": "File size unit for bytes."
+  },
+  "fileSizeUnitKilobytes": "KB",
+  "@fileSizeUnitKilobytes": {
+    "description": "File size unit for kilobytes."
+  },
+  "fileSizeUnitMegabytes": "MB",
+  "@fileSizeUnitMegabytes": {
+    "description": "File size unit for megabytes."
+  },
+  "fileSizeUnitGigabytes": "GB",
+  "@fileSizeUnitGigabytes": {
+    "description": "File size unit for gigabytes."
+  },
+  "fileSizeUnitTerabytes": "TB",
+  "@fileSizeUnitTerabytes": {
+    "description": "File size unit for terabytes."
+  },
+  "fileSizeFormat": "{size} {suffix}",
+  "@fileSizeFormat": {
+    "description": "Formatted file size string with suffix unit.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "noteGroupCountSingle": "{count} notitiegroep",
+  "@noteGroupCountSingle": {
+    "description": "Pluralized label for a single note group count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteGroupCountPlural": "{count} notitiegroepen",
+  "@noteGroupCountPlural": {
+    "description": "Pluralized label for multiple note groups count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

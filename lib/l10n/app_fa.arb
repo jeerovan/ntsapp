@@ -1,0 +1,1497 @@
+{
+  "@@locale": "fa",
+  "importantTitle": "مهم",
+  "@importantTitle": {
+    "description": "Title for the important notice page."
+  },
+  "accessKeyNoticeDescription1": "در صفحه بعد، مجموعه‌ای از ۲۴ کلمه را مشاهده خواهید کرد. این کلید رمزنگاری منحصربه‌فرد و خصوصی شماست و تنها راه بازیابی یادداشت‌هایتان در صورت خروج از حساب، گم شدن دستگاه یا خرابی آن است.",
+  "@accessKeyNoticeDescription1": {
+    "description": "First paragraph of the access key notice."
+  },
+  "accessKeyNoticeDescription2": "ما این کلید را ذخیره نمی‌کنیم. مسئولیت نگهداری آن در مکانی امن و خارج از برنامه {appName} بر عهده شماست.",
+  "@accessKeyNoticeDescription2": {
+    "description": "Second paragraph of the access key notice.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "iUnderstandShowMeTheKey": "متوجه شدم.\nکلید را نشانم بده.",
+  "@iUnderstandShowMeTheKey": {
+    "description": "Button text to understand and show the key."
+  },
+  "selectGroupToViewNotes": "برای مشاهده یادداشت‌ها، یک گروه انتخاب کنید",
+  "@selectGroupToViewNotes": {
+    "description": "Placeholder text shown when no group is selected in desktop mode."
+  },
+  "accessKeyShareText": "این کلید دسترسی شماست.",
+  "@accessKeyShareText": {
+    "description": "Text used in share dialog when sharing the access key."
+  },
+  "pleaseTryAgain": "لطفاً دوباره تلاش کنید.",
+  "@pleaseTryAgain": {
+    "description": "Generic error message shown when an operation fails."
+  },
+  "copiedToClipboard": "در حافظه موقت کپی شد",
+  "@copiedToClipboard": {
+    "description": "Toast message shown when text is copied to the clipboard."
+  },
+  "accessKeyTitle": "کلید دسترسی",
+  "@accessKeyTitle": {
+    "description": "Title for the access key page."
+  },
+  "accessKeyDescription": "لطفاً این کلید را در مکانی امن ذخیره کنید. برای همگام‌سازی یادداشت‌ها روی دستگاه دیگر به آن نیاز خواهید داشت.",
+  "@accessKeyDescription": {
+    "description": "Instructional text for saving the access key."
+  },
+  "copyLabel": "کپی",
+  "@copyLabel": {
+    "description": "Label for the copy button."
+  },
+  "downloadAsTextFileLabel": "دانلود به صورت فایل متنی",
+  "@downloadAsTextFileLabel": {
+    "description": "Label for the button that downloads the access key as a text file."
+  },
+  "continueLabel": "ادامه",
+  "@continueLabel": {
+    "description": "Label for the continue button."
+  },
+  "pleaseAuthenticate": "لطفاً احراز هویت کنید",
+  "@pleaseAuthenticate": {
+    "description": "Reason shown in the biometric/device authentication prompt."
+  },
+  "couldNotCreate": "ایجاد نشد",
+  "@couldNotCreate": {
+    "description": "Error message title when backup creation fails."
+  },
+  "couldNotShareFile": "اشتراک‌گذاری فایل انجام نشد",
+  "@couldNotShareFile": {
+    "description": "Error message title when sharing backup fails."
+  },
+  "hereIsTheBackupFile": "این فایل پشتیبان برنامه شماست.",
+  "@hereIsTheBackupFile": {
+    "description": "Text used in share dialog when sharing the backup file."
+  },
+  "errorTitle": "خطا",
+  "@errorTitle": {
+    "description": "Generic error message title."
+  },
+  "backupLabel": "پشتیبان‌گیری",
+  "@backupLabel": {
+    "description": "Label for the backup option."
+  },
+  "restoreLabel": "بازیابی",
+  "@restoreLabel": {
+    "description": "Label for the restore option."
+  },
+  "leaveAReviewLabel": "ثبت دیدگاه",
+  "@leaveAReviewLabel": {
+    "description": "Label for the feedback/review option."
+  },
+  "shareLabel": "اشتراک‌گذاری",
+  "@shareLabel": {
+    "description": "Label for the share app option."
+  },
+  "desktopAppLinkLabel": "نسخه دسکتاپ",
+  "@desktopAppLinkLabel": {
+    "description": "Label for the link to the desktop version."
+  },
+  "loggingLabel": "لاگ‌ها",
+  "@loggingLabel": {
+    "description": "Label for the logging toggle setting."
+  },
+  "versionLabel": "نسخه: {version}",
+  "@versionLabel": {
+    "description": "Label showing app version.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingLabel": "در حال بارگذاری...",
+  "@loadingLabel": {
+    "description": "Label for the loading state of the app version."
+  },
+  "restoredLabel": "بازیابی شد.",
+  "@restoredLabel": {
+    "description": "Toast message shown after successfully restoring items."
+  },
+  "deletedPermanentlyLabel": "به‌طور دائم حذف شد.",
+  "@deletedPermanentlyLabel": {
+    "description": "Toast message shown after successfully deleting items permanently."
+  },
+  "mediaTitle": "رسانه",
+  "@mediaTitle": {
+    "description": "Title for the media viewer page."
+  },
+  "invalidWordList": "لیست کلمات نامعتبر",
+  "@invalidWordList": {
+    "description": "Error message when invalid mnemonic phrase is entered."
+  },
+  "enterYour24WordPhrase": "عبارت ۲۴ کلمه‌ای خود را وارد کنید",
+  "@enterYour24WordPhrase": {
+    "description": "Label for the recovery phrase text input."
+  },
+  "enterYourRecoveryPhraseHere": "عبارت بازیابی خود را اینجا وارد کنید",
+  "@enterYourRecoveryPhraseHere": {
+    "description": "Hint text for the recovery phrase text input."
+  },
+  "pleaseEnterYourRecoveryPhrase": "لطفاً عبارت بازیابی خود را وارد کنید",
+  "@pleaseEnterYourRecoveryPhrase": {
+    "description": "Error message when recovery phrase is empty."
+  },
+  "recoveryPhraseMustContain24Words": "عبارت بازیابی باید دقیقاً ۲۴ کلمه باشد",
+  "@recoveryPhraseMustContain24Words": {
+    "description": "Error message when recovery phrase does not have 24 words."
+  },
+  "submitLabel": "ثبت",
+  "@submitLabel": {
+    "description": "Label for the submit button."
+  },
+  "orLabel": "یا",
+  "@orLabel": {
+    "description": "Separator text between input and file upload."
+  },
+  "selectTxtFileLabel": "انتخاب فایل .txt",
+  "@selectTxtFileLabel": {
+    "description": "Label for the file selection button."
+  },
+  "failureTitle": "شکست",
+  "@failureTitle": {
+    "description": "Title for error dialog."
+  },
+  "invalidPasswordKey": "کلید رمز عبور نامعتبر",
+  "@invalidPasswordKey": {
+    "description": "Error message when password key is invalid."
+  },
+  "enableSyncTitle": "فعال‌سازی همگام‌سازی",
+  "@enableSyncTitle": {
+    "description": "Title for the password key input page."
+  },
+  "passwordRequirementsDescription": "لطفاً کلیدی (رمز عبوری) که قبلاً ساخته‌اید را وارد کنید. این کلید باید حداقل ۱۰ کاراکتر داشته باشد و شامل حداقل ۱ عدد، ۱ حرف کوچک، ۱ حرف بزرگ و ۱ کاراکتر خاص باشد.",
+  "@passwordRequirementsDescription": {
+    "description": "Description of password requirements."
+  },
+  "enterKeyLabel": "وارد کردن کلید",
+  "@enterKeyLabel": {
+    "description": "Label for password input."
+  },
+  "pleaseEnterKey": "لطفاً کلید را وارد کنید",
+  "@pleaseEnterKey": {
+    "description": "Error message when password input is empty."
+  },
+  "filterNotesTitle": "فیلتر یادداشت‌ها",
+  "@filterNotesTitle": {
+    "description": "Title for the filter notes dialog."
+  },
+  "filterPinnedNotesTooltip": "فیلتر یادداشت‌های پین‌شده",
+  "@filterPinnedNotesTooltip": {
+    "description": "Tooltip for filter pinned notes button."
+  },
+  "filterStarredNotesTooltip": "فیلتر یادداشت‌های ستاره‌دار",
+  "@filterStarredNotesTooltip": {
+    "description": "Tooltip for filter starred notes button."
+  },
+  "filterTextNotesTooltip": "فیلتر یادداشت‌های متنی",
+  "@filterTextNotesTooltip": {
+    "description": "Tooltip for filter text notes button."
+  },
+  "filterTasksTooltip": "فیلتر وظایف",
+  "@filterTasksTooltip": {
+    "description": "Tooltip for filter tasks button."
+  },
+  "filterLinksTooltip": "فیلتر لینک‌ها",
+  "@filterLinksTooltip": {
+    "description": "Tooltip for filter links button."
+  },
+  "filterImagesTooltip": "فیلتر تصاویر",
+  "@filterImagesTooltip": {
+    "description": "Tooltip for filter images button."
+  },
+  "filterAudioTooltip": "فیلتر صوت",
+  "@filterAudioTooltip": {
+    "description": "Tooltip for filter audio button."
+  },
+  "filterVideoTooltip": "فیلتر ویدیو",
+  "@filterVideoTooltip": {
+    "description": "Tooltip for filter video button."
+  },
+  "filterFilesTooltip": "فیلتر فایل‌ها",
+  "@filterFilesTooltip": {
+    "description": "Tooltip for filter files button."
+  },
+  "filterContactsTooltip": "فیلتر مخاطبین",
+  "@filterContactsTooltip": {
+    "description": "Tooltip for filter contacts button."
+  },
+  "filterLocationTooltip": "فیلتر مکان",
+  "@filterLocationTooltip": {
+    "description": "Tooltip for filter location button."
+  },
+  "movedToTrash": "به سطل زباله منتقل شد",
+  "@movedToTrash": {
+    "description": "Toast message when items are moved to trash."
+  },
+  "copiedNotesToClipboard": "در حافظه موقت کپی شد",
+  "@copiedNotesToClipboard": {
+    "description": "Toast message when selected notes are copied to clipboard."
+  },
+  "locationShareLabel": "مکان:",
+  "@locationShareLabel": {
+    "description": "Label used when sharing location."
+  },
+  "contactShareLabel": "مخاطب:",
+  "@contactShareLabel": {
+    "description": "Label used when sharing contact."
+  },
+  "emailsShareLabel": "ایمیل‌ها:",
+  "@emailsShareLabel": {
+    "description": "Label used when sharing contact emails."
+  },
+  "addressesShareLabel": "آدرس‌ها:",
+  "@addressesShareLabel": {
+    "description": "Label used when sharing contact addresses."
+  },
+  "microphoneNotAvailable": "میکروفون ممکن است در دسترس نباشد.",
+  "@microphoneNotAvailable": {
+    "description": "Toast message when microphone is not available."
+  },
+  "microphonePermissionRequired": "برای ضبط صدا، دسترسی به میکروفون لازم است.",
+  "@microphonePermissionRequired": {
+    "description": "Toast message when microphone permission is required."
+  },
+  "couldNotGetDuration": "امکان دریافت مدت زمان وجود ندارد",
+  "@couldNotGetDuration": {
+    "description": "Error message when audio duration could not be retrieved."
+  },
+  "errorOpeningFiles": "خطا در باز کردن فایل‌ها",
+  "@errorOpeningFiles": {
+    "description": "Error message when file picker fails."
+  },
+  "pleaseWaitTitle": "لطفاً منتظر بمانید",
+  "@pleaseWaitTitle": {
+    "description": "Title for please wait dialog."
+  },
+  "fileNotAvailableYet": "فایل هنوز در دسترس نیست",
+  "@fileNotAvailableYet": {
+    "description": "Message shown when file is not available yet."
+  },
+  "clearSelectionTooltip": "پاک کردن انتخاب",
+  "@clearSelectionTooltip": {
+    "description": "Tooltip for clear selection button."
+  },
+  "copyNotesTooltip": "کپی یادداشت‌ها",
+  "@copyNotesTooltip": {
+    "description": "Tooltip for copy notes button."
+  },
+  "changeTaskTypeTooltip": "تغییر نوع وظیفه",
+  "@changeTaskTypeTooltip": {
+    "description": "Tooltip for change task type button."
+  },
+  "shareNotesTooltip": "اشتراک‌گذاری یادداشت‌ها",
+  "@shareNotesTooltip": {
+    "description": "Tooltip for share notes button."
+  },
+  "editNoteTooltip": "ویرایش یادداشت",
+  "@editNoteTooltip": {
+    "description": "Tooltip for edit note button."
+  },
+  "starUnstarNotesTooltip": "ستاره‌دار/بدون ستاره کردن یادداشت‌ها",
+  "@starUnstarNotesTooltip": {
+    "description": "Tooltip for star/unstar notes button."
+  },
+  "moveToTrashTooltip": "انتقال به سطل زباله",
+  "@moveToTrashTooltip": {
+    "description": "Tooltip for move to trash button."
+  },
+  "pinUnpinNotesTooltip": "پین/برداشتن پین یادداشت‌ها",
+  "@pinUnpinNotesTooltip": {
+    "description": "Tooltip for pin/unpin notes button."
+  },
+  "cancelReplyTooltip": "لغو پاسخ",
+  "@cancelReplyTooltip": {
+    "description": "Tooltip for cancel reply button."
+  },
+  "createTaskHint": "ایجاد یک وظیفه",
+  "@createTaskHint": {
+    "description": "Hint text for creating a task."
+  },
+  "addNoteHint": "افزودن یادداشت...",
+  "@addNoteHint": {
+    "description": "Hint text for adding a note."
+  },
+  "attachTooltip": "پیوست",
+  "@attachTooltip": {
+    "description": "Tooltip for attach button."
+  },
+  "addNoteTooltip": "افزودن یادداشت",
+  "@addNoteTooltip": {
+    "description": "Tooltip for add note button."
+  },
+  "recordStopAudioTooltip": "ضبط/توقف ضبط صدا",
+  "@recordStopAudioTooltip": {
+    "description": "Tooltip for record/stop audio button."
+  },
+  "contactAttachmentLabel": "مخاطب",
+  "@contactAttachmentLabel": {
+    "description": "Label for contact attachment option."
+  },
+  "locationAttachmentLabel": "مکان",
+  "@locationAttachmentLabel": {
+    "description": "Label for location attachment option."
+  },
+  "cameraAttachmentLabel": "دوربین",
+  "@cameraAttachmentLabel": {
+    "description": "Label for camera attachment option."
+  },
+  "filesAttachmentLabel": "فایل‌ها",
+  "@filesAttachmentLabel": {
+    "description": "Label for files attachment option."
+  },
+  "checklistAttachmentLabel": "چک‌لیست",
+  "@checklistAttachmentLabel": {
+    "description": "Label for checklist attachment option."
+  },
+  "accessKeyInputTitle": "فعال‌سازی همگام‌سازی",
+  "@accessKeyInputTitle": {
+    "description": "Title for the access key input page."
+  },
+  "accessKeyInputDescription": "لطفاً عبارت بازیابی ۲۴ کلمه‌ای خود را وارد کنید یا فایل .txt شامل آن را بارگذاری نمایید.",
+  "@accessKeyInputDescription": {
+    "description": "Description text on the access key input page."
+  },
+  "editMenuItemLabel": "ویرایش",
+  "@editMenuItemLabel": {
+    "description": "Label for the edit menu item in the app bar popup menu."
+  },
+  "filterMenuItemLabel": "فیلترها",
+  "@filterMenuItemLabel": {
+    "description": "Label for the filter menu item in the app bar popup menu."
+  },
+  "externalStoragePermissionDenied": "دسترسی به حافظه خارجی رد شد.",
+  "@externalStoragePermissionDenied": {
+    "description": "Error message shown when external storage permission is denied."
+  },
+  "pressLongToStartRecording": "برای شروع ضبط، طولانی فشار دهید.",
+  "@pressLongToStartRecording": {
+    "description": "Hint message shown when the send button is pressed while not typing and not recording."
+  },
+  "didYouKnowTitle": "آیا می‌دانستید؟",
+  "@didYouKnowTitle": {
+    "description": "Title for the tip dialog shown to first-time users."
+  },
+  "closeTooltip": "بستن",
+  "@closeTooltip": {
+    "description": "Tooltip for the close button on dialogs."
+  },
+  "appDescriptionContent": "{appName} یک برنامه یادداشت‌برداری کاملاً خصوصی است. این برنامه داده‌های شخصی شما را جمع‌آوری نمی‌کند و تبلیغاتی نمایش نمی‌دهد.\n\nامیدواریم از استفاده از آن لذت ببرید. نظر خود را با ما در میان بگذارید.",
+  "@appDescriptionContent": {
+    "description": "Description text about the app in the tip dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNotesTooltip": "جستجوی یادداشت‌ها",
+  "@searchNotesTooltip": {
+    "description": "Tooltip for the search notes button."
+  },
+  "syncMenuItemLabel": "همگام‌سازی",
+  "@syncMenuItemLabel": {
+    "description": "Label for the sync menu item."
+  },
+  "trashMenuItemLabel": "سطل زباله",
+  "@trashMenuItemLabel": {
+    "description": "Label for the trash menu item."
+  },
+  "starredNotesMenuItemLabel": "یادداشت‌های ستاره‌دار",
+  "@starredNotesMenuItemLabel": {
+    "description": "Label for the starred notes menu item."
+  },
+  "settingsMenuItemLabel": "تنظیمات",
+  "@settingsMenuItemLabel": {
+    "description": "Label for the settings menu item."
+  },
+  "accountMenuItemLabel": "حساب کاربری",
+  "@accountMenuItemLabel": {
+    "description": "Label for the account menu item."
+  },
+  "pageMenuItemLabel": "صفحه",
+  "@pageMenuItemLabel": {
+    "description": "Label for the page menu item (shown in debug mode)."
+  },
+  "sqliteMenuItemLabel": "Sqlite",
+  "@sqliteMenuItemLabel": {
+    "description": "Label for the SQLite database viewer menu item."
+  },
+  "logsMenuItemLabel": "لاگ‌ها",
+  "@logsMenuItemLabel": {
+    "description": "Label for the logs menu item."
+  },
+  "reorderMenuItemLabel": "مرتب‌سازی مجدد",
+  "@reorderMenuItemLabel": {
+    "description": "Label for the reorder group menu item."
+  },
+  "editGroupMenuItemLabel": "ویرایش",
+  "@editGroupMenuItemLabel": {
+    "description": "Label for the edit group menu item."
+  },
+  "deleteGroupMenuItemLabel": "حذف",
+  "@deleteGroupMenuItemLabel": {
+    "description": "Label for the delete group menu item."
+  },
+  "dragHandleReorderTooltip": "برای تغییر ترتیب بکشید",
+  "@dragHandleReorderTooltip": {
+    "description": "Tooltip message for drag handle on desktop."
+  },
+  "holdAndDragReorderTooltip": "برای تغییر ترتیب نگه دارید و بکشید",
+  "@holdAndDragReorderTooltip": {
+    "description": "Tooltip message for hold and drag to re-order on mobile."
+  },
+  "emptyHomePageMessage": "سلام!\n\nاینجا کمی خالی به نظر می‌رسد.\n\nدکمه + را بزنید و یادداشت‌های خود را ایجاد کنید. :)",
+  "@emptyHomePageMessage": {
+    "description": "Empty state message shown when there are no groups on the home page."
+  },
+  "reorderingTitle": "مرتب‌سازی",
+  "@reorderingTitle": {
+    "description": "Title shown when reordering groups on the home page."
+  },
+  "selectEllipsisLabel": "انتخاب...",
+  "@selectEllipsisLabel": {
+    "description": "Placeholder label shown when shared contents are being loaded."
+  },
+  "dateTimeToggleLabel": "تاریخ/زمان",
+  "@dateTimeToggleLabel": {
+    "description": "Label for the date/time toggle switch in group settings."
+  },
+  "noteBorderToggleLabel": "کادر یادداشت",
+  "@noteBorderToggleLabel": {
+    "description": "Label for the note border toggle switch in group settings."
+  },
+  "deleteGroupButtonLabel": "حذف",
+  "@deleteGroupButtonLabel": {
+    "description": "Label for the delete group button in group edit page."
+  },
+  "notesTabLabel": "یادداشت‌ها",
+  "@notesTabLabel": {
+    "description": "Label for the notes tab in the trash page."
+  },
+  "groupsTabLabel": "گروه‌ها",
+  "@groupsTabLabel": {
+    "description": "Label for the groups tab in the trash page."
+  },
+  "categoriesTabLabel": "دسته‌بندی‌ها",
+  "@categoriesTabLabel": {
+    "description": "Label for the categories tab in the trash page."
+  },
+  "locationItemLabel": "مکان",
+  "@locationItemLabel": {
+    "description": "Label for location items in search results."
+  },
+  "addGroupTitle": "افزودن گروه",
+  "@addGroupTitle": {
+    "description": "Page title for creating a new group."
+  },
+  "editGroupTitle": "ویرایش گروه",
+  "@editGroupTitle": {
+    "description": "Page title for editing an existing group."
+  },
+  "titleInputLabel": "عنوان",
+  "@titleInputLabel": {
+    "description": "Label for the title input field."
+  },
+  "locationPermissionRequiredTitle": "مجوز مکان مورد نیاز است",
+  "@locationPermissionRequiredTitle": {
+    "description": "Title for the location permission dialog."
+  },
+  "enableLocationPermissionsContent": "لطفاً مجوزهای مکان را در تنظیمات برنامه فعال کنید.",
+  "@enableLocationPermissionsContent": {
+    "description": "Content text for the location permission dialog."
+  },
+  "cancelButtonLabel": "لغو",
+  "@cancelButtonLabel": {
+    "description": "Label for the cancel button."
+  },
+  "openSettingsButtonLabel": "باز کردن تنظیمات",
+  "@openSettingsButtonLabel": {
+    "description": "Label for the open settings button."
+  },
+  "locationServicesTitle": "خدمات مکان",
+  "@locationServicesTitle": {
+    "description": "Title for the location services alert."
+  },
+  "pleaseEnableLocationServicesContent": "لطفاً فعال کنید!",
+  "@pleaseEnableLocationServicesContent": {
+    "description": "Content text for the location services disabled alert."
+  },
+  "selectLocationTitle": "انتخاب مکان",
+  "@selectLocationTitle": {
+    "description": "Title for the location picker page."
+  },
+  "useCurrentLocationTooltip": "استفاده از مکان فعلی",
+  "@useCurrentLocationTooltip": {
+    "description": "Tooltip for the use current location button."
+  },
+  "selectAllButtonLabel": "انتخاب همه",
+  "@selectAllButtonLabel": {
+    "description": "Label for the select all button in archived items."
+  },
+  "searchLogsHint": "جستجوی لاگ‌ها..",
+  "@searchLogsHint": {
+    "description": "Hint text for the search logs input field."
+  },
+  "noLogsAvailable": "لاگی موجود نیست",
+  "@noLogsAvailable": {
+    "description": "Message shown when there are no log entries to display."
+  },
+  "dbViewerTitle": "مشاهده‌گر دیتابیس",
+  "@dbViewerTitle": {
+    "description": "Title for the SQLite database viewer page."
+  },
+  "selectTableToViewData": "برای مشاهده داده‌ها، یک جدول انتخاب کنید",
+  "@selectTableToViewData": {
+    "description": "Instruction text shown when no table is selected in the DB viewer."
+  },
+  "selectTableDropdownHint": "انتخاب جدول",
+  "@selectTableDropdownHint": {
+    "description": "Hint text for the table selection dropdown in the DB viewer."
+  },
+  "pickContactTitle": "انتخاب مخاطب",
+  "@pickContactTitle": {
+    "description": "Title for the contact picker page."
+  },
+  "permissionRequiredText": "مجوز مورد نیاز است",
+  "@permissionRequiredText": {
+    "description": "Text shown when contact permission is required."
+  },
+  "grantPermissionButtonLabel": "اعطای مجوز",
+  "@grantPermissionButtonLabel": {
+    "description": "Label for the grant permission button."
+  },
+  "pageDummyTitle": "صفحه آزمایشی",
+  "@pageDummyTitle": {
+    "description": "Title for the dummy/testing page."
+  },
+  "simulateButtonLabel": "شبیه‌سازی",
+  "@simulateButtonLabel": {
+    "description": "Label for the simulate button on the dummy page."
+  },
+  "selectCategoryTitle": "انتخاب دسته‌بندی",
+  "@selectCategoryTitle": {
+    "description": "Title for the select category page."
+  },
+  "addCategoryTitle": "افزودن دسته‌بندی",
+  "@addCategoryTitle": {
+    "description": "Title for the add category page."
+  },
+  "editCategoryTitle": "ویرایش دسته‌بندی",
+  "@editCategoryTitle": {
+    "description": "Title for the edit category page."
+  },
+  "categoryTitleHint": "عنوان دسته‌بندی",
+  "@categoryTitleHint": {
+    "description": "Hint text for the category title input field."
+  },
+  "colorLabel": "رنگ",
+  "@colorLabel": {
+    "description": "Label for the color selector."
+  },
+  "changeColorLabel": "تغییر رنگ",
+  "@changeColorLabel": {
+    "description": "Label for the change color option."
+  },
+  "deviceDisabledMessage": "دستگاه غیرفعال شد!",
+  "@deviceDisabledMessage": {
+    "description": "Toast message shown when a device is disabled."
+  },
+  "cannotRemoveThisDeviceMessage": "نمی‌توان این دستگاه را حذف کرد!",
+  "@cannotRemoveThisDeviceMessage": {
+    "description": "Toast message shown when attempting to remove the current device."
+  },
+  "confirmRemoveTitle": "تأیید حذف",
+  "@confirmRemoveTitle": {
+    "description": "Title for the confirm remove device dialog."
+  },
+  "confirmRemoveDeviceContent": "مطمئن هستید؟ این کار تمام داده‌های روی این دستگاه را حذف می‌کند.",
+  "@confirmRemoveDeviceContent": {
+    "description": "Content text for the confirm remove device dialog."
+  },
+  "okButtonLabel": "باشه",
+  "@okButtonLabel": {
+    "description": "Label for the OK button."
+  },
+  "registeredDevicesTitle": "دستگاه‌های ثبت‌شده",
+  "@registeredDevicesTitle": {
+    "description": "Title for the registered devices page."
+  },
+  "noDevicesFoundMessage": "دستگاهی یافت نشد",
+  "@noDevicesFoundMessage": {
+    "description": "Message shown when no devices are found."
+  },
+  "enabledLabel": "فعال",
+  "@enabledLabel": {
+    "description": "Label for an enabled device status."
+  },
+  "disabledLabel": "غیرفعال",
+  "@disabledLabel": {
+    "description": "Label for a disabled device status."
+  },
+  "migratingMediaTitle": "انتقال رسانه‌ها",
+  "@migratingMediaTitle": {
+    "description": "Title for the media migration page."
+  },
+  "processingMessage": "در حال پردازش...",
+  "@processingMessage": {
+    "description": "Message shown while media is being processed."
+  },
+  "doNotNavigateAwayMessage": "لطفاً از صفحه خارج نشوید",
+  "@doNotNavigateAwayMessage": {
+    "description": "Warning message asking the user not to navigate away during media migration."
+  },
+  "errorWithDetails": "خطا: {error}",
+  "@errorWithDetails": {
+    "description": "Error message shown when loading logs fails, including the error.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sequenceNotAcceptedError": "توالی پذیرفته نشد",
+  "@sequenceNotAcceptedError": {
+    "description": "Validation error when the key contains a sequential pattern."
+  },
+  "examplesNotAcceptedError": "نمونه‌ها پذیرفته نشدند",
+  "@examplesNotAcceptedError": {
+    "description": "Validation error when the key matches one of the example keys."
+  },
+  "enterKeyAgainLabel": "وارد کردن مجدد کلید",
+  "@enterKeyAgainLabel": {
+    "description": "Label and hint for the confirm key input field."
+  },
+  "pleaseEnterKeyAgainError": "لطفاً کلید را دوباره وارد کنید",
+  "@pleaseEnterKeyAgainError": {
+    "description": "Validation error when the confirm key field is empty."
+  },
+  "keysDoNotMatchError": "کلیدها مطابقت ندارند",
+  "@keysDoNotMatchError": {
+    "description": "Validation error when the two keys do not match."
+  },
+  "ruleUppercaseLetter": "۱ حرف بزرگ",
+  "@ruleUppercaseLetter": {
+    "description": "Password rule description for one uppercase letter."
+  },
+  "ruleLowercaseLetter": "۱ حرف کوچک",
+  "@ruleLowercaseLetter": {
+    "description": "Password rule description for one lowercase letter."
+  },
+  "ruleNumericLetter": "۱ عدد",
+  "@ruleNumericLetter": {
+    "description": "Password rule description for one numeric character."
+  },
+  "ruleSpecialCharacter": "۱ کاراکتر خاص",
+  "@ruleSpecialCharacter": {
+    "description": "Password rule description for one special character."
+  },
+  "ruleMinTenCharacters": "حداقل ۱۰ کاراکتر",
+  "@ruleMinTenCharacters": {
+    "description": "Password rule description for the minimum length."
+  },
+  "examplesTitle": "نمونه‌ها",
+  "@examplesTitle": {
+    "description": "Title for the key examples dialog."
+  },
+  "passwordExample1": "I would love 2 have @ll ...",
+  "@passwordExample1": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample2": "(A6r4K4D46r4)",
+  "@passwordExample2": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample3": "Mykey@2025",
+  "@passwordExample3": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample4": "C0ffee !s great f0r pr0ductivity",
+  "@passwordExample4": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "gotItButtonLabel": "متوجه شدم",
+  "@gotItButtonLabel": {
+    "description": "Label for the button to dismiss the examples dialog."
+  },
+  "encryptionKeyTitle": "کلید رمزنگاری",
+  "@encryptionKeyTitle": {
+    "description": "Title for the encryption key creation page."
+  },
+  "createKeyDescription": "لطفاً یک کلید (رمز عبور) طولانی و غیرقابل حدس وارد کنید. به یاد داشته باشید که آن را در مکانی امن ذخیره کنید. در صورت گم شدن یا فراموشی، بازیابی آن امکان‌پذیر نیست.",
+  "@createKeyDescription": {
+    "description": "Instructional text for creating an encryption key."
+  },
+  "seeExamplesTooltip": "مشاهده نمونه‌ها",
+  "@seeExamplesTooltip": {
+    "description": "Tooltip for the button that shows key examples."
+  },
+  "couldNotFetchDetailsMessage": "امکان دریافت جزئیات وجود ندارد",
+  "@couldNotFetchDetailsMessage": {
+    "description": "Message shown when plan details could not be fetched."
+  },
+  "retryButtonLabel": "تلاش مجدد",
+  "@retryButtonLabel": {
+    "description": "Label for the retry button."
+  },
+  "signedInAsLabel": "وارد شده با عنوان:",
+  "@signedInAsLabel": {
+    "description": "Label shown before the signed-in email."
+  },
+  "storageUsageLabel": "میزان استفاده از حافظه",
+  "@storageUsageLabel": {
+    "description": "Label for the storage usage section."
+  },
+  "subscribeLabel": "اشتراک",
+  "@subscribeLabel": {
+    "description": "Label for the subscribe option."
+  },
+  "planExpiredRenewLabel": "اشتراک منقضی شده است! تمدید کنید",
+  "@planExpiredRenewLabel": {
+    "description": "Label for the plan expired renew option."
+  },
+  "manageDevicesLabel": "مدیریت دستگاه‌ها",
+  "@manageDevicesLabel": {
+    "description": "Label for the manage devices option."
+  },
+  "viewAccessKeyLabel": "مشاهده کلید دسترسی",
+  "@viewAccessKeyLabel": {
+    "description": "Label for the view access key option."
+  },
+  "changeKeyPasswordLabel": "تغییر رمز عبور کلید",
+  "@changeKeyPasswordLabel": {
+    "description": "Label for the change key password option."
+  },
+  "manageSubscriptionLabel": "مدیریت اشتراک",
+  "@manageSubscriptionLabel": {
+    "description": "Label for the manage subscription option."
+  },
+  "signOutButtonLabel": "خروج از حساب",
+  "@signOutButtonLabel": {
+    "description": "Label for the sign out option."
+  },
+  "yearlyPlansTitle": "طرح‌های سالانه",
+  "@yearlyPlansTitle": {
+    "description": "Title for the plan subscribe page."
+  },
+  "loginLabel": "ورود",
+  "@loginLabel": {
+    "description": "Label for the login button."
+  },
+  "syncAllYourNotesLabel": "همگام‌سازی تمامی یادداشت‌ها",
+  "@syncAllYourNotesLabel": {
+    "description": "Headline on the subscribe page."
+  },
+  "acrossYourDevicesLabel": "در تمامی دستگاه‌های شما",
+  "@acrossYourDevicesLabel": {
+    "description": "Subheadline on the subscribe page."
+  },
+  "featureEndToEndEncryption": "رمزنگاری سراسری",
+  "@featureEndToEndEncryption": {
+    "description": "Feature list item for end-to-end encryption."
+  },
+  "featureSyncUpTo3Devices": "همگام‌سازی تا ۳ دستگاه",
+  "@featureSyncUpTo3Devices": {
+    "description": "Feature list item for syncing up to 3 devices."
+  },
+  "featureUpgradeCancelAnytime": "ارتقا/لغو در هر زمان",
+  "@featureUpgradeCancelAnytime": {
+    "description": "Feature list item for upgrading or cancelling anytime."
+  },
+  "noPlansAvailableMessage": "هیچ طرحی در دسترس نیست",
+  "@noPlansAvailableMessage": {
+    "description": "Message shown when no plans are available."
+  },
+  "downloadAppSubscribeLabel": "برنامه را دانلود کرده و مشترک شوید",
+  "@downloadAppSubscribeLabel": {
+    "description": "Label prompting the user to download the app and subscribe."
+  },
+  "privacyTermsLabel": "حریم خصوصی • شرایط",
+  "@privacyTermsLabel": {
+    "description": "Label for the privacy and terms footer."
+  },
+  "saveFiftyPercentLabel": "۵۰٪ صرفه‌جویی",
+  "@saveFiftyPercentLabel": {
+    "description": "Badge text showing the savings percentage."
+  },
+  "helloTitle": "سلام",
+  "@helloTitle": {
+    "description": "Title for the select key type page before welcoming."
+  },
+  "selectKeyMasterKeyDescription": "برای رمزنگاری داده‌هایتان، به یک کلید رمزنگاری اصلی نیاز داریم.",
+  "@selectKeyMasterKeyDescription": {
+    "description": "Description text on the select key type page."
+  },
+  "selectKeyTwoOptionsDescription": "دو گزینه دارید: یا خودتان کلید را بسازید (مشابه رمز عبور) یا ما آن را برای شما بسازیم.",
+  "@selectKeyTwoOptionsDescription": {
+    "description": "Description of the two key creation options."
+  },
+  "understandLoseKeyAcknowledgement": "متوجه هستم که در صورت گم کردن یا فراموشی کلید رمزنگاری، ممکن است داده‌ها را از دست بدهم.",
+  "@understandLoseKeyAcknowledgement": {
+    "description": "Acknowledgement text for understanding the risk of losing the encryption key."
+  },
+  "createKeyForMeButtonLabel": "کلید را برایم بساز",
+  "@createKeyForMeButtonLabel": {
+    "description": "Label for the button to let the app create the key."
+  },
+  "recommendedLabel": "(پیشنهادی)",
+  "@recommendedLabel": {
+    "description": "Label indicating a recommended option."
+  },
+  "pleaseAcknowledgeMessage": "لطفاً تأیید کنید!",
+  "@pleaseAcknowledgeMessage": {
+    "description": "Toast message asking the user to acknowledge the terms."
+  },
+  "createKeyMyselfButtonLabel": "خودم کلید را می‌سازم",
+  "@createKeyMyselfButtonLabel": {
+    "description": "Label for the button to create the key yourself."
+  },
+  "welcomeToAppName": "به {appName} خوش آمدید",
+  "@welcomeToAppName": {
+    "description": "Welcome message with the app name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "e2eEncryptionDescription": "ما از رمزنگاری سراسری استفاده می‌کنیم تا اطمینان حاصل کنیم که تمام یادداشت‌های شما امن هستند و هیچ‌کس، حتی ما، نمی‌تواند آن‌ها را ببیند.",
+  "@e2eEncryptionDescription": {
+    "description": "Description of the end-to-end encryption used."
+  },
+  "timeToStartEncryptionLabel": "زمان شروع رمزنگاری است!",
+  "@timeToStartEncryptionLabel": {
+    "description": "Message prompting the user to start encryption."
+  },
+  "nextButtonLabel": "بعدی",
+  "@nextButtonLabel": {
+    "description": "Label for the next button."
+  },
+  "sendingOtpFailedMessage": "ارسال کد تایید (OTP) انجام نشد. لطفاً دوباره تلاش کنید!",
+  "@sendingOtpFailedMessage": {
+    "description": "Toast message when sending the OTP fails."
+  },
+  "otpVerificationFailedMessage": "تایید کد ناموفق بود. لطفاً دوباره تلاش کنید!",
+  "@otpVerificationFailedMessage": {
+    "description": "Toast message when verifying the OTP fails."
+  },
+  "emailSignInTitle": "ورود با ایمیل",
+  "@emailSignInTitle": {
+    "description": "Title for the sign-in page before OTP is sent."
+  },
+  "verifyOtpLabel": "تایید کد (OTP)",
+  "@verifyOtpLabel": {
+    "description": "Label for verifying the OTP (used as title and button)."
+  },
+  "enterEmailLabel": "وارد کردن ایمیل",
+  "@enterEmailLabel": {
+    "description": "Label for the email input field."
+  },
+  "sendOtpLabel": "ارسال کد تایید",
+  "@sendOtpLabel": {
+    "description": "Label for the send OTP button."
+  },
+  "otpSentToEmailMessage": "ما یک کد تایید (OTP) به ایمیل شما {email} ارسال کردیم",
+  "@otpSentToEmailMessage": {
+    "description": "Message confirming the OTP was sent to the email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "enterOtpLabel": "وارد کردن کد تایید",
+  "@enterOtpLabel": {
+    "description": "Label for the OTP input field."
+  },
+  "changeEmailLabel": "تغییر ایمیل",
+  "@changeEmailLabel": {
+    "description": "Label for the change email button."
+  },
+  "encryptingNotesTitle": "در حال رمزنگاری یادداشت‌ها",
+  "@encryptingNotesTitle": {
+    "description": "Title shown while encrypting local notes."
+  },
+  "fetchingDetailsTitle": "در حال دریافت جزئیات",
+  "@fetchingDetailsTitle": {
+    "description": "Title shown while fetching details."
+  },
+  "couldNotFetchMessage": "امکان دریافت وجود ندارد",
+  "@couldNotFetchMessage": {
+    "description": "Error message shown when fetching fails."
+  },
+  "subscriptionEmailMismatchMessage": "اشتراک شما با ایمیل دیگری مرتبط است. لطفاً خارج شده و با آن ایمیل وارد شوید تا فضای ابری فعال شود.",
+  "@subscriptionEmailMismatchMessage": {
+    "description": "Error message when the subscription email does not match."
+  },
+  "errorCheckingPlanDetailsMessage": "خطا در بررسی جزئیات طرح",
+  "@errorCheckingPlanDetailsMessage": {
+    "description": "Error message shown when checking plan details fails."
+  },
+  "registerDeviceTitle": "ثبت دستگاه",
+  "@registerDeviceTitle": {
+    "description": "Title shown while registering the device."
+  },
+  "manageButtonLabel": "مدیریت",
+  "@manageButtonLabel": {
+    "description": "Label for the manage button (e.g., manage devices)."
+  },
+  "fetchingKeysTitle": "در حال دریافت کلیدها",
+  "@fetchingKeysTitle": {
+    "description": "Title shown while fetching encryption keys."
+  },
+  "signingOutTitle": "در حال خروج",
+  "@signingOutTitle": {
+    "description": "Title shown while signing out."
+  },
+  "pleaseCheckInternetMessage": "لطفاً اینترنت خود را بررسی کنید",
+  "@pleaseCheckInternetMessage": {
+    "description": "Error message asking the user to check internet connection."
+  },
+  "somethingWentWrongMessage": "مشکلی پیش آمده است",
+  "@somethingWentWrongMessage": {
+    "description": "Generic error message when something goes wrong."
+  },
+  "playPauseTooltip": "پخش/مکث",
+  "@playPauseTooltip": {
+    "description": "Tooltip for the play/pause audio button."
+  },
+  "timerFormattedTime": "{minutes}:{seconds}",
+  "@timerFormattedTime": {
+    "description": "Formatted timer display showing minutes and seconds.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadTooltip": "دانلود",
+  "@downloadTooltip": {
+    "description": "Tooltip for the download button."
+  },
+  "invalidAccessKey": "کلید دسترسی نامعتبر",
+  "@invalidAccessKey": {
+    "description": "Error message when the access key is invalid."
+  },
+  "fileDoesNotContain24Words": "فایل حاوی دقیقاً ۲۴ کلمه نیست.",
+  "@fileDoesNotContain24Words": {
+    "description": "Error message when the selected file does not contain a 24-word recovery phrase."
+  },
+  "errorReadingFile": "خطا در خواندن فایل",
+  "@errorReadingFile": {
+    "description": "Toast message when an error occurs while reading a file."
+  },
+  "allLabel": "همه",
+  "@allLabel": {
+    "description": "Label for the 'All' filter option."
+  },
+  "logTypeDebug": "دی‌باگ",
+  "@logTypeDebug": {
+    "description": "Log type label for debug entries."
+  },
+  "logTypeError": "خطا",
+  "@logTypeError": {
+    "description": "Log type label for error entries."
+  },
+  "logTypeInfo": "اطلاعات",
+  "@logTypeInfo": {
+    "description": "Log type label for info entries."
+  },
+  "logTypeWarning": "هشدار",
+  "@logTypeWarning": {
+    "description": "Log type label for warning entries."
+  },
+  "groupTitleHint": "عنوان گروه",
+  "@groupTitleHint": {
+    "description": "Hint text for the group title input field."
+  },
+  "categoryLabel": "دسته‌بندی",
+  "@categoryLabel": {
+    "description": "Label for the category selector section."
+  },
+  "selectCategoryPlaceholder": "انتخاب دسته‌بندی",
+  "@selectCategoryPlaceholder": {
+    "description": "Placeholder text prompting the user to select a category."
+  },
+  "storageBytesFormat": "{bytes} بایت",
+  "@storageBytesFormat": {
+    "description": "Formatted storage size in bytes.",
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "storageKilobytesFormat": "{kb} کیلوبایت",
+  "@storageKilobytesFormat": {
+    "description": "Formatted storage size in kilobytes.",
+    "placeholders": {
+      "kb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageMegabytesFormat": "{mb} مگابایت",
+  "@storageMegabytesFormat": {
+    "description": "Formatted storage size in megabytes.",
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageGigabytesFormat": "{gb} گیگابایت",
+  "@storageGigabytesFormat": {
+    "description": "Formatted storage size in gigabytes.",
+    "placeholders": {
+      "gb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsedTotalFormat": "{used} / {total}",
+  "@storageUsedTotalFormat": {
+    "description": "Formatted used vs total storage display.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "planStorageSizeFormat": "{size} {unit}",
+  "@planStorageSizeFormat": {
+    "description": "Formatted plan storage size with unit (e.g. '100 GB').",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "searchHint": "کوئری، #سند و غیره..",
+  "@searchHint": {
+    "description": "Hint text for the search input field."
+  },
+  "categoryGroupSeparator": " > ",
+  "@categoryGroupSeparator": {
+    "description": "Separator used between category and group in search result headers."
+  },
+  "audioFileLabel": "فایل صوتی",
+  "@audioFileLabel": {
+    "description": "Label shown for audio file search results."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Native name of the Arabic language."
+  },
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "Native name of the German language."
+  },
+  "languageGreek": "Ελληνικά",
+  "@languageGreek": {
+    "description": "Native name of the Greek language."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Native name of the English language."
+  },
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Native name of the Spanish language."
+  },
+  "languagePersian": "فارسی",
+  "@languagePersian": {
+    "description": "Native name of the Persian (Farsi) language."
+  },
+  "languageFrench": "Français",
+  "@languageFrench": {
+    "description": "Native name of the French language."
+  },
+  "languageHebrew": "עברית",
+  "@languageHebrew": {
+    "description": "Native name of the Hebrew language."
+  },
+  "languageHindi": "हिन्दी",
+  "@languageHindi": {
+    "description": "Native name of the Hindi language."
+  },
+  "languageIndonesian": "Bahasa Indonesia",
+  "@languageIndonesian": {
+    "description": "Native name of the Indonesian language."
+  },
+  "languageItalian": "Italiano",
+  "@languageItalian": {
+    "description": "Native name of the Italian language."
+  },
+  "languageJapanese": "日本語",
+  "@languageJapanese": {
+    "description": "Native name of the Japanese language."
+  },
+  "languageKorean": "한국어",
+  "@languageKorean": {
+    "description": "Native name of the Korean language."
+  },
+  "languageDutch": "Nederlands",
+  "@languageDutch": {
+    "description": "Native name of the Dutch language."
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Native name of the Portuguese language."
+  },
+  "languageRussian": "Русский",
+  "@languageRussian": {
+    "description": "Native name of the Russian language."
+  },
+  "languageThai": "ไทย",
+  "@languageThai": {
+    "description": "Native name of the Thai language."
+  },
+  "languageTurkish": "Türkçe",
+  "@languageTurkish": {
+    "description": "Native name of the Turkish language."
+  },
+  "languageUkrainian": "Українська",
+  "@languageUkrainian": {
+    "description": "Native name of the Ukrainian language."
+  },
+  "languageVietnamese": "Tiếng Việt",
+  "@languageVietnamese": {
+    "description": "Native name of the Vietnamese language."
+  },
+  "languageChineseSimplified": "简体中文",
+  "@languageChineseSimplified": {
+    "description": "Native name of the Simplified Chinese language."
+  },
+  "selectLanguageTitle": "انتخاب زبان",
+  "@selectLanguageTitle": {
+    "description": "Header label for the language selection menu."
+  },
+  "settingsTitle": "تنظیمات",
+  "@settingsTitle": {
+    "description": "Title of the settings page displayed in the AppBar."
+  },
+  "themeLabel": "تم",
+  "@themeLabel": {
+    "description": "Label for the theme settings list tile."
+  },
+  "dayNightThemeTooltip": "تم روز/شب",
+  "@dayNightThemeTooltip": {
+    "description": "Tooltip for the theme toggle button."
+  },
+  "lockLabel": "قفل",
+  "@lockLabel": {
+    "description": "Label for the app lock setting."
+  },
+  "timeFormatLabel": "فرمت زمان",
+  "@timeFormatLabel": {
+    "description": "Label for the time format dropdown setting."
+  },
+  "h12Label": "۱۲ ساعته",
+  "@h12Label": {
+    "description": "Label for the 12-hour time format option."
+  },
+  "h24Label": "۲۴ ساعته",
+  "@h24Label": {
+    "description": "Label for the 24-hour time format option."
+  },
+  "fontSizeLabel": "اندازه فونت",
+  "@fontSizeLabel": {
+    "description": "Label for the font size setting."
+  },
+  "reduceTextSizeTooltip": "کاهش اندازه متن",
+  "@reduceTextSizeTooltip": {
+    "description": "Tooltip for the decrease font size button."
+  },
+  "increaseTextSizeTooltip": "افزایش اندازه متن",
+  "@increaseTextSizeTooltip": {
+    "description": "Tooltip for the increase font size button."
+  },
+  "languageLabel": "زبان",
+  "@languageLabel": {
+    "description": "Label for the language setting list tile."
+  },
+  "autoOpenGroupLabel": "باز کردن خودکار گروه",
+  "@autoOpenGroupLabel": {
+    "description": "Label for the auto-open group setting list tile."
+  },
+  "selectGroupTitle": "انتخاب گروه",
+  "@selectGroupTitle": {
+    "description": "Header label for the group selection menu."
+  },
+  "shareAppMessage": "یک {appName} بسازید: {appLink}",
+  "@shareAppMessage": {
+    "description": "Content of the share intent for sharing the app.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "appLink": {
+        "type": "String"
+      }
+    }
+  },
+  "noteTypeEmpty": "خالی",
+  "@noteTypeEmpty": {
+    "description": "Label for an empty note preview."
+  },
+  "noteTypeImage": "تصویر",
+  "@noteTypeImage": {
+    "description": "Label for an image note preview."
+  },
+  "noteTypeVideo": "ویدیو",
+  "@noteTypeVideo": {
+    "description": "Label for a video note preview."
+  },
+  "noteTypeAudio": "صوت",
+  "@noteTypeAudio": {
+    "description": "Label for an audio note preview."
+  },
+  "noteTypeDocument": "سند",
+  "@noteTypeDocument": {
+    "description": "Label for a document note preview."
+  },
+  "noteTypeContact": "مخاطب",
+  "@noteTypeContact": {
+    "description": "Label for a contact note preview."
+  },
+  "noteTypeLocation": "مکان",
+  "@noteTypeLocation": {
+    "description": "Label for a location note preview."
+  },
+  "noteTypeUnknown": "ناشناخته",
+  "@noteTypeUnknown": {
+    "description": "Label for a note preview of an unrecognized type."
+  },
+  "pleaseEnterData": "لطفاً داده وارد کنید",
+  "@pleaseEnterData": {
+    "description": "Validation error message when a field is empty."
+  },
+  "aNumber": "یک عدد",
+  "@aNumber": {
+    "description": "Validation error message when the input must be a number."
+  },
+  "enterDataLabel": "وارد کردن داده",
+  "@enterDataLabel": {
+    "description": "Validation error message prompting the user to enter data."
+  },
+  "pleaseEnterValidData": "لطفاً داده معتبر وارد کنید",
+  "@pleaseEnterValidData": {
+    "description": "Validation error message for invalid input data."
+  },
+  "pleaseSelectAnOption": "لطفاً یک گزینه انتخاب کنید",
+  "@pleaseSelectAnOption": {
+    "description": "Validation error message prompting the user to select an option."
+  },
+  "dateRangeFormat": "{start} - {end}",
+  "@dateRangeFormat": {
+    "description": "Formatted date range string.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "todayLabel": "امروز",
+  "@todayLabel": {
+    "description": "Human-readable label for today's date."
+  },
+  "yesterdayLabel": "دیروز",
+  "@yesterdayLabel": {
+    "description": "Human-readable label for yesterday's date."
+  },
+  "mondayLabel": "دوشنبه",
+  "@mondayLabel": {
+    "description": "Day-of-week name for Monday."
+  },
+  "tuesdayLabel": "سه‌شنبه",
+  "@tuesdayLabel": {
+    "description": "Day-of-week name for Tuesday."
+  },
+  "wednesdayLabel": "چهارشنبه",
+  "@wednesdayLabel": {
+    "description": "Day-of-week name for Wednesday."
+  },
+  "thursdayLabel": "پنجشنبه",
+  "@thursdayLabel": {
+    "description": "Day-of-week name for Thursday."
+  },
+  "fridayLabel": "جمعه",
+  "@fridayLabel": {
+    "description": "Day-of-week name for Friday."
+  },
+  "saturdayLabel": "شنبه",
+  "@saturdayLabel": {
+    "description": "Day-of-week name for Saturday."
+  },
+  "sundayLabel": "یکشنبه",
+  "@sundayLabel": {
+    "description": "Day-of-week name for Sunday."
+  },
+  "januaryShortLabel": "ژانویه",
+  "@januaryShortLabel": {
+    "description": "Short month name for January."
+  },
+  "februaryShortLabel": "فوریه",
+  "@februaryShortLabel": {
+    "description": "Short month name for February."
+  },
+  "marchShortLabel": "مارس",
+  "@marchShortLabel": {
+    "description": "Short month name for March."
+  },
+  "aprilShortLabel": "آوریل",
+  "@aprilShortLabel": {
+    "description": "Short month name for April."
+  },
+  "mayShortLabel": "مه",
+  "@mayShortLabel": {
+    "description": "Short month name for May."
+  },
+  "juneShortLabel": "ژوئن",
+  "@juneShortLabel": {
+    "description": "Short month name for June."
+  },
+  "julyShortLabel": "ژوئیه",
+  "@julyShortLabel": {
+    "description": "Short month name for July."
+  },
+  "augustShortLabel": "اوت",
+  "@augustShortLabel": {
+    "description": "Short month name for August."
+  },
+  "septemberShortLabel": "سپتامبر",
+  "@septemberShortLabel": {
+    "description": "Short month name for September."
+  },
+  "octoberShortLabel": "اکتبر",
+  "@octoberShortLabel": {
+    "description": "Short month name for October."
+  },
+  "novemberShortLabel": "نوامبر",
+  "@novemberShortLabel": {
+    "description": "Short month name for November."
+  },
+  "decemberShortLabel": "دسامبر",
+  "@decemberShortLabel": {
+    "description": "Short month name for December."
+  },
+  "noteGroupDateTitleFormat": "{month} {day}، {dayOfWeek}",
+  "@noteGroupDateTitleFormat": {
+    "description": "Formatted note group date title.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "dayOfWeek": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationHoursFormat": "{hours}:{minutes}:{seconds}",
+  "@mediaDurationHoursFormat": {
+    "description": "Formatted media duration with hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationMinutesFormat": "{minutes}:{seconds}",
+  "@mediaDurationMinutesFormat": {
+    "description": "Formatted media duration without hours.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeZero": "۰ بایت",
+  "@fileSizeZero": {
+    "description": "Display string when file size is zero."
+  },
+  "fileSizeUnitBytes": "بایت",
+  "@fileSizeUnitBytes": {
+    "description": "File size unit for bytes."
+  },
+  "fileSizeUnitKilobytes": "کیلوبایت",
+  "@fileSizeUnitKilobytes": {
+    "description": "File size unit for kilobytes."
+  },
+  "fileSizeUnitMegabytes": "مگابایت",
+  "@fileSizeUnitMegabytes": {
+    "description": "File size unit for megabytes."
+  },
+  "fileSizeUnitGigabytes": "گیگابایت",
+  "@fileSizeUnitGigabytes": {
+    "description": "File size unit for gigabytes."
+  },
+  "fileSizeUnitTerabytes": "ترابایت",
+  "@fileSizeUnitTerabytes": {
+    "description": "File size unit for terabytes."
+  },
+  "fileSizeFormat": "{size} {suffix}",
+  "@fileSizeFormat": {
+    "description": "Formatted file size string with suffix unit.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "noteGroupCountSingle": "{count} گروه یادداشت",
+  "@noteGroupCountSingle": {
+    "description": "Pluralized label for a single note group count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteGroupCountPlural": "{count} گروه یادداشت",
+  "@noteGroupCountPlural": {
+    "description": "Pluralized label for multiple note groups count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

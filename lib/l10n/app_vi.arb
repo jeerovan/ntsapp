@@ -1,0 +1,1497 @@
+{
+  "@@locale": "vi",
+  "importantTitle": "Quan trọng",
+  "@importantTitle": {
+    "description": "Title for the important notice page."
+  },
+  "accessKeyNoticeDescription1": "Ở trang tiếp theo, bạn sẽ thấy một chuỗi gồm 24 từ. Đây là khóa mã hóa duy nhất và riêng tư của bạn, và đây là cách DUY NHẤT để khôi phục ghi chú trong trường hợp bạn đăng xuất, mất thiết bị hoặc thiết bị gặp sự cố.",
+  "@accessKeyNoticeDescription1": {
+    "description": "First paragraph of the access key notice."
+  },
+  "accessKeyNoticeDescription2": "Chúng tôi không lưu trữ khóa này. Bạn CÓ TRÁCH NHIỆM lưu trữ nó ở một nơi an toàn bên ngoài ứng dụng {appName}.",
+  "@accessKeyNoticeDescription2": {
+    "description": "Second paragraph of the access key notice.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "iUnderstandShowMeTheKey": "Tôi đã hiểu.\nHiển thị khóa cho tôi.",
+  "@iUnderstandShowMeTheKey": {
+    "description": "Button text to understand and show the key."
+  },
+  "selectGroupToViewNotes": "Chọn một nhóm để xem ghi chú",
+  "@selectGroupToViewNotes": {
+    "description": "Placeholder text shown when no group is selected in desktop mode."
+  },
+  "accessKeyShareText": "Đây là khóa truy cập của bạn.",
+  "@accessKeyShareText": {
+    "description": "Text used in share dialog when sharing the access key."
+  },
+  "pleaseTryAgain": "Vui lòng thử lại.",
+  "@pleaseTryAgain": {
+    "description": "Generic error message shown when an operation fails."
+  },
+  "copiedToClipboard": "Đã sao chép vào bộ nhớ tạm",
+  "@copiedToClipboard": {
+    "description": "Toast message shown when text is copied to the clipboard."
+  },
+  "accessKeyTitle": "Khóa truy cập",
+  "@accessKeyTitle": {
+    "description": "Title for the access key page."
+  },
+  "accessKeyDescription": "Vui lòng lưu khóa này ở nơi an toàn. Bạn sẽ cần nó để đồng bộ ghi chú trên thiết bị khác.",
+  "@accessKeyDescription": {
+    "description": "Instructional text for saving the access key."
+  },
+  "copyLabel": "Sao chép",
+  "@copyLabel": {
+    "description": "Label for the copy button."
+  },
+  "downloadAsTextFileLabel": "Tải xuống dưới dạng tệp văn bản",
+  "@downloadAsTextFileLabel": {
+    "description": "Label for the button that downloads the access key as a text file."
+  },
+  "continueLabel": "Tiếp tục",
+  "@continueLabel": {
+    "description": "Label for the continue button."
+  },
+  "pleaseAuthenticate": "Vui lòng xác thực",
+  "@pleaseAuthenticate": {
+    "description": "Reason shown in the biometric/device authentication prompt."
+  },
+  "couldNotCreate": "Không thể tạo",
+  "@couldNotCreate": {
+    "description": "Error message title when backup creation fails."
+  },
+  "couldNotShareFile": "Không thể chia sẻ tệp",
+  "@couldNotShareFile": {
+    "description": "Error message title when sharing backup fails."
+  },
+  "hereIsTheBackupFile": "Đây là tệp sao lưu cho ứng dụng của bạn.",
+  "@hereIsTheBackupFile": {
+    "description": "Text used in share dialog when sharing the backup file."
+  },
+  "errorTitle": "Lỗi",
+  "@errorTitle": {
+    "description": "Generic error message title."
+  },
+  "backupLabel": "Sao lưu",
+  "@backupLabel": {
+    "description": "Label for the backup option."
+  },
+  "restoreLabel": "Khôi phục",
+  "@restoreLabel": {
+    "description": "Label for the restore option."
+  },
+  "leaveAReviewLabel": "Để lại đánh giá",
+  "@leaveAReviewLabel": {
+    "description": "Label for the feedback/review option."
+  },
+  "shareLabel": "Chia sẻ",
+  "@shareLabel": {
+    "description": "Label for the share app option."
+  },
+  "desktopAppLinkLabel": "Ứng dụng máy tính",
+  "@desktopAppLinkLabel": {
+    "description": "Label for the link to the desktop version."
+  },
+  "loggingLabel": "Ghi nhật ký",
+  "@loggingLabel": {
+    "description": "Label for the logging toggle setting."
+  },
+  "versionLabel": "Phiên bản: {version}",
+  "@versionLabel": {
+    "description": "Label showing app version.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingLabel": "Đang tải...",
+  "@loadingLabel": {
+    "description": "Label for the loading state of the app version."
+  },
+  "restoredLabel": "Đã khôi phục.",
+  "@restoredLabel": {
+    "description": "Toast message shown after successfully restoring items."
+  },
+  "deletedPermanentlyLabel": "Đã xóa vĩnh viễn.",
+  "@deletedPermanentlyLabel": {
+    "description": "Toast message shown after successfully deleting items permanently."
+  },
+  "mediaTitle": "Phương tiện",
+  "@mediaTitle": {
+    "description": "Title for the media viewer page."
+  },
+  "invalidWordList": "Danh sách từ không hợp lệ",
+  "@invalidWordList": {
+    "description": "Error message when invalid mnemonic phrase is entered."
+  },
+  "enterYour24WordPhrase": "Nhập cụm từ 24 từ của bạn",
+  "@enterYour24WordPhrase": {
+    "description": "Label for the recovery phrase text input."
+  },
+  "enterYourRecoveryPhraseHere": "Nhập cụm từ khôi phục của bạn tại đây",
+  "@enterYourRecoveryPhraseHere": {
+    "description": "Hint text for the recovery phrase text input."
+  },
+  "pleaseEnterYourRecoveryPhrase": "Vui lòng nhập cụm từ khôi phục của bạn",
+  "@pleaseEnterYourRecoveryPhrase": {
+    "description": "Error message when recovery phrase is empty."
+  },
+  "recoveryPhraseMustContain24Words": "Cụm từ khôi phục phải chứa chính xác 24 từ",
+  "@recoveryPhraseMustContain24Words": {
+    "description": "Error message when recovery phrase does not have 24 words."
+  },
+  "submitLabel": "Gửi",
+  "@submitLabel": {
+    "description": "Label for the submit button."
+  },
+  "orLabel": "Hoặc",
+  "@orLabel": {
+    "description": "Separator text between input and file upload."
+  },
+  "selectTxtFileLabel": "Chọn tệp .txt",
+  "@selectTxtFileLabel": {
+    "description": "Label for the file selection button."
+  },
+  "failureTitle": "Thất bại",
+  "@failureTitle": {
+    "description": "Title for error dialog."
+  },
+  "invalidPasswordKey": "Khóa mật khẩu không hợp lệ",
+  "@invalidPasswordKey": {
+    "description": "Error message when password key is invalid."
+  },
+  "enableSyncTitle": "Bật đồng bộ",
+  "@enableSyncTitle": {
+    "description": "Title for the password key input page."
+  },
+  "passwordRequirementsDescription": "Vui lòng nhập khóa (mật khẩu) bạn đã tạo. Mật khẩu dài tối thiểu 10 ký tự, bao gồm ít nhất 1 số, 1 chữ thường, 1 chữ hoa và 1 ký tự đặc biệt.",
+  "@passwordRequirementsDescription": {
+    "description": "Description of password requirements."
+  },
+  "enterKeyLabel": "Nhập khóa",
+  "@enterKeyLabel": {
+    "description": "Label for password input."
+  },
+  "pleaseEnterKey": "Vui lòng nhập khóa",
+  "@pleaseEnterKey": {
+    "description": "Error message when password input is empty."
+  },
+  "filterNotesTitle": "Lọc ghi chú",
+  "@filterNotesTitle": {
+    "description": "Title for the filter notes dialog."
+  },
+  "filterPinnedNotesTooltip": "Lọc các ghi chú đã ghim",
+  "@filterPinnedNotesTooltip": {
+    "description": "Tooltip for filter pinned notes button."
+  },
+  "filterStarredNotesTooltip": "Lọc các ghi chú gắn dấu sao",
+  "@filterStarredNotesTooltip": {
+    "description": "Tooltip for filter starred notes button."
+  },
+  "filterTextNotesTooltip": "Lọc ghi chú văn bản",
+  "@filterTextNotesTooltip": {
+    "description": "Tooltip for filter text notes button."
+  },
+  "filterTasksTooltip": "Lọc tác vụ",
+  "@filterTasksTooltip": {
+    "description": "Tooltip for filter tasks button."
+  },
+  "filterLinksTooltip": "Lọc liên kết",
+  "@filterLinksTooltip": {
+    "description": "Tooltip for filter links button."
+  },
+  "filterImagesTooltip": "Lọc hình ảnh",
+  "@filterImagesTooltip": {
+    "description": "Tooltip for filter images button."
+  },
+  "filterAudioTooltip": "Lọc âm thanh",
+  "@filterAudioTooltip": {
+    "description": "Tooltip for filter audio button."
+  },
+  "filterVideoTooltip": "Lọc video",
+  "@filterVideoTooltip": {
+    "description": "Tooltip for filter video button."
+  },
+  "filterFilesTooltip": "Lọc tệp",
+  "@filterFilesTooltip": {
+    "description": "Tooltip for filter files button."
+  },
+  "filterContactsTooltip": "Lọc danh bạ",
+  "@filterContactsTooltip": {
+    "description": "Tooltip for filter contacts button."
+  },
+  "filterLocationTooltip": "Lọc vị trí",
+  "@filterLocationTooltip": {
+    "description": "Tooltip for filter location button."
+  },
+  "movedToTrash": "Đã chuyển vào thùng rác",
+  "@movedToTrash": {
+    "description": "Toast message when items are moved to trash."
+  },
+  "copiedNotesToClipboard": "Đã sao chép vào bộ nhớ tạm",
+  "@copiedNotesToClipboard": {
+    "description": "Toast message when selected notes are copied to clipboard."
+  },
+  "locationShareLabel": "Vị trí:",
+  "@locationShareLabel": {
+    "description": "Label used when sharing location."
+  },
+  "contactShareLabel": "Liên hệ:",
+  "@contactShareLabel": {
+    "description": "Label used when sharing contact."
+  },
+  "emailsShareLabel": "Email:",
+  "@emailsShareLabel": {
+    "description": "Label used when sharing contact emails."
+  },
+  "addressesShareLabel": "Địa chỉ:",
+  "@addressesShareLabel": {
+    "description": "Label used when sharing contact addresses."
+  },
+  "microphoneNotAvailable": "Micrô có thể không khả dụng.",
+  "@microphoneNotAvailable": {
+    "description": "Toast message when microphone is not available."
+  },
+  "microphonePermissionRequired": "Cần có quyền truy cập micrô để ghi âm.",
+  "@microphonePermissionRequired": {
+    "description": "Toast message when microphone permission is required."
+  },
+  "couldNotGetDuration": "Không thể lấy thời lượng",
+  "@couldNotGetDuration": {
+    "description": "Error message when audio duration could not be retrieved."
+  },
+  "errorOpeningFiles": "Lỗi khi mở tệp",
+  "@errorOpeningFiles": {
+    "description": "Error message when file picker fails."
+  },
+  "pleaseWaitTitle": "Vui lòng đợi",
+  "@pleaseWaitTitle": {
+    "description": "Title for please wait dialog."
+  },
+  "fileNotAvailableYet": "Tệp chưa khả dụng",
+  "@fileNotAvailableYet": {
+    "description": "Message shown when file is not available yet."
+  },
+  "clearSelectionTooltip": "Xóa lựa chọn",
+  "@clearSelectionTooltip": {
+    "description": "Tooltip for clear selection button."
+  },
+  "copyNotesTooltip": "Sao chép ghi chú",
+  "@copyNotesTooltip": {
+    "description": "Tooltip for copy notes button."
+  },
+  "changeTaskTypeTooltip": "Thay đổi loại tác vụ",
+  "@changeTaskTypeTooltip": {
+    "description": "Tooltip for change task type button."
+  },
+  "shareNotesTooltip": "Chia sẻ ghi chú",
+  "@shareNotesTooltip": {
+    "description": "Tooltip for share notes button."
+  },
+  "editNoteTooltip": "Chỉnh sửa ghi chú",
+  "@editNoteTooltip": {
+    "description": "Tooltip for edit note button."
+  },
+  "starUnstarNotesTooltip": "Gắn/bỏ gắn dấu sao ghi chú",
+  "@starUnstarNotesTooltip": {
+    "description": "Tooltip for star/unstar notes button."
+  },
+  "moveToTrashTooltip": "Chuyển vào thùng rác",
+  "@moveToTrashTooltip": {
+    "description": "Tooltip for move to trash button."
+  },
+  "pinUnpinNotesTooltip": "Ghim/bỏ ghim ghi chú",
+  "@pinUnpinNotesTooltip": {
+    "description": "Tooltip for pin/unpin notes button."
+  },
+  "cancelReplyTooltip": "Hủy trả lời",
+  "@cancelReplyTooltip": {
+    "description": "Tooltip for cancel reply button."
+  },
+  "createTaskHint": "Tạo một tác vụ",
+  "@createTaskHint": {
+    "description": "Hint text for creating a task."
+  },
+  "addNoteHint": "Thêm một ghi chú...",
+  "@addNoteHint": {
+    "description": "Hint text for adding a note."
+  },
+  "attachTooltip": "Đính kèm",
+  "@attachTooltip": {
+    "description": "Tooltip for attach button."
+  },
+  "addNoteTooltip": "Thêm ghi chú",
+  "@addNoteTooltip": {
+    "description": "Tooltip for add note button."
+  },
+  "recordStopAudioTooltip": "Ghi/dừng ghi âm",
+  "@recordStopAudioTooltip": {
+    "description": "Tooltip for record/stop audio button."
+  },
+  "contactAttachmentLabel": "Liên hệ",
+  "@contactAttachmentLabel": {
+    "description": "Label for contact attachment option."
+  },
+  "locationAttachmentLabel": "Vị trí",
+  "@locationAttachmentLabel": {
+    "description": "Label for location attachment option."
+  },
+  "cameraAttachmentLabel": "Máy ảnh",
+  "@cameraAttachmentLabel": {
+    "description": "Label for camera attachment option."
+  },
+  "filesAttachmentLabel": "Tệp",
+  "@filesAttachmentLabel": {
+    "description": "Label for files attachment option."
+  },
+  "checklistAttachmentLabel": "Danh sách kiểm tra",
+  "@checklistAttachmentLabel": {
+    "description": "Label for checklist attachment option."
+  },
+  "accessKeyInputTitle": "Bật đồng bộ",
+  "@accessKeyInputTitle": {
+    "description": "Title for the access key input page."
+  },
+  "accessKeyInputDescription": "Vui lòng nhập cụm từ khôi phục 24 từ của bạn hoặc tải lên tệp .txt chứa nó.",
+  "@accessKeyInputDescription": {
+    "description": "Description text on the access key input page."
+  },
+  "editMenuItemLabel": "Chỉnh sửa",
+  "@editMenuItemLabel": {
+    "description": "Label for the edit menu item in the app bar popup menu."
+  },
+  "filterMenuItemLabel": "Bộ lọc",
+  "@filterMenuItemLabel": {
+    "description": "Label for the filter menu item in the app bar popup menu."
+  },
+  "externalStoragePermissionDenied": "Quyền truy cập bộ nhớ ngoài đã bị từ chối.",
+  "@externalStoragePermissionDenied": {
+    "description": "Error message shown when external storage permission is denied."
+  },
+  "pressLongToStartRecording": "Nhấn giữ để bắt đầu ghi âm.",
+  "@pressLongToStartRecording": {
+    "description": "Hint message shown when the send button is pressed while not typing and not recording."
+  },
+  "didYouKnowTitle": "Bạn có biết?",
+  "@didYouKnowTitle": {
+    "description": "Title for the tip dialog shown to first-time users."
+  },
+  "closeTooltip": "Đóng",
+  "@closeTooltip": {
+    "description": "Tooltip for the close button on dialogs."
+  },
+  "appDescriptionContent": "{appName} là một ứng dụng ghi chú hoàn toàn riêng tư. Nó không thu thập dữ liệu cá nhân của bạn hay hiển thị quảng cáo.\n\nChúng tôi hy vọng bạn thích sử dụng ứng dụng này. Hãy cho chúng tôi biết suy nghĩ của bạn.",
+  "@appDescriptionContent": {
+    "description": "Description text about the app in the tip dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNotesTooltip": "Tìm kiếm ghi chú",
+  "@searchNotesTooltip": {
+    "description": "Tooltip for the search notes button."
+  },
+  "syncMenuItemLabel": "Đồng bộ",
+  "@syncMenuItemLabel": {
+    "description": "Label for the sync menu item."
+  },
+  "trashMenuItemLabel": "Thùng rác",
+  "@trashMenuItemLabel": {
+    "description": "Label for the trash menu item."
+  },
+  "starredNotesMenuItemLabel": "Ghi chú gắn sao",
+  "@starredNotesMenuItemLabel": {
+    "description": "Label for the starred notes menu item."
+  },
+  "settingsMenuItemLabel": "Cài đặt",
+  "@settingsMenuItemLabel": {
+    "description": "Label for the settings menu item."
+  },
+  "accountMenuItemLabel": "Tài khoản",
+  "@accountMenuItemLabel": {
+    "description": "Label for the account menu item."
+  },
+  "pageMenuItemLabel": "Trang",
+  "@pageMenuItemLabel": {
+    "description": "Label for the page menu item (shown in debug mode)."
+  },
+  "sqliteMenuItemLabel": "Sqlite",
+  "@sqliteMenuItemLabel": {
+    "description": "Label for the SQLite database viewer menu item."
+  },
+  "logsMenuItemLabel": "Nhật ký",
+  "@logsMenuItemLabel": {
+    "description": "Label for the logs menu item."
+  },
+  "reorderMenuItemLabel": "Sắp xếp lại",
+  "@reorderMenuItemLabel": {
+    "description": "Label for the reorder group menu item."
+  },
+  "editGroupMenuItemLabel": "Chỉnh sửa",
+  "@editGroupMenuItemLabel": {
+    "description": "Label for the edit group menu item."
+  },
+  "deleteGroupMenuItemLabel": "Xóa",
+  "@deleteGroupMenuItemLabel": {
+    "description": "Label for the delete group menu item."
+  },
+  "dragHandleReorderTooltip": "Kéo để sắp xếp lại",
+  "@dragHandleReorderTooltip": {
+    "description": "Tooltip message for drag handle on desktop."
+  },
+  "holdAndDragReorderTooltip": "Nhấn giữ và kéo để sắp xếp lại",
+  "@holdAndDragReorderTooltip": {
+    "description": "Tooltip message for hold and drag to re-order on mobile."
+  },
+  "emptyHomePageMessage": "Xin chào!\n\nỞ đây có vẻ hơi trống trải.\n\nNhấn nút + để tạo một vài ghi chú cho bản thân nhé. :)",
+  "@emptyHomePageMessage": {
+    "description": "Empty state message shown when there are no groups on the home page."
+  },
+  "reorderingTitle": "Sắp xếp lại",
+  "@reorderingTitle": {
+    "description": "Title shown when reordering groups on the home page."
+  },
+  "selectEllipsisLabel": "Chọn...",
+  "@selectEllipsisLabel": {
+    "description": "Placeholder label shown when shared contents are being loaded."
+  },
+  "dateTimeToggleLabel": "Ngày/Giờ",
+  "@dateTimeToggleLabel": {
+    "description": "Label for the date/time toggle switch in group settings."
+  },
+  "noteBorderToggleLabel": "Viền ghi chú",
+  "@noteBorderToggleLabel": {
+    "description": "Label for the note border toggle switch in group settings."
+  },
+  "deleteGroupButtonLabel": "Xóa",
+  "@deleteGroupButtonLabel": {
+    "description": "Label for the delete group button in group edit page."
+  },
+  "notesTabLabel": "Ghi chú",
+  "@notesTabLabel": {
+    "description": "Label for the notes tab in the trash page."
+  },
+  "groupsTabLabel": "Nhóm",
+  "@groupsTabLabel": {
+    "description": "Label for the groups tab in the trash page."
+  },
+  "categoriesTabLabel": "Danh mục",
+  "@categoriesTabLabel": {
+    "description": "Label for the categories tab in the trash page."
+  },
+  "locationItemLabel": "Vị trí",
+  "@locationItemLabel": {
+    "description": "Label for location items in search results."
+  },
+  "addGroupTitle": "Thêm nhóm",
+  "@addGroupTitle": {
+    "description": "Page title for creating a new group."
+  },
+  "editGroupTitle": "Chỉnh sửa nhóm",
+  "@editGroupTitle": {
+    "description": "Page title for editing an existing group."
+  },
+  "titleInputLabel": "Tiêu đề",
+  "@titleInputLabel": {
+    "description": "Label for the title input field."
+  },
+  "locationPermissionRequiredTitle": "Cần cấp quyền truy cập vị trí",
+  "@locationPermissionRequiredTitle": {
+    "description": "Title for the location permission dialog."
+  },
+  "enableLocationPermissionsContent": "Vui lòng bật quyền truy cập vị trí trong cài đặt ứng dụng.",
+  "@enableLocationPermissionsContent": {
+    "description": "Content text for the location permission dialog."
+  },
+  "cancelButtonLabel": "Hủy",
+  "@cancelButtonLabel": {
+    "description": "Label for the cancel button."
+  },
+  "openSettingsButtonLabel": "Mở cài đặt",
+  "@openSettingsButtonLabel": {
+    "description": "Label for the open settings button."
+  },
+  "locationServicesTitle": "Dịch vụ vị trí",
+  "@locationServicesTitle": {
+    "description": "Title for the location services alert."
+  },
+  "pleaseEnableLocationServicesContent": "Vui lòng bật nó!",
+  "@pleaseEnableLocationServicesContent": {
+    "description": "Content text for the location services disabled alert."
+  },
+  "selectLocationTitle": "Chọn vị trí",
+  "@selectLocationTitle": {
+    "description": "Title for the location picker page."
+  },
+  "useCurrentLocationTooltip": "Sử dụng vị trí hiện tại",
+  "@useCurrentLocationTooltip": {
+    "description": "Tooltip for the use current location button."
+  },
+  "selectAllButtonLabel": "Chọn tất cả",
+  "@selectAllButtonLabel": {
+    "description": "Label for the select all button in archived items."
+  },
+  "searchLogsHint": "Tìm kiếm nhật ký..",
+  "@searchLogsHint": {
+    "description": "Hint text for the search logs input field."
+  },
+  "noLogsAvailable": "Không có nhật ký khả dụng",
+  "@noLogsAvailable": {
+    "description": "Message shown when there are no log entries to display."
+  },
+  "dbViewerTitle": "Trình xem cơ sở dữ liệu",
+  "@dbViewerTitle": {
+    "description": "Title for the SQLite database viewer page."
+  },
+  "selectTableToViewData": "Chọn một bảng để xem dữ liệu",
+  "@selectTableToViewData": {
+    "description": "Instruction text shown when no table is selected in the DB viewer."
+  },
+  "selectTableDropdownHint": "Chọn một bảng",
+  "@selectTableDropdownHint": {
+    "description": "Hint text for the table selection dropdown in the DB viewer."
+  },
+  "pickContactTitle": "Chọn một liên hệ",
+  "@pickContactTitle": {
+    "description": "Title for the contact picker page."
+  },
+  "permissionRequiredText": "Cần cấp quyền",
+  "@permissionRequiredText": {
+    "description": "Text shown when contact permission is required."
+  },
+  "grantPermissionButtonLabel": "Cấp quyền",
+  "@grantPermissionButtonLabel": {
+    "description": "Label for the grant permission button."
+  },
+  "pageDummyTitle": "Trang thử nghiệm",
+  "@pageDummyTitle": {
+    "description": "Title for the dummy/testing page."
+  },
+  "simulateButtonLabel": "Mô phỏng",
+  "@simulateButtonLabel": {
+    "description": "Label for the simulate button on the dummy page."
+  },
+  "selectCategoryTitle": "Chọn danh mục",
+  "@selectCategoryTitle": {
+    "description": "Title for the select category page."
+  },
+  "addCategoryTitle": "Thêm danh mục",
+  "@addCategoryTitle": {
+    "description": "Title for the add category page."
+  },
+  "editCategoryTitle": "Chỉnh sửa danh mục",
+  "@editCategoryTitle": {
+    "description": "Title for the edit category page."
+  },
+  "categoryTitleHint": "Tiêu đề danh mục",
+  "@categoryTitleHint": {
+    "description": "Hint text for the category title input field."
+  },
+  "colorLabel": "Màu sắc",
+  "@colorLabel": {
+    "description": "Label for the color selector."
+  },
+  "changeColorLabel": "Thay đổi màu sắc",
+  "@changeColorLabel": {
+    "description": "Label for the change color option."
+  },
+  "deviceDisabledMessage": "Thiết bị đã bị vô hiệu hóa!",
+  "@deviceDisabledMessage": {
+    "description": "Toast message shown when a device is disabled."
+  },
+  "cannotRemoveThisDeviceMessage": "Không thể xóa thiết bị này!",
+  "@cannotRemoveThisDeviceMessage": {
+    "description": "Toast message shown when attempting to remove the current device."
+  },
+  "confirmRemoveTitle": "Xác nhận xóa",
+  "@confirmRemoveTitle": {
+    "description": "Title for the confirm remove device dialog."
+  },
+  "confirmRemoveDeviceContent": "Bạn có chắc không? Hành động này sẽ xóa tất cả dữ liệu trên thiết bị này.",
+  "@confirmRemoveDeviceContent": {
+    "description": "Content text for the confirm remove device dialog."
+  },
+  "okButtonLabel": "OK",
+  "@okButtonLabel": {
+    "description": "Label for the OK button."
+  },
+  "registeredDevicesTitle": "Thiết bị đã đăng ký",
+  "@registeredDevicesTitle": {
+    "description": "Title for the registered devices page."
+  },
+  "noDevicesFoundMessage": "Không tìm thấy thiết bị",
+  "@noDevicesFoundMessage": {
+    "description": "Message shown when no devices are found."
+  },
+  "enabledLabel": "Đã bật",
+  "@enabledLabel": {
+    "description": "Label for an enabled device status."
+  },
+  "disabledLabel": "Đã tắt",
+  "@disabledLabel": {
+    "description": "Label for a disabled device status."
+  },
+  "migratingMediaTitle": "Đang di chuyển phương tiện",
+  "@migratingMediaTitle": {
+    "description": "Title for the media migration page."
+  },
+  "processingMessage": "Đang xử lý...",
+  "@processingMessage": {
+    "description": "Message shown while media is being processed."
+  },
+  "doNotNavigateAwayMessage": "Vui lòng không thoát khỏi màn hình này",
+  "@doNotNavigateAwayMessage": {
+    "description": "Warning message asking the user not to navigate away during media migration."
+  },
+  "errorWithDetails": "Lỗi: {error}",
+  "@errorWithDetails": {
+    "description": "Error message shown when loading logs fails, including the error.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sequenceNotAcceptedError": "Chuỗi không được chấp nhận",
+  "@sequenceNotAcceptedError": {
+    "description": "Validation error when the key contains a sequential pattern."
+  },
+  "examplesNotAcceptedError": "Ví dụ không được chấp nhận",
+  "@examplesNotAcceptedError": {
+    "description": "Validation error when the key matches one of the example keys."
+  },
+  "enterKeyAgainLabel": "Nhập lại khóa",
+  "@enterKeyAgainLabel": {
+    "description": "Label and hint for the confirm key input field."
+  },
+  "pleaseEnterKeyAgainError": "Vui lòng nhập lại khóa",
+  "@pleaseEnterKeyAgainError": {
+    "description": "Validation error when the confirm key field is empty."
+  },
+  "keysDoNotMatchError": "Khóa không khớp",
+  "@keysDoNotMatchError": {
+    "description": "Validation error when the two keys do not match."
+  },
+  "ruleUppercaseLetter": "1 chữ hoa",
+  "@ruleUppercaseLetter": {
+    "description": "Password rule description for one uppercase letter."
+  },
+  "ruleLowercaseLetter": "1 chữ thường",
+  "@ruleLowercaseLetter": {
+    "description": "Password rule description for one lowercase letter."
+  },
+  "ruleNumericLetter": "1 chữ số",
+  "@ruleNumericLetter": {
+    "description": "Password rule description for one numeric character."
+  },
+  "ruleSpecialCharacter": "1 ký tự đặc biệt",
+  "@ruleSpecialCharacter": {
+    "description": "Password rule description for one special character."
+  },
+  "ruleMinTenCharacters": "tối thiểu 10 ký tự",
+  "@ruleMinTenCharacters": {
+    "description": "Password rule description for the minimum length."
+  },
+  "examplesTitle": "Ví dụ",
+  "@examplesTitle": {
+    "description": "Title for the key examples dialog."
+  },
+  "passwordExample1": "I would love 2 have @ll ...",
+  "@passwordExample1": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample2": "(A6r4K4D46r4)",
+  "@passwordExample2": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample3": "Mykey@2025",
+  "@passwordExample3": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "passwordExample4": "C0ffee !s great f0r pr0ductivity",
+  "@passwordExample4": {
+    "description": "Example key shown in the examples dialog. Do not translate."
+  },
+  "gotItButtonLabel": "Đã hiểu",
+  "@gotItButtonLabel": {
+    "description": "Label for the button to dismiss the examples dialog."
+  },
+  "encryptionKeyTitle": "Khóa mã hóa",
+  "@encryptionKeyTitle": {
+    "description": "Title for the encryption key creation page."
+  },
+  "createKeyDescription": "Vui lòng nhập một khóa (mật khẩu) dài và khó đoán. Hãy nhớ lưu nó ở nơi an toàn. Nếu bị mất/quên, bạn sẽ không thể khôi phục nó.",
+  "@createKeyDescription": {
+    "description": "Instructional text for creating an encryption key."
+  },
+  "seeExamplesTooltip": "Xem ví dụ",
+  "@seeExamplesTooltip": {
+    "description": "Tooltip for the button that shows key examples."
+  },
+  "couldNotFetchDetailsMessage": "Không thể lấy thông tin chi tiết",
+  "@couldNotFetchDetailsMessage": {
+    "description": "Message shown when plan details could not be fetched."
+  },
+  "retryButtonLabel": "Thử lại",
+  "@retryButtonLabel": {
+    "description": "Label for the retry button."
+  },
+  "signedInAsLabel": "Đăng nhập với:",
+  "@signedInAsLabel": {
+    "description": "Label shown before the signed-in email."
+  },
+  "storageUsageLabel": "Dung lượng sử dụng",
+  "@storageUsageLabel": {
+    "description": "Label for the storage usage section."
+  },
+  "subscribeLabel": "Đăng ký",
+  "@subscribeLabel": {
+    "description": "Label for the subscribe option."
+  },
+  "planExpiredRenewLabel": "Gói đã hết hạn! Gia hạn",
+  "@planExpiredRenewLabel": {
+    "description": "Label for the plan expired renew option."
+  },
+  "manageDevicesLabel": "Quản lý thiết bị",
+  "@manageDevicesLabel": {
+    "description": "Label for the manage devices option."
+  },
+  "viewAccessKeyLabel": "Xem khóa truy cập",
+  "@viewAccessKeyLabel": {
+    "description": "Label for the view access key option."
+  },
+  "changeKeyPasswordLabel": "Thay đổi khóa mật khẩu",
+  "@changeKeyPasswordLabel": {
+    "description": "Label for the change key password option."
+  },
+  "manageSubscriptionLabel": "Quản lý đăng ký",
+  "@manageSubscriptionLabel": {
+    "description": "Label for the manage subscription option."
+  },
+  "signOutButtonLabel": "Đăng xuất",
+  "@signOutButtonLabel": {
+    "description": "Label for the sign out option."
+  },
+  "yearlyPlansTitle": "Gói hàng năm",
+  "@yearlyPlansTitle": {
+    "description": "Title for the plan subscribe page."
+  },
+  "loginLabel": "Đăng nhập",
+  "@loginLabel": {
+    "description": "Label for the login button."
+  },
+  "syncAllYourNotesLabel": "Đồng bộ tất cả ghi chú của bạn",
+  "@syncAllYourNotesLabel": {
+    "description": "Headline on the subscribe page."
+  },
+  "acrossYourDevicesLabel": "trên các thiết bị của bạn",
+  "@acrossYourDevicesLabel": {
+    "description": "Subheadline on the subscribe page."
+  },
+  "featureEndToEndEncryption": "Mã hóa đầu cuối",
+  "@featureEndToEndEncryption": {
+    "description": "Feature list item for end-to-end encryption."
+  },
+  "featureSyncUpTo3Devices": "Đồng bộ tối đa 3 thiết bị",
+  "@featureSyncUpTo3Devices": {
+    "description": "Feature list item for syncing up to 3 devices."
+  },
+  "featureUpgradeCancelAnytime": "Nâng cấp/Hủy bất cứ lúc nào",
+  "@featureUpgradeCancelAnytime": {
+    "description": "Feature list item for upgrading or cancelling anytime."
+  },
+  "noPlansAvailableMessage": "Không có gói nào khả dụng",
+  "@noPlansAvailableMessage": {
+    "description": "Message shown when no plans are available."
+  },
+  "downloadAppSubscribeLabel": "Tải ứng dụng & đăng ký",
+  "@downloadAppSubscribeLabel": {
+    "description": "Label prompting the user to download the app and subscribe."
+  },
+  "privacyTermsLabel": "Quyền riêng tư • Điều khoản",
+  "@privacyTermsLabel": {
+    "description": "Label for the privacy and terms footer."
+  },
+  "saveFiftyPercentLabel": "Tiết kiệm 50%",
+  "@saveFiftyPercentLabel": {
+    "description": "Badge text showing the savings percentage."
+  },
+  "helloTitle": "Xin chào",
+  "@helloTitle": {
+    "description": "Title for the select key type page before welcoming."
+  },
+  "selectKeyMasterKeyDescription": "Để mã hóa dữ liệu, chúng tôi cần một khóa mã hóa chính.",
+  "@selectKeyMasterKeyDescription": {
+    "description": "Description text on the select key type page."
+  },
+  "selectKeyTwoOptionsDescription": "Có 2 lựa chọn - bạn tự tạo khóa (giống như mật khẩu) hoặc chúng tôi tạo giúp bạn.",
+  "@selectKeyTwoOptionsDescription": {
+    "description": "Description of the two key creation options."
+  },
+  "understandLoseKeyAcknowledgement": "Tôi hiểu rằng nếu tôi làm mất/quên khóa mã hóa, tôi có thể mất dữ liệu.",
+  "@understandLoseKeyAcknowledgement": {
+    "description": "Acknowledgement text for understanding the risk of losing the encryption key."
+  },
+  "createKeyForMeButtonLabel": "Tạo khóa giúp tôi",
+  "@createKeyForMeButtonLabel": {
+    "description": "Label for the button to let the app create the key."
+  },
+  "recommendedLabel": "(Khuyên dùng)",
+  "@recommendedLabel": {
+    "description": "Label indicating a recommended option."
+  },
+  "pleaseAcknowledgeMessage": "Vui lòng xác nhận!",
+  "@pleaseAcknowledgeMessage": {
+    "description": "Toast message asking the user to acknowledge the terms."
+  },
+  "createKeyMyselfButtonLabel": "Tôi sẽ tự tạo khóa",
+  "@createKeyMyselfButtonLabel": {
+    "description": "Label for the button to create the key yourself."
+  },
+  "welcomeToAppName": "Chào mừng đến với {appName}",
+  "@welcomeToAppName": {
+    "description": "Welcome message with the app name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "e2eEncryptionDescription": "Chúng tôi sử dụng mã hóa đầu cuối để đảm bảo tất cả ghi chú của bạn đều an toàn và không ai khác có thể xem được, kể cả chúng tôi.",
+  "@e2eEncryptionDescription": {
+    "description": "Description of the end-to-end encryption used."
+  },
+  "timeToStartEncryptionLabel": "Đã đến lúc bắt đầu mã hóa!",
+  "@timeToStartEncryptionLabel": {
+    "description": "Message prompting the user to start encryption."
+  },
+  "nextButtonLabel": "Tiếp theo",
+  "@nextButtonLabel": {
+    "description": "Label for the next button."
+  },
+  "sendingOtpFailedMessage": "Gửi OTP thất bại. Vui lòng thử lại!",
+  "@sendingOtpFailedMessage": {
+    "description": "Toast message when sending the OTP fails."
+  },
+  "otpVerificationFailedMessage": "Xác thực OTP thất bại. Vui lòng thử lại!",
+  "@otpVerificationFailedMessage": {
+    "description": "Toast message when verifying the OTP fails."
+  },
+  "emailSignInTitle": "Đăng nhập bằng Email",
+  "@emailSignInTitle": {
+    "description": "Title for the sign-in page before OTP is sent."
+  },
+  "verifyOtpLabel": "Xác thực OTP",
+  "@verifyOtpLabel": {
+    "description": "Label for verifying the OTP (used as title and button)."
+  },
+  "enterEmailLabel": "Nhập Email",
+  "@enterEmailLabel": {
+    "description": "Label for the email input field."
+  },
+  "sendOtpLabel": "Gửi OTP",
+  "@sendOtpLabel": {
+    "description": "Label for the send OTP button."
+  },
+  "otpSentToEmailMessage": "Chúng tôi đã gửi mật khẩu một lần (OTP) đến email {email} của bạn",
+  "@otpSentToEmailMessage": {
+    "description": "Message confirming the OTP was sent to the email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "enterOtpLabel": "Nhập OTP",
+  "@enterOtpLabel": {
+    "description": "Label for the OTP input field."
+  },
+  "changeEmailLabel": "Thay đổi email",
+  "@changeEmailLabel": {
+    "description": "Label for the change email button."
+  },
+  "encryptingNotesTitle": "Đang mã hóa ghi chú",
+  "@encryptingNotesTitle": {
+    "description": "Title shown while encrypting local notes."
+  },
+  "fetchingDetailsTitle": "Đang lấy thông tin",
+  "@fetchingDetailsTitle": {
+    "description": "Title shown while fetching details."
+  },
+  "couldNotFetchMessage": "Không thể lấy dữ liệu",
+  "@couldNotFetchMessage": {
+    "description": "Error message shown when fetching fails."
+  },
+  "subscriptionEmailMismatchMessage": "Gói đăng ký của bạn được liên kết với một email khác. Vui lòng đăng xuất và sử dụng email đó để bật lưu trữ đám mây.",
+  "@subscriptionEmailMismatchMessage": {
+    "description": "Error message when the subscription email does not match."
+  },
+  "errorCheckingPlanDetailsMessage": "Lỗi khi kiểm tra thông tin gói",
+  "@errorCheckingPlanDetailsMessage": {
+    "description": "Error message shown when checking plan details fails."
+  },
+  "registerDeviceTitle": "Đăng ký thiết bị",
+  "@registerDeviceTitle": {
+    "description": "Title shown while registering the device."
+  },
+  "manageButtonLabel": "Quản lý",
+  "@manageButtonLabel": {
+    "description": "Label for the manage button (e.g., manage devices)."
+  },
+  "fetchingKeysTitle": "Đang lấy khóa",
+  "@fetchingKeysTitle": {
+    "description": "Title shown while fetching encryption keys."
+  },
+  "signingOutTitle": "Đang đăng xuất",
+  "@signingOutTitle": {
+    "description": "Title shown while signing out."
+  },
+  "pleaseCheckInternetMessage": "Vui lòng kiểm tra kết nối internet",
+  "@pleaseCheckInternetMessage": {
+    "description": "Error message asking the user to check internet connection."
+  },
+  "somethingWentWrongMessage": "Đã xảy ra lỗi",
+  "@somethingWentWrongMessage": {
+    "description": "Generic error message when something goes wrong."
+  },
+  "playPauseTooltip": "Phát/tạm dừng",
+  "@playPauseTooltip": {
+    "description": "Tooltip for the play/pause audio button."
+  },
+  "timerFormattedTime": "{minutes}:{seconds}",
+  "@timerFormattedTime": {
+    "description": "Formatted timer display showing minutes and seconds.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadTooltip": "Tải xuống",
+  "@downloadTooltip": {
+    "description": "Tooltip for the download button."
+  },
+  "invalidAccessKey": "Khóa truy cập không hợp lệ",
+  "@invalidAccessKey": {
+    "description": "Error message when the access key is invalid."
+  },
+  "fileDoesNotContain24Words": "Tệp không chứa chính xác 24 từ.",
+  "@fileDoesNotContain24Words": {
+    "description": "Error message when the selected file does not contain a 24-word recovery phrase."
+  },
+  "errorReadingFile": "Lỗi khi đọc tệp",
+  "@errorReadingFile": {
+    "description": "Toast message when an error occurs while reading a file."
+  },
+  "allLabel": "Tất cả",
+  "@allLabel": {
+    "description": "Label for the 'All' filter option."
+  },
+  "logTypeDebug": "GỠ LỖI",
+  "@logTypeDebug": {
+    "description": "Log type label for debug entries."
+  },
+  "logTypeError": "LỖI",
+  "@logTypeError": {
+    "description": "Log type label for error entries."
+  },
+  "logTypeInfo": "THÔNG TIN",
+  "@logTypeInfo": {
+    "description": "Log type label for info entries."
+  },
+  "logTypeWarning": "CẢNH BÁO",
+  "@logTypeWarning": {
+    "description": "Log type label for warning entries."
+  },
+  "groupTitleHint": "Tiêu đề nhóm",
+  "@groupTitleHint": {
+    "description": "Hint text for the group title input field."
+  },
+  "categoryLabel": "Danh mục",
+  "@categoryLabel": {
+    "description": "Label for the category selector section."
+  },
+  "selectCategoryPlaceholder": "Chọn danh mục",
+  "@selectCategoryPlaceholder": {
+    "description": "Placeholder text prompting the user to select a category."
+  },
+  "storageBytesFormat": "{bytes} B",
+  "@storageBytesFormat": {
+    "description": "Formatted storage size in bytes.",
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "storageKilobytesFormat": "{kb} KB",
+  "@storageKilobytesFormat": {
+    "description": "Formatted storage size in kilobytes.",
+    "placeholders": {
+      "kb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageMegabytesFormat": "{mb} MB",
+  "@storageMegabytesFormat": {
+    "description": "Formatted storage size in megabytes.",
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageGigabytesFormat": "{gb} GB",
+  "@storageGigabytesFormat": {
+    "description": "Formatted storage size in gigabytes.",
+    "placeholders": {
+      "gb": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsedTotalFormat": "{used} / {total}",
+  "@storageUsedTotalFormat": {
+    "description": "Formatted used vs total storage display.",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "planStorageSizeFormat": "{size} {unit}",
+  "@planStorageSizeFormat": {
+    "description": "Formatted plan storage size with unit (e.g. '100 GB').",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "searchHint": "truy vấn, #tài_liệu v.v...",
+  "@searchHint": {
+    "description": "Hint text for the search input field."
+  },
+  "categoryGroupSeparator": " > ",
+  "@categoryGroupSeparator": {
+    "description": "Separator used between category and group in search result headers."
+  },
+  "audioFileLabel": "Tệp âm thanh",
+  "@audioFileLabel": {
+    "description": "Label shown for audio file search results."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Native name of the Arabic language."
+  },
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "Native name of the German language."
+  },
+  "languageGreek": "Ελληνικά",
+  "@languageGreek": {
+    "description": "Native name of the Greek language."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Native name of the English language."
+  },
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Native name of the Spanish language."
+  },
+  "languagePersian": "فارسی",
+  "@languagePersian": {
+    "description": "Native name of the Persian (Farsi) language."
+  },
+  "languageFrench": "Français",
+  "@languageFrench": {
+    "description": "Native name of the French language."
+  },
+  "languageHebrew": "עברית",
+  "@languageHebrew": {
+    "description": "Native name of the Hebrew language."
+  },
+  "languageHindi": "हिन्दी",
+  "@languageHindi": {
+    "description": "Native name of the Hindi language."
+  },
+  "languageIndonesian": "Bahasa Indonesia",
+  "@languageIndonesian": {
+    "description": "Native name of the Indonesian language."
+  },
+  "languageItalian": "Italiano",
+  "@languageItalian": {
+    "description": "Native name of the Italian language."
+  },
+  "languageJapanese": "日本語",
+  "@languageJapanese": {
+    "description": "Native name of the Japanese language."
+  },
+  "languageKorean": "한국어",
+  "@languageKorean": {
+    "description": "Native name of the Korean language."
+  },
+  "languageDutch": "Nederlands",
+  "@languageDutch": {
+    "description": "Native name of the Dutch language."
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Native name of the Portuguese language."
+  },
+  "languageRussian": "Русский",
+  "@languageRussian": {
+    "description": "Native name of the Russian language."
+  },
+  "languageThai": "ไทย",
+  "@languageThai": {
+    "description": "Native name of the Thai language."
+  },
+  "languageTurkish": "Türkçe",
+  "@languageTurkish": {
+    "description": "Native name of the Turkish language."
+  },
+  "languageUkrainian": "Українська",
+  "@languageUkrainian": {
+    "description": "Native name of the Ukrainian language."
+  },
+  "languageVietnamese": "Tiếng Việt",
+  "@languageVietnamese": {
+    "description": "Native name of the Vietnamese language."
+  },
+  "languageChineseSimplified": "简体中文",
+  "@languageChineseSimplified": {
+    "description": "Native name of the Simplified Chinese language."
+  },
+  "selectLanguageTitle": "Chọn ngôn ngữ",
+  "@selectLanguageTitle": {
+    "description": "Header label for the language selection menu."
+  },
+  "settingsTitle": "Cài đặt",
+  "@settingsTitle": {
+    "description": "Title of the settings page displayed in the AppBar."
+  },
+  "themeLabel": "Chủ đề",
+  "@themeLabel": {
+    "description": "Label for the theme settings list tile."
+  },
+  "dayNightThemeTooltip": "Chủ đề ngày/đêm",
+  "@dayNightThemeTooltip": {
+    "description": "Tooltip for the theme toggle button."
+  },
+  "lockLabel": "Khóa",
+  "@lockLabel": {
+    "description": "Label for the app lock setting."
+  },
+  "timeFormatLabel": "Định dạng thời gian",
+  "@timeFormatLabel": {
+    "description": "Label for the time format dropdown setting."
+  },
+  "h12Label": "12 giờ",
+  "@h12Label": {
+    "description": "Label for the 12-hour time format option."
+  },
+  "h24Label": "24 giờ",
+  "@h24Label": {
+    "description": "Label for the 24-hour time format option."
+  },
+  "fontSizeLabel": "Cỡ chữ",
+  "@fontSizeLabel": {
+    "description": "Label for the font size setting."
+  },
+  "reduceTextSizeTooltip": "Giảm cỡ chữ",
+  "@reduceTextSizeTooltip": {
+    "description": "Tooltip for the decrease font size button."
+  },
+  "increaseTextSizeTooltip": "Tăng cỡ chữ",
+  "@increaseTextSizeTooltip": {
+    "description": "Tooltip for the increase font size button."
+  },
+  "languageLabel": "Ngôn ngữ",
+  "@languageLabel": {
+    "description": "Label for the language setting list tile."
+  },
+  "autoOpenGroupLabel": "Tự động mở nhóm",
+  "@autoOpenGroupLabel": {
+    "description": "Label for the auto-open group setting list tile."
+  },
+  "selectGroupTitle": "Chọn nhóm",
+  "@selectGroupTitle": {
+    "description": "Header label for the group selection menu."
+  },
+  "shareAppMessage": "Hãy tạo một {appName}: {appLink}",
+  "@shareAppMessage": {
+    "description": "Content of the share intent for sharing the app.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      },
+      "appLink": {
+        "type": "String"
+      }
+    }
+  },
+  "noteTypeEmpty": "Trống",
+  "@noteTypeEmpty": {
+    "description": "Label for an empty note preview."
+  },
+  "noteTypeImage": "Hình ảnh",
+  "@noteTypeImage": {
+    "description": "Label for an image note preview."
+  },
+  "noteTypeVideo": "Video",
+  "@noteTypeVideo": {
+    "description": "Label for a video note preview."
+  },
+  "noteTypeAudio": "Âm thanh",
+  "@noteTypeAudio": {
+    "description": "Label for an audio note preview."
+  },
+  "noteTypeDocument": "Tài liệu",
+  "@noteTypeDocument": {
+    "description": "Label for a document note preview."
+  },
+  "noteTypeContact": "Liên hệ",
+  "@noteTypeContact": {
+    "description": "Label for a contact note preview."
+  },
+  "noteTypeLocation": "Vị trí",
+  "@noteTypeLocation": {
+    "description": "Label for a location note preview."
+  },
+  "noteTypeUnknown": "Không xác định",
+  "@noteTypeUnknown": {
+    "description": "Label for a note preview of an unrecognized type."
+  },
+  "pleaseEnterData": "Vui lòng nhập dữ liệu",
+  "@pleaseEnterData": {
+    "description": "Validation error message when a field is empty."
+  },
+  "aNumber": "Một số",
+  "@aNumber": {
+    "description": "Validation error message when the input must be a number."
+  },
+  "enterDataLabel": "Nhập dữ liệu",
+  "@enterDataLabel": {
+    "description": "Validation error message prompting the user to enter data."
+  },
+  "pleaseEnterValidData": "Vui lòng nhập dữ liệu hợp lệ",
+  "@pleaseEnterValidData": {
+    "description": "Validation error message for invalid input data."
+  },
+  "pleaseSelectAnOption": "Vui lòng chọn một tùy chọn",
+  "@pleaseSelectAnOption": {
+    "description": "Validation error message prompting the user to select an option."
+  },
+  "dateRangeFormat": "{start} - {end}",
+  "@dateRangeFormat": {
+    "description": "Formatted date range string.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "todayLabel": "Hôm nay",
+  "@todayLabel": {
+    "description": "Human-readable label for today's date."
+  },
+  "yesterdayLabel": "Hôm qua",
+  "@yesterdayLabel": {
+    "description": "Human-readable label for yesterday's date."
+  },
+  "mondayLabel": "Thứ Hai",
+  "@mondayLabel": {
+    "description": "Day-of-week name for Monday."
+  },
+  "tuesdayLabel": "Thứ Ba",
+  "@tuesdayLabel": {
+    "description": "Day-of-week name for Tuesday."
+  },
+  "wednesdayLabel": "Thứ Tư",
+  "@wednesdayLabel": {
+    "description": "Day-of-week name for Wednesday."
+  },
+  "thursdayLabel": "Thứ Năm",
+  "@thursdayLabel": {
+    "description": "Day-of-week name for Thursday."
+  },
+  "fridayLabel": "Thứ Sáu",
+  "@fridayLabel": {
+    "description": "Day-of-week name for Friday."
+  },
+  "saturdayLabel": "Thứ Bảy",
+  "@saturdayLabel": {
+    "description": "Day-of-week name for Saturday."
+  },
+  "sundayLabel": "Chủ nhật",
+  "@sundayLabel": {
+    "description": "Day-of-week name for Sunday."
+  },
+  "januaryShortLabel": "Thg 1",
+  "@januaryShortLabel": {
+    "description": "Short month name for January."
+  },
+  "februaryShortLabel": "Thg 2",
+  "@februaryShortLabel": {
+    "description": "Short month name for February."
+  },
+  "marchShortLabel": "Thg 3",
+  "@marchShortLabel": {
+    "description": "Short month name for March."
+  },
+  "aprilShortLabel": "Thg 4",
+  "@aprilShortLabel": {
+    "description": "Short month name for April."
+  },
+  "mayShortLabel": "Thg 5",
+  "@mayShortLabel": {
+    "description": "Short month name for May."
+  },
+  "juneShortLabel": "Thg 6",
+  "@juneShortLabel": {
+    "description": "Short month name for June."
+  },
+  "julyShortLabel": "Thg 7",
+  "@julyShortLabel": {
+    "description": "Short month name for July."
+  },
+  "augustShortLabel": "Thg 8",
+  "@augustShortLabel": {
+    "description": "Short month name for August."
+  },
+  "septemberShortLabel": "Thg 9",
+  "@septemberShortLabel": {
+    "description": "Short month name for September."
+  },
+  "octoberShortLabel": "Thg 10",
+  "@octoberShortLabel": {
+    "description": "Short month name for October."
+  },
+  "novemberShortLabel": "Thg 11",
+  "@novemberShortLabel": {
+    "description": "Short month name for November."
+  },
+  "decemberShortLabel": "Thg 12",
+  "@decemberShortLabel": {
+    "description": "Short month name for December."
+  },
+  "noteGroupDateTitleFormat": "{month} {day}, {dayOfWeek}",
+  "@noteGroupDateTitleFormat": {
+    "description": "Formatted note group date title.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "dayOfWeek": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationHoursFormat": "{hours}:{minutes}:{seconds}",
+  "@mediaDurationHoursFormat": {
+    "description": "Formatted media duration with hours.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaDurationMinutesFormat": "{minutes}:{seconds}",
+  "@mediaDurationMinutesFormat": {
+    "description": "Formatted media duration without hours.",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeZero": "0 B",
+  "@fileSizeZero": {
+    "description": "Display string when file size is zero."
+  },
+  "fileSizeUnitBytes": "B",
+  "@fileSizeUnitBytes": {
+    "description": "File size unit for bytes."
+  },
+  "fileSizeUnitKilobytes": "KB",
+  "@fileSizeUnitKilobytes": {
+    "description": "File size unit for kilobytes."
+  },
+  "fileSizeUnitMegabytes": "MB",
+  "@fileSizeUnitMegabytes": {
+    "description": "File size unit for megabytes."
+  },
+  "fileSizeUnitGigabytes": "GB",
+  "@fileSizeUnitGigabytes": {
+    "description": "File size unit for gigabytes."
+  },
+  "fileSizeUnitTerabytes": "TB",
+  "@fileSizeUnitTerabytes": {
+    "description": "File size unit for terabytes."
+  },
+  "fileSizeFormat": "{size} {suffix}",
+  "@fileSizeFormat": {
+    "description": "Formatted file size string with suffix unit.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "noteGroupCountSingle": "{count} nhóm ghi chú",
+  "@noteGroupCountSingle": {
+    "description": "Pluralized label for a single note group count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteGroupCountPlural": "{count} nhóm ghi chú",
+  "@noteGroupCountPlural": {
+    "description": "Pluralized label for multiple note groups count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
