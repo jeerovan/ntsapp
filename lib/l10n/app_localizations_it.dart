@@ -1066,4 +1066,30 @@ class AppLocalizationsIt extends AppLocalizations {
   String noteGroupCountPlural(int count) {
     return '$count gruppi di note';
   }
+
+
+  @override
+  String get seedCategoryTasks => "Attività";
+
+  @override
+  String get seedGroupNotes => "Note";
+
+  @override
+  String get seedGroupFitness => "Fitness";
+
+  @override
+  String get seedItemWelcome =>
+      "Benvenuto in Note Safe!\nIdee, liste o qualsiasi cosa ti passi per la testa, annotala qui.\n\nTieni premuto su questa nota per eliminarla, modificarla o visualizzare altre opzioni.";
+
+  @override
+  String get seedItemMorningWorkout => "Allenamento mattutino";
+
+  @override
+  String get seedItemMeditation => "10 minuti di meditazione";
+
+  @override
+  String get seedItemWater => "2L di acqua al giorno";
+
+  @override
+  String get seedItemSteps => "Fai 10.000 passi";
 }

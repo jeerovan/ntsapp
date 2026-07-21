@@ -1066,4 +1066,30 @@ class AppLocalizationsId extends AppLocalizations {
   String noteGroupCountPlural(int count) {
     return '$count grup catatan';
   }
+
+
+  @override
+  String get seedCategoryTasks => "Tugas";
+
+  @override
+  String get seedGroupNotes => "Catatan";
+
+  @override
+  String get seedGroupFitness => "Kebugaran";
+
+  @override
+  String get seedItemWelcome =>
+      "Selamat datang di Note Safe!\nIde, daftar, atau apa pun yang ada di pikiran Anda, simpan semuanya di sini.\n\nTekan lama pada catatan ini untuk menghapus, mengedit, dan opsi lainnya.";
+
+  @override
+  String get seedItemMorningWorkout => "Olahraga pagi";
+
+  @override
+  String get seedItemMeditation => "Meditasi 10 menit";
+
+  @override
+  String get seedItemWater => "Minum 2L air per hari";
+
+  @override
+  String get seedItemSteps => "Jalan 10.000 langkah";
 }

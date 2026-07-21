@@ -1493,5 +1493,37 @@
         "type": "int"
       }
     }
+  },
+  "seedCategoryTasks": "Tasks",
+  "@seedCategoryTasks": {
+    "description": "Default category title created on fresh install."
+  },
+  "seedGroupNotes": "Notes",
+  "@seedGroupNotes": {
+    "description": "Default group title created on fresh install."
+  },
+  "seedGroupFitness": "Fitness",
+  "@seedGroupFitness": {
+    "description": "Default group title created on fresh install."
+  },
+  "seedItemWelcome": "Welcome to Note Safe!\nIdeas, lists or anything on your mind, put it all in here.\n\nLong press on this note for delete, edit and other options.",
+  "@seedItemWelcome": {
+    "description": "Welcome note text created on fresh install."
+  },
+  "seedItemMorningWorkout": "Morning workout",
+  "@seedItemMorningWorkout": {
+    "description": "First default task created on fresh install."
+  },
+  "seedItemMeditation": "10 minutes meditation",
+  "@seedItemMeditation": {
+    "description": "Second default task created on fresh install."
+  },
+  "seedItemWater": "2L of water a day",
+  "@seedItemWater": {
+    "description": "Third default task created on fresh install."
+  },
+  "seedItemSteps": "Walk 10,000 steps",
+  "@seedItemSteps": {
+    "description": "Fourth default task created on fresh install."
   }
 }

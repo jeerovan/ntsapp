@@ -1066,4 +1066,30 @@ class AppLocalizationsKo extends AppLocalizations {
   String noteGroupCountPlural(int count) {
     return '$count개의 노트 그룹';
   }
+
+
+  @override
+  String get seedCategoryTasks => "할 일";
+
+  @override
+  String get seedGroupNotes => "메모";
+
+  @override
+  String get seedGroupFitness => "운동";
+
+  @override
+  String get seedItemWelcome =>
+      "Note Safe에 오신 것을 환영합니다!\n아이디어, 할 일 목록 등 무엇이든 이곳에 기록해 보세요.\n\n메모를 길게 누르면 삭제, 수정 및 기타 옵션을 사용할 수 있습니다.";
+
+  @override
+  String get seedItemMorningWorkout => "아침 운동";
+
+  @override
+  String get seedItemMeditation => "10분 명상";
+
+  @override
+  String get seedItemWater => "하루 물 2L 마시기";
+
+  @override
+  String get seedItemSteps => "만 보 걷기";
 }

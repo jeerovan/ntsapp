@@ -2166,6 +2166,56 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} note groups'**
   String noteGroupCountPlural(int count);
+
+  /// Default category title for the Tasks category created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get seedCategoryTasks;
+
+  /// Default group title for the Notes group created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get seedGroupNotes;
+
+  /// Default group title for the Fitness group created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitness'**
+  String get seedGroupFitness;
+
+  /// Welcome note text created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Note Safe!\nIdeas, lists or anything on your mind, put it all in here.\n\nLong press on this note for delete, edit and other options.'**
+  String get seedItemWelcome;
+
+  /// First default task created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning workout'**
+  String get seedItemMorningWorkout;
+
+  /// Second default task created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'10 minutes meditation'**
+  String get seedItemMeditation;
+
+  /// Third default task created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'2L of water a day'**
+  String get seedItemWater;
+
+  /// Fourth default task created on fresh install.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk 10,000 steps'**
+  String get seedItemSteps;
+
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:ntsapp/l10n/app_localizations_en.dart';
 import 'package:ntsapp/utils/enums.dart';
 import 'package:ntsapp/storage/storage_secure.dart';
 import 'package:path/path.dart';
@@ -13,6 +15,7 @@ import 'package:uuid/uuid.dart';
 import '../utils/common.dart';
 import '../models/model_setting.dart';
 import '../services/service_logger.dart';
+import '../l10n/app_localizations.dart';
 
 /// Tokenisers available for the `item_fts` virtual table.
 ///
@@ -396,9 +399,22 @@ class StorageSqlite {
     return data.buffer.asUint8List();
   }
 
+  /// Detect system locale and return the matching [AppLocalizations] instance.
+  /// Falls back to English when the system locale is not supported.
+  static AppLocalizations _seedLocalizations() {
+    final String systemLocale = Platform.localeName; // e.g. "pt_BR"
+    final String langCode = systemLocale.split('_').first;
+    try {
+      return lookupAppLocalizations(Locale(langCode));
+    } catch (_) {
+      return AppLocalizationsEn();
+    }
+  }
+
   Future<void> createCategoryAndGroupsWithNotesOnFreshInstall(
     Database db,
   ) async {
+    final l10n = _seedLocalizations();
     int at = DateTime.now().toUtc().millisecondsSinceEpoch;
     Uuid uuid = const Uuid();
     String dndCategoryId = uuid.v4();
@@ -416,7 +432,7 @@ class StorageSqlite {
     await db.insert("itemgroup", {
       "id": notesGroupId,
       "category_id": dndCategoryId,
-      "title": "Notes",
+      "title": l10n.seedGroupNotes,
       "pinned": 0,
       "position": 0,
       "archived_at": 0,
@@ -430,8 +446,7 @@ class StorageSqlite {
     await db.insert("item", {
       'id': uuid.v4(),
       'group_id': notesGroupId,
-      'text':
-          'Welcome to Note Safe!\nIdeas, lists or anything on your mind, put it all in here.\n\nLong press on this note for delete, edit and other options.',
+      'text': l10n.seedItemWelcome,
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -446,7 +461,7 @@ class StorageSqlite {
     String tasksCategoryId = uuid.v4();
     await db.insert("category", {
       "id": tasksCategoryId,
-      "title": "Tasks",
+      "title": l10n.seedCategoryTasks,
       "color": colorToHex(getIndexedColor(4)),
       "thumbnail": null,
       "position": 4,
@@ -458,7 +473,7 @@ class StorageSqlite {
     await db.insert("itemgroup", {
       "id": fitnessGroupId,
       "category_id": tasksCategoryId,
-      "title": "Fitness",
+      "title": l10n.seedGroupFitness,
       "pinned": 0,
       "position": 0,
       "archived_at": 0,
@@ -472,7 +487,7 @@ class StorageSqlite {
     await db.insert("item", {
       'id': uuid.v4(),
       'group_id': fitnessGroupId,
-      'text': "Morning workout",
+      'text': l10n.seedItemMorningWorkout,
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -486,7 +501,7 @@ class StorageSqlite {
     await db.insert("item", {
       'id': uuid.v4(),
       'group_id': fitnessGroupId,
-      'text': "10 minutes meditation",
+      'text': l10n.seedItemMeditation,
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -500,7 +515,7 @@ class StorageSqlite {
     await db.insert("item", {
       'id': uuid.v4(),
       'group_id': fitnessGroupId,
-      'text': "2L of water a day",
+      'text': l10n.seedItemWater,
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,
@@ -514,7 +529,7 @@ class StorageSqlite {
     await db.insert("item", {
       'id': uuid.v4(),
       'group_id': fitnessGroupId,
-      'text': "Walk 10,000 steps",
+      'text': l10n.seedItemSteps,
       'thumbnail': null,
       'starred': 0,
       'pinned': 0,

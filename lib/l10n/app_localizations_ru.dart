@@ -1066,4 +1066,30 @@ class AppLocalizationsRu extends AppLocalizations {
   String noteGroupCountPlural(int count) {
     return '$count групп заметок';
   }
+
+
+  @override
+  String get seedCategoryTasks => "Задачи";
+
+  @override
+  String get seedGroupNotes => "Заметки";
+
+  @override
+  String get seedGroupFitness => "Фитнес";
+
+  @override
+  String get seedItemWelcome =>
+      "Добро пожаловать в Note Safe!\nЗаписывайте сюда любые идеи, списки и всё, что у вас на уме.\n\nУдерживайте заметку, чтобы удалить, изменить её или открыть другие параметры.";
+
+  @override
+  String get seedItemMorningWorkout => "Утренняя тренировка";
+
+  @override
+  String get seedItemMeditation => "10 минут медитации";
+
+  @override
+  String get seedItemWater => "2 л воды в день";
+
+  @override
+  String get seedItemSteps => "Пройти 10 000 шагов";
 }

@@ -1493,5 +1493,21 @@
         "type": "int"
       }
     }
-  }
+  },
+  "seedCategoryTasks": "وظایف",
+  "@seedCategoryTasks": {"description": "Default category title created on fresh install."},
+  "seedGroupNotes": "یادداشت‌ها",
+  "@seedGroupNotes": {"description": "Default group title created on fresh install."},
+  "seedGroupFitness": "تناسب اندام",
+  "@seedGroupFitness": {"description": "Default group title created on fresh install."},
+  "seedItemWelcome": "به Note Safe خوش آمدید!\nایده‌ها، لیست‌ها یا هر چیزی که در ذهن دارید را اینجا بنویسید.\n\nبرای حذف، ویرایش و سایر گزینه‌ها، روی این یادداشت نگه دارید.",
+  "@seedItemWelcome": {"description": "Welcome note text created on fresh install."},
+  "seedItemMorningWorkout": "ورزش صبحگاهی",
+  "@seedItemMorningWorkout": {"description": "First default task created on fresh install."},
+  "seedItemMeditation": "۱۰ دقیقه مدیتیشن",
+  "@seedItemMeditation": {"description": "Second default task created on fresh install."},
+  "seedItemWater": "۲ لیتر آب در روز",
+  "@seedItemWater": {"description": "Third default task created on fresh install."},
+  "seedItemSteps": "۱۰,۰۰۰ قدم پیاده‌روی",
+  "@seedItemSteps": {"description": "Fourth default task created on fresh install."}
 }

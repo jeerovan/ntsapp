@@ -1066,4 +1066,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String noteGroupCountPlural(int count) {
     return '$count 个笔记群组';
   }
+
+
+  @override
+  String get seedCategoryTasks => "任务";
+
+  @override
+  String get seedGroupNotes => "笔记";
+
+  @override
+  String get seedGroupFitness => "健身";
+
+  @override
+  String get seedItemWelcome =>
+      "欢迎使用 Note Safe！\n无论是灵感、清单还是任何想法，都可以记录在这里。\n\n长按此笔记即可进行删除、编辑等操作。";
+
+  @override
+  String get seedItemMorningWorkout => "晨间锻炼";
+
+  @override
+  String get seedItemMeditation => "10分钟冥想";
+
+  @override
+  String get seedItemWater => "每日饮水2升";
+
+  @override
+  String get seedItemSteps => "步行10,000步";
 }

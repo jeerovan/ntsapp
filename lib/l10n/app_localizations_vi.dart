@@ -1066,4 +1066,30 @@ class AppLocalizationsVi extends AppLocalizations {
   String noteGroupCountPlural(int count) {
     return '$count nhóm ghi chú';
   }
+
+
+  @override
+  String get seedCategoryTasks => "Tác vụ";
+
+  @override
+  String get seedGroupNotes => "Ghi chú";
+
+  @override
+  String get seedGroupFitness => "Thể dục";
+
+  @override
+  String get seedItemWelcome =>
+      "Chào mừng bạn đến với Note Safe!\nÝ tưởng, danh sách hay bất cứ điều gì bạn nghĩ, hãy lưu tất cả vào đây.\n\nNhấn giữ ghi chú này để xóa, sửa và xem các tùy chọn khác.";
+
+  @override
+  String get seedItemMorningWorkout => "Tập thể dục buổi sáng";
+
+  @override
+  String get seedItemMeditation => "Thiền 10 phút";
+
+  @override
+  String get seedItemWater => "Uống 2L nước mỗi ngày";
+
+  @override
+  String get seedItemSteps => "Đi bộ 10.000 bước";
 }
