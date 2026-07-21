@@ -16,5 +16,6 @@ class ModelSetting {
   static Future<void> delete(String key) async {
     final dbHelper = StorageSqlite.instance;
     int _ = await dbHelper.delete("setting", key);
+    settingJson.remove(key);
   }
 }

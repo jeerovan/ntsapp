@@ -290,6 +290,7 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
     if (_categoriesGroupsDisplayList.isEmpty && widget.runningOnDesktop) {
       widget.setShowHidePage!(PageType.items, false, PageParams());
     }
+    autoOpenNoteGroup();
   }
 
   Future<void> _authenticateOnStart() async {
@@ -344,6 +345,16 @@ class _PageCategoriesGroupsState extends State<PageCategoriesGroups> {
           navigateToNotes(value, []);
         }
       });
+    }
+  }
+
+  Future<void> autoOpenNoteGroup() async {
+    String groupId = await ModelSetting.get(AppString.autoopengroup.string, "");
+    if (groupId.isNotEmpty) {
+      ModelGroup? group = await ModelGroup.get(groupId);
+      if (group != null) {
+        navigateToNotes(group, []);
+      }
     }
   }
 
