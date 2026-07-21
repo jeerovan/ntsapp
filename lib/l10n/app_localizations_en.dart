@@ -902,6 +902,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageLabel => 'Language';
 
   @override
+  String get autoOpenGroupLabel => 'Auto-open group';
+
+  @override
+  String get selectGroupTitle => 'Select group';
+
+  @override
   String shareAppMessage(String appName, String appLink) {
     return 'Make a $appName: $appLink';
   }

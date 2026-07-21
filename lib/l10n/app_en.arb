@@ -1230,6 +1230,14 @@
   "@languageLabel": {
     "description": "Label for the language setting list tile."
   },
+  "autoOpenGroupLabel": "Auto-open group",
+  "@autoOpenGroupLabel": {
+    "description": "Label for the auto-open group setting list tile."
+  },
+  "selectGroupTitle": "Select group",
+  "@selectGroupTitle": {
+    "description": "Header label for the group selection menu."
+  },
   "shareAppMessage": "Make a {appName}: {appLink}",
   "@shareAppMessage": {
     "description": "Content of the share intent for sharing the app.",

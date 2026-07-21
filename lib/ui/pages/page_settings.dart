@@ -107,6 +107,7 @@ class SettingsPageState extends State<SettingsPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
+        final loc = AppLocalizations.of(sheetContext)!;
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.65,
@@ -125,13 +126,13 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Select group',
-                      style: TextStyle(
+                      loc.selectGroupTitle,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -694,7 +695,7 @@ class SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               leading: const Icon(LucideIcons.folderOpen, color: Colors.grey),
-              title: const Text('Auto-open group'),
+              title: Text(loc.autoOpenGroupLabel),
               subtitle: autoOpenGroupTitle.isNotEmpty
                   ? Text(autoOpenGroupTitle)
                   : null,

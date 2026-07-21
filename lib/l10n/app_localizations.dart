@@ -1827,6 +1827,18 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get languageLabel;
 
+  /// Label for the auto-open group setting list tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-open group'**
+  String get autoOpenGroupLabel;
+
+  /// Header label for the group selection menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Select group'**
+  String get selectGroupTitle;
+
   /// Content of the share intent for sharing the app.
   ///
   /// In en, this message translates to:
