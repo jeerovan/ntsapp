@@ -146,12 +146,11 @@ class StorageSqlite {
   static Future<void> initialize({
     ExecutionMode mode = ExecutionMode.appForeground,
   }) async {
-    bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
-    if (!runningOnMobile) {
-      // Initialize sqflite for FFI (non-mobile platforms)
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
     }
+    // Force FFI on ALL platforms (Android, iOS, Desktop)
+    databaseFactory = databaseFactoryFfi;
     await instance.ensureInitialized();
     List<Map<String, dynamic>> keyValuePairs = await instance.getAll('setting');
     ModelSetting.settingJson = {
