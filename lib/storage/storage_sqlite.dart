@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:ui';
 
@@ -104,7 +105,13 @@ class StorageSqlite {
     _databaseCompleter = Completer();
     try {
       String? dbFileName = await secureStorage.read(key: "db_file");
-      _database = await _initDB(dbFileName!);
+      if (dbFileName == null) {
+        // Fallback if media params not yet initialized
+        dbFileName = "notetoself.db";
+        await secureStorage.write(key: "db_file", value: dbFileName);
+        logger.info("DbFile: using fallback 'notetoself.db'");
+      }
+      _database = await _initDB(dbFileName);
       _databaseCompleter!.complete(_database);
     } catch (e) {
       _databaseCompleter!.completeError(e);
@@ -149,6 +156,8 @@ class StorageSqlite {
     bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
     if (!runningOnMobile) {
       // Initialize sqflite for FFI (non-mobile platforms)
+      // Diagnostics: verify that libsqlite3.so can be loaded before proceeding
+      _probeSqliteLibrary();
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
@@ -158,6 +167,44 @@ class StorageSqlite {
       for (var pair in keyValuePairs) pair['id']: pair['value'],
     };
     AppLogger(prefixes: [mode.string]).info("Initialized SqliteDB");
+  }
+
+  /// Probes for a loadable SQLite library before FFI init.
+  ///
+  /// On Linux the app bundles a custom `libsqlite3.so` in the bundle's `lib/`
+  /// directory. When the binary is run outside the bundle structure (e.g.
+  /// directly from `intermediates_do_not_run/`), the FFI may not find the
+  /// library because the system only provides `libsqlite3.so.0` (versioned),
+  /// not the unversioned `libsqlite3.so` that the `sqlite3` Dart package tries
+  /// to open via `DynamicLibrary.open('libsqlite3.so')`.
+  ///
+  /// This method tries the preferred name first and falls back to alternative
+  /// names so a clear diagnostic is available if loading fails.
+  static void _probeSqliteLibrary() {
+    if (!Platform.isLinux && !Platform.isWindows) return;
+    final logger = AppLogger(prefixes: ["SqliteProbe"]);
+    const libraryNames = [
+      'libsqlite3.so',
+      'libsqlite3.so.0',
+      'libsqlite3.so.1',
+    ];
+    for (final name in libraryNames) {
+      try {
+        ffi.DynamicLibrary.open(name);
+        logger.info("Successfully loaded '$name'");
+        return;
+      } on ArgumentError catch (e) {
+        logger.warning("Could not load '$name': $e");
+      } catch (e) {
+        logger.warning("Unexpected error loading '$name': $e");
+      }
+    }
+    logger.error(
+      "FATAL: No SQLite library could be loaded. Tried: "
+      "${libraryNames.join(', ')}. "
+      "On Linux, ensure the app is run from the installed bundle or that "
+      "libsqlite3-dev is installed.",
+    );
   }
 
   Future close() async {

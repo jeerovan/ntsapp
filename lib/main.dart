@@ -82,26 +82,40 @@ void backgroundTaskDispatcher() {
 
 final logger = AppLogger(prefixes: ["main"]);
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    setWindowMinSize(const Size(720, 640));
-  }
-  await initializeMediaParams();
-  await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => LocaleProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => FontSizeController(),
-        ),
-      ],
-      child: const MainApp(),
-    ),
-  );
-  unawaited(initializeRestInParallel());
+  await runZonedGuarded(() async {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        setWindowMinSize(const Size(720, 640));
+      }
+      await initializeMediaParams();
+      await StorageSqlite.initialize(mode: ExecutionMode.appForeground);
+    } catch (e, s) {
+      // Write fatal initialization error to stderr before anything else
+      stderr.writeln('FATAL [main init]: $e');
+      stderr.writeln('Stack trace: $s');
+      logger.error('Fatal initialization error', error: e, stackTrace: s);
+      rethrow;
+    }
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (context) => LocaleProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => FontSizeController(),
+          ),
+        ],
+        child: const MainApp(),
+      ),
+    );
+    unawaited(initializeRestInParallel());
+  }, (error, stack) {
+    stderr.writeln('UNCAUGHT ZONE ERROR: $error');
+    stderr.writeln('Zone stack trace: $stack');
+    logger.error('Unhandled zone error', error: error, stackTrace: stack);
+  });
 }
 
 Future<void> initializeRestInParallel() async {
