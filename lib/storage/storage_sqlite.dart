@@ -156,8 +156,10 @@ class StorageSqlite {
     bool runningOnMobile = Platform.isIOS || Platform.isAndroid;
     if (!runningOnMobile) {
       // Initialize sqflite for FFI (non-mobile platforms)
-      // Diagnostics: verify that libsqlite3.so can be loaded before proceeding
-      _probeSqliteLibrary();
+      if (Platform.isLinux) {
+        // Diagnostics: verify that libsqlite3.so can be loaded before proceeding
+        _probeSqliteLibrary();
+      }
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
