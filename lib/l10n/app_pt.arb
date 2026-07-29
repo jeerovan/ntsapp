@@ -294,6 +294,18 @@
   "@shareNotesTooltip": {
     "description": "Tooltip for share notes button."
   },
+  "noNotesSelectedToShare": "Nenhuma nota selecionada para compartilhar",
+  "@noNotesSelectedToShare": {
+    "description": "Shown when user tries to share but no notes are selected."
+  },
+  "nothingToShare": "Nada para compartilhar",
+  "@nothingToShare": {
+    "description": "Shown when selected items have no shareable text or files."
+  },
+  "shareFailed": "Falha ao compartilhar",
+  "@shareFailed": {
+    "description": "Shown when sharing via system share sheet throws an error."
+  },
   "editNoteTooltip": "Editar nota",
   "@editNoteTooltip": {
     "description": "Tooltip for edit note button."
@@ -1495,19 +1507,35 @@
     }
   },
   "seedCategoryTasks": "Tarefas",
-  "@seedCategoryTasks": {"description": "Default category title created on fresh install."},
+  "@seedCategoryTasks": {
+    "description": "Default category title created on fresh install."
+  },
   "seedGroupNotes": "Notas",
-  "@seedGroupNotes": {"description": "Default group title created on fresh install."},
+  "@seedGroupNotes": {
+    "description": "Default group title created on fresh install."
+  },
   "seedGroupFitness": "Fitness",
-  "@seedGroupFitness": {"description": "Default group title created on fresh install."},
+  "@seedGroupFitness": {
+    "description": "Default group title created on fresh install."
+  },
   "seedItemWelcome": "Bem-vindo ao Note Safe!\nIdeias, listas ou qualquer coisa em sua mente, coloque tudo aqui.\n\nPressione e segure nesta nota para excluir, editar e ver outras opções.",
-  "@seedItemWelcome": {"description": "Welcome note text created on fresh install."},
+  "@seedItemWelcome": {
+    "description": "Welcome note text created on fresh install."
+  },
   "seedItemMorningWorkout": "Treino matinal",
-  "@seedItemMorningWorkout": {"description": "First default task created on fresh install."},
+  "@seedItemMorningWorkout": {
+    "description": "First default task created on fresh install."
+  },
   "seedItemMeditation": "10 minutos de meditação",
-  "@seedItemMeditation": {"description": "Second default task created on fresh install."},
+  "@seedItemMeditation": {
+    "description": "Second default task created on fresh install."
+  },
   "seedItemWater": "2L de água por dia",
-  "@seedItemWater": {"description": "Third default task created on fresh install."},
+  "@seedItemWater": {
+    "description": "Third default task created on fresh install."
+  },
   "seedItemSteps": "Caminhar 10.000 passos",
-  "@seedItemSteps": {"description": "Fourth default task created on fresh install."}
+  "@seedItemSteps": {
+    "description": "Fourth default task created on fresh install."
+  }
 }

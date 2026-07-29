@@ -226,6 +226,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shareNotesTooltip => 'Partager les notes';
 
   @override
+  String get noNotesSelectedToShare => 'Aucune note sélectionnée à partager';
+
+  @override
+  String get nothingToShare => 'Rien à partager';
+
+  @override
+  String get shareFailed => 'Échec du partage';
+
+  @override
   String get editNoteTooltip => 'Modifier la note';
 
   @override
@@ -1067,29 +1076,27 @@ class AppLocalizationsFr extends AppLocalizations {
     return '$count groupes de notes';
   }
 
+  @override
+  String get seedCategoryTasks => 'Tâches';
 
   @override
-  String get seedCategoryTasks => "Tâches";
+  String get seedGroupNotes => 'Notes';
 
   @override
-  String get seedGroupNotes => "Notes";
+  String get seedGroupFitness => 'Forme physique';
 
   @override
-  String get seedGroupFitness => "Forme physique";
+  String get seedItemWelcome => 'Bienvenue dans Note Safe !\nIdées, listes ou tout ce qui vous passe par la tête, notez tout ici.\n\nAppuyez longuement sur cette note pour accéder aux options de suppression, de modification et autres.';
 
   @override
-  String get seedItemWelcome =>
-      "Bienvenue dans Note Safe !\nIdées, listes ou tout ce qui vous passe par la tête, notez tout ici.\n\nAppuyez longuement sur cette note pour accéder aux options de suppression, de modification et autres.";
+  String get seedItemMorningWorkout => 'Entraînement du matin';
 
   @override
-  String get seedItemMorningWorkout => "Entraînement du matin";
+  String get seedItemMeditation => '10 minutes de méditation';
 
   @override
-  String get seedItemMeditation => "10 minutes de méditation";
+  String get seedItemWater => '2L d\'eau par jour';
 
   @override
-  String get seedItemWater => "2L d'eau par jour";
-
-  @override
-  String get seedItemSteps => "Marcher 10 000 pas";
+  String get seedItemSteps => 'Marcher 10 000 pas';
 }

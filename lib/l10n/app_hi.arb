@@ -294,6 +294,18 @@
   "@shareNotesTooltip": {
     "description": "Tooltip for share notes button."
   },
+  "noNotesSelectedToShare": "साझा करने के लिए कोई नोट चयनित नहीं है",
+  "@noNotesSelectedToShare": {
+    "description": "Shown when user tries to share but no notes are selected."
+  },
+  "nothingToShare": "साझा करने के लिए कुछ नहीं",
+  "@nothingToShare": {
+    "description": "Shown when selected items have no shareable text or files."
+  },
+  "shareFailed": "साझा करना विफल",
+  "@shareFailed": {
+    "description": "Shown when sharing via system share sheet throws an error."
+  },
   "editNoteTooltip": "नोट संपादित करें",
   "@editNoteTooltip": {
     "description": "Tooltip for edit note button."
@@ -1495,19 +1507,35 @@
     }
   },
   "seedCategoryTasks": "कार्य",
-  "@seedCategoryTasks": {"description": "Default category title created on fresh install."},
+  "@seedCategoryTasks": {
+    "description": "Default category title created on fresh install."
+  },
   "seedGroupNotes": "नोट्स",
-  "@seedGroupNotes": {"description": "Default group title created on fresh install."},
+  "@seedGroupNotes": {
+    "description": "Default group title created on fresh install."
+  },
   "seedGroupFitness": "फिटनेस",
-  "@seedGroupFitness": {"description": "Default group title created on fresh install."},
+  "@seedGroupFitness": {
+    "description": "Default group title created on fresh install."
+  },
   "seedItemWelcome": "Note Safe में आपका स्वागत है!\nअपने विचार, लिस्ट या जो भी आपके मन में हो, यहाँ लिखें।\n\nइस नोट को डिलीट, एडिट या अन्य विकल्पों के लिए लॉन्ग प्रेस करें।",
-  "@seedItemWelcome": {"description": "Welcome note text created on fresh install."},
+  "@seedItemWelcome": {
+    "description": "Welcome note text created on fresh install."
+  },
   "seedItemMorningWorkout": "सुबह की कसरत",
-  "@seedItemMorningWorkout": {"description": "First default task created on fresh install."},
+  "@seedItemMorningWorkout": {
+    "description": "First default task created on fresh install."
+  },
   "seedItemMeditation": "10 मिनट का ध्यान",
-  "@seedItemMeditation": {"description": "Second default task created on fresh install."},
+  "@seedItemMeditation": {
+    "description": "Second default task created on fresh install."
+  },
   "seedItemWater": "दिन भर में 2 लीटर पानी",
-  "@seedItemWater": {"description": "Third default task created on fresh install."},
+  "@seedItemWater": {
+    "description": "Third default task created on fresh install."
+  },
   "seedItemSteps": "10,000 कदम चलें",
-  "@seedItemSteps": {"description": "Fourth default task created on fresh install."}
+  "@seedItemSteps": {
+    "description": "Fourth default task created on fresh install."
+  }
 }

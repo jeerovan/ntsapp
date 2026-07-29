@@ -226,6 +226,15 @@ class AppLocalizationsId extends AppLocalizations {
   String get shareNotesTooltip => 'Bagikan catatan';
 
   @override
+  String get noNotesSelectedToShare => 'Tidak ada catatan dipilih untuk dibagikan';
+
+  @override
+  String get nothingToShare => 'Tidak ada yang dibagikan';
+
+  @override
+  String get shareFailed => 'Berbagi gagal';
+
+  @override
   String get editNoteTooltip => 'Edit catatan';
 
   @override
@@ -1067,29 +1076,27 @@ class AppLocalizationsId extends AppLocalizations {
     return '$count grup catatan';
   }
 
+  @override
+  String get seedCategoryTasks => 'Tugas';
 
   @override
-  String get seedCategoryTasks => "Tugas";
+  String get seedGroupNotes => 'Catatan';
 
   @override
-  String get seedGroupNotes => "Catatan";
+  String get seedGroupFitness => 'Kebugaran';
 
   @override
-  String get seedGroupFitness => "Kebugaran";
+  String get seedItemWelcome => 'Selamat datang di Note Safe!\nIde, daftar, atau apa pun yang ada di pikiran Anda, simpan semuanya di sini.\n\nTekan lama pada catatan ini untuk menghapus, mengedit, dan opsi lainnya.';
 
   @override
-  String get seedItemWelcome =>
-      "Selamat datang di Note Safe!\nIde, daftar, atau apa pun yang ada di pikiran Anda, simpan semuanya di sini.\n\nTekan lama pada catatan ini untuk menghapus, mengedit, dan opsi lainnya.";
+  String get seedItemMorningWorkout => 'Olahraga pagi';
 
   @override
-  String get seedItemMorningWorkout => "Olahraga pagi";
+  String get seedItemMeditation => 'Meditasi 10 menit';
 
   @override
-  String get seedItemMeditation => "Meditasi 10 menit";
+  String get seedItemWater => 'Minum 2L air per hari';
 
   @override
-  String get seedItemWater => "Minum 2L air per hari";
-
-  @override
-  String get seedItemSteps => "Jalan 10.000 langkah";
+  String get seedItemSteps => 'Jalan 10.000 langkah';
 }

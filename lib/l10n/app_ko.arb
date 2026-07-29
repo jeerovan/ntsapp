@@ -294,6 +294,18 @@
   "@shareNotesTooltip": {
     "description": "Tooltip for share notes button."
   },
+  "noNotesSelectedToShare": "공유할 노트가 선택되지 않았습니다",
+  "@noNotesSelectedToShare": {
+    "description": "Shown when user tries to share but no notes are selected."
+  },
+  "nothingToShare": "공유할 항목이 없습니다",
+  "@nothingToShare": {
+    "description": "Shown when selected items have no shareable text or files."
+  },
+  "shareFailed": "공유 실패",
+  "@shareFailed": {
+    "description": "Shown when sharing via system share sheet throws an error."
+  },
   "editNoteTooltip": "노트 수정",
   "@editNoteTooltip": {
     "description": "Tooltip for edit note button."
@@ -1495,19 +1507,35 @@
     }
   },
   "seedCategoryTasks": "할 일",
-  "@seedCategoryTasks": {"description": "Default category title created on fresh install."},
+  "@seedCategoryTasks": {
+    "description": "Default category title created on fresh install."
+  },
   "seedGroupNotes": "메모",
-  "@seedGroupNotes": {"description": "Default group title created on fresh install."},
+  "@seedGroupNotes": {
+    "description": "Default group title created on fresh install."
+  },
   "seedGroupFitness": "운동",
-  "@seedGroupFitness": {"description": "Default group title created on fresh install."},
+  "@seedGroupFitness": {
+    "description": "Default group title created on fresh install."
+  },
   "seedItemWelcome": "Note Safe에 오신 것을 환영합니다!\n아이디어, 할 일 목록 등 무엇이든 이곳에 기록해 보세요.\n\n메모를 길게 누르면 삭제, 수정 및 기타 옵션을 사용할 수 있습니다.",
-  "@seedItemWelcome": {"description": "Welcome note text created on fresh install."},
+  "@seedItemWelcome": {
+    "description": "Welcome note text created on fresh install."
+  },
   "seedItemMorningWorkout": "아침 운동",
-  "@seedItemMorningWorkout": {"description": "First default task created on fresh install."},
+  "@seedItemMorningWorkout": {
+    "description": "First default task created on fresh install."
+  },
   "seedItemMeditation": "10분 명상",
-  "@seedItemMeditation": {"description": "Second default task created on fresh install."},
+  "@seedItemMeditation": {
+    "description": "Second default task created on fresh install."
+  },
   "seedItemWater": "하루 물 2L 마시기",
-  "@seedItemWater": {"description": "Third default task created on fresh install."},
+  "@seedItemWater": {
+    "description": "Third default task created on fresh install."
+  },
   "seedItemSteps": "만 보 걷기",
-  "@seedItemSteps": {"description": "Fourth default task created on fresh install."}
+  "@seedItemSteps": {
+    "description": "Fourth default task created on fresh install."
+  }
 }

@@ -294,6 +294,18 @@
   "@shareNotesTooltip": {
     "description": "Tooltip for share notes button."
   },
+  "noNotesSelectedToShare": "Не выбраны заметки для публикации",
+  "@noNotesSelectedToShare": {
+    "description": "Shown when user tries to share but no notes are selected."
+  },
+  "nothingToShare": "Нечего публиковать",
+  "@nothingToShare": {
+    "description": "Shown when selected items have no shareable text or files."
+  },
+  "shareFailed": "Ошибка публикации",
+  "@shareFailed": {
+    "description": "Shown when sharing via system share sheet throws an error."
+  },
   "editNoteTooltip": "Редактировать заметку",
   "@editNoteTooltip": {
     "description": "Tooltip for edit note button."
@@ -1495,19 +1507,35 @@
     }
   },
   "seedCategoryTasks": "Задачи",
-  "@seedCategoryTasks": {"description": "Default category title created on fresh install."},
+  "@seedCategoryTasks": {
+    "description": "Default category title created on fresh install."
+  },
   "seedGroupNotes": "Заметки",
-  "@seedGroupNotes": {"description": "Default group title created on fresh install."},
+  "@seedGroupNotes": {
+    "description": "Default group title created on fresh install."
+  },
   "seedGroupFitness": "Фитнес",
-  "@seedGroupFitness": {"description": "Default group title created on fresh install."},
+  "@seedGroupFitness": {
+    "description": "Default group title created on fresh install."
+  },
   "seedItemWelcome": "Добро пожаловать в Note Safe!\nЗаписывайте сюда любые идеи, списки и всё, что у вас на уме.\n\nУдерживайте заметку, чтобы удалить, изменить её или открыть другие параметры.",
-  "@seedItemWelcome": {"description": "Welcome note text created on fresh install."},
+  "@seedItemWelcome": {
+    "description": "Welcome note text created on fresh install."
+  },
   "seedItemMorningWorkout": "Утренняя тренировка",
-  "@seedItemMorningWorkout": {"description": "First default task created on fresh install."},
+  "@seedItemMorningWorkout": {
+    "description": "First default task created on fresh install."
+  },
   "seedItemMeditation": "10 минут медитации",
-  "@seedItemMeditation": {"description": "Second default task created on fresh install."},
+  "@seedItemMeditation": {
+    "description": "Second default task created on fresh install."
+  },
   "seedItemWater": "2 л воды в день",
-  "@seedItemWater": {"description": "Third default task created on fresh install."},
+  "@seedItemWater": {
+    "description": "Third default task created on fresh install."
+  },
   "seedItemSteps": "Пройти 10 000 шагов",
-  "@seedItemSteps": {"description": "Fourth default task created on fresh install."}
+  "@seedItemSteps": {
+    "description": "Fourth default task created on fresh install."
+  }
 }

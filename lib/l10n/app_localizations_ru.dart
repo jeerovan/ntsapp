@@ -226,6 +226,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get shareNotesTooltip => 'Поделиться заметками';
 
   @override
+  String get noNotesSelectedToShare => 'Не выбраны заметки для публикации';
+
+  @override
+  String get nothingToShare => 'Нечего публиковать';
+
+  @override
+  String get shareFailed => 'Ошибка публикации';
+
+  @override
   String get editNoteTooltip => 'Редактировать заметку';
 
   @override
@@ -1067,29 +1076,27 @@ class AppLocalizationsRu extends AppLocalizations {
     return '$count групп заметок';
   }
 
+  @override
+  String get seedCategoryTasks => 'Задачи';
 
   @override
-  String get seedCategoryTasks => "Задачи";
+  String get seedGroupNotes => 'Заметки';
 
   @override
-  String get seedGroupNotes => "Заметки";
+  String get seedGroupFitness => 'Фитнес';
 
   @override
-  String get seedGroupFitness => "Фитнес";
+  String get seedItemWelcome => 'Добро пожаловать в Note Safe!\nЗаписывайте сюда любые идеи, списки и всё, что у вас на уме.\n\nУдерживайте заметку, чтобы удалить, изменить её или открыть другие параметры.';
 
   @override
-  String get seedItemWelcome =>
-      "Добро пожаловать в Note Safe!\nЗаписывайте сюда любые идеи, списки и всё, что у вас на уме.\n\nУдерживайте заметку, чтобы удалить, изменить её или открыть другие параметры.";
+  String get seedItemMorningWorkout => 'Утренняя тренировка';
 
   @override
-  String get seedItemMorningWorkout => "Утренняя тренировка";
+  String get seedItemMeditation => '10 минут медитации';
 
   @override
-  String get seedItemMeditation => "10 минут медитации";
+  String get seedItemWater => '2 л воды в день';
 
   @override
-  String get seedItemWater => "2 л воды в день";
-
-  @override
-  String get seedItemSteps => "Пройти 10 000 шагов";
+  String get seedItemSteps => 'Пройти 10 000 шагов';
 }

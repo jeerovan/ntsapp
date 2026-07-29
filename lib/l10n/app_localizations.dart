@@ -559,6 +559,24 @@ abstract class AppLocalizations {
   /// **'Share notes'**
   String get shareNotesTooltip;
 
+  /// Shown when user tries to share but no notes are selected.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes selected to share'**
+  String get noNotesSelectedToShare;
+
+  /// Shown when selected items have no shareable text or files.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to share'**
+  String get nothingToShare;
+
+  /// Shown when sharing via system share sheet throws an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing failed'**
+  String get shareFailed;
+
   /// Tooltip for edit note button.
   ///
   /// In en, this message translates to:
@@ -2167,19 +2185,19 @@ abstract class AppLocalizations {
   /// **'{count} note groups'**
   String noteGroupCountPlural(int count);
 
-  /// Default category title for the Tasks category created on fresh install.
+  /// Default category title created on fresh install.
   ///
   /// In en, this message translates to:
   /// **'Tasks'**
   String get seedCategoryTasks;
 
-  /// Default group title for the Notes group created on fresh install.
+  /// Default group title created on fresh install.
   ///
   /// In en, this message translates to:
   /// **'Notes'**
   String get seedGroupNotes;
 
-  /// Default group title for the Fitness group created on fresh install.
+  /// Default group title created on fresh install.
   ///
   /// In en, this message translates to:
   /// **'Fitness'**
@@ -2214,8 +2232,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Walk 10,000 steps'**
   String get seedItemSteps;
-
-
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

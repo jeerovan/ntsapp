@@ -226,6 +226,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get shareNotesTooltip => 'Chia sẻ ghi chú';
 
   @override
+  String get noNotesSelectedToShare => 'Chưa chọn ghi chú để chia sẻ';
+
+  @override
+  String get nothingToShare => 'Không có gì để chia sẻ';
+
+  @override
+  String get shareFailed => 'Chia sẻ thất bại';
+
+  @override
   String get editNoteTooltip => 'Chỉnh sửa ghi chú';
 
   @override
@@ -1067,29 +1076,27 @@ class AppLocalizationsVi extends AppLocalizations {
     return '$count nhóm ghi chú';
   }
 
+  @override
+  String get seedCategoryTasks => 'Tác vụ';
 
   @override
-  String get seedCategoryTasks => "Tác vụ";
+  String get seedGroupNotes => 'Ghi chú';
 
   @override
-  String get seedGroupNotes => "Ghi chú";
+  String get seedGroupFitness => 'Thể dục';
 
   @override
-  String get seedGroupFitness => "Thể dục";
+  String get seedItemWelcome => 'Chào mừng bạn đến với Note Safe!\nÝ tưởng, danh sách hay bất cứ điều gì bạn nghĩ, hãy lưu tất cả vào đây.\n\nNhấn giữ ghi chú này để xóa, sửa và xem các tùy chọn khác.';
 
   @override
-  String get seedItemWelcome =>
-      "Chào mừng bạn đến với Note Safe!\nÝ tưởng, danh sách hay bất cứ điều gì bạn nghĩ, hãy lưu tất cả vào đây.\n\nNhấn giữ ghi chú này để xóa, sửa và xem các tùy chọn khác.";
+  String get seedItemMorningWorkout => 'Tập thể dục buổi sáng';
 
   @override
-  String get seedItemMorningWorkout => "Tập thể dục buổi sáng";
+  String get seedItemMeditation => 'Thiền 10 phút';
 
   @override
-  String get seedItemMeditation => "Thiền 10 phút";
+  String get seedItemWater => 'Uống 2L nước mỗi ngày';
 
   @override
-  String get seedItemWater => "Uống 2L nước mỗi ngày";
-
-  @override
-  String get seedItemSteps => "Đi bộ 10.000 bước";
+  String get seedItemSteps => 'Đi bộ 10.000 bước';
 }

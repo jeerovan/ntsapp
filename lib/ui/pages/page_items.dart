@@ -864,17 +864,19 @@ class _PageItemsState extends State<PageItems> {
 
   Future<void> shareNotes() async {
     final loc = AppLocalizations.of(context)!;
+    if (_selectedItems.isEmpty) {
+      displaySnackBar(context, message: loc.noNotesSelectedToShare, seconds: 1);
+      return;
+    }
     List<String> texts = [];
     for (ModelItem item in _selectedItems) {
       switch (item.type) {
         case ItemType.text:
-          texts.add(item.text);
-          break;
         case ItemType.task:
-          texts.add(item.text);
-          break;
         case ItemType.completedTask:
-          texts.add(item.text);
+          if (item.text.isNotEmpty) {
+            texts.add(item.text);
+          }
           break;
         case ItemType.location:
           Map<String, dynamic> locationData = item.data!;
@@ -890,20 +892,22 @@ class _PageItemsState extends State<PageItems> {
           break;
         case ItemType.contact:
           Map<String, dynamic> contactData = item.data!;
-          String phones = [
-            loc.contactShareLabel,
-            contactData["phones"].join("\n")
-          ].join("\n");
-          String emails = [
-            loc.emailsShareLabel,
-            contactData["emails"].join("\n")
-          ].join("\n");
-          String addresses = [
-            loc.addressesShareLabel,
-            contactData["addresses"].join("\n")
-          ].join("\n");
-          texts
-              .add([contactData["name"], phones, emails, addresses].join("\n"));
+          List<String> contactParts = [contactData["name"] as String];
+          List<String> phones = (contactData["phones"] as List).cast<String>();
+          if (phones.isNotEmpty) {
+            contactParts.add([loc.contactShareLabel, phones.join("\n")].join("\n"));
+          }
+          List<String> emails = (contactData["emails"] as List).cast<String>();
+          if (emails.isNotEmpty) {
+            contactParts.add([loc.emailsShareLabel, emails.join("\n")].join("\n"));
+          }
+          List<String> addresses =
+              (contactData["addresses"] as List).cast<String>();
+          if (addresses.isNotEmpty) {
+            contactParts
+                .add([loc.addressesShareLabel, addresses.join("\n")].join("\n"));
+          }
+          texts.add(contactParts.join("\n"));
           break;
         default:
           break;
@@ -913,43 +917,39 @@ class _PageItemsState extends State<PageItems> {
     for (ModelItem item in _selectedItems) {
       switch (item.type) {
         case ItemType.image:
-          Map<String, dynamic> imageData = item.data!;
-          String imagePath = imageData["path"];
-          File imageFile = File(imagePath);
-          if (imageFile.existsSync()) {
-            medias.add(XFile(imagePath));
-          }
-          break;
         case ItemType.audio:
-          Map<String, dynamic> audioData = item.data!;
-          String audioPath = audioData["path"];
-          File audioFile = File(audioPath);
-          if (audioFile.existsSync()) {
-            medias.add(XFile(audioPath));
-          }
-          break;
         case ItemType.video:
-          Map<String, dynamic> videoData = item.data!;
-          String videoPath = videoData["path"];
-          File videoFile = File(videoPath);
-          if (videoFile.existsSync()) {
-            medias.add(XFile(videoPath));
-          }
-          break;
         case ItemType.document:
-          Map<String, dynamic> docData = item.data!;
-          String docPath = docData["path"];
-          File docFile = File(docPath);
-          if (docFile.existsSync()) {
-            medias.add(XFile(docPath));
+          Map<String, dynamic> mediaData = item.data!;
+          String mediaPath = mediaData["path"];
+          File mediaFile = File(mediaPath);
+          if (mediaFile.existsSync()) {
+            medias.add(XFile(mediaPath));
+          } else {
+            logger.warning("Share: file not found at $mediaPath");
           }
           break;
         default:
           break;
       }
     }
-    final params = ShareParams(text: texts.join("\n"), files: medias);
-    await SharePlus.instance.share(params);
+    String? shareText = texts.isNotEmpty ? texts.join("\n\n") : null;
+    try {
+      final params = ShareParams(
+        text: shareText,
+        files: medias.isNotEmpty ? medias : null,
+      );
+      if (shareText == null && medias.isEmpty) {
+        displaySnackBar(context, message: loc.nothingToShare, seconds: 1);
+      } else {
+        await SharePlus.instance.share(params);
+      }
+    } catch (e) {
+      logger.error("Share failed: $e");
+      if (mounted) {
+        displaySnackBar(context, message: loc.shareFailed, seconds: 2);
+      }
+    }
     clearSelection();
   }
 

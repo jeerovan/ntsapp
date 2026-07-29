@@ -226,6 +226,15 @@ class AppLocalizationsTh extends AppLocalizations {
   String get shareNotesTooltip => 'แชร์บันทึก';
 
   @override
+  String get noNotesSelectedToShare => 'ยังไม่ได้เลือกบันทึกที่จะแชร์';
+
+  @override
+  String get nothingToShare => 'ไม่มีอะไรจะแชร์';
+
+  @override
+  String get shareFailed => 'การแชร์ล้มเหลว';
+
+  @override
   String get editNoteTooltip => 'แก้ไขบันทึก';
 
   @override
@@ -1067,29 +1076,27 @@ class AppLocalizationsTh extends AppLocalizations {
     return '$count กลุ่มบันทึก';
   }
 
+  @override
+  String get seedCategoryTasks => 'งานที่ต้องทำ';
 
   @override
-  String get seedCategoryTasks => "งานที่ต้องทำ";
+  String get seedGroupNotes => 'บันทึก';
 
   @override
-  String get seedGroupNotes => "บันทึก";
+  String get seedGroupFitness => 'ออกกำลังกาย';
 
   @override
-  String get seedGroupFitness => "ออกกำลังกาย";
+  String get seedItemWelcome => 'ยินดีต้อนรับสู่ Note Safe!\nไม่ว่าจะเป็นไอเดีย รายการสิ่งที่ต้องทำ หรืออะไรก็ตามที่อยู่ในใจ เก็บไว้ที่นี่ได้เลย\n\nกดค้างที่บันทึกนี้เพื่อลบ แก้ไข หรือดูตัวเลือกอื่นๆ';
 
   @override
-  String get seedItemWelcome =>
-      "ยินดีต้อนรับสู่ Note Safe!\nไม่ว่าจะเป็นไอเดีย รายการสิ่งที่ต้องทำ หรืออะไรก็ตามที่อยู่ในใจ เก็บไว้ที่นี่ได้เลย\n\nกดค้างที่บันทึกนี้เพื่อลบ แก้ไข หรือดูตัวเลือกอื่นๆ";
+  String get seedItemMorningWorkout => 'ออกกำลังกายตอนเช้า';
 
   @override
-  String get seedItemMorningWorkout => "ออกกำลังกายตอนเช้า";
+  String get seedItemMeditation => 'ทำสมาธิ 10 นาที';
 
   @override
-  String get seedItemMeditation => "ทำสมาธิ 10 นาที";
+  String get seedItemWater => 'ดื่มน้ำวันละ 2 ลิตร';
 
   @override
-  String get seedItemWater => "ดื่มน้ำวันละ 2 ลิตร";
-
-  @override
-  String get seedItemSteps => "เดินให้ครบ 10,000 ก้าว";
+  String get seedItemSteps => 'เดินให้ครบ 10,000 ก้าว';
 }

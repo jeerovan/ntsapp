@@ -226,6 +226,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shareNotesTooltip => '分享笔记';
 
   @override
+  String get noNotesSelectedToShare => '未选择要分享的笔记';
+
+  @override
+  String get nothingToShare => '没有可分享的内容';
+
+  @override
+  String get shareFailed => '分享失败';
+
+  @override
   String get editNoteTooltip => '编辑笔记';
 
   @override
@@ -1067,29 +1076,27 @@ class AppLocalizationsZh extends AppLocalizations {
     return '$count 个笔记群组';
   }
 
+  @override
+  String get seedCategoryTasks => '任务';
 
   @override
-  String get seedCategoryTasks => "任务";
+  String get seedGroupNotes => '笔记';
 
   @override
-  String get seedGroupNotes => "笔记";
+  String get seedGroupFitness => '健身';
 
   @override
-  String get seedGroupFitness => "健身";
+  String get seedItemWelcome => '欢迎使用 Note Safe！\n无论是灵感、清单还是任何想法，都可以记录在这里。\n\n长按此笔记即可进行删除、编辑等操作。';
 
   @override
-  String get seedItemWelcome =>
-      "欢迎使用 Note Safe！\n无论是灵感、清单还是任何想法，都可以记录在这里。\n\n长按此笔记即可进行删除、编辑等操作。";
+  String get seedItemMorningWorkout => '晨间锻炼';
 
   @override
-  String get seedItemMorningWorkout => "晨间锻炼";
+  String get seedItemMeditation => '10分钟冥想';
 
   @override
-  String get seedItemMeditation => "10分钟冥想";
+  String get seedItemWater => '每日饮水2升';
 
   @override
-  String get seedItemWater => "每日饮水2升";
-
-  @override
-  String get seedItemSteps => "步行10,000步";
+  String get seedItemSteps => '步行10,000步';
 }
