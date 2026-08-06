@@ -42,9 +42,9 @@ enum FtsModule { fts4, fts5, none }
 ///   around purely for backward compatibility with databases created on
 ///   older app versions; the trigger and search code continue to reference
 ///   `item_fts` for this backend.
-/// - [FtsBackend.plain] — a regular SQLite table named `item_fts_plain`
-///   holding `(rowid, text)`. This is the last-resort fallback used when
-///   neither FTS4 nor FTS5 modules are present in the SQLite build.
+/// - [FtsBackend.plain] — LIKE-only search, used when no FTS module is
+///   loadable or when the `item` table is `WITHOUT ROWID`. No search table
+///   is maintained; the search code falls back to a `LIKE` query.
 ///
 /// The triggers and search code are written to take the backend as a
 /// parameter so that the *active* backend can be swapped at runtime if the
@@ -130,7 +130,7 @@ class StorageSqlite {
       logger.info("DbPath:$dbPath");
       return await openDatabase(
         dbPath,
-        version: 16,
+        version: 17,
         onConfigure: _onConfigure,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
@@ -292,9 +292,13 @@ class StorageSqlite {
       await dbMigration_15(db);
     } else if (oldVersion == 15) {
       // 15 -> 16 is handled below.
+    } else if (oldVersion == 16) {
+      // 16 -> 17 is handled below.
     }
     if (oldVersion < 16) {
       await dbMigration_15_16(db);
+    } else if (oldVersion < 17) {
+      await dbMigration_16_17(db);
     }
     logger.info('Database upgraded from version $oldVersion to $newVersion');
   }
@@ -360,24 +364,21 @@ class StorageSqlite {
         FOREIGN KEY (group_id) REFERENCES itemgroup(id) ON DELETE CASCADE
       )
     ''');
-    // Fresh installs create the FTS5 (or plain) backend, prefer FTS5 with the
-    // trigram tokeniser when available. The migration path is responsible
-    // for setting up older databases; see [dbMigration_15_16] and
-    // [ensureFtsBackend].
+    // Fresh installs create the FTS5 (preferred, trigram) or FTS4 backend.
+    // The migration path is responsible for setting up older databases; see
+    // [dbMigration_15_16] and [ensureFtsBackend]. When no FTS module is
+    // available the app runs LIKE-only search (no search table is created).
     final fts5Available = await supportsFts5(db);
     if (fts5Available) {
       await db.execute(
         _createFts5TableSql('item_fts5', FtsTokenizer.trigram),
       );
-      for (final sql in createSearchTriggersSql('item_fts5')) {
+      for (final sql in createSearchTriggersSql('item_fts5', FtsBackend.fts5)) {
         await db.execute(sql);
       }
-    } else {
-      // FTS5 not available: use the plain fallback table. Search will use
-      // LIKE. Triggers still work because the plain table exposes the same
-      // (rowid, text) shape.
-      await db.execute(_createPlainTableSql('item_fts_plain'));
-      for (final sql in createSearchTriggersSql('item_fts_plain')) {
+    } else if (await supportsFts4(db)) {
+      await db.execute(_createFts4TableSql('item_fts'));
+      for (final sql in createSearchTriggersSql('item_fts', FtsBackend.fts4)) {
         await db.execute(sql);
       }
     }
@@ -981,23 +982,17 @@ class StorageSqlite {
       await db.execute('DROP TABLE IF EXISTS item_fts');
       await db.execute(_createFts4TableSql('item_fts'));
       await db.execute(
-        'INSERT INTO item_fts(docid, text) '
-        'SELECT rowid, text FROM item WHERE text IS NOT NULL',
+        'INSERT INTO item_fts(docid, id, text) '
+        'SELECT rowid, id, text FROM item WHERE text IS NOT NULL',
       );
-      for (final sql in createSearchTriggersSql('item_fts')) {
+      for (final sql in createSearchTriggersSql('item_fts', FtsBackend.fts4)) {
         await db.execute(sql);
       }
     } else {
-      // FTS4 module missing on this build. Use the plain fallback so the
-      // app still has a working (if slower) search index. The FTS4 table
-      // is left in place for backward compatibility; it just won't be
-      // queried.
+      // FTS4 module missing on this build. The FTS4 table (if any) is left
+      // in place for backward compatibility; the search backend is set up by
+      // [dbMigration_15_16] which runs immediately after this migration.
       await db.execute('DROP TABLE IF EXISTS item_fts_plain');
-      await db.execute(_createPlainTableSql('item_fts_plain'));
-      await _repopulateFromItemTable(db, 'item_fts_plain');
-      for (final sql in createSearchTriggersSql('item_fts_plain')) {
-        await db.execute(sql);
-      }
     }
   }
 
@@ -1013,9 +1008,9 @@ class StorageSqlite {
   //                   backward compatibility with databases created on older
   //                   app versions or older SQLite builds. Only usable when
   //                   the FTS4 module is present in the SQLite library.
-  //   item_fts_plain — a regular SQLite table holding (rowid, text). Last
-  //                   resort fallback when neither FTS4 nor FTS5 is
-  //                   available. Search runs with plain LIKE.
+  //
+  // When neither FTS module is loadable (or the `item` table is `WITHOUT
+  // ROWID`) the app runs LIKE-only search: no search table is maintained.
   //
   // The triggers and search code are written in terms of the table name
   // returned by [currentFtsConfig], so swapping the active backend at runtime
@@ -1029,8 +1024,14 @@ class StorageSqlite {
 
   /// Probes the SQLite library backing [db] for the FTS5 module by attempting
   /// to create a temporary FTS5 virtual table.
+  ///
+  /// The probe is defensive: any pre-existing `temp.__fts5_test` table is
+  /// dropped first so a stale table from a previous (interrupted) probe
+  /// cannot cause a false negative, and failures are logged so it is clear
+  /// whether the module is genuinely missing or the probe itself failed.
   static Future<bool> supportsFts5(Database db) async {
     try {
+      await db.execute('DROP TABLE IF EXISTS temp.__fts5_test');
       await db.execute(
         'CREATE VIRTUAL TABLE temp.__fts5_test USING fts5(content)',
       );
@@ -1040,6 +1041,7 @@ class StorageSqlite {
       try {
         await db.execute('DROP TABLE IF EXISTS temp.__fts5_test');
       } catch (_) {}
+      AppLogger(prefixes: ['SqliteProbe']).warning('FTS5 probe failed: $e');
       return false;
     }
   }
@@ -1048,6 +1050,7 @@ class StorageSqlite {
   /// to create a temporary FTS4 virtual table.
   static Future<bool> supportsFts4(Database db) async {
     try {
+      await db.execute('DROP TABLE IF EXISTS temp.__fts4_test');
       await db.execute(
         'CREATE VIRTUAL TABLE temp.__fts4_test USING fts4(content)',
       );
@@ -1057,17 +1060,25 @@ class StorageSqlite {
       try {
         await db.execute('DROP TABLE IF EXISTS temp.__fts4_test');
       } catch (_) {}
+      AppLogger(prefixes: ['SqliteProbe']).warning('FTS4 probe failed: $e');
       return false;
     }
   }
 
   /// Returns the SQL needed to create the FTS5 search virtual table.
+  ///
+  /// The `id` column holds the `item` primary key and is marked `UNINDEXED`
+  /// (FTS5 only indexes `text`). Search joins on `item.id = item_fts5.id`
+  /// instead of the implicit rowid so the index works whether or not the
+  /// `item` table exposes a `rowid` (i.e. even for a `WITHOUT ROWID` table
+  /// on the plain fallback backend).
   static String _createFts5TableSql(String tableName, FtsTokenizer tokenizer) {
     final tokenizeSpec =
         tokenizer == FtsTokenizer.trigram ? 'trigram' : 'unicode61';
     return '''
       CREATE VIRTUAL TABLE $tableName USING fts5(
         content="item",
+        id UNINDEXED,
         text,
         tokenize=$tokenizeSpec
       );
@@ -1079,56 +1090,93 @@ class StorageSqlite {
     return '''
       CREATE VIRTUAL TABLE $tableName USING fts4(
         content="item",
+        id,
         text,
         tokenize=unicode61
       );
     ''';
   }
 
-  /// Returns the SQL needed to create the plain (no-FTS) fallback table.
-  static String _createPlainTableSql(String tableName) {
-    return '''
-      CREATE TABLE $tableName (
-        rowid INTEGER PRIMARY KEY,
-        text TEXT
-      );
-    ''';
-  }
-
   /// Returns the SQL needed to create the four maintenance triggers that keep
   /// the search table in sync with the `item` table. The triggers reference
-  /// [tableName] directly so the same generator works for all three backends.
+  /// [tableName] directly so the same generator works for both FTS backends.
   ///
-  /// Both the FTS virtual tables and the plain fallback table expose the
-  /// `item` rowid as their `rowid` column, so the same INSERT/UPDATE/DELETE
-  /// pattern works for all of them.
-  static List<String> createSearchTriggersSql(String tableName) {
-    return [
-      '''
-        CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
-          INSERT INTO $tableName(rowid, text) VALUES (new.rowid, new.text);
-        END;
-      ''',
-      '''
-        CREATE TRIGGER item_bd BEFORE DELETE ON item BEGIN
-          DELETE FROM $tableName WHERE rowid = old.rowid;
-        END;
-      ''',
-      '''
-        CREATE TRIGGER item_bu BEFORE UPDATE ON item
-        WHEN old.text IS NOT new.text
-        BEGIN
-          DELETE FROM $tableName WHERE rowid = old.rowid;
-        END;
-      ''',
-      '''
-        CREATE TRIGGER item_au AFTER UPDATE ON item
-        WHEN old.text IS NOT new.text
-        BEGIN
-          INSERT INTO $tableName(rowid, text) VALUES (new.rowid, new.text);
-        END;
-      ''',
-    ];
+  /// FTS4/FTS5 external content tables read column values from the content
+  /// table via `item`'s rowid, so the FTS rowid/docid must be set to
+  /// `new.rowid` and the FTS row must be removed before the content row
+  /// changes. FTS4 removes a row with `DELETE ... WHERE docid = old.rowid`
+  /// (it re-reads the content table during the delete); FTS5 uses the
+  /// documented `'delete'` command with the exact old column values.
+  static List<String> createSearchTriggersSql(
+    String tableName,
+    FtsBackend backend,
+  ) {
+    switch (backend) {
+      case FtsBackend.fts5:
+        return [
+          '''
+            CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+              INSERT INTO $tableName(rowid, id, text)
+              VALUES (new.rowid, new.id, new.text);
+            END;
+          ''',
+          '''
+            CREATE TRIGGER item_bd BEFORE DELETE ON item BEGIN
+              INSERT INTO $tableName($tableName, rowid, id, text)
+              VALUES ('delete', old.rowid, old.id, old.text);
+            END;
+          ''',
+          '''
+            CREATE TRIGGER item_bu BEFORE UPDATE ON item
+            WHEN old.text IS NOT new.text
+            BEGIN
+              INSERT INTO $tableName($tableName, rowid, id, text)
+              VALUES ('delete', old.rowid, old.id, old.text);
+            END;
+          ''',
+          '''
+            CREATE TRIGGER item_au AFTER UPDATE ON item
+            WHEN old.text IS NOT new.text
+            BEGIN
+              INSERT INTO $tableName(rowid, id, text)
+              VALUES (new.rowid, new.id, new.text);
+            END;
+          ''',
+        ];
+      case FtsBackend.fts4:
+        return [
+          '''
+            CREATE TRIGGER item_ai AFTER INSERT ON item BEGIN
+              INSERT INTO $tableName(docid, id, text)
+              VALUES (new.rowid, new.id, new.text);
+            END;
+          ''',
+          '''
+            CREATE TRIGGER item_bd BEFORE DELETE ON item BEGIN
+              DELETE FROM $tableName WHERE docid = old.rowid;
+            END;
+          ''',
+          '''
+            CREATE TRIGGER item_bu BEFORE UPDATE ON item
+            WHEN old.text IS NOT new.text
+            BEGIN
+              DELETE FROM $tableName WHERE docid = old.rowid;
+            END;
+          ''',
+          '''
+            CREATE TRIGGER item_au AFTER UPDATE ON item
+            WHEN old.text IS NOT new.text
+            BEGIN
+              INSERT INTO $tableName(docid, id, text)
+              VALUES (new.rowid, new.id, new.text);
+            END;
+          ''',
+        ];
+      case FtsBackend.plain:
+        // No search table is maintained for the plain/LIKE-only backend, so
+        // there are no triggers to create.
+        return const [];
+    }
   }
 
   /// Returns the SQL needed to drop the maintenance triggers. `IF EXISTS`
@@ -1179,29 +1227,48 @@ class StorageSqlite {
   /// Returns the live FTS configuration. Cached for the lifetime of the
   /// database connection.
   ///
-  /// Selection rules (first match wins):
-  /// 1. If `item_fts5` exists → [FtsBackend.fts5] / [FtsModule.fts5].
-  /// 2. Else if `item_fts_plain` exists → [FtsBackend.plain] /
-  ///    [FtsModule.none].
+  /// Selection rules (best *usable* backend wins):
+  /// 1. If the `item` table has no implicit `rowid` (created `WITHOUT
+  ///    ROWID`) → [FtsBackend.plain] / [FtsModule.none]. FTS external-content
+  ///    tables read the content table through its rowid and cannot back
+  ///    search for a rowid-less `item` table, so such databases use
+  ///    LIKE-only search.
+  /// 2. Else if `item_fts5` exists AND the FTS5 module is loadable →
+  ///    [FtsBackend.fts5] / [FtsModule.fts5].
   /// 3. Else if `item_fts` exists AND the FTS4 module is loadable →
   ///    [FtsBackend.fts4] / [FtsModule.fts4].
-  /// 4. Else if `item_fts` exists but the FTS4 module is *not* loadable →
-  ///    [FtsBackend.plain] / [FtsModule.none]. (The FTS4 table is reported
-  ///    as unusable; [ensureFtsBackend] will create a working backend.)
-  /// 5. Else → [FtsBackend.fts5] if FTS5 is available, else [FtsBackend.plain]
-  ///    as a last resort. The actual table will be created by
-  ///    [ensureFtsBackend] or by [initTables].
+  /// 4. Else if the FTS5 module is loadable → [FtsBackend.fts5] (a fresh
+  ///    table is built; this wins over a stale/unusable `item_fts` left
+  ///    behind on a different SQLite build).
+  /// 5. Else if the FTS4 module is loadable → [FtsBackend.fts4].
+  /// 6. Else → [FtsBackend.plain] / [FtsModule.none]: LIKE-only search, no
+  ///    search table maintained.
+  ///
+  /// Rules 4-6 deliberately prefer an *available* FTS module over a stale
+  /// table whose module is missing from the current build (e.g. a DB with a
+  /// legacy FTS4 `item_fts` table opened on a build without the FTS4
+  /// module): the stale table can neither be dropped nor queried, but a
+  /// working FTS5 backend can be built alongside it.
   static Future<FtsConfig> currentFtsConfig(Database db) async {
     final cached = _ftsConfig;
     if (cached != null) return cached;
 
+    final itemHasRowid = await _itemHasRowid(db);
     final hasFts5Table = await _tableExists(db, 'item_fts5');
-    final hasPlainTable = await _tableExists(db, 'item_fts_plain');
     final hasFts4Table = await _tableExists(db, 'item_fts');
+    final fts5Available = await supportsFts5(db);
+    final fts4Available = await supportsFts4(db);
 
     FtsConfig config;
 
-    if (hasFts5Table) {
+    if (!itemHasRowid) {
+      config = const FtsConfig(
+        backend: FtsBackend.plain,
+        module: FtsModule.none,
+        tableName: 'item_fts_plain',
+        tokenizer: FtsTokenizer.unicode61,
+      );
+    } else if (hasFts5Table && fts5Available) {
       final sql = await _readCreateSql(db, 'item_fts5');
       final tokenizer = sql.contains('tokenize=trigram')
           ? FtsTokenizer.trigram
@@ -1212,57 +1279,40 @@ class StorageSqlite {
         tableName: 'item_fts5',
         tokenizer: tokenizer,
       );
-    } else if (hasPlainTable) {
+    } else if (hasFts4Table && fts4Available) {
+      // FTS4 only supports the unicode61 tokeniser; trigram is FTS5-only.
+      config = const FtsConfig(
+        backend: FtsBackend.fts4,
+        module: FtsModule.fts4,
+        tableName: 'item_fts',
+        tokenizer: FtsTokenizer.unicode61,
+      );
+    } else if (fts5Available) {
+      // No usable FTS table exists but the FTS5 module is loadable: build a
+      // fresh backend. This also covers a stale `item_fts` (FTS4) table that
+      // cannot be dropped because the FTS4 module is missing.
+      config = const FtsConfig(
+        backend: FtsBackend.fts5,
+        module: FtsModule.fts5,
+        tableName: 'item_fts5',
+        tokenizer: FtsTokenizer.trigram,
+      );
+    } else if (fts4Available) {
+      config = const FtsConfig(
+        backend: FtsBackend.fts4,
+        module: FtsModule.fts4,
+        tableName: 'item_fts',
+        tokenizer: FtsTokenizer.unicode61,
+      );
+    } else {
+      // No FTS module loadable on this build: search runs LIKE-only. No
+      // search table is maintained.
       config = const FtsConfig(
         backend: FtsBackend.plain,
         module: FtsModule.none,
         tableName: 'item_fts_plain',
         tokenizer: FtsTokenizer.unicode61,
       );
-    } else if (hasFts4Table) {
-      final fts4Available = await supportsFts4(db);
-      if (fts4Available) {
-        final sql = await _readCreateSql(db, 'item_fts');
-        final tokenizer = sql.contains('tokenize=trigram')
-            ? FtsTokenizer.trigram
-            : FtsTokenizer.unicode61;
-        config = FtsConfig(
-          backend: FtsBackend.fts4,
-          module: FtsModule.fts4,
-          tableName: 'item_fts',
-          tokenizer: tokenizer,
-        );
-      } else {
-        // The FTS4 table exists but the FTS4 module is not loadable. The
-        // table is unusable, so report the plain backend and let the caller
-        // run [ensureFtsBackend] to build a working backend.
-        config = const FtsConfig(
-          backend: FtsBackend.plain,
-          module: FtsModule.none,
-          tableName: 'item_fts_plain',
-          tokenizer: FtsTokenizer.unicode61,
-        );
-      }
-    } else {
-      // No backend table exists yet. Default to FTS5 (with trigram on fresh
-      // installs) or plain as a last resort. The actual table will be created
-      // by [ensureFtsBackend] or by [initTables].
-      final fts5Available = await supportsFts5(db);
-      if (fts5Available) {
-        config = const FtsConfig(
-          backend: FtsBackend.fts5,
-          module: FtsModule.fts5,
-          tableName: 'item_fts5',
-          tokenizer: FtsTokenizer.trigram,
-        );
-      } else {
-        config = const FtsConfig(
-          backend: FtsBackend.plain,
-          module: FtsModule.none,
-          tableName: 'item_fts_plain',
-          tokenizer: FtsTokenizer.unicode61,
-        );
-      }
     }
 
     _ftsConfig = config;
@@ -1277,17 +1327,34 @@ class StorageSqlite {
   /// after any migration) so that:
   ///
   /// - A database that only has an FTS4 table on an FTS4-less build gets a
-  ///   new FTS5 (or plain) table built, populated from `item`, and wired
-  ///   into the triggers. The legacy FTS4 table is left in place for
-  ///   backward compatibility.
+  ///   new FTS5 table built, populated from `item`, and wired into the
+  ///   triggers. The legacy FTS4 table is left in place for backward
+  ///   compatibility.
   /// - A database that has no search table at all gets one created.
   /// - A database that already has the configured table just has its
   ///   triggers refreshed.
+  /// - A database where FTS cannot be used (the `item` table is `WITHOUT
+  ///   ROWID`, or no FTS module is loadable) uses LIKE-only search: no search
+  ///   table or triggers are maintained, and any legacy `item_fts_plain`
+  ///   table is cleaned up.
   ///
   /// This method is idempotent and safe to call multiple times.
   Future<FtsConfig> ensureFtsBackend(Database db) async {
     final config = await currentFtsConfig(db);
-    final fts5Available = await supportsFts5(db);
+
+    if (config.backend == FtsBackend.plain) {
+      // LIKE-only backend: no search table or triggers are maintained.
+      // Drop any legacy triggers and plain table from older app versions.
+      for (final sql in dropSearchTriggersSql()) {
+        await db.execute(sql);
+      }
+      await db.execute('DROP TABLE IF EXISTS item_fts_plain');
+      logger.info(
+        'ensureFtsBackend: no usable FTS module; search uses LIKE',
+      );
+      _ftsConfig = config;
+      return config;
+    }
 
     // If the active table does not exist, create it and populate it from the
     // `item` table. Cheap to check, idempotent.
@@ -1297,7 +1364,11 @@ class StorageSqlite {
         'ensureFtsBackend: creating ${config.tableName} (${config.backend}) '
         'because no usable table found',
       );
-      await _createBackendTableAndRepopulate(db, config, fts5Available);
+      await _createBackendTableAndRepopulate(
+        db,
+        config,
+        config.backend == FtsBackend.fts5,
+      );
     }
 
     // Always recreate the triggers so they point at the live table name.
@@ -1306,7 +1377,8 @@ class StorageSqlite {
     for (final sql in dropSearchTriggersSql()) {
       await db.execute(sql);
     }
-    for (final sql in createSearchTriggersSql(config.tableName)) {
+    for (final sql
+        in createSearchTriggersSql(config.tableName, config.backend)) {
       await db.execute(sql);
     }
 
@@ -1314,8 +1386,8 @@ class StorageSqlite {
     return config;
   }
 
-  /// Creates the physical table for [config] (if needed) and populates it
-  /// from the `item` table.
+  /// Creates the physical search table for [config] and populates it from the
+  /// `item` table. Only called for FTS backends.
   static Future<void> _createBackendTableAndRepopulate(
     Database db,
     FtsConfig config,
@@ -1326,24 +1398,24 @@ class StorageSqlite {
         if (!fts5Available) {
           // Caller asked for FTS5 but the module is missing. Should not
           // happen because [currentFtsConfig] only returns FTS5 when the
-          // table or module is present, but fall back to plain just in
-          // case.
-          await db.execute(_createPlainTableSql('item_fts_plain'));
-          await _repopulateFromItemTable(db, 'item_fts_plain');
-          return;
+          // module is present.
+          throw StateError(
+            'cannot build FTS5 backend: module not loadable',
+          );
         }
         await db.execute(
           _createFts5TableSql(config.tableName, config.tokenizer),
         );
-        await _repopulateFromItemTable(db, config.tableName);
+        await _repopulateFromItemTable(db, config.tableName, config.backend);
+        await _optimizeSearchTable(db, config.tableName);
         return;
       case FtsBackend.fts4:
         await db.execute(_createFts4TableSql(config.tableName));
-        await _repopulateFromItemTable(db, config.tableName);
+        await _repopulateFromItemTable(db, config.tableName, config.backend);
+        await _optimizeSearchTable(db, config.tableName);
         return;
       case FtsBackend.plain:
-        await db.execute(_createPlainTableSql(config.tableName));
-        await _repopulateFromItemTable(db, config.tableName);
+        // No table is maintained for the LIKE-only backend.
         return;
     }
   }
@@ -1351,14 +1423,57 @@ class StorageSqlite {
   /// Inserts one row per row in the `item` table into the [tableName] search
   /// index. Safe to call on an empty `item` table. Accepts either a
   /// [Database] or a [Transaction] so it can be used inside `db.transaction`.
+  ///
+  /// FTS external content tables are keyed on the `item` table's implicit
+  /// rowid (the FTS rowid/docid must equal `item.rowid` because column
+  /// values are read back from the content table through that rowid).
   static Future<void> _repopulateFromItemTable(
+    DatabaseExecutor executor,
+    String tableName,
+    FtsBackend backend,
+  ) async {
+    switch (backend) {
+      case FtsBackend.fts5:
+        await executor.execute(
+          'INSERT INTO $tableName(rowid, id, text) '
+          'SELECT rowid, id, text FROM item WHERE text IS NOT NULL',
+        );
+        return;
+      case FtsBackend.fts4:
+        await executor.execute(
+          'INSERT INTO $tableName(docid, id, text) '
+          'SELECT rowid, id, text FROM item WHERE text IS NOT NULL',
+        );
+        return;
+      case FtsBackend.plain:
+        // No table is maintained for the LIKE-only backend.
+        return;
+    }
+  }
+
+  /// Runs the FTS `optimize` command on [tableName]. Only valid for FTS
+  /// backends. Merges the inverted-index b-trees into a single structure,
+  /// which the SQLite docs recommend after a batch of inserts (e.g. a
+  /// migration rebuild) before the first query.
+  static Future<void> _optimizeSearchTable(
     DatabaseExecutor executor,
     String tableName,
   ) async {
     await executor.execute(
-      'INSERT INTO $tableName(rowid, text) '
-      'SELECT rowid, text FROM item WHERE text IS NOT NULL',
+      "INSERT INTO $tableName($tableName) VALUES('optimize')",
     );
+  }
+
+  /// Returns true when the `item` table exposes a usable implicit `rowid`
+  /// (i.e. it was not created `WITHOUT ROWID`).
+  ///
+  /// FTS virtual tables with external content (`content="item"`) read the
+  /// content table through its rowid, so they cannot back search for a
+  /// rowid-less `item` table. Such databases use the plain fallback backend
+  /// (LIKE search) instead.
+  static Future<bool> _itemHasRowid(DatabaseExecutor executor) async {
+    final sql = await _readCreateSql(executor, 'item');
+    return !sql.contains('without rowid');
   }
 
   /// Migration v15 -> v16.
@@ -1372,17 +1487,19 @@ class StorageSqlite {
   ///   `item_fts` FTS4 table is left untouched (it remains in the database
   ///   for backward compatibility) and the triggers are repointed at the
   ///   new `item_fts5` table.
-  /// - If neither FTS4 nor FTS5 modules are available, the plain
-  ///   `item_fts_plain` table is created and populated from `item`. The
-  ///   triggers are wired to point at it. Search then uses `LIKE`.
+  /// - If FTS5 is unavailable but FTS4 is, `item_fts` is rebuilt with the
+  ///   v17 shape and the triggers are wired to it.
+  /// - If neither FTS module is loadable (or the `item` table is `WITHOUT
+  ///   ROWID`), no search table is maintained and search runs on `LIKE`.
   ///
   /// In every case the existing v15 FTS4 table (if any) is left in place.
   /// Search code reads the live configuration from [currentFtsConfig] at
   /// runtime, so the same migration is safe regardless of which FTS module
   /// the user happens to have installed.
   ///
-  /// The whole migration runs inside a single transaction so a failure
-  /// leaves the database in its previous working state.
+  /// sqflite runs `onUpgrade` inside a transaction already, so this
+  /// migration does not open a transaction of its own; a failure rolls back
+  /// and leaves the database in its previous working state.
   Future<void> dbMigration_15_16(Database db) async {
     final fts5Available = await supportsFts5(db);
     final fts4Available = await supportsFts4(db);
@@ -1390,66 +1507,122 @@ class StorageSqlite {
       'dbMigration_15_16: fts5=$fts5Available fts4=$fts4Available',
     );
 
-    await db.transaction((txn) async {
-      // Step 1: drop maintenance triggers. We always recreate them at the
-      // end, repointed at whichever table ends up being the active
-      // backend.
-      for (final sql in dropSearchTriggersSql()) {
-        await txn.execute(sql);
-      }
+    // sqflite already runs `onUpgrade` inside a transaction, so this
+    // migration MUST NOT open its own nested transaction: on some sqflite
+    // builds a nested `db.transaction()` from inside `onUpgrade` blocks
+    // forever on the database's non-reentrant lock and leaves the app stuck
+    // on the splash screen on every launch. All statements below run
+    // directly on [db] and are covered by sqflite's upgrade transaction, so
+    // a failure still rolls back and the database keeps its previous state.
 
-      // Step 2: pick the v16 backend and create / repopulate it as needed.
-      String activeTable;
-      if (fts5Available) {
-        // Preferred backend. Use the unicode61 tokeniser to stay
-        // byte-for-byte compatible with the v15 FTS4 search behaviour.
-        // (Fresh installs use trigram, see [initTables].)
-        await txn.execute('DROP TABLE IF EXISTS item_fts5');
-        await txn.execute(
-          _createFts5TableSql('item_fts5', FtsTokenizer.unicode61),
-        );
-        await _repopulateFromItemTable(txn, 'item_fts5');
-        activeTable = 'item_fts5';
-      } else if (!fts4Available) {
-        // Neither FTS4 nor FTS5 module is loadable on this SQLite build.
-        // Fall back to the plain table so the app remains functional.
-        // The legacy `item_fts` FTS4 table is left in place but ignored
-        // by search.
-        await txn.execute('DROP TABLE IF EXISTS item_fts_plain');
-        await txn.execute(_createPlainTableSql('item_fts_plain'));
-        await _repopulateFromItemTable(txn, 'item_fts_plain');
-        activeTable = 'item_fts_plain';
-      } else {
-        // FTS5 unavailable but FTS4 is. The existing `item_fts` FTS4
-        // table is left untouched. We just rebuild its content from
-        // the `item` table to be safe (handles partial-state upgrades
-        // from older app versions) and ensure the triggers point at
-        // it. We deliberately avoid touching `item_fts` if it doesn't
-        // already exist: this migration is v15 -> v16, and a v15
-        // database always has the FTS4 table.
-        if (!(await _tableExists(txn, 'item_fts'))) {
-          await txn.execute(_createFts4TableSql('item_fts'));
-          await _repopulateFromItemTable(txn, 'item_fts');
-        }
-        activeTable = 'item_fts';
-      }
+    // Step 1: drop maintenance triggers. We always recreate them at the
+    // end, repointed at whichever table ends up being the active backend.
+    for (final sql in dropSearchTriggersSql()) {
+      await db.execute(sql);
+    }
 
+    // Step 2: pick the v16 backend and create / repopulate it as needed.
+    final itemHasRowid = await _itemHasRowid(db);
+    String? activeTable;
+    FtsBackend? activeBackend;
+    if (!itemHasRowid) {
+      // A `WITHOUT ROWID` item table cannot back external-content FTS
+      // tables (FTS reads the content table through its rowid). Search
+      // runs LIKE-only; no search table is maintained.
+      await db.execute('DROP TABLE IF EXISTS item_fts_plain');
+    } else if (fts5Available) {
+      // Preferred backend. Use the unicode61 tokeniser to stay
+      // byte-for-byte compatible with the v15 FTS4 search behaviour.
+      // (Fresh installs use trigram, see [initTables].)
+      await db.execute('DROP TABLE IF EXISTS item_fts5');
+      await db.execute(
+        _createFts5TableSql('item_fts5', FtsTokenizer.unicode61),
+      );
+      await _repopulateFromItemTable(db, 'item_fts5', FtsBackend.fts5);
+      activeTable = 'item_fts5';
+      activeBackend = FtsBackend.fts5;
+    } else if (fts4Available) {
+      // FTS5 unavailable but FTS4 is. Rebuild `item_fts` with the v17
+      // shape (which stores the `item` primary key so the search JOIN can
+      // use `item.id`) and repopulate it from `item`.
+      await db.execute('DROP TABLE IF EXISTS item_fts');
+      await db.execute(_createFts4TableSql('item_fts'));
+      await _repopulateFromItemTable(db, 'item_fts', FtsBackend.fts4);
+      activeTable = 'item_fts';
+      activeBackend = FtsBackend.fts4;
+    } else {
+      // Neither FTS4 nor FTS5 module is loadable on this SQLite build.
+      // Search runs LIKE-only; no search table is maintained.
+      await db.execute('DROP TABLE IF EXISTS item_fts_plain');
+    }
+
+    if (activeTable != null && activeBackend != null) {
       // Step 3: recreate the maintenance triggers for the active table.
-      for (final sql in createSearchTriggersSql(activeTable)) {
-        await txn.execute(sql);
+      for (final sql in createSearchTriggersSql(activeTable, activeBackend)) {
+        await db.execute(sql);
       }
 
       // Step 4: integrity check, only meaningful for FTS backends.
       if (activeTable == 'item_fts5' || activeTable == 'item_fts') {
-        await txn.execute(
+        await db.execute(
           "INSERT INTO $activeTable($activeTable) VALUES('integrity-check')",
         );
       }
-    });
+
+      // Step 5: merge the freshly built index into a single b-tree (docs
+      // recommend running `optimize` after a batch of inserts).
+      await _optimizeSearchTable(db, activeTable);
+    }
 
     // Reset the cached config so the next read picks up the new backend.
     _ftsConfig = null;
     logger.info('dbMigration_15_16: migration completed successfully');
+  }
+
+  /// Migration v16 -> v17.
+  ///
+  /// Rebuilds the active search backend from scratch. The v16 migration
+  /// ([dbMigration_15_16]) started a nested transaction from inside
+  /// `onUpgrade`, which sqflite already wraps in a transaction. On some
+  /// sqflite builds that nested transaction blocked forever, so real
+  /// devices were left stuck at v15, or reached v16 with a missing or
+  /// stale search index. Running this migration guarantees every database
+  /// entering v17 has a clean, populated search table with triggers that
+  /// point at it.
+  ///
+  /// All search tables are dropped so [ensureFtsBackend] rebuilds the best
+  /// backend available on this SQLite build with the v17 shape, which keys
+  /// the index on the `item` primary key instead of the implicit rowid.
+  /// A leftover plain table from a v15-era fallback must not win over an
+  /// FTS5 module that the build provides, and a `WITHOUT ROWID` `item`
+  /// table always lands on the plain backend.
+  ///
+  /// Like [dbMigration_15_16], this runs inside sqflite's upgrade
+  /// transaction and must not open its own nested transaction.
+  Future<void> dbMigration_16_17(Database db) async {
+    // Dropping an FTS virtual table requires its module to be loadable
+    // (SQLite instantiates the module while processing DROP TABLE and
+    // fails with "no such module" when it is absent). Only drop the tables
+    // whose module exists on this build; any table left behind is ignored
+    // by search, which uses the backend selected by [currentFtsConfig].
+    final fts5Available = await supportsFts5(db);
+    final fts4Available = await supportsFts4(db);
+    for (final sql in dropSearchTriggersSql()) {
+      await db.execute(sql);
+    }
+    if (fts5Available) {
+      await db.execute('DROP TABLE IF EXISTS item_fts5');
+    }
+    if (fts4Available) {
+      await db.execute('DROP TABLE IF EXISTS item_fts');
+    }
+    await db.execute('DROP TABLE IF EXISTS item_fts_plain');
+    // Drop the cached config so [ensureFtsBackend] re-reads the schema and
+    // picks the best backend available on this SQLite build instead of
+    // reusing a stale cached value.
+    _ftsConfig = null;
+    await ensureFtsBackend(db);
+    logger.info('dbMigration_16_17: search backend rebuilt');
   }
 
   Future<bool> _checkColumnExists(

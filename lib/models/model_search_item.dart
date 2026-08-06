@@ -64,10 +64,12 @@ class ModelSearchItem {
 
     List<Map<String, dynamic>> rows = [];
 
-    // For FTS4 and FTS5 the search table is a virtual table with a `docid`
-    // column that aliases the source `item.rowid`, so the standard FTS
-    // JOIN/MATCH pattern works. For the plain-table fallback there is no
-    // MATCH, so we skip straight to the LIKE path below.
+    // For FTS4 and FTS5 the search table stores the `item` primary key in
+    // its `id` column, so the standard FTS JOIN/MATCH pattern keys on
+    // `item.id = fts.id` (this also works when the `item` table is
+    // `WITHOUT ROWID`, which external-content FTS could not back). For the
+    // plain-table fallback there is no MATCH, so we skip straight to the
+    // LIKE path below.
     if (ftsConfig.isFts) {
       final matchExpression = _buildMatchExpression(query, ftsConfig.tokenizer);
       if (matchExpression.isNotEmpty) {
@@ -76,7 +78,7 @@ class ModelSearchItem {
             '''SELECT item.*
                FROM item
                JOIN ${ftsConfig.tableName} AS fts
-                 ON item.id = fts.rowid
+                 ON item.id = fts.id
                WHERE fts.text MATCH ?
                ORDER BY item.at DESC
                LIMIT ? OFFSET ?''',
